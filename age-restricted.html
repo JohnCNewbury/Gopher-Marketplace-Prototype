@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Age-Restricted Delivery – Gopher</title>
+  <!-- SEO -->
+  <link rel="canonical" href="https://gophergo.io/age-restricted.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Gopher">
+  <meta property="og:title" content="Age-Restricted Delivery – Gopher">
+  <meta property="og:description" content="Beer, wine, tobacco and other 21+ essentials delivered by a vetted local Gopher. You set the offer, the store is paid directly, and a valid government ID is checked in person at your door — every single time.">
+  <meta property="og:url" content="https://gophergo.io/age-restricted.html">
+  <meta property="og:image" content="https://gophergo.io/assets/img/og-default.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Age-Restricted Delivery – Gopher">
+  <meta name="twitter:description" content="Beer, wine, tobacco and other 21+ essentials delivered by a vetted local Gopher. You set the offer, the store is paid directly, and a valid government ID is checked in person at your door — every single time.">
+  <meta name="twitter:image" content="https://gophergo.io/assets/img/og-default.jpg">
+
+<meta name="description" content="Beer, wine, tobacco and other 21+ essentials delivered by a vetted local Gopher. You set the offer, the store is paid directly, and a valid government ID is checked in person at your door — every single time.">
+<link rel="stylesheet" href="assets/css/gopher-fonts.css">
+
+<link rel="stylesheet" href="assets/css/gopher-fd.css">
+
+<style id="gopher-age-css">
+  /* Hero shows the novelty ID card instead of a photo */
+  .hero-visual.card-mode{ display:flex; align-items:center; justify-content:center; height:480px; position:relative; }
+  .idcard{ width:100%; max-width:432px; transform:rotate(-3deg); transition:transform .3s ease; }
+  .idcard:hover{ transform:rotate(-1deg) scale(1.02); }
+  .idcard svg{ width:100%; height:auto; display:block; border-radius:18px;
+    filter:drop-shadow(0 28px 52px rgba(0,36,97,.34)); }
+  .id-caption{ position:absolute; left:50%; bottom:-2px; transform:translateX(-50%) rotate(-2deg);
+    background:var(--navy); color:#fff; border-radius:14px; padding:11px 18px; box-shadow:var(--shadow-lg); text-align:center; max-width:300px; }
+  .id-caption .caveat{ color:var(--aqua); font-size:25px; line-height:1; display:block; }
+  .id-caption span{ font-size:12.5px; color:rgba(255,255,255,.85); display:block; margin-top:2px; }
+
+  /* Standalone ID card (also reusable lower on the page if needed) */
+  .idcard-sm{ max-width:360px; margin:0 auto; transform:rotate(-2deg); }
+  .idcard-sm svg{ width:100%; height:auto; display:block; filter:drop-shadow(0 18px 38px rgba(0,36,97,.28)); }
+
+  /* Age page reuses the food comparison table; just relabel the mobile prefix */
+  @media (max-width:980px){
+    .cc.giants::before{ content:'The old way: ' !important; }
+  }
+  @media (max-width:980px){
+    .hero-visual.card-mode{ height:auto; padding:10px 0 30px; }
+    .idcard{ max-width:360px; }
+  }
+
+  /* Refer-a-driver section (age page only): terracotta tilted caveat + video placeholder */
+  .order h3 .caveat.terra{ color:var(--terracotta); display:block;
+    font-size:clamp(26px,3.6vw,42px); line-height:.95; margin:-2px 0 0; }
+  .refer-video{ max-width:620px; margin:6px auto 30px; }
+  .refer-video .rv-frame{ position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+    aspect-ratio:16/9; width:100%; border-radius:18px; text-decoration:none; cursor:pointer; padding:0; font:inherit; color:inherit;
+    background:linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.18); box-shadow:0 18px 40px rgba(0,0,0,.28);
+    transition:transform .2s, border-color .2s; overflow:hidden; }
+  .refer-video .rv-frame:hover{ transform:translateY(-2px); border-color:var(--aqua); }
+  .refer-video .rv-play{ width:64px; height:64px; border-radius:50%; background:var(--green);
+    display:flex; align-items:center; justify-content:center; box-shadow:0 10px 26px rgba(51,217,117,.45); }
+  .refer-video .rv-play::before{ content:''; width:0; height:0; margin-left:5px;
+    border-left:20px solid var(--navy); border-top:13px solid transparent; border-bottom:13px solid transparent; }
+  .refer-video .rv-cap{ color:rgba(255,255,255,.9); font-family:'Nunito',sans-serif; font-weight:700; font-size:15px; }
+</style>
+
+
+<link rel="stylesheet" href="assets/css/gopher-footer.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Age-Restricted Delivery",
+  "description": "Beer, wine, tobacco and other 21+ essentials delivered by a vetted local Gopher. You set the offer, the store is paid directly, and a valid government ID is checked in person at your door — every single time.",
+  "url": "https://gophergo.io/age-restricted.html",
+  "provider": {
+    "@type": "Organization",
+    "name": "Gopher",
+    "url": "https://gophergo.io/",
+    "logo": "https://gophergo.io/assets/img/og-default.jpg"
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- ─── HEADER MOUNT (canonical gopher-header component) ─── -->
+<div id="gopher-header"></div>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="crumbs">
+        <a href="gopher-services.html">Services</a><span class="sep">/</span>
+        <a href="gopher-services.html#cat-delivery">Delivery &amp; Errands</a><span class="sep">/</span>
+        <span class="cur">Age-Restricted</span>
+      </div>
+      <span class="eyebrow">Age-Restricted Delivery</span>
+      <h1>Beer, wine &amp; more,</h1>
+      <div class="hero-accent">&mdash; carded, every time.</div>
+      <p class="hero-sub">Alcohol, tobacco, vapes and other <b>21+ essentials</b>, brought over by a vetted local Gopher. You set the offer, the <b>store is paid directly</b>, and a valid government ID gets checked at your door &mdash; by the book, every single time.</p>
+      <div class="hero-cta">
+        <a href="gopher-request.html#login" class="btn btn-primary">Order now <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a href="#why" class="btn btn-ghost">How carding works</a>
+      </div>
+      <div class="hero-chips">
+        <span class="chip">🪪 ID checked <b>in&nbsp;person</b></span>
+        <span class="chip">🔞 <b>21+</b> both ends</span>
+        <span class="chip">🛡️ TrustShield <b>$1 off</b></span>
+      </div>
+    </div>
+    <div class="hero-visual card-mode" aria-hidden="false">
+      <div class="idcard"><svg viewBox="0 0 432 272" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Novelty State of Gopher ID for MCGOPHER, stamped NICE TRY">
+  <defs><clipPath id="cc"><rect x="0" y="0" width="432" height="272" rx="18"/></clipPath></defs>
+  <g clip-path="url(#cc)" font-family="'DM Sans',sans-serif">
+    <rect width="432" height="272" fill="#eef3fb"/>
+    <g stroke="#d6e0f2" stroke-width="1" fill="none" opacity="0.7">
+      <circle cx="330" cy="206" r="62"/><circle cx="330" cy="206" r="48"/><circle cx="330" cy="206" r="34"/>
+    </g>
+    <rect width="432" height="50" fill="#002461"/>
+    <circle cx="24" cy="25" r="6" fill="#33D975"/>
+    <text x="38" y="31" fill="#fff" font-family="'Nunito',sans-serif" font-weight="900" font-size="17" letter-spacing="0.4">STATE OF GOPHER</text>
+    <text x="416" y="22" text-anchor="end" fill="#87F7BD" font-family="'Nunito',sans-serif" font-weight="800" font-size="11" letter-spacing="2">DRIVER LICENSE</text>
+    <text x="416" y="36" text-anchor="end" fill="#bcd2ff" font-family="'Nunito',sans-serif" font-weight="700" font-size="8.5" letter-spacing="1">CLASS&#160;&#160;D &#183; DONOR&#160;&#160;&#9829;</text>
+    <!-- portrait -->
+    <rect x="20" y="64" width="116" height="154" rx="9" fill="#fff" stroke="#c9d6ec"/>
+    <g transform="translate(78 138)">
+      <circle cx="-27" cy="-31" r="13" fill="#1CB061"/><circle cx="27" cy="-31" r="13" fill="#1CB061"/>
+      <circle cx="-27" cy="-31" r="6.5" fill="#0c8a4d"/><circle cx="27" cy="-31" r="6.5" fill="#0c8a4d"/>
+      <circle cx="0" cy="0" r="42" fill="#33D975"/>
+      <ellipse cx="0" cy="12" rx="27" ry="25" fill="#eafff3"/>
+      <circle cx="-15" cy="-6" r="6.5" fill="#002461"/><circle cx="15" cy="-6" r="6.5" fill="#002461"/>
+      <circle cx="-12.6" cy="-8.4" r="2.1" fill="#fff"/><circle cx="17.4" cy="-8.4" r="2.1" fill="#fff"/>
+      <ellipse cx="0" cy="9" rx="6.2" ry="4.6" fill="#002461"/>
+      <rect x="-7.5" y="14" width="6.6" height="13" rx="2.4" fill="#fff" stroke="#cbd5e6"/>
+      <rect x="0.9" y="14" width="6.6" height="13" rx="2.4" fill="#fff" stroke="#cbd5e6"/>
+      <circle cx="-26" cy="12" r="6" fill="#ffd0bf" opacity="0.65"/><circle cx="26" cy="12" r="6" fill="#ffd0bf" opacity="0.65"/>
+    </g>
+    <!-- barcode under portrait -->
+    <g fill="#3a4a66">
+      <rect x="20" y="226" width="2" height="20"/><rect x="24" y="226" width="1" height="20"/>
+      <rect x="27" y="226" width="3" height="20"/><rect x="32" y="226" width="1" height="20"/>
+      <rect x="35" y="226" width="2" height="20"/><rect x="39" y="226" width="4" height="20"/>
+      <rect x="45" y="226" width="1" height="20"/><rect x="48" y="226" width="2" height="20"/>
+      <rect x="52" y="226" width="3" height="20"/><rect x="57" y="226" width="1" height="20"/>
+      <rect x="60" y="226" width="2" height="20"/><rect x="65" y="226" width="4" height="20"/>
+      <rect x="71" y="226" width="1" height="20"/><rect x="74" y="226" width="3" height="20"/>
+      <rect x="79" y="226" width="2" height="20"/><rect x="83" y="226" width="1" height="20"/>
+      <rect x="86" y="226" width="3" height="20"/><rect x="91" y="226" width="2" height="20"/>
+      <rect x="95" y="226" width="1" height="20"/><rect x="98" y="226" width="4" height="20"/>
+      <rect x="104" y="226" width="2" height="20"/><rect x="109" y="226" width="1" height="20"/>
+      <rect x="112" y="226" width="3" height="20"/><rect x="117" y="226" width="2" height="20"/>
+      <rect x="121" y="226" width="1" height="20"/><rect x="124" y="226" width="3" height="20"/>
+    </g>
+    <!-- fields -->
+    <g font-family="'DM Sans',sans-serif">
+      <text x="150" y="76" fill="#7c8aa3" font-size="8.5" font-weight="700" letter-spacing="1">4d&#160;&#160;DL</text>
+      <text x="150" y="90" fill="#002461" font-size="15" font-weight="700" font-family="'Nunito',sans-serif">GO 000-021-2026</text>
+
+      <text x="150" y="112" fill="#7c8aa3" font-size="8.5" font-weight="700" letter-spacing="1">1&#160;&#160;NAME</text>
+      <text x="150" y="131" fill="#002461" font-size="22" font-weight="900" font-family="'Nunito',sans-serif" letter-spacing="0.5">MCGOPHER</text>
+
+      <text x="150" y="151" fill="#7c8aa3" font-size="8.5" font-weight="700" letter-spacing="1">8&#160;&#160;ADDRESS</text>
+      <text x="150" y="164" fill="#27324a" font-size="11" font-weight="600">1 TUNNEL WAY</text>
+      <text x="150" y="177" fill="#27324a" font-size="11" font-weight="600">BURROWVILLE, GO 00021</text>
+
+      <text x="150" y="198" fill="#7c8aa3" font-size="8.5" font-weight="700" letter-spacing="1">3&#160;&#160;DOB</text>
+      <text x="150" y="211" fill="#002461" font-size="13" font-weight="800" font-family="'Nunito',sans-serif">06-03-2010</text>
+      <text x="262" y="198" fill="#7c8aa3" font-size="8.5" font-weight="700" letter-spacing="1">4b&#160;&#160;EXP</text>
+      <text x="262" y="211" fill="#002461" font-size="13" font-weight="800" font-family="'Nunito',sans-serif">06-03-2099</text>
+
+      <text x="150" y="231" fill="#27324a" font-size="9.5" font-weight="600">SEX M&#160;&#160;&#160;HGT 0'-08"&#160;&#160;&#160;WGT 1 LB&#160;&#160;&#160;EYES BRN&#160;&#160;&#160;HAIR FUR</text>
+      <text x="150" y="247" fill="#7c8aa3" font-size="8.5" font-weight="700" letter-spacing="1">RESTR&#160;&#160;NONE (allegedly)</text>
+      <text x="408" y="247" text-anchor="end" fill="#1CB061" font-family="'Caveat',cursive" font-weight="700" font-size="26">McGopher</text>
+    </g>
+    <!-- NICE TRY stamp -->
+    <g transform="rotate(-13 252 158)" opacity="0.85">
+      <rect x="150" y="126" width="204" height="64" rx="9" fill="none" stroke="#d8392b" stroke-width="4.5"/>
+      <rect x="157" y="133" width="190" height="50" rx="5" fill="none" stroke="#d8392b" stroke-width="1.6"/>
+      <text x="252" y="166" text-anchor="middle" fill="#d8392b" font-family="'Nunito',sans-serif" font-weight="900" font-size="30" letter-spacing="2">NICE TRY</text>
+      <text x="252" y="180" text-anchor="middle" fill="#d8392b" font-family="'Nunito',sans-serif" font-weight="800" font-size="8.5" letter-spacing="3">WE CARD EVERYONE</text>
+    </g>
+  </g>
+</svg></div>
+      <div class="id-caption"><span class="caveat">Fakes don&rsquo;t work here.</span><span>We&rsquo;ve seen every &ldquo;McLovin&rdquo; in the book &mdash; bring the real thing.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ THREE PILLARS ═══════════════ -->
+<section class="section" id="why">
+  <div class="sec-head reveal">
+    <span class="eyebrow">Why age-restricted is better here</span>
+    <h2>Convenient <span class="caveat">and</span> compliant</h2>
+    <p>The same Gopher rules apply &mdash; with a few extra safeguards the law (rightly) requires. Here&rsquo;s how it works.</p>
+  </div>
+  <div class="pillars">
+    <div class="pillar reveal">
+      <div class="pic">💵</div>
+      <h4>You pay <span class="caveat">what you want</span></h4>
+      <p>The items cost their <b>real shelf price</b> &mdash; paid directly to the store. For the run, <b>you set the offer</b> and your Gopher keeps every cent. A small safeguard fee keeps everything compliant.</p>
+    </div>
+    <div class="pillar reveal">
+      <div class="pic">🪪</div>
+      <h4>We card. <span class="caveat">Every time.</span></h4>
+      <p>Your Gopher checks a <b>valid government ID in person</b> and matches it to the order before anything changes hands. Never contactless, never a porch drop. Recipient&rsquo;s 21+, Gopher&rsquo;s 21+ &mdash; no exceptions.</p>
+    </div>
+    <div class="pillar reveal">
+      <div class="pic">🛡️</div>
+      <h4>TrustShield <span class="caveat">saves you</span></h4>
+      <p>Verify your ID <b>once</b> with Gopher TrustShield and you&rsquo;ll breeze through future orders &mdash; plus <b>$1 off</b> every age-restricted order. You&rsquo;ll still show ID at the door; it just makes ordering fast.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ COMPARISON (customer vantage) ═══════════════ -->
+<section class="section anchor">
+  <div class="sec-head reveal">
+    <span class="eyebrow">What changes for you</span>
+    <h2>The Gopher way vs. <span class="caveat">the old way</span></h2>
+    <p>Same craving, far fewer headaches &mdash; and nothing sketchy. Here&rsquo;s what shifts the moment a neighbor brings it over instead of a late-night gamble.</p>
+  </div>
+  <div class="ctable reveal">
+      <div class="crow head"><div class="cc label">What changes</div><div class="cc giants">The Old Way</div><div class="cc gopher"><span class="dot"></span><span class="gt">The Gopher Way</span></div></div>
+      <div class="crow"><div class="cc label"><span class="ic">🍺</span><span class="lt">What you pay</span></div><div class="cc giants"><span class="x">&times;</span><span>A late-night drive, gas, and whatever you impulse-grab at the counter.</span></div><div class="cc gopher"><span class="ck">&checkmark;</span><span>The real shelf price plus the delivery offer you set &mdash; and the <b>store is paid directly</b>.</span></div></div>
+      <div class="crow"><div class="cc label"><span class="ic">🪪</span><span class="lt">Getting carded</span></div><div class="cc giants"><span class="x">&times;</span><span>Hit or miss &mdash; some places barely glance, which is exactly the problem.</span></div><div class="cc gopher"><span class="ck">&checkmark;</span><span>A valid government ID, <b>checked in person, every single time</b>. By the book.</span></div></div>
+      <div class="crow"><div class="cc label"><span class="ic">📦</span><span class="lt">Contactless &ldquo;drop&rdquo;</span></div><div class="cc giants"><span class="x">&times;</span><span>&ldquo;Just leave it on the porch&rdquo; &mdash; which isn&rsquo;t legal for age-restricted, anywhere.</span></div><div class="cc gopher"><span class="ck">&checkmark;</span><span><b>Never.</b> Age-restricted is hand-to-hand, ID matched to the order. No exceptions.</span></div></div>
+      <div class="crow"><div class="cc label"><span class="ic">🔞</span><span class="lt">Who&rsquo;s allowed</span></div><div class="cc giants"><span class="x">&times;</span><span>One careless click and it&rsquo;s suddenly in the wrong hands.</span></div><div class="cc gopher"><span class="ck">&checkmark;</span><span>Recipient is <b>21+</b> and your Gopher is <b>21+</b> &mdash; both, no exceptions.</span></div></div>
+      <div class="crow"><div class="cc label"><span class="ic">⚡</span><span class="lt">Next time</span></div><div class="cc giants"><span class="x">&times;</span><span>Prove yourself from scratch on every single order.</span></div><div class="cc gopher"><span class="ck">&checkmark;</span><span>Add <b>TrustShield</b> once &mdash; then breeze through and take <b>$1 off</b> every age-restricted order.</span></div></div>
+      <div class="crow"><div class="cc label"><span class="ic">🚗</span><span class="lt">Who brings it</span></div><div class="cc giants"><span class="x">&times;</span><span>A stranger, or nobody who&rsquo;ll touch it at all.</span></div><div class="cc gopher"><span class="ck">&checkmark;</span><span>A vetted <b>local Gopher you pick</b> by name &amp; rating, who owns it <b>pickup to perfect</b>.</span></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════ HONEST PRICE ═══════════════ -->
+<section class="section">
+  <div class="sec-head reveal">
+    <span class="eyebrow">No surprises</span>
+    <h2>What you actually <span class="caveat">pay</span></h2>
+    <p>Everything is on the table before you confirm. A simple example for a $35 order:</p>
+  </div>
+  <div class="price-card reveal">
+    <div class="price-line">
+      <div class="pl"><span class="pic">🛒</span><span class="nm">The items, at the shelf price<small>Paid directly to the store &mdash; no markup</small></span></div>
+      <span class="amt">$35.00</span>
+    </div>
+    <div class="price-line">
+      <div class="pl"><span class="pic">🚗</span><span class="nm">Your offer to your Gopher<small>You set this. They keep 100% of it.</small></span></div>
+      <span class="amt">you decide</span>
+    </div>
+    <div class="price-line">
+      <div class="pl"><span class="pic">📱</span><span class="nm">A small Gopher fee<small>The only thing Gopher keeps to run the app</small></span></div>
+      <span class="amt">a few $</span>
+    </div>
+    <div class="price-line">
+      <div class="pl"><span class="pic">🪪</span><span class="nm">Age-restricted safeguard fee<small>Keeps it compliant &mdash; &minus;$1.00 with TrustShield</small></span></div>
+      <span class="amt">$1.99</span>
+    </div>
+    <div class="price-foot"><b>Keep your ID on you.</b> Age-restricted orders are handed over in person against a valid government ID &mdash; if you can&rsquo;t show one at the door, per our terms the order can&rsquo;t be completed or refunded. <b>New to your area?</b> We recommend securing your Gopher first, then placing your order, since Gopher isn&rsquo;t a fulfillment service (rest assured, we&rsquo;ll be there soon).</div>
+  </div>
+</section>
+
+<!-- ═══════════════ HOW IT WORKS ═══════════════ -->
+<section class="section anchor">
+  <div class="sec-head reveal">
+    <span class="eyebrow">How it works</span>
+    <h2>Four steps, <span class="caveat">zero hassle</span></h2>
+  </div>
+  <div class="steps">
+    <div class="step reveal"><div class="n">1</div><h4>Pick the category &amp; order</h4><p>Choose beer/wine, tobacco, or another 21+ item, and agree to the quick age waiver.</p></div>
+    <div class="step reveal"><div class="n">2</div><h4>Name your offer</h4><p>Set what you&rsquo;ll pay your Gopher for the run &mdash; they keep all of it.</p></div>
+    <div class="step reveal"><div class="n">3</div><h4>A 21+ Gopher grabs it</h4><p>Picked by you or first available, always 21 or older for age-restricted runs.</p></div>
+    <div class="step reveal"><div class="n">4</div><h4>ID at the door</h4><p>Show a valid government ID, they match it to the order, and it&rsquo;s yours. TrustShield makes this instant.</p></div>
+  </div>
+</section>
+
+<!-- ═══════════════ DIRECT ORDER CTA ═══════════════ -->
+<!-- id="find-my-gopher": Gopher iQ "Find MY Gopher" (low-coverage tier) deep-links here. -->
+<section class="section" id="find-my-gopher">
+  <div class="order reveal">
+    <h3>Not many Gophers near you yet? <span class="caveat terra">&mdash; Let&rsquo;s change that!</span></h3>
+    <p>Found us by searching for age-restricted delivery? That means we <b>can</b> do exactly what you need &mdash; we&rsquo;re just new, freshly expanding out of North Carolina. You don&rsquo;t have to wait, though: drivers near you would <b>love</b> this work, they just haven&rsquo;t heard about it yet. So next time a delivery driver&rsquo;s at your door, tell them about <b>Gopher Go</b>, our worker platform &mdash; and you may have just found your personal errand runner for age-restricted items. Here&rsquo;s a short video of it in action.</p>
+    <div class="refer-video">
+      <button type="button" class="rv-frame" id="rvFrame" aria-label="Play the Gopher Go video">
+        <span class="rv-play" aria-hidden="true"></span>
+        <span class="rv-cap">See Gopher Go in action</span>
+      </button>
+    </div>
+    <div class="btn-row">
+      <a href="gopher-go.html" class="btn btn-primary">Refer a driver <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a href="gopher-services.html#cat-delivery" class="btn btn-light">Back to Delivery &amp; Errands</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER (canonical gopher-footer component) ─── -->
+<div id="gopher-footer"></div>
+<script src="assets/js/gopher-footer.js" defer></script>
+
+
+<script src="assets/js/gopher-header.js" defer></script>
+
+
+<script>
+(function(){
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.reveal').forEach(function(n){io.observe(n);});
+  } else { document.querySelectorAll('.reveal').forEach(function(n){n.classList.add('in');}); }
+})();
+</script>
+
+<script>
+(function(){
+  // ▶ Gopher Go video — a YouTube/Vimeo EMBED url, or a direct .mp4:
+  var VIDEO_URL = "https://www.youtube.com/embed/TpigIZj9O9I";
+  var f = document.getElementById('rvFrame');
+  if(!f || !VIDEO_URL) return;
+  // Poster: use the YouTube thumbnail when available (falls back to the branded gradient).
+  var ytm = VIDEO_URL.match(/youtube\.com\/embed\/([A-Za-z0-9_-]+)/);
+  if(ytm){
+    f.style.backgroundImage = "linear-gradient(rgba(0,36,97,.42),rgba(0,36,97,.58)), url('https://i.ytimg.com/vi/"+ytm[1]+"/maxresdefault.jpg')";
+    f.style.backgroundSize = "cover"; f.style.backgroundPosition = "center";
+  }
+  f.addEventListener('click', function(){
+    var html;
+    if(/\.mp4(\?|$)/i.test(VIDEO_URL)){
+      html = '<video src="'+VIDEO_URL+'" controls autoplay playsinline style="width:100%;height:100%;border:0;border-radius:18px;background:#000;object-fit:cover"></video>';
+    } else {
+      html = '<iframe src="'+VIDEO_URL+(VIDEO_URL.indexOf("?")>-1?"&":"?")+'autoplay=1" title="Gopher Go" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%;height:100%;border:0;border-radius:18px"></iframe>';
+    }
+    f.parentNode.innerHTML = html;
+  });
+})();
+</script>
+
+</body>
+</html>

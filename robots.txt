@@ -1,0 +1,7 @@
+# Gopher Marketplace
+# NOTE: effective once the site serves at the domain root (gophergo.io).
+# On the GitHub Pages subdirectory this file is not at host root and is inert.
+User-agent: *
+Allow: /
+
+Sitemap: https://gophergo.io/sitemap.xml

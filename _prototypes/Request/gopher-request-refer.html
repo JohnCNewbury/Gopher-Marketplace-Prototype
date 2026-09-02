@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gopher Request — Refer App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{ --radius-pill:99px; --radius-card:16px; --radius-md:12px; --radius-sm:8px; --font-heading:'Nunito'; --font-body:'DM Sans'; --font-script:'Caveat';  --z-deals:#F3F5F8; --z-jobs:#EEF7F1; --z-tools:#EDF1F8; --z-acct:#E9F1FC; --z-perks:#FBF1E8;  --border:#EDF0F5; --warning:#FFDE00; --terra:#C8623C; --aqua:#87F7BD; 
+  --green:#1CB061; --green-bright:#33D975; --green-dark:#1CB061; --green-light:#e2f3e9; --green-tint:#E8F5EE;
+  --navy:#002461; --ink:#002461; --ink-soft:#3A4D74; --navy-mid:#1a3a7a; --navy-light:#eef0f8;
+  --paper:#FBF7EF;--shadow-sheet:0 -10px 40px rgba(0,0,0,.25); --card:#fff; --sand:#FBF3E4; --muted:#8C8675; --muted-cool:#6b7280;
+  --terracotta:#D97757; --warning-text:#92580D; --error:#C44257; --cornflower:#BADBFC;
+  --line:#EAE3D5; --line-cool:#E3E7EF; --navy-bar:#03143A;
+  --card-sh:0 2px 4px rgba(0,36,97,.05),0 9px 20px rgba(0,36,97,.10);
+  --raise-sh:0 8px 24px -8px rgba(0,36,97,.22);
+  --over-sh:0 16px 40px -10px rgba(0,36,97,.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+/* Form controls do NOT inherit font — the UA stylesheet pins them to Arial 13.3333px.
+   Measured 2026-08-02: every element painting a non-brand font was a form control or a
+   descendant of one. font-weight deliberately NOT reset — buttons that look bold declare
+   their own, and `font:inherit` would flatten them. docs/screen-spec/TYPE-AND-SHAPE-SCALE.md */
+button,input,select,textarea{font-family:inherit;font-size:inherit;}
+
+body{background:#dfe4ec;font-family:'DM Sans',-apple-system,system-ui,sans-serif;color:var(--ink);
+  display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:20px;line-height:1.5;}
+#phone{position:relative;width:390px;max-width:100%;height:844px;max-height:calc(100vh - 40px);
+  background:var(--paper);border-radius:42px;overflow:hidden;overflow:clip;
+  box-shadow:0 30px 80px -20px rgba(0,36,97,.45),0 0 0 11px #0a1730,0 0 0 13px #1f2c44;display:flex;flex-direction:column;}
+.status-bar{flex:0 0 auto;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;
+  font-family:'Nunito';font-weight:800;font-size:13px;color:var(--navy);background:var(--paper);}
+.sb-right{display:flex;gap:6px;align-items:center;}
+.sb-right svg{width:16px;height:16px;}
+#scroll{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--paper);padding-bottom:96px;}
+#scroll::-webkit-scrollbar{width:0;}
+
+/* header */
+.hd{background:var(--paper);padding:4px 20px 10px;}
+.hd-top{display:flex;align-items:center;justify-content:space-between;}
+.wordmark{display:flex;align-items:center;gap:5px;font-family:'Nunito';font-weight:900;letter-spacing:-.5px;}
+.req-logo{height:30px;width:auto;display:block;}
+.wordmark .gopher{font-size:21px;color:var(--navy);}
+.wordmark .req{font-size:12px;font-weight:900;color:var(--green-dark);text-transform:uppercase;letter-spacing:1px;
+  background:var(--green-tint);padding:3px 8px;border-radius:7px;}
+.bell{width:38px;height:38px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;position:relative;}
+.bell svg{width:19px;height:19px;fill:none;stroke:var(--navy);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.page-title{margin:14px 20px 2px;font-family:'Nunito';font-weight:900;font-size:23px;color:var(--navy);letter-spacing:-.4px;}
+.page-sub{margin:0 20px 16px;font-family:'DM Sans';font-weight:500;font-size:13px;color:var(--ink-soft);}
+
+/* QR hero */
+.qr-hero{margin:4px 20px 18px;background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--card-sh);
+  padding:22px 18px 18px;display:flex;flex-direction:column;align-items:center;text-align:center;}
+.qr-frame{width:172px;height:172px;border-radius:18px;background:#fff;border:2px solid var(--navy);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.qr-frame svg{width:150px;height:150px;}
+.qr-name{margin-top:14px;font-family:'Nunito';font-weight:900;font-size:17px;color:var(--navy);}
+.qr-id{margin-top:2px;font-family:'DM Sans';font-weight:600;font-size:13px;color:var(--muted);}
+.qr-id b{color:var(--green-dark);font-weight:800;}
+
+/* action rows */
+.rows{margin:0 20px;}
+.row{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);
+  border-radius:16px;padding:15px 16px;margin-bottom:11px;box-shadow:var(--card-sh);cursor:pointer;font-family:inherit;color:inherit;}
+.row:active{transform:scale(.992);}
+.row .ic{width:42px;height:42px;border-radius:12px;background:var(--green-tint);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.row .ic svg{width:21px;height:21px;fill:none;stroke:var(--green-dark);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.row .rtx{flex:1 1 auto;display:flex;flex-direction:column;gap:2px;min-width:0;}
+.row .rtt{font-family:'Nunito';font-weight:800;font-size:15.5px;color:var(--navy);line-height:1.25;}
+.row .rts{font-family:'DM Sans';font-weight:500;font-size:12px;color:var(--muted);line-height:1.3;}
+.row .chev{color:#b6c0d4;font-size:20px;font-weight:700;flex:0 0 auto;}
+
+/* bottom nav */
+.nav{position:absolute;left:0;right:0;bottom:0;background:var(--navy-bar);display:flex;align-items:flex-end;justify-content:space-around;padding:11px 8px 18px;z-index:20;}
+.nv{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#7E8EB0;font-family:'Nunito';font-weight:700;font-size:10.5px;background:none;border:0;cursor:pointer;}
+.nv svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.nv.on{color:#fff;font-weight:900;}
+.nv.c{color:#fff;font-weight:900;}
+.nv.c .cc{width:54px;height:54px;border-radius:18px;background:var(--green-bright);color:var(--navy);display:flex;align-items:center;justify-content:center;margin-top:-26px;box-shadow:0 10px 24px rgba(51,217,117,.45);}/* RAISED, matching every other Request screen (owner 2026-08-19: 'use the standard footer size').
+   This screen had margin-bottom:2px instead, so the 54px button sat INSIDE the bar and pushed the
+   nav to 104px against the app standard 76px. The negative margin lifts it out of the bar, which is
+   what keeps every other screen's footer short. Same rule as home/inbox/inprogress/completion. */
+.nv.c .cc svg{width:26px;height:26px;stroke:var(--navy);stroke-width:2.1;}
+.nv.on .lab-underline{display:block;height:2px;width:18px;background:var(--green-bright);border-radius:2px;margin-top:1px;}
+
+/* sheets */
+.sheet-back{position:absolute;inset:0;z-index:120;background:rgba(0,16,42,.46);opacity:0;pointer-events:none;transition:opacity .22s;}
+.sheet-back.show{opacity:1;pointer-events:auto;}
+.sheet.sheet--full{top:54px;max-height:none;}.sheet{position:absolute;left:0;right:0;bottom:0;max-height:88%;z-index:121;background:var(--paper);border-radius:26px 26px 0 0;box-shadow:var(--shadow-sheet);transform:translateY(100%);transition:transform .34s cubic-bezier(.2,.8,.3,1);display:flex;flex-direction:column;overflow:hidden;}
+.sheet.show{transform:none;}
+.sh-head{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:16px 18px 12px;border-bottom:1px solid var(--line);}
+.sh-grab{position:absolute;left:50%;top:7px;transform:translateX(-50%);width:38px;height:4px;border-radius:3px;background:#d8cfbd;}
+.sh-back{background:none;border:0;font-family:'Nunito';font-weight:800;font-size:14px;color:var(--green-dark);cursor:pointer;display:flex;align-items:center;gap:3px;}
+.sh-title{font-family:'Nunito';font-weight:900;font-size:17px;color:var(--navy);flex:1 1 auto;text-align:center;}
+.sh-x{background:none;border:0;font-size:24px;line-height:1;color:var(--muted);cursor:pointer;}
+.sh-body{flex:1 1 auto;overflow-y:auto;padding:16px 18px 22px;}
+.sh-body::-webkit-scrollbar{width:0;}
+.view{display:none;}
+.view.on{display:block;}
+.v-sub{font-family:'DM Sans';font-weight:500;font-size:13px;color:var(--ink-soft);margin-bottom:14px;}
+
+/* recommend list */
+.selectall{display:flex;align-items:center;justify-content:flex-end;gap:9px;font-family:'Nunito';font-weight:800;font-size:14px;color:var(--navy);margin-bottom:12px;cursor:pointer;}
+.box{width:24px;height:24px;border-radius:7px;border:2px solid #c9d2e3;background:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.box svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0;}
+.box.on{background:var(--green);border-color:var(--green);}
+.box.on svg{opacity:1;}
+.rc-row{display:flex;align-items:center;gap:13px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:11px 13px;margin-bottom:10px;cursor:pointer;transition:border-color .15s,background .15s;}
+.rc-row.selected{border-color:var(--green);background:var(--green-light);}
+.rc-photo{width:46px;height:46px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-family:'Nunito';font-weight:900;font-size:16px;color:#fff;}
+.rc-main{flex:1 1 auto;}
+.rc-name{font-family:'Nunito';font-weight:800;font-size:15px;color:var(--navy);}
+.rc-spec{font-family:'DM Sans';font-weight:500;font-size:12px;color:var(--muted);margin-top:1px;}
+.rc-check{width:24px;height:24px;border-radius:7px;border:2px solid #c9d2e3;background:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.rc-check::after{content:'✓';color:#fff;font-size:13px;font-weight:900;font-family:'Nunito';opacity:0;}
+.rc-row.selected .rc-check{background:var(--green);border-color:var(--green);}
+.rc-row.selected .rc-check::after{opacity:1;}
+
+/* buttons */
+.btn{width:100%;border:0;border-radius:15px;padding:15px;font-family:'Nunito';font-weight:900;font-size:15.5px;cursor:pointer;background:var(--green);color:#fff;box-shadow:var(--raise-sh);}
+.btn:disabled{background:#cfe6d8;color:#fff;box-shadow:none;cursor:not-allowed;}
+.btn-navy{background:var(--navy);color:#fff;}
+.btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line-cool);box-shadow:none;}
+.btn+.btn{margin-top:11px;}
+.or{text-align:center;font-family:'Nunito';font-weight:800;font-size:13px;color:var(--muted);margin:11px 0;}
+
+/* refer entry */
+.field-label{font-family:'Nunito';font-weight:800;font-size:13px;color:var(--navy);margin-bottom:7px;}
+.input{width:100%;border:1.5px solid var(--line-cool);border-radius:13px;padding:14px 15px;font-family:'DM Sans';font-size:15px;color:var(--ink);background:#fff;}
+.input:focus{outline:none;border-color:var(--green);}
+.add-contact{margin-top:11px;background:none;border:0;font-family:'Nunito';font-weight:800;font-size:13.5px;color:var(--green-dark);cursor:pointer;}
+.chiplist{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--green-tint);color:var(--navy);font-family:'Nunito';font-weight:800;font-size:12.5px;padding:7px 10px;border-radius:9px;}
+.chip b{font-weight:900;}
+.chip .x{cursor:pointer;color:var(--muted-cool);font-weight:900;}
+
+/* done */
+.done-ico{width:64px;height:64px;border-radius:50%;background:var(--green-tint);display:flex;align-items:center;justify-content:center;margin:8px auto 16px;}
+.done-ico svg{width:32px;height:32px;fill:none;stroke:var(--green-dark);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+.done-title{font-family:'Nunito';font-weight:900;font-size:20px;color:var(--navy);text-align:center;margin-bottom:8px;}
+
+/* track */
+.track-tabs{display:flex;gap:6px;background:#eee7d8;border-radius:12px;padding:4px;margin-bottom:16px;}
+.tt{flex:1;text-align:center;border:0;background:none;font-family:'Nunito';font-weight:800;font-size:13px;color:var(--ink-soft);padding:9px 0;border-radius:9px;cursor:pointer;}
+.tt.on{background:#fff;color:var(--navy);box-shadow:var(--card-sh);}
+.tr-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:10px;}
+.tr-date{font-family:'Nunito';font-weight:800;font-size:12px;color:var(--muted);width:58px;flex:0 0 auto;}
+.tr-info{flex:1 1 auto;font-family:'DM Sans';font-weight:600;font-size:13.5px;color:var(--navy);}
+.tr-type{font-family:'Nunito';font-weight:800;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--green-dark);background:var(--green-tint);padding:4px 8px;border-radius:7px;flex:0 0 auto;}
+.tr-empty{text-align:center;font-family:'DM Sans';font-weight:500;font-size:13px;color:var(--muted);padding:30px 0;}
+
+/* toast */
+.toast{position:absolute;left:16px;right:16px;bottom:104px;background:var(--navy);color:#fff;border-radius:13px;padding:12px 15px;
+  font-family:'Nunito';font-weight:700;font-size:12.5px;box-shadow:var(--over-sh);z-index:200;display:flex;align-items:center;gap:9px;
+  opacity:0;transform:translateY(10px);transition:opacity .2s,transform .2s;pointer-events:none;}
+.toast.show{opacity:1;transform:none;}
+.toast svg{width:18px;height:18px;fill:none;stroke:var(--green-bright);stroke-width:2.2;flex:0 0 auto;}
+/* ── Go-style Refer & Earn page ── */
+.rs-h1{font-family:'Nunito';font-weight:900;font-size:24px;color:var(--navy,#002461);margin:6px 18px 0;}
+.rs-sub{font-size:13px;color:var(--muted-cool,#6B7280);line-height:1.5;margin:6px 18px 0;}
+.rs-banner{display:flex;gap:12px;align-items:flex-start;margin:14px 18px 0;background:var(--green-tint,#E8F5EE);border:1px solid #bfe6cf;border-radius:14px;padding:14px 16px;}
+.rs-bico{font-size:22px;line-height:1;}
+.rs-banner b{font-family:'Nunito';font-weight:800;font-size:13.5px;color:var(--navy,#002461);display:block;margin-bottom:2px;}
+.rs-banner span{font-size:12px;color:#3A4D74;line-height:1.5;}
+/* CONTINUITY (owner 2026-08-19, 'still off'): grid rows sized independently, so a card whose
+   title wrapped to two lines made its WHOLE ROW taller — Request read 205/205 then 189/189,
+   a visibly ragged grid against Go's even one. grid-auto-rows:1fr makes every tile the same
+   height regardless of copy length, which is what makes the two apps read as one system. */
+.rs-grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:12px;margin:16px 18px 0;}
+.rs-tile{position:relative;text-align:left;background:#fff;border:1.5px solid var(--line,#EAE3D5);border-radius:14px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:5px;}
+.rs-tile:active{transform:translateY(1px);}
+.rs-tico{font-size:22px;line-height:1;height:24px;display:flex;align-items:center;}.rs-tico img{height:20px;width:auto;display:block;}
+.rs-ttl{font-family:'Nunito';font-weight:800;font-size:13.5px;color:var(--navy,#002461);}
+.rs-tdesc{font-size:11.5px;color:var(--muted-cool,#6B7280);line-height:1.4;}
+.rs-tcta{font-family:'Nunito';font-weight:800;font-size:12px;color:var(--green-dark,#1CB061);margin-top:2px;}
+.rs-tbadge{position:absolute;top:12px;right:12px;background:var(--green-bright,#33D975);color:var(--navy,#002461);font-family:'Nunito';font-weight:800;font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:99px;}
+.rs-trackhead{font-family:'Nunito';font-weight:900;font-size:15px;color:var(--navy,#002461);margin:22px 18px 0;}
+.rs-tabs{display:flex;gap:8px;margin:12px 18px 0;}
+.rs-tab{border:none;cursor:pointer;font-family:'Nunito';font-weight:800;font-size:12px;color:var(--navy,#002461);background:#eef0f8;padding:7px 16px;border-radius:99px;}
+.rs-tab.active{background:var(--green-bright,#33D975);color:var(--navy,#002461);}
+.rs-twrap{margin:12px 18px 8px;background:#fff;border:1px solid var(--line,#EAE3D5);border-radius:14px;overflow:hidden;}
+.rs-table{width:100%;border-collapse:collapse;}
+.rs-table th{text-align:left;font-family:'Nunito';font-weight:800;font-size:10px;color:#8C8675;text-transform:uppercase;letter-spacing:.04em;padding:10px 14px;background:var(--paper,#FBF7EF);border-bottom:1px solid var(--line,#EAE3D5);}
+.rs-table td{font-size:12px;color:var(--navy,#002461);padding:10px 14px;border-bottom:1px solid var(--line,#EAE3D5);}
+.rs-table tr:last-child td{border-bottom:none;}
+.rs-fine{font-size:11px;color:var(--muted-cool,#6B7280);line-height:1.5;margin:14px 18px 24px;}
+.rs-chan{display:flex;gap:8px;margin-bottom:12px;}
+.rs-chan button{flex:1;border:1px solid var(--line,#EAE3D5);background:#fff;border-radius:10px;padding:8px;font-family:'Nunito';font-weight:800;font-size:12px;color:var(--navy,#002461);cursor:pointer;}
+.rs-chan button.on{background:var(--green-tint,#E8F5EE);border-color:var(--green-dark,#1CB061);color:var(--green-dark,#1CB061);}
+</style>
+</head>
+<body><script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script><style>html.embedded,html.embedded body{padding:0;margin:0;min-height:0;background:#FBF7EF;}html.embedded #phone{position:absolute;inset:0;width:auto;height:auto;max-width:none;max-height:none;border-radius:0;box-shadow:none;}</style>
+<div id="phone">
+  <div class="status-bar">
+    <span>5:02</span>
+    <span class="sb-right">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 17l3-3 3 2 4-5 4 3 6-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a2 2 0 100 4 2 2 0 000-4zM3 9c5-5 13-5 18 0l-2 2c-4-4-10-4-14 0L3 9zm4 4c3-3 7-3 10 0l-2 2c-2-2-4-2-6 0l-2-2z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="18" height="10" rx="2"/><rect x="4" y="9" width="13" height="6" rx="1" fill="currentColor"/><path d="M22 10v4"/></svg>
+    </span>
+  </div>
+
+  <div id="scroll">
+    <div class="hd">
+      <div class="hd-top">
+        <img class="req-logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjcxIiBoZWlnaHQ9IjE5NSIgdmlld0JveD0iMCAwIDY3MSAxOTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF84ODhfMTgyMTgpIj4KPHBhdGggZD0iTTE3OS42MiA0OS43Njg2QzE3OS40NzIgNTAuMDA2IDE3OS4zMTggNTAuMjMwNiAxNzkuMTU4IDUwLjQ2MTdDMTc5LjMxOCA1MC4yMzcxIDE3OS40NzIgNTAuMDA2IDE3OS42MiA0OS43Njg2WiIgZmlsbD0iIzMyRDg3NiIvPgo8cGF0aCBkPSJNMTY5LjEzNiA1Ni40NDI5QzE2OS4wMjYgNTYuNDU1NyAxNjguOTE3IDU2LjQ3NSAxNjguODA4IDU2LjQ4MTRDMTY4LjkxNyA1Ni40Njg1IDE2OS4wMjYgNTYuNDU1NyAxNjkuMTM2IDU2LjQ0MjlaIiBmaWxsPSIjMzJEODc2Ii8+CjxwYXRoIGQ9Ik0xNzAuNDUzIDU2LjIyNTFDMTcwLjM2NCA1Ni4yNDQ0IDE3MC4yOCA1Ni4yNjM2IDE3MC4xOSA1Ni4yNzY0QzE3MC4yOCA1Ni4yNTcyIDE3MC4zNjQgNTYuMjQ0NCAxNzAuNDUzIDU2LjIyNTFaIiBmaWxsPSIjMzJEODc2Ii8+CjxwYXRoIGQ9Ik00OS41NDA3IDU2LjU1MjJDNDkuNTQwNyA1Ny4yMDA0IDQ5LjQ4OTUgNTcuODI5NCA0OS40MDY0IDU4LjQ0NTVWMTUzLjQzQzQ5LjQ1MTEgMTUzLjQzIDQ5LjQ5NTkgMTUzLjQzIDQ5LjU0MDcgMTUzLjQzNlY1Ni41NTIyWiIgZmlsbD0iIzMyRDg3NiIvPgo8cGF0aCBkPSJNNDkuNTI4NSA1Ni4yNzY0QzQ5LjUyODUgNTYuMzY2MiA0OS41NDEzIDU2LjQ2MjUgNDkuNTQxMyA1Ni41NTIzVjU2LjI3NjRINDkuNTI4NVoiIGZpbGw9IiMzMkQ4NzYiLz4KPHBhdGggZD0iTTM4LjE5NTggNTYuMjc2NUMzNy4yMjUxIDU2LjI3NjUgMzYuMzk1OSA1Ni4xMzUzIDM1LjU2NjcgNTYuMDAwNUMzNS40MjUyIDU2LjAwMDUgMzUuMTQ4OCA1NS44NTkzIDM0Ljg3MjQgNTUuODU5M0MzNC4xNzgyIDU1LjcxODEgMzMuNjI1NCA1NS41ODM0IDMzLjA3MjYgNTUuMzA3NEMzMi43OTYyIDU1LjE2NjIgMzIuNjU0NyA1NS4xNjYyIDMyLjM3ODMgNTUuMDMxNEMzMS41NDkxIDU0Ljc1NTUgMzAuODU0OSA1NC4zMzgzIDMwLjE2NzEgNTMuOTI3NkwzMC4wMzIxIDUzLjc4NjRDMjkuNDc5MyA1My4zNjkyIDI4LjkyNjQgNTIuOTU4NSAyOC4zNzM2IDUyLjQwNjVDMjguMjMyMiA1Mi4yNjUzIDI3Ljk1NTggNTEuOTg5NCAyNy44MjA4IDUxLjg1NDZDMjcuNDAzIDUxLjQzNzQgMjYuOTkxNiA1MC44ODU1IDI2LjcxNTIgNTAuNDc0OEMyNi40Mzg4IDUwLjE5ODggMjYuMjk3MyA1MC4wNTc2IDI2LjE2MjQgNDkuNzgxNkMyNS43NDQ1IDQ5LjA4ODUgMjUuMzMzMSA0OC40MDE4IDI1LjA1NjcgNDcuNzA4N0MyNS4xOTgxIDQwLjY2MTkgMzEuMDA5MSAzNC45OTQ5IDM4LjA2NzIgMzQuOTk0OUM0MS44MDE5IDM0Ljk5NDkgNDUuMjYwMiAzNi42NTA3IDQ3LjYxMjkgMzkuMjc1Nkw1My44NDE3IDQ1LjQ5NDVDNjIuMDA1NCAyNi43MDMgODAuODI2OSAxMy40MzczIDEwMi42ODkgMTMuNDM3M0gxMDIuODI0VjM1LjEyOTdDMTE0LjAzNCAzNS4xMjk3IDEyMy4wMjcgNDQuMTA4MiAxMjMuMDI3IDU1LjMwMVY2Ny43MjU5QzEyOS4yNSA2OS42NTEzIDEzMy45MSA3NS4zODI0IDEzNC4zNzMgODIuMTA4M0MxMzQuNjQ5IDkwLjk1MjEgMTI3LjU5MSA5OC4yNzQ5IDExOC43MzMgOTguMjc0OUMxMTcuMzkgOTguMjc0OSAxMTYuMDkxIDk4LjEwODEgMTE0Ljg1NyA5Ny44MDY0VjEwNy4yNTNDMTIxLjE3IDExMC45ODkgMTI1LjYzNyAxMTcuNTczIDEyNi4zNDQgMTI1LjM1OEwxMzAuMTE4IDE2NC40ODFDMTMwLjc4NiAxNjQuMjEyIDEzMS41MTkgMTY0LjA0NSAxMzIuMjk3IDE2NC4wNDVDMTM0LjkyNiAxNjQuMDQ1IDEzNy4wMDIgMTY1LjcwMSAxMzcuODMxIDE2OC4wNUMxMzguOTM3IDE2Ni42NyAxNDAuNDYgMTY1LjcwMSAxNDIuMzk1IDE2NS43MDFDMTQzLjc3NyAxNjUuNzAxIDE0NS4wMjQgMTY2LjExOCAxNDUuOTk1IDE2Ni45NDZDMTQ2LjU0OCAxNjIuOTQxIDE1MC4wMDYgMTU5Ljg5OSAxNTQuMTU5IDE1OS44OTlDMTU0LjgzNCAxNTkuODk5IDE1NS40NzYgMTYwLjAwMiAxNTYuMDkzIDE2MC4xNDNWNTguNjcwM0MxNTYuMDAzIDU4LjAyODYgMTU1Ljk1OCA1Ny4zNjc1IDE1NS45NTggNTYuNjg3MkMxNTUuOTU4IDQ4LjI2MDYgMTYyLjg3NSA0MS4zNDg2IDE3MS4zMjIgNDEuMzQ4NkMxNzEuNDc2IDQxLjM0ODYgMTcxLjYzIDQxLjM2NzggMTcxLjc4NCA0MS4zNzQyQzE3MS45NTIgNDEuMzY3OCAxNzIuMTE5IDQxLjM0ODYgMTcyLjI5MiA0MS4zNDg2QzE3Ni4wMjcgNDEuMzQ4NiAxNzkuMzUgNDMuNTU2MyAxODEuMDA5IDQ2LjczOTZDMTgwLjY3NSA0Ny43OTIxIDE4MC4yMTIgNDguNzk5NyAxNzkuNjQ2IDQ5LjczMDNDMTgxLjAyOCA0Ny41MjkgMTgxLjgzOCA0NC45NDI2IDE4MS44MzggNDIuMTgyOUMxODEuODM4IDM0LjMwODIgMTc1LjQ3NCAyNy44MTMzIDE2Ny40NDUgMjcuODEzM0MxNjMuNDM0IDI3LjgxMzMgMTU5LjgzNSAyOS40NjkxIDE1Ny4yMDYgMzEuOTU5MkwxNTAuNTY1IDM4LjU4ODlMMTUwLjQzIDM4LjczMDFDMTQzLjc5IDI3LjY3ODUgMTMzLjQwOSAxOS4xMTA3IDEyMC45NTEgMTQuOTY0OEwxMjMuMDI3IDExLjM3MDhDMTE3LjA3NSA5LjE2MzAzIDExMC41NyA3LjkxNzk3IDEwMy43OTQgNy45MTc5N0M4Mi4zNDM5IDcuOTE3OTcgNjMuNzk4OSAyMC4zNTU4IDU0Ljk0NzQgMzguNDU0MUw0OC4zMDcxIDMxLjgyNDVDNDUuNjc4MSAyOS4xOTk2IDQyLjA3ODMgMjcuNjc4NSAzOC4wNjcyIDI3LjY3ODVDMzAuMTc5OSAyNy42Nzg1IDIzLjY3NDcgMzQuMTczNCAyMy42NzQ3IDQyLjA0ODFDMjMuNjc0NyA0OS45MjI4IDMwLjE3OTkgNTYuNDE3NyAzOC4wNjcyIDU2LjQxNzdINDIuNDg5N0M0Mi40ODk3IDU2LjM3MjggNDIuNDg5NyA1Ni4zMjc4IDQyLjQ4OTcgNTYuMjc2NUgzOC4yMDg2SDM4LjE5NThaIiBmaWxsPSIjMzJEODc2Ii8+CjxwYXRoIGQ9Ik05MC43ODQgMTA3LjI1M1Y5Ny44ODk0Qzg5LjY3MiA5OC4xMzk3IDg4LjUxNDkgOTguMjgwOSA4Ny4zMjU3IDk4LjI4MDlDNzkuNjc2MyA5OC4yODA5IDczLjM4MzIgOTIuODEyOSA3MS45ODE4IDg1LjYyNDlDNzEuOTgxOCA4NS42NTA2IDcxLjk2OSA4NS42NzYzIDcxLjk2OSA4NS43MDg0QzcxLjk1NjEgODUuNjEyMSA3MS45NDk3IDg1LjUyMjMgNzEuOTM2OCA4NS40MjZDNzEuNzQ0IDg0LjM1NDIgNzEuNjU0IDgzLjI1MDMgNzEuNjkyNiA4Mi4xMTQ0QzcxLjkyNCA3NS40Mzk4IDc2LjQ3NTEgNjkuNzQwOCA4Mi42MjY4IDY3Ljc3NjlWNTUuMzEzNEM4Mi42MjY4IDQ0LjEyMDcgOTEuNjE5NyAzNS4xNDIxIDEwMi44MyAzNS4xNDIxVjEzLjQ0MzRIMTAyLjY5NUM4MC44MzMzIDEzLjQ0MzQgNjIuMDExOSAyNi43MDkxIDUzLjg0ODIgNDUuNTAwNUw0Ny42MTkzIDM5LjI4MTZDNDUuMjY2NyAzNi42NTY3IDQxLjgwODMgMzUuMDAwOSAzOC4wNzM2IDM1LjAwMDlDMzEuMDE1NiAzNS4wMDA5IDI1LjIwNDYgNDAuNjY3OSAyNS4wNjMyIDQ3LjcxNDdDMjUuMzM5NiA0OC40MDc4IDI1Ljc1NzQgNDkuMDk0NSAyNi4xNjg4IDQ5Ljc4NzdDMjYuMzEwMiA1MC4wNjM2IDI2LjQ0NTIgNTAuMjA0OCAyNi43MjE2IDUwLjQ4MDhDMjYuOTk4IDUwLjg5NzkgMjcuNDE1OCA1MS40NDk5IDI3LjgyNzIgNTEuODYwNkMyNy45Njg3IDUyLjAwMTggMjguMjQ1MSA1Mi4yNzc4IDI4LjM4MDEgNTIuNDEyNkMyOC45MzI5IDUyLjk2NDUgMjkuNDg1NyA1My4zODE3IDMwLjAzODUgNTMuNzkyNEwzMC4xNzM1IDUzLjkzMzZDMzAuODY3NyA1NC4zNTA4IDMxLjU1NTUgNTQuNzYxNSAzMi4zODQ4IDU1LjAzNzVDMzIuNjYxMiA1NS4xNzg2IDMyLjgwMjYgNTUuMTc4NiAzMy4wNzkgNTUuMzEzNEMzMy42MzE4IDU1LjU4OTQgMzQuMTg0NiA1NS43MzA2IDM0Ljg3ODkgNTUuODY1NEMzNS4xNTUzIDU1Ljg2NTQgMzUuNDMxNyA1Ni4wMDY2IDM1LjU3MzEgNTYuMDA2NkMzNi40MDIzIDU2LjE0NzcgMzcuMjMxNSA1Ni4yODI1IDM4LjIwMjIgNTYuMjgyNUg0Mi40ODMzQzQyLjM1NDcgNDkuMjIyOSAzNy40MjQ0IDQzLjI3MzUgMzAuNTkxMyA0MS42MzdDMzEuODM4NCA0MS4zNjEgMzIuOTQ0IDQxLjIxOTggMzQuMTkxMSA0MS4yMTk4QzQyLjU0MTEgNDEuMjE5OCA0OS4zODcxIDQ3Ljk3NzggNDkuNTM0OSA1Ni4yODI1SDQ5LjU0NzhWMTUzLjQ0MkM1My44NjEgMTUzLjczMSA1Ny4zMDAxIDE1Ny4zMzIgNTcuMzAwMSAxNjEuNzAyQzU3LjMwMDEgMTYyLjI1NCA1Ny4zMDAxIDE2Mi42NzEgNTcuMTU4NiAxNjMuMjIzQzU3Ljg1MjkgMTYyLjgwNiA1OC44MTcxIDE2Mi41MyA1OS43ODc3IDE2Mi41M0M2Mi41NTgyIDE2Mi41MyA2NC45MTA5IDE2NC40NjIgNjUuNDYzNyAxNjYuOTUyQzY2LjcxMDggMTYzLjkxIDY5Ljc1MTMgMTYxLjcwMiA3My4yMTYgMTYxLjcwMkM3NC4xMDMxIDE2MS43MDIgNzQuOTUxNiAxNjEuODc1IDc1Ljc2MTYgMTYyLjE0NUw3OS4zMDk5IDEyNS4zNjRDODAuMDE3IDExNy41NzkgODQuNDg0NSAxMTAuOTk1IDkwLjc5NjkgMTA3LjI2TDkwLjc4NCAxMDcuMjUzWiIgZmlsbD0iIzFCQUY2MSIvPgo8cGF0aCBkPSJNMTE0Ljg1NyAxMDcuMjUzVjEwOC4wODhDMTE0Ljg1NyAxMDguNjQgMTE0LjQzOSAxMDkuMDU3IDExMy44ODcgMTA5LjA1N0gxMTAuNTVDMTA4Ljc4MyAxMTAuMzk4IDEwNS45OCAxMTEuMjY1IDEwMi44MTEgMTExLjI2NUM5OS42NDIgMTExLjI2NSA5Ni44MzkzIDExMC4zOTIgOTUuMDcxNiAxMDkuMDU3SDkxLjczNTRDOTEuMTgyNiAxMDkuMDU3IDkwLjc2NDggMTA4LjY0IDkwLjc2NDggMTA4LjA4OFYxMDcuMjUzQzg0LjQ1MjQgMTEwLjk4OSA3OS45ODQ4IDExNy41NzMgNzkuMjc3NyAxMjUuMzU4TDc1LjcyOTQgMTYyLjEzOUM3OC42Nzk5IDE2My4xMjcgODAuOTE2OSAxNjUuNzMzIDgxLjM1NCAxNjguODg0QzgyLjQ1OTYgMTY3Ljc4IDgzLjg0ODEgMTY3LjA4NyA4NS41MDY2IDE2Ny4wODdDODcuMzA2NCAxNjcuMDg3IDg4LjY4ODUgMTY3LjkxNSA4OS43OTQxIDE2OS4wMTlWMTY4LjMyNkM4OS43OTQxIDE2NS4xNDkgOTIuNDIzMiAxNjIuNTI0IDk1LjYwNTEgMTYyLjUyNEM5OC43ODcgMTYyLjUyNCAxMDEuNDE2IDE2NS4xNDkgMTAxLjQxNiAxNjguMzI2VjE2OC40NjdDMTAyLjY2MyAxNjcuNjM5IDEwNC4zMjIgMTY3LjA4NyAxMDUuOTggMTY3LjA4N0MxMDguMTkxIDE2Ny4wODcgMTEwLjEzMyAxNjcuOTE1IDExMS42NTYgMTY5LjI5NUMxMTIuNjI3IDE2NS44NDIgMTE1LjgwOSAxNjMuMzUyIDExOS41NDMgMTYzLjM1MkMxMjIuNzI1IDE2My4zNTIgMTI1LjQ5NiAxNjUuMTQ5IDEyNi44NzggMTY3Ljc3NEMxMjcuNDUgMTY2LjI1MyAxMjguNjIgMTY1LjA3MiAxMzAuMDk4IDE2NC40NzVMMTI2LjMyNSAxMjUuMzUyQzEyNS42MTggMTE3LjU2NyAxMjEuMTUgMTEwLjk4MiAxMTQuODM4IDEwNy4yNDdMMTE0Ljg1NyAxMDcuMjUzWiIgZmlsbD0iIzg2RjdCQyIvPgo8cGF0aCBkPSJNOTUuMDg0NCAxMDkuMDU3Qzk2Ljg1MjEgMTEwLjM5OCA5OS42NTQ4IDExMS4yNjQgMTAyLjgyNCAxMTEuMjY0QzEwNS45OTMgMTExLjI2NCAxMDguNzk2IDExMC4zOTIgMTEwLjU2MyAxMDkuMDU3SDk1LjA5MDhIOTUuMDg0NFoiIGZpbGw9IiMxQkFGNjEiLz4KPHBhdGggZD0iTTEwMy45MjkgODcuOTE2M0MxMDMuNjUzIDg3LjA4ODQgMTAyLjQwNiA4Ny4wODg0IDEwMi4xMyA4Ny45MTYzQzEwMC4zMDQgOTIuOTI4NyA5Ni4wMjkzIDk2LjcxNTIgOTAuNzg0IDk3Ljg4OTdWMTA4LjA4OEM5MC43ODQgMTA4LjY0IDkxLjIwMTggMTA5LjA1NyA5MS43NTQ2IDEwOS4wNTdIMTEzLjg5OUMxMTQuNDUyIDEwOS4wNTcgMTE0Ljg3IDEwOC42NCAxMTQuODcgMTA4LjA4OFY5Ny44MDYyQzEwOS43NTMgOTYuNTQxOSAxMDUuNzIzIDkyLjgxMzIgMTAzLjkzNiA4Ny45MTYzSDEwMy45MjlaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNODIuNjEzOSA1NS4zMDcxVjY3Ljc3MDZDODMuODQ4MSA2Ny4zNzI3IDg1LjE0NjYgNjcuMTE2IDg2LjQ5MDEgNjcuMDQ1NEg4OC41Mjc4QzkwLjUzMzMgNjMuNTkyNiA5Ni4xNzA4IDYxLjEwMjQgMTAyLjgyNCA2MS4xMDI0QzEwOS40NzcgNjEuMTAyNCAxMTUuMTE0IDYzLjU5MjYgMTE3LjEyIDY3LjA0NTRIMTE5LjI5M0MxMjAuNTg1IDY3LjEwOTYgMTIxLjgzMiA2Ny4zNTM0IDEyMy4wMjcgNjcuNzI1N1Y1NS4zMDA3QzEyMy4wMjcgNDQuMTA4IDExNC4wMzQgMzUuMTI5NCAxMDIuODI0IDM1LjEyOTRDOTEuNjEzMyAzNS4xMjk0IDgyLjYyMDMgNDQuMTA4IDgyLjYyMDMgNTUuMzAwN0w4Mi42MTM5IDU1LjMwNzFaTTEwOC4yMTcgNDkuMzY0MkMxMDguMjE3IDQ4LjExOTEgMTA5LjMyMyA0Ny4wMTUzIDExMC41NyA0Ny4wMTUzQzExMS44MTcgNDcuMDE1MyAxMTIuOTIyIDQ3Ljk4NDQgMTEyLjkyMiA0OS4zNjQyVjU1LjE2NTlDMTEyLjkyMiA1Ni40MTEgMTExLjgxNyA1Ny41MTQ5IDExMC41NyA1Ny41MTQ5QzEwOS4zMjMgNTcuNTE0OSAxMDguMjE3IDU2LjQxMSAxMDguMjE3IDU1LjE2NTlWNDkuMzY0MlpNOTIuODUzOSA0OS4zNjQyQzkyLjg1MzkgNDguMTE5MSA5My45NTk1IDQ3LjAxNTMgOTUuMjA2NiA0Ny4wMTUzQzk2LjQ1MzYgNDcuMDE1MyA5Ny41NTkyIDQ3Ljk4NDQgOTcuNTU5MiA0OS4zNjQyVjU1LjE2NTlDOTcuNTU5MiA1Ni40MTEgOTYuNDUzNiA1Ny41MTQ5IDk1LjIwNjYgNTcuNTE0OUM5My45NTk1IDU3LjUxNDkgOTIuODUzOSA1Ni40MTEgOTIuODUzOSA1NS4xNjU5VjQ5LjM2NDJaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNzEuOTMwNCA4NS40MTk1QzcxLjgwMTggODQuMjkgNzEuNjg2MSA4My4yNTY3IDcxLjY4NjEgODIuMTA3OUM3MS42NDc2IDgzLjI0MzkgNzEuNzM3NiA4NC4zNDc3IDcxLjkzMDQgODUuNDE5NVoiIGZpbGw9IiMxQkFGNjEiLz4KPHBhdGggZD0iTTExNy4xMTQgNjcuMDUxOEMxMTcuNjE1IDY3LjkxODIgMTE3LjkwNCA2OC44NDg4IDExNy45MDQgNjkuODE3OUMxMTcuOTA0IDc0LjYyNDkgMTExLjE0OCA3OC41MjA1IDEwMi44MTcgNzguNTIwNUM5Ni4yNTQzIDc4LjUyMDUgOTAuNjgxMiA3Ni4wOTQ2IDg4LjYxMTMgNzIuNzE4OEg4Ni40OUM3OS4xODEzIDczLjEyOTUgNzMuMTEzMiA3OC40ODIgNzEuOTc1NCA4NS42MjUxQzczLjM3NjcgOTIuODEzMSA3OS42Njk4IDk4LjI4MTEgODcuMzE5MyA5OC4yODExQzg4LjUwODUgOTguMjgxMSA4OS42NjU1IDk4LjEzOTkgOTAuNzc3NiA5Ny44ODk2Qzk2LjAyMjkgOTYuNzE1MSAxMDAuMjk4IDkyLjkyODYgMTAyLjEyMyA4Ny45MTYzQzEwMi40IDg3LjA4ODQgMTAzLjY0NyA4Ny4wODg0IDEwMy45MjMgODcuOTE2M0MxMDUuNzEgOTIuODEzMSAxMDkuNzQgOTYuNTQxOSAxMTQuODU3IDk3LjgwNjJDMTE2LjA5MSA5OC4xMTQyIDExNy4zOSA5OC4yNzQ3IDExOC43MzMgOTguMjc0N0MxMjcuNTkxIDk4LjI3NDcgMTM0LjY0OSA5MC45NTE5IDEzNC4zNzMgODIuMTA4MUMxMzMuOTEgNzUuMzg4NiAxMjkuMjUgNjkuNjUxMSAxMjMuMDI3IDY3LjcyNTdDMTIxLjgzMiA2Ny4zNTM1IDEyMC41ODUgNjcuMTA5NiAxMTkuMjkzIDY3LjA0NTRIMTE3LjEyTDExNy4xMTQgNjcuMDUxOFoiIGZpbGw9IiMxQkFGNjEiLz4KPHBhdGggZD0iTTg2LjQ5MDEgNzIuNzE4N0g4OC42MTEzQzg4LjA1MjEgNzEuODA3NCA4Ny43MzcxIDcwLjgzODMgODcuNzM3MSA2OS44MTc5Qzg3LjczNzEgNjguNzk3NCA4OC4wMTk5IDY3LjkyNDYgODguNTI3OCA2Ny4wNTE4SDg2LjQ5MDFDODUuMTQ2NiA2Ny4xMjI0IDgzLjg1NDUgNjcuMzc5MSA4Mi42MTM5IDY3Ljc3N0M3Ni40NjIyIDY5Ljc0MDggNzEuOTExMSA3NS40Mzk5IDcxLjY3OTcgODIuMTE0NUM3MS42Nzk3IDgzLjI2MzMgNzEuODAxOSA4NC4yOTY1IDcxLjkyNCA4NS40MjYxQzcxLjkzNjggODUuNTIyMyA3MS45NDMzIDg1LjYxMjIgNzEuOTU2MSA4NS43MDg1QzcxLjk1NjEgODUuNjgyOCA3MS45NjkgODUuNjU3MSA3MS45NjkgODUuNjI1QzczLjEwNjggNzguNDgxOSA3OS4xNzQ5IDczLjEyOTUgODYuNDgzNiA3Mi43MTg3SDg2LjQ5MDFaIiBmaWxsPSIjMzJEODc2Ii8+CjxwYXRoIGQ9Ik04OC42MTEzIDcyLjcxODhDOTAuNjgxMiA3Ni4wOTQ2IDk2LjI1NDMgNzguNTIwNSAxMDIuODE3IDc4LjUyMDVDMTExLjE0OCA3OC41MjA1IDExNy45MDQgNzQuNjI0OSAxMTcuOTA0IDY5LjgxNzlDMTE3LjkwNCA2OC44NDg4IDExNy42MjEgNjcuOTI0NiAxMTcuMTEzIDY3LjA1MThDMTE1LjEwOCA2My41OTkgMTA5LjQ3IDYxLjEwODkgMTAyLjgxNyA2MS4xMDg5Qzk2LjE2NDMgNjEuMTA4OSA5MC41MjY5IDYzLjU5OSA4OC41MjEzIDY3LjA1MThDODguMDEzNSA2Ny45MTgyIDg3LjczMDcgNjguODQ4OCA4Ny43MzA3IDY5LjgxNzlDODcuNzMwNyA3MC44MzgzIDg4LjA1MjEgNzEuODA3NCA4OC42MDQ5IDcyLjcxODhIODguNjExM1oiIGZpbGw9IiMwMTI0NjIiLz4KPHBhdGggZD0iTTE3Mi4yOTIgNDEuMzU1QzE3Mi4xMTkgNDEuMzU1IDE3MS45NTIgNDEuMzc0MiAxNzEuNzg0IDQxLjM4MDdDMTcyLjg3MSA0MS40MTI3IDE3My45NTEgNDEuNTI4MyAxNzQuOTIxIDQxLjc3MjFDMTY4LjE0IDQzLjI5MzIgMTYzLjE1OCA0OS4zNzA5IDE2My4xNTggNTYuNTU4OUgxNjcuNDQ1QzE2Ny45MDIgNTYuNTU4OSAxNjguMzU4IDU2LjUzMzIgMTY4LjgwMiA1Ni40ODgzQzE2OC45MTEgNTYuNDc1NCAxNjkuMDIgNTYuNDYyNiAxNjkuMTMgNTYuNDQ5OEMxNjkuNDkgNTYuNDA0OCAxNjkuODQzIDU2LjM1MzUgMTcwLjE5IDU2LjI4MjlDMTcwLjI4IDU2LjI2MzcgMTcwLjM2NCA1Ni4yNTA4IDE3MC40NTQgNTYuMjMxNkMxNzMuNjgxIDU1LjU0NDkgMTc2LjQ5NiA1My43Nzk5IDE3OC41MDIgNTEuMzQxMkMxNzguNTQ3IDUxLjI4OTggMTc4LjU4NSA1MS4yMzIxIDE3OC42MyA1MS4xODA3QzE3OC44MTcgNTAuOTQ5NyAxNzguOTk3IDUwLjcxMjIgMTc5LjE2NCA1MC40NjgzQzE3OS4zMjUgNTAuMjQzNyAxNzkuNDc5IDUwLjAxMjcgMTc5LjYyNyA0OS43NzUyQzE3OS42MzMgNDkuNzYyNCAxNzkuNjQgNDkuNzQ5NSAxNzkuNjQ2IDQ5LjczNjdDMTgwLjIxMiA0OC44MDYxIDE4MC42NzUgNDcuNzk4NSAxODEuMDA5IDQ2Ljc0NkMxNzkuMzUgNDMuNTY5MSAxNzYuMDI3IDQxLjM1NSAxNzIuMjkyIDQxLjM1NVoiIGZpbGw9IiMxQkFGNjEiLz4KPHBhdGggZD0iTTE1OS41NTggMjEuMDQyMkMxNTYuNTExIDIyLjAxMTMgMTUzLjg4MiAyMy44MDgzIDE1MS41MyAyNi4xNTczTDE1MS4zODggMjYuMjk4NUMxNDYuMjY1IDIwLjIyMDggMTM5LjkwMSAxNS4xMDU3IDEzMi43MDggMTEuMzc3TDEzNC4wOSA4Ljg4NjgyQzEzNC41MDggOC4xOTM3IDEzNC4yMzIgNy4yMzEwMiAxMzMuMzk2IDYuOTU1MDVMMTI1LjkyIDQuMDU0MThDMTIyLjE4NSAyLjY3NDM0IDExOC40NDQgMS41NjQwNiAxMTQuNTc0IDAuODc3MzQ2QzkwLjIxODQgLTMuMTI3MzkgNjcuMTA5MyA2LjgyMDI3IDUzLjQxMTEgMjUuNjExN0M0OS4yNTg1IDIxLjc0MTggNDMuODY1MyAxOS42Njg4IDM4LjE4OTMgMTkuNjY4OEMyNC42MjYgMTkuNjY4OCAxMy44MzMzIDMxLjU0ODMgMTUuOTA5NSA0NS41MDcxQzE3LjQzMyA1Ni41NTg2IDI3LjM5NjYgNjQuNzA5MyAzOC43NDIxIDY0LjcwOTNINDEuMzcxMlYxNDkuNDUxQzQxLjEzOTggMTQ5LjQzMSA0MC45MTQ4IDE0OS40MDYgNDAuNjc3IDE0OS40MDZDMzYuNjY1OSAxNDkuNDA2IDMzLjIwMTEgMTUyLjMwNyAzMi41MTMzIDE1Ni4xNzdDMzEuNjg0MSAxNTUuNzU5IDMwLjg1NDkgMTU1LjYyNSAzMC4wMTkyIDE1NS42MjVDMjYuODM3MyAxNTUuNjI1IDI0LjIwODIgMTU4LjI0OSAyNC4yMDgyIDE2MS40MjZWMTYxLjU2OEMyMy43OTA0IDE2MS41NjggMjMuNTE0IDE2MS40MjYgMjMuMTAyNiAxNjEuNDI2QzE4LjUzODYgMTYxLjQyNiAxNC43OTc1IDE2NS4xNTUgMTQuNzk3NSAxNjkuNzE4QzE0Ljc5NzUgMTc0LjI4MSAxOC41MzIyIDE3OC4wMSAyMy4xMDI2IDE3OC4wMUMyNC4wNzMyIDE3OC4wMSAyNS4wMzc0IDE3Ny44NjkgMjUuODczMSAxNzcuNDU4QzI2LjcwMjMgMTc5LjY2NiAyOC43Nzg2IDE4MS4zMjggMzEuMjcyNyAxODEuMzI4QzMyLjY1NDcgMTgxLjMyOCAzMy45MDE4IDE4MC43NzYgMzQuODcyNCAxNzkuOTQ4QzM2LjM5NTkgMTgyLjI5NyAzOC44ODM2IDE4My44MTggNDEuNzg5MSAxODMuODE4QzQzLjQ0NzUgMTgzLjgxOCA0NC45NzEgMTgzLjI2NiA0Ni4zNTMgMTgyLjQzOEM0Ny4wNDczIDE4NC43ODcgNDkuMjU4NSAxODYuNDQzIDUxLjg4NzYgMTg2LjQ0M0M1My40MTExIDE4Ni40NDMgNTQuNzkzMSAxODUuODkxIDU1Ljc2MzggMTg0LjkyMkM1Ny4xNDU4IDE4Ny42ODggNTkuOTE2MyAxODkuNDc5IDYzLjA5ODIgMTg5LjQ3OUM2Ni4wMDM3IDE4OS40NzkgNjguNjMyOCAxODcuOTU4IDcwLjE1NjMgMTg1LjYwOUM3MS41MzgzIDE4Ni44NTQgNzMuNDc5NiAxODcuNTQxIDc1LjQxNDQgMTg3LjU0MUM3OC4wNDM1IDE4Ny41NDEgODAuMjU0OCAxODYuMjk1IDgxLjc3ODMgMTg0LjQ5OEM4Mi4xOTYxIDE4Ny4yNjUgODQuNTQ4OCAxODkuNDcyIDg3LjQ1NDMgMTg5LjQ3MkM5MC4wODM0IDE4OS40NzIgOTIuMjk0NiAxODcuNjc1IDkyLjk4ODkgMTg1LjE5MkM5NC41MTIzIDE4Ni41NzEgOTYuNDQ3MiAxODcuNTQxIDk4LjY2NDkgMTg3LjU0MUMxMDAuNiAxODcuNTQxIDEwMi40IDE4Ni44NDcgMTAzLjkyMyAxODUuNjA5QzEwNS4wMjkgMTg4LjkyNyAxMDguMDc2IDE5MS4yNzYgMTExLjgxIDE5MS4yNzZDMTE1LjI2OSAxOTEuMjc2IDExOC4xNzQgMTg5LjIwMyAxMTkuNDIxIDE4Ni4zMDJDMTIwLjUyNyAxODcuODIzIDEyMi4xOTIgMTg4Ljc5MiAxMjQuMTI3IDE4OC43OTJDMTI1LjkyNiAxODguNzkyIDEyNy40NSAxODcuOTY0IDEyOC41NTYgMTg2LjcxOUMxMjkuOTM4IDE4OS4zNDQgMTMyLjcwOCAxOTEuMjc2IDEzNS44OSAxOTEuMjc2QzEzOC43OTUgMTkxLjI3NiAxNDEuNDI1IDE4OS43NTUgMTQyLjk0OCAxODcuNDA2QzE0NC40NzEgMTg5Ljc1NSAxNDYuOTU5IDE5MS4yNzYgMTUwLjAwNiAxOTEuMjc2QzE1My4zMjkgMTkxLjI3NiAxNTYuMjM1IDE4OS4yMDMgMTU3LjYxNyAxODYuMzAyQzE1OS4xNCAxODYuMzAyIDE2MC41MjIgMTg1Ljc1IDE2MS40OTMgMTg0Ljc4MUMxNjMuMDE3IDE4Ni40MzcgMTY1LjA5MyAxODcuNDA2IDE2Ny41ODEgMTg3LjQwNkMxNzEuMDM5IDE4Ny40MDYgMTczLjk0NCAxODUuMzMzIDE3NS4xOTEgMTgyLjQzMkMxNzYuODUgMTgyLjI5MSAxNzguMzczIDE4MS40NjMgMTc5LjM0NCAxODAuMjI0QzE4MC4wMzggMTgwLjM2NSAxODAuNzI2IDE4MC41IDE4MS40MiAxODAuNUMxODUuOTg0IDE4MC41IDE4OS43MjUgMTc2Ljc3MSAxODkuNzI1IDE3Mi4yMDhDMTkwLjE0MyAxNjkuMzA3IDE4OC43NTUgMTY2Ljk1OSAxODYuNjc4IDE2NS40MzdDMTg2LjgyIDE2NC44ODYgMTg2Ljk1NSAxNjQuNDY4IDE4Ni45NTUgMTYzLjkxNkMxODYuOTU1IDE2MC43NCAxODQuMzI2IDE1OC4xMTUgMTgxLjE0NCAxNTguMTE1QzE3OS44OTcgMTU4LjExNSAxNzguNzkxIDE1OC41MzIgMTc3LjgyIDE1OS4yMTlDMTc2Ljg1IDE1NS42MjUgMTczLjY2OCAxNTMgMTY5Ljc5MiAxNTNWMTUyLjU4M0MxNjkuNzkyIDE0OS40NTEgMTY3LjIzMyAxNDYuODcxIDE2NC4xMTYgMTQ2Ljc5NFY2NC44NTA1SDE2Ni42MUMxNzguNzkxIDY0Ljg1MDUgMTg5LjE2NiA1NS41OTU5IDE4OS44NiA0My41NzUzQzE5MC44MzEgMjguMTAxOSAxNzUuNzQ0IDE1LjY2NDEgMTU5LjU1MiAyMS4wNTUxTDE1OS41NTggMjEuMDQyMlpNMTc5LjY0NiA0OS43M0MxNzkuNjQ2IDQ5LjczIDE3OS42MzMgNDkuNzU1NyAxNzkuNjI3IDQ5Ljc2ODVDMTc5LjQ3OSA1MC4wMDYgMTc5LjMyNSA1MC4yMzcgMTc5LjE2NCA1MC40NjE3QzE3OC45OTcgNTAuNzA1NSAxNzguODE3IDUwLjk0MyAxNzguNjMgNTEuMTc0QzE3OC41ODUgNTEuMjI1NCAxNzguNTQ3IDUxLjI4MzIgMTc4LjUwMiA1MS4zMzQ1QzE3Ni41MDMgNTMuNzczMyAxNzMuNjgxIDU1LjUzODIgMTcwLjQ1NCA1Ni4yMjQ5QzE3MC4zNjQgNTYuMjQ0MiAxNzAuMjggNTYuMjYzNCAxNzAuMTkgNTYuMjc2MkMxNjkuODQzIDU2LjM0NjggMTY5LjQ5IDU2LjM5ODIgMTY5LjEzIDU2LjQ0MzFDMTY5LjAyIDU2LjQ1NTkgMTY4LjkxMSA1Ni40NzUyIDE2OC44MDIgNTYuNDgxNkMxNjguMzUyIDU2LjUyNjUgMTY3LjkwMiA1Ni41NTIyIDE2Ny40NDYgNTYuNTUyMkgxNjMuMTU4QzE2My4xNTggNDkuMzcwNiAxNjguMTQgNDMuMjg2NSAxNzQuOTIxIDQxLjc2NTVDMTczLjk1MSA0MS41MjE2IDE3Mi44NzEgNDEuNDA2MSAxNzEuNzg0IDQxLjM3NEMxNzEuNjMgNDEuMzc0IDE3MS40NzYgNDEuMzQ4MyAxNzEuMzIyIDQxLjM0ODNDMTYyLjg4MiA0MS4zNDgzIDE1NS45NTkgNDguMjUzOSAxNTUuOTU5IDU2LjY4N0MxNTUuOTU5IDU3LjM2NzMgMTU2LjAxIDU4LjAyODMgMTU2LjA5MyA1OC42NzAxVjE2MC4xNDNDMTU1LjQ3IDE1OS45OTUgMTU0LjgyNyAxNTkuODk5IDE1NC4xNTkgMTU5Ljg5OUMxNTAuMDA2IDE1OS44OTkgMTQ2LjU0OCAxNjIuOTQxIDE0NS45OTUgMTY2Ljk0NkMxNDUuMDI0IDE2Ni4xMTggMTQzLjc4NCAxNjUuNzAxIDE0Mi4zOTUgMTY1LjcwMUMxNDAuNDYgMTY1LjcwMSAxMzguOTM3IDE2Ni42NyAxMzcuODMxIDE2OC4wNUMxMzcuMDAyIDE2NS43MDEgMTM0LjkyNiAxNjQuMDQ1IDEzMi4yOTcgMTY0LjA0NUMxMzEuNTE5IDE2NC4wNDUgMTMwLjc5MyAxNjQuMjA1IDEzMC4xMTggMTY0LjQ4MUMxMjguNjM5IDE2NS4wNzggMTI3LjQ2OSAxNjYuMjU5IDEyNi44OTcgMTY3Ljc4QzEyNS41MTUgMTY1LjE1NSAxMjIuNzQ1IDE2My4zNTggMTE5LjU2MyAxNjMuMzU4QzExNS44MjggMTYzLjM1OCAxMTIuNjQ2IDE2NS44NDggMTExLjY3NSAxNjkuMzAxQzExMC4xNTIgMTY3LjkyMSAxMDguMjE3IDE2Ny4wOTMgMTA1Ljk5OSAxNjcuMDkzQzEwNC4zNDEgMTY3LjA5MyAxMDIuNjc2IDE2Ny42NDUgMTAxLjQzNSAxNjguNDczVjE2OC4zMzJDMTAxLjQzNSAxNjUuMTU1IDk4LjgwNjMgMTYyLjUzIDk1LjYyNDQgMTYyLjUzQzkyLjQ0MjUgMTYyLjUzIDg5LjgxMzQgMTY1LjE1NSA4OS44MTM0IDE2OC4zMzJWMTY5LjAyNUM4OC43MDc3IDE2Ny45MjEgODcuMzE5MyAxNjcuMDkzIDg1LjUyNTggMTY3LjA5M0M4My44Njc0IDE2Ny4wOTMgODIuNDc4OSAxNjcuNzg2IDgxLjM3MzMgMTY4Ljg5QzgwLjkzNjIgMTY1Ljc0NiA3OC42OTkyIDE2My4xMzMgNzUuNzQ4NyAxNjIuMTQ1Qzc0Ljk0NTIgMTYxLjg3NiA3NC4wOTY3IDE2MS43MDIgNzMuMjAzMiAxNjEuNzAyQzY5Ljc0NDkgMTYxLjcwMiA2Ni42OTc5IDE2My45MSA2NS40NTA5IDE2Ni45NTJDNjQuODk4MSAxNjQuNDYyIDYyLjU0NTQgMTYyLjUzIDU5Ljc3NDkgMTYyLjUzQzU4LjgwNDIgMTYyLjUzIDU3Ljg0IDE2Mi44MDYgNTcuMTQ1OCAxNjMuMjIzQzU3LjI4NzIgMTYyLjY3MSA1Ny4yODcyIDE2Mi4yNTQgNTcuMjg3MiAxNjEuNzAyQzU3LjI4NzIgMTU3LjMzMiA1My44NDgyIDE1My43MzEgNDkuNTM0OSAxNTMuNDQzQzQ5LjQ4OTkgMTUzLjQ0MyA0OS40NDQ5IDE1My40NDMgNDkuMzk5OSAxNTMuNDM2VjU4LjQ0NTVDNDkuNDg5OSA1Ny44Mjk0IDQ5LjUzNDkgNTcuMjAwNCA0OS41MzQ5IDU2LjU1MjJDNDkuNTM0OSA1Ni40NTU5IDQ5LjUyMjEgNTYuMzY2MSA0OS41MjIxIDU2LjI3NjJDNDkuMzc0MiA0Ny45NzggNDIuNTIxOSA0MS4yMTM1IDM0LjE3ODIgNDEuMjEzNUMzMi45MzExIDQxLjIxMzUgMzEuODI1NSA0MS4zNTQ3IDMwLjU3ODUgNDEuNjMwN0MzNy40MDUxIDQzLjI2NzMgNDIuMzQxOSA0OS4yMTY2IDQyLjQ3MDQgNTYuMjc2MkM0Mi40NzA0IDU2LjMyMTIgNDIuNDcwNCA1Ni4zNjYxIDQyLjQ3MDQgNTYuNDE3NEgzOC4wNDc5QzMwLjE2MDYgNTYuNDE3NCAyMy42NTU0IDQ5LjkyMjYgMjMuNjU1NCA0Mi4wNDc5QzIzLjY1NTQgMzQuMTczMiAzMC4xNjA2IDI3LjY3ODMgMzguMDQ3OSAyNy42NzgzQzQyLjA1OSAyNy42NzgzIDQ1LjY1ODggMjkuMTk5MyA0OC4yODc5IDMxLjgyNDJMNTQuOTI4MSAzOC40NTM5QzYzLjc4NiAyMC4zNTU1IDgyLjMzMTEgNy45MTc3MyAxMDMuNzc1IDcuOTE3NzNDMTEwLjU1NyA3LjkxNzczIDExNy4wNjIgOS4xNjI3OSAxMjMuMDA4IDExLjM3MDVMMTIwLjkzMiAxNC45NjQ1QzEzMy4zODkgMTkuMTEwNSAxNDMuNzY0IDI3LjY3ODMgMTUwLjQxMSAzOC43Mjk4TDE1MC41NDYgMzguNTg4NkwxNTcuMTg2IDMxLjk1OUMxNTkuODE1IDI5LjQ2ODkgMTYzLjQxNSAyNy44MTMxIDE2Ny40MjYgMjcuODEzMUMxNzUuNDU1IDI3LjgxMzEgMTgxLjgxOSAzNC4zMDc5IDE4MS44MTkgNDIuMTgyNkMxODEuODE5IDQ0Ljk0ODcgMTgxLjAwMiA0Ny41Mjg3IDE3OS42MjcgNDkuNzNIMTc5LjY0NloiIGZpbGw9IiMwMTI0NjIiLz4KPHBhdGggZD0iTTE4My43NzkgMTgzLjM4OEMxODAuNTk3IDE4My4zODggMTc3Ljk2OCAxODYuMDEzIDE3Ny45NjggMTg5LjE5QzE3Ny45NjggMTkyLjM2NyAxODAuNTk3IDE5NC45OTIgMTgzLjc3OSAxOTQuOTkyQzE4Ni45NjEgMTk0Ljk5MiAxODkuNTkgMTkyLjM2NyAxODkuNTkgMTg5LjE5QzE4OS41OSAxODYuMDEzIDE4Ny4wOTYgMTgzLjM4OCAxODMuNzc5IDE4My4zODhaIiBmaWxsPSIjMDEyNDYyIi8+CjxwYXRoIGQ9Ik01LjgxMSAxNjMuNjI3QzIuNjI5MDkgMTYzLjYyNyAwIDE2Ni4yNTIgMCAxNjkuNDI5QzAgMTcyLjYwNiAyLjYyOTA5IDE3NS4yMzEgNS44MTEgMTc1LjIzMUM4Ljk5MjkxIDE3NS4yMzEgMTEuNjIyIDE3Mi42MDYgMTEuNjIyIDE2OS40MjlDMTEuNDgwNiAxNjYuMjUyIDguOTkyOTEgMTYzLjYyNyA1LjgxMSAxNjMuNjI3WiIgZmlsbD0iIzAxMjQ2MiIvPgo8cGF0aCBkPSJNMTk1LjQwMSAxNzQuNTQ0QzE5My4zMjUgMTc0LjU0NCAxOTEuNjY3IDE3Ni4yIDE5MS42NjcgMTc4LjI3M0MxOTEuNjY3IDE4MC4zNDYgMTkzLjMyNSAxODEuODY3IDE5NS40MDEgMTgxLjg2N0MxOTcuNDc4IDE4MS44NjcgMTk5LjAwMSAxODAuMjExIDE5OS4wMDEgMTc4LjI3M0MxOTkuMTQyIDE3Ni4yIDE5Ny40NzggMTc0LjU0NCAxOTUuNDAxIDE3NC41NDRaIiBmaWxsPSIjMDEyNDYyIi8+CjxwYXRoIGQ9Ik0xMTAuNTcgNTcuNTIxMUMxMTEuODE3IDU3LjUyMTEgMTEyLjkyMiA1Ni40MTcyIDExMi45MjIgNTUuMTcyMlY0OS4zNzA0QzExMi45MjIgNDcuOTkwNiAxMTEuODE3IDQ3LjAyMTUgMTEwLjU3IDQ3LjAyMTVDMTA5LjMyMyA0Ny4wMjE1IDEwOC4yMTcgNDguMTI1NCAxMDguMjE3IDQ5LjM3MDRWNTUuMTcyMkMxMDguMjE3IDU2LjQxNzIgMTA5LjMyMyA1Ny41MjExIDExMC41NyA1Ny41MjExWiIgZmlsbD0iIzAxMjQ2MiIvPgo8cGF0aCBkPSJNOTUuMjA2NiA1Ny41MjExQzk2LjQ1MzYgNTcuNTIxMSA5Ny41NTkzIDU2LjQxNzIgOTcuNTU5MyA1NS4xNzIyVjQ5LjM3MDRDOTcuNTU5MyA0Ny45OTA2IDk2LjQ1MzYgNDcuMDIxNSA5NS4yMDY2IDQ3LjAyMTVDOTMuOTU5NSA0Ny4wMjE1IDkyLjg1MzkgNDguMTI1NCA5Mi44NTM5IDQ5LjM3MDRWNTUuMTcyMkM5Mi44NTM5IDU2LjQxNzIgOTMuOTU5NSA1Ny41MjExIDk1LjIwNjYgNTcuNTIxMVoiIGZpbGw9IiMwMTI0NjIiLz4KPHBhdGggZD0iTTY2My45MzkgNjhDNjY4LjI0MSA2OCA2NzAuODc4IDcxLjEzODMgNjcwLjg3OCA3NC43NTA4QzY3MC44NzggNzguMzYzNCA2NjguMjQxIDgxLjUzNDEgNjYzLjkzOSA4MS41MzQxQzY1OS42MzggODEuNTM0MSA2NTcgNzguMjk4NCA2NTcgNzQuNzUwOEM2NTcgNzEuMjAzMiA2NTkuNjM4IDY4IDY2My45MzkgNjhaTTY1OC4wOTggNzQuNzUwOEM2NTguMDk4IDc3Ljk4NjUgNjYwLjQ1NyA4MC41OTIgNjYzLjkzOSA4MC41OTJDNjY3LjQyMiA4MC41OTIgNjY5Ljc4IDc3Ljk4NjUgNjY5Ljc4IDc0Ljc1MDhDNjY5Ljc4IDcxLjUxNTEgNjY3LjQ1NCA2OC45NDIxIDY2My45MzkgNjguOTQyMUM2NjAuNDI0IDY4Ljk0MjEgNjU4LjA5OCA3MS41MTUxIDY1OC4wOTggNzQuNzUwOFpNNjY1LjE5MyA3NS42MjhMNjY2LjgyNCA3Ny41MTIySDY2NS4yNTJMNjYzLjgwOSA3NS43ODM5SDY2My4wMjNWNzcuNTEyMkg2NjEuNzY5VjcxLjUxNTFINjY0LjI4NEM2NjUuNjAzIDcxLjUxNTEgNjY2LjU0NSA3Mi40ODk3IDY2Ni41NDUgNzMuNjUyOEM2NjYuNTQ1IDc0LjUyOTkgNjY2LjAxMiA3NS4zMTYxIDY2NS4xOTMgNzUuNjI4Wk02NjQuMDYzIDc0Ljc4MzNDNjY0Ljg0OSA3NC43ODMzIDY2NS4zMTcgNzQuMzQxNSA2NjUuMzE3IDczLjY1MjhDNjY1LjMxNyA3Mi45NjQgNjY0Ljg0OSA3Mi41NTQ3IDY2NC4wNjMgNzIuNTU0N0g2NjMuMDIzVjc0Ljc4MzNINjY0LjA2M1oiIGZpbGw9IiMwMTI0NjIiLz4KPHBhdGggZD0iTTI0NC4zOTQgNjYuOTc2Vjg3Ljg0SDI0MC4xN0MyMjguNjUgODcuODQgMjIzLjkxNCA5Mi41NzYgMjIzLjkxNCAxMDUuMTJWMTMySDIwMi45MjJWNjcuNDg4SDIyMy4yNzRWODAuMjg4QzIyNS45NjIgNjkuOTIgMjMzLjg5OCA2Ni45NzYgMjQyLjM0NiA2Ni45NzZIMjQ0LjM5NFpNMjgyLjQ3NSAxMTguMzA0QzI4OC43NDcgMTE4LjMwNCAyOTMuNjExIDExNS44NzIgMjk2LjA0MyAxMTEuOTA0SDMxNS4zNzFDMzExLjQwMyAxMjQuMDY0IDI5OC42MDMgMTMzLjUzNiAyODIuNDc1IDEzMy41MzZDMjU5Ljk0NyAxMzMuNTM2IDI0Ny4xNDcgMTE5LjQ1NiAyNDcuMTQ3IDk5LjYxNkMyNDcuMTQ3IDc5LjY0OCAyNjEuNDgzIDY1Ljk1MiAyODEuNTc5IDY1Ljk1MkMzMDEuNTQ3IDY1Ljk1MiAzMTUuODgzIDc5LjAwOCAzMTUuODgzIDk5Ljg3MlYxMDYuMTQ0SDI2Ny43NTVDMjY5LjAzNSAxMTMuMTg0IDI3My4zODcgMTE4LjMwNCAyODIuNDc1IDExOC4zMDRaTTI4MS44MzUgODAuNTQ0QzI3My44OTkgODAuNTQ0IDI2OC45MDcgODUuMTUyIDI2Ny43NTUgOTMuMjE2SDI5NS43ODdDMjk0Ljc2MyA4NS41MzYgMjg5Ljc3MSA4MC41NDQgMjgxLjgzNSA4MC41NDRaTTM1NC4yMjcgMTMzLjUzNkMzMzUuNTM5IDEzMy41MzYgMzIxLjk3MSAxMTguOTQ0IDMyMS45NzEgOTkuNzQ0QzMyMS45NzEgODAuNTQ0IDMzNS41MzkgNjUuOTUyIDM1NC4yMjcgNjUuOTUyQzM2My45NTUgNjUuOTUyIDM3MS4zNzkgNzAuOTQ0IDM3NC45NjMgNzcuMDg4VjY3LjQ4OEgzOTUuMTg3VjE1OC43NTJIMzc0LjE5NVYxMjIuNEMzNzEuMjUxIDEyOC45MjggMzYzLjk1NSAxMzMuNTM2IDM1NC4yMjcgMTMzLjUzNlpNMzU4LjQ1MSA4My4zNkMzNDkuMzYzIDgzLjM2IDM0Mi45NjMgOTAuNCAzNDIuOTYzIDk5Ljc0NEMzNDIuOTYzIDEwOS4wODggMzQ5LjM2MyAxMTYuMTI4IDM1OC40NTEgMTE2LjEyOEMzNjcuNjY3IDExNi4xMjggMzc0LjE5NSAxMDkuMjE2IDM3NC4xOTUgOTkuNzQ0QzM3NC4xOTUgOTAuMjcyIDM2Ny42NjcgODMuMzYgMzU4LjQ1MSA4My4zNlpNNDQ4LjgyNSAxMDQuNDhWNjcuNDg4SDQ2OS44MTdWMTMySDQ0OS40NjVWMTIyLjRDNDQ2LjY0OSAxMjguNTQ0IDQzOS4yMjUgMTMzLjUzNiA0MzAuMjY1IDEzMy41MzZDNDE0Ljc3NyAxMzMuNTM2IDQwNy4zNTMgMTIyLjkxMiA0MDcuMzUzIDEwNy41NTJWNjcuNDg4SDQyOC4zNDVWMTA0LjM1MkM0MjguMzQ1IDExMS4wMDggNDMxLjI4OSAxMTUuNjE2IDQzOC4zMjkgMTE1LjYxNkM0NDQuOTg1IDExNS42MTYgNDQ4LjgyNSAxMTEuMzkyIDQ0OC44MjUgMTA0LjQ4Wk01MTQuMDQ2IDExOC4zMDRDNTIwLjMxOCAxMTguMzA0IDUyNS4xODIgMTE1Ljg3MiA1MjcuNjE0IDExMS45MDRINTQ2Ljk0MkM1NDIuOTc0IDEyNC4wNjQgNTMwLjE3NCAxMzMuNTM2IDUxNC4wNDYgMTMzLjUzNkM0OTEuNTE4IDEzMy41MzYgNDc4LjcxOCAxMTkuNDU2IDQ3OC43MTggOTkuNjE2QzQ3OC43MTggNzkuNjQ4IDQ5My4wNTQgNjUuOTUyIDUxMy4xNSA2NS45NTJDNTMzLjExOCA2NS45NTIgNTQ3LjQ1NCA3OS4wMDggNTQ3LjQ1NCA5OS44NzJWMTA2LjE0NEg0OTkuMzI2QzUwMC42MDYgMTEzLjE4NCA1MDQuOTU4IDExOC4zMDQgNTE0LjA0NiAxMTguMzA0Wk01MTMuNDA2IDgwLjU0NEM1MDUuNDcgODAuNTQ0IDUwMC40NzggODUuMTUyIDQ5OS4zMjYgOTMuMjE2SDUyNy4zNThDNTI2LjMzNCA4NS41MzYgNTIxLjM0MiA4MC41NDQgNTEzLjQwNiA4MC41NDRaTTU1Mi45MDIgMTExLjkwNEg1NzAuMTgyQzU3MC41NjYgMTE2LjUxMiA1NzMuNTEgMTE5LjQ1NiA1NzkuMTQyIDExOS40NTZDNTgzLjg3OCAxMTkuNDU2IDU4Ni44MjIgMTE2Ljg5NiA1ODYuODIyIDExMy40NEM1ODYuODIyIDExMC40OTYgNTg1LjE1OCAxMDguODMyIDU4MS41NzQgMTA3LjkzNkw1NzIuNzQyIDEwNS42MzJDNTYwLjMyNiAxMDIuNTYgNTU0LjgyMiA5Ni42NzIgNTU0LjgyMiA4Ni4xNzZDNTU0LjgyMiA3My41MDQgNTY1LjgzIDY1Ljk1MiA1NzkuMDE0IDY1Ljk1MkM1OTMuNDc4IDY1Ljk1MiA2MDEuNTQyIDc0LjI3MiA2MDIuNjk0IDg2LjA0OEg1ODUuNDE0QzU4NS4yODYgODMuMjMyIDU4My42MjIgODAuMDMyIDU3OS4zOTggODAuMDMyQzU3NS42ODYgODAuMDMyIDU3My42MzggODIuMDggNTczLjYzOCA4NC44OTZDNTczLjYzOCA4Ny43MTIgNTc1LjQzIDg5LjI0OCA1NzguNjMgOTAuMDE2TDU5MC4wMjIgOTMuMDg4QzYwMC42NDYgOTUuOTA0IDYwNS42MzggMTAyLjA0OCA2MDUuNjM4IDExMS4zOTJDNjA1LjYzOCAxMjQuODMyIDU5My4wOTQgMTMzLjUzNiA1NzkuMzk4IDEzMy41MzZDNTY1LjQ0NiAxMzMuNTM2IDU1NC4zMSAxMjcuMzkyIDU1Mi45MDIgMTExLjkwNFpNNjQ2LjA3OCAxMTYuMTI4QzY0OC42MzggMTE2LjEyOCA2NTAuNjg2IDExNS43NDQgNjUyLjczNCAxMTUuMTA0VjEzMS43NDRDNjUwLjU1OCAxMzIuNjQgNjQ0LjY3IDEzMy41MzYgNjQwLjMxOCAxMzMuNTM2QzYyNC44MyAxMzMuNTM2IDYxNy43OSAxMjQuMzIgNjE3Ljc5IDExMC4xMTJWODQuNzY4SDYwNi42NTRWNjcuNDg4SDYxNy43OVY0OC4xNkg2MzguNzgyVjY3LjQ4OEg2NTMuMzc0Vjg0Ljc2OEg2MzguNzgyVjEwOC44MzJDNjM4Ljc4MiAxMTMuODI0IDY0MS4wODYgMTE2LjEyOCA2NDYuMDc4IDExNi4xMjhaIiBmaWxsPSIjMDEyNDYyIi8+CjwvZz4KPGRlZnM+CjxjbGlwUGF0aCBpZD0iY2xpcDBfODg4XzE4MjE4Ij4KPHJlY3Qgd2lkdGg9IjY3MC44NzgiIGhlaWdodD0iMTk0Ljk5MiIgZmlsbD0id2hpdGUiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4K" alt="Gopher Request">
+        <div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></div>
+      </div>
+    </div>
+
+    <h1 class="rs-h1">Refer &amp; Earn</h1>
+    <p class="rs-sub">Invite people to the Gopher network and earn rewards when they join.</p>
+    
+    <div class="rs-qrcard" style="background:#fff;border-radius:16px;padding:20px 18px;margin:0 18px 16px;text-align:center;box-shadow:0 2px 10px rgba(0,36,97,.07);">
+      <div style="font-family:'Nunito';font-weight:900;font-size:15px;color:#002461;">Your personal link</div> <p style="font-size:11.5px;color:#5C6685;margin:5px 0 14px;line-height:1.4;">Scan to open your invite &mdash; they sign up, you get credit.</p>
+      <svg id="qr" width="172" height="172" viewBox="0 0 25 25" shape-rendering="crispEdges" style="display:block;margin:0 auto;"></svg>
+      
+  <div style="display:flex;gap:10px;margin-top:14px;">
+    <!-- Headline sends (owner via the web restructure 2026-08-18: "all of the other 4 platform
+         referral cards have this and the main headliner does too — I had that in the original
+         draft"). On Request the headline IS the Request invite (Ruling 2), so both open the
+         SAME composer the cards use, kind-aware to Gopher Request — no second send path. -->
+    <button id="qrSms" style="flex:1;font-family:'Nunito';font-weight:800;font-size:13px;padding:11px 6px;border:0;border-radius:12px;background:#33D975;color:#002461;cursor:pointer;">Refer via SMS</button>
+    <button id="qrEmail" style="flex:1;font-family:'Nunito';font-weight:800;font-size:13px;padding:11px 6px;border:0;border-radius:12px;background:#33D975;color:#002461;cursor:pointer;">Refer via Email</button>
+  </div>
+    </div>
+  <!-- ID ONCE PER SCREEN (owner, 2026-08-18, ruled for all four platforms): the
+     referral id's single home is this navy code bar — it was removed from inside the
+     QR card above, where it duplicated this bar on web Go. Painter hooks kept on the
+     value element, so the id still derives at runtime. -->
+  <div style="background:#002461;border-radius:14px;padding:12px 14px;margin:14px 0 0;display:flex;align-items:center;justify-content:space-between;">
+    <div style="text-align:left;"><span style="font-family:'Nunito';font-weight:800;font-size:11px;color:#9fb3d9;display:block;">Your referral code</span><span id="qrId" style="font-family:'Nunito';font-weight:900;font-size:20px;color:#fff;letter-spacing:.05em;"></span></div>
+    <button id="qrCopy" style="font-family:'Nunito';font-weight:800;font-size:12px;color:#fff;background:rgba(255,255,255,.14);border:0;border-radius:10px;padding:8px 13px;cursor:pointer;">Copy code</button>
+  </div>
+    <div class="rs-grid">
+      <button class="rs-tile" data-rk="recommend"><span class="rs-tbadge">You</span><span class="rs-tico">&#11088;</span><span class="rs-ttl">Recommend MY Gopher(s)</span><span class="rs-tdesc">Recommend the Gophers you&#8217;ve hired so other customers can find them.</span><span class="rs-tcta">Recommend a Gopher &#8594;</span></button>
+      <button class="rs-tile" data-rk="go"><span class="rs-tico"><img src="../../assets/img/gopher-go-logo.svg" alt="Gopher Go"></span><span class="rs-ttl">Refer Gopher Go</span><span class="rs-tdesc">Invite a trusted local worker to start earning on Gopher Go.</span><span class="rs-tcta">Share the app &#8594;</span></button>
+      <!-- ⛔ "Refer Gopher Request" is NOT here because the HEADLINE is the Request invite
+  (Ruling 2) and now carries the Refer via SMS / Email pair — the card was redundant and its
+  drop was the owner's standing decision (Ruling 3: cards are for OTHER platforms; reconfirmed
+  2026-08-18). The send path did not go away: the headline pair opens the same composer,
+  kind-aware to Gopher Request. Do not re-add the card. -->
+  <button class="rs-tile" data-rk="connect"><span class="rs-tico"><img src="../../assets/img/gopher-connect-logo.svg" alt="Gopher Connect"></span><span class="rs-ttl">Refer Gopher Connect</span><span class="rs-tdesc">Invite a business to manage their workforce on Gopher Connect.</span><span class="rs-tcta">Refer a business &#8594;</span></button>
+      <button class="rs-tile" data-rk="deals"><span class="rs-tico"><img src="../../assets/img/gopher-deals-logo.svg" alt="Gopher Deals"></span><span class="rs-ttl">Refer Gopher Deals</span><span class="rs-tdesc">Invite a local business to offer a deal to Gopher customers.</span><span class="rs-tcta">Refer a merchant &#8594;</span></button>
+    </div>
+    <div class="rs-banner"><div class="rs-bico">&#127873;</div><div><b>Earn rewards for every referral.</b><span>When someone joins through your referral, you both earn Gopher Rewards credit. Rewards launch in 2027 &mdash; your points start accruing now.</span></div></div><div class="rs-trackhead">Track Referral History</div>
+    <div class="rs-tabs"><button class="rs-tab active" data-rstab="pending">Pending</button><button class="rs-tab" data-rstab="added">Added</button><button class="rs-tab" data-rstab="active">Active</button></div>
+    <div class="rs-twrap"><table class="rs-table"><thead><tr><th>Date Referred</th><th>Referred Info</th><th>Type</th></tr></thead><tbody id="rsTbody"></tbody></table></div>
+    <p class="rs-fine">Recommend the Gophers you trust from Gopher Request &mdash; they&#8217;re added to other customers&#8217; &ldquo;MY Gophers&rdquo; the same way.</p>
+  </div>
+
+  <!-- bottom nav -->
+  <div class="nav">
+    <button class="nv" data-nav="Home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg>Home</button>
+    <button class="nv" data-nav="Activity"><svg viewBox="0 0 24 24"><path d="M5 4h10l4 4v12H5z"/><path d="M14 4v5h5"/><path d="M8 13h7M8 16h4"/></svg>Activity</button>
+    <button class="nv c" data-nav="Request"><span class="cc"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>Request</button>
+    <button class="nv on" data-nav="Refer"><svg viewBox="0 0 24 24"><path d="M12 4l2.3 4.7L19.5 9l-3.7 3.6.9 5.1L12 15.3 7.3 17.7l.9-5.1L4.5 9l5.2-.3z"/></svg>Refer<span class="lab-underline"></span></button>
+    <button class="nv" data-nav="Account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20a6.5 6.5 0 0113 0"/></svg>Account</button>
+  </div>
+
+  <!-- SHEETS -->
+  <div class="sheet-back" id="back"></div>
+
+  <!-- Recommend MY Gopher -->
+  <div class="sheet sheet--full" id="shRecommend">
+    <div class="sh-grab"></div>
+    <div class="sh-head">
+      <button class="sh-back" data-rcback>‹ Back</button>
+      <div class="sh-title" id="rcHeadTitle">Recommend MY Gophers</div>
+      <button class="sh-x" data-close>×</button>
+    </div>
+    <div class="sh-body">
+      <div class="view on" data-view="pick">
+        <p class="v-sub">Recommend trusted workers you've hired so other Gopher users can find them. Pick who to recommend.</p>
+        <label class="selectall" id="selectAll"><span>Select all</span><span class="box" id="selectAllBox"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg></span></label>
+        <div id="rcList"></div>
+        <button class="btn" id="rcContinue" disabled>Refer MY Gophers</button>
+      </div>
+      <div class="view" data-view="channel">
+        <p class="v-sub">How should we send your recommendation?</p>
+        <button class="btn btn-navy" data-rcchan="sms">Enter SMS</button>
+        <div class="or">or</div>
+        <button class="btn btn-navy" data-rcchan="email">Enter Email</button>
+      </div>
+      <div class="view" data-view="done">
+        <div class="done-ico"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg></div>
+        <div class="done-title">MY Gophers Submitted</div>
+        <p class="v-sub" style="text-align:center">Some of your recommendations may already be on the Gopher network. All new ones have been submitted and can be viewed in your referral history.</p>
+        <button class="btn" data-totrack>View referral history</button>
+        <button class="btn btn-ghost" data-rcrestart>Recommend others</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refer by SMS / Email -->
+  <div class="sheet sheet--full" id="shRefer">
+    <div class="sh-grab"></div>
+    <div class="sh-head">
+      <button class="sh-back" data-rfback>‹ Back</button>
+      <div class="sh-title" id="rfHeadTitle">Refer via SMS</div>
+      <button class="sh-x" data-close>×</button>
+    </div>
+    <div class="sh-body">
+      <div class="view on" data-view="entry">
+        <div class="field-label" id="rfLabel">Add number</div>
+        <input class="input" id="rfInput" placeholder="555-555-5555">
+        <button class="add-contact" id="rfAddContact">+ Access your contacts</button>
+        <div class="chiplist" id="rfChips"></div>
+        <button class="btn" id="rfSubmit" style="margin-top:18px" disabled>Submit</button>
+      </div>
+      <div class="view" data-view="done">
+        <div class="done-ico"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg></div>
+        <div class="done-title">Referral Submitted</div>
+        <p class="v-sub" style="text-align:center">Some of your referrals may already be on the Gopher network. All new referrals have been submitted and can be viewed in your referral history.</p>
+        <button class="btn" data-totrack>View referral history</button>
+        <button class="btn btn-ghost" data-rfrestart>Refer someone else</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Track Referral History -->
+  <div class="sheet sheet--full" id="shTrack">
+    <div class="sh-grab"></div>
+    <div class="sh-head">
+      <button class="sh-back" data-close>‹ Back</button>
+      <div class="sh-title">Track Referral History</div>
+      <button class="sh-x" data-close>×</button>
+    </div>
+    <div class="sh-body">
+      <div class="track-tabs">
+        <button class="tt on" data-tab="pending">Pending</button>
+        <button class="tt" data-tab="added">Added</button>
+        <button class="tt" data-tab="active">Active</button>
+      </div>
+      <div id="trackList"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg><span id="toastMsg"></span></div>
+</div>
+
+<script>
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>[...(r||document).querySelectorAll(s)];
+
+/* ---- data (MY Gophers + referral ledger) ---- */
+/* ⛔ WAS A REAL USER ID — a live account's own users.id, below the live max, displayed under
+     "YOUR REFERRAL ID" on a publicly served prototype. Anyone reading it off the screen and
+     passing it on credited that account: misattribution, not the harmless kind. Demo personas
+     carry a NON-RESOLVING id — above the live max, or an em dash. Same synthetic band as the Go
+     prototype's 820083. Codes are shared BARE, never GOPHER-prefixed (owner, 2026-08-14).
+     The offending id is deliberately NOT written here: this comment ships in the public page
+     source, and naming it would explain to a reader that that integer is a live account —
+     which the bare number never did on its own. The lesson does not need the digits. */
+  const REFERRAL_ID='820014';
+const MY_GOPHERS=[
+  {name:'Kamil Areshov',  spec:'Delivery · Errands'},
+  {name:'Rondi Tucker',   spec:'Home · Cleaning'},
+  {name:'Robert Hazle',   spec:'Moving · Crew lead'},
+  {name:'Alex King',      spec:'Yard · Outdoor'},
+  {name:'John Newbury',   spec:'Day Labor · Heavy lifting'},
+  {name:'Melissa Quirk',  spec:'Home · Organizing'},
+  {name:'Oliver Del Real',spec:'Delivery · Courier'},
+  {name:'Damien Jones',   spec:'Junk · Hauling'}
+];
+const REFERRALS={
+  pending:[
+    {date:'4/26/26', info:'919-555-2622',       type:'SMS'},
+    {date:'3/15/26', info:'j.barker@gmail.com',  type:'Email'},
+    {date:'2/14/26', info:'984-555-0091',        type:'SMS'}
+  ],
+  added:[
+    {date:'4/04/26', info:'John Newbury',        type:'Gopher Request'},
+    {date:'3/02/26', info:'Drew Hauger',         type:'Gopher Go'},
+    {date:'1/19/26', info:'Port Austin Catering',type:'Gopher Connect'}
+  ],
+  active:[
+    {date:'4/19/26', info:'Rosa P. (MY Gopher)', type:'Recommended'},
+    {date:'2/28/26', info:'Apex Cafe',           type:'Gopher Connect'}
+  ]
+};
+const AV_COLORS=['#1CB061','#002461','#D97757','#1a3a7a','#3A4D74','#19895a','#7A5Bd0','#0E7C86'];
+function initials(n){return n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();}
+function avColor(n){let s=0;for(const c of n)s+=c.charCodeAt(0);return AV_COLORS[s%AV_COLORS.length];}
+
+/* ---- real QR: encodes https://gopher.app/r/<REFERRAL_ID> (scannable; credits referral) ---- */
+/* REFERRAL_QR (a hardcoded 25-row matrix) removed. Two problems, not one: buildQR() painted it
+   verbatim so the QR was NOT derived from REFERRAL_ID — the two could disagree — and the comment
+   above it said the payload was `gopher.app/r/<REFERRAL_ID>`, a URL shape that does not exist.
+   The real destination is the page the API itself serves: api.gophergo.io/self-referral/<id>. */
+function buildQR(){
+  var svg=$('#qr'); if(!svg) return;
+  /* The encoder tag loads AFTER this inline engine, so qrcode can be undefined on the first
+     pass. Retry rather than silently skipping — the bug Website Updates hit on the web port. */
+  if(typeof qrcode==='undefined'){
+    if(!buildQR._armed){ buildQR._armed=true;
+      window.addEventListener('DOMContentLoaded', buildQR); window.addEventListener('load', buildQR); }
+    return;
+  }
+  if(!REFERRAL_ID){ svg.innerHTML=''; return; }   /* no id, no QR — empty is honest */
+  try{
+    var q=qrcode(0,'L');                          /* level L, and NO centre block, like the live worker app */
+    q.addData('https://api.gophergo.io/self-referral/'+REFERRAL_ID);
+    q.make();
+    var n=q.getModuleCount(), b=4;
+    var out='<rect x="'+(-b)+'" y="'+(-b)+'" width="'+(n+2*b)+'" height="'+(n+2*b)+'" fill="#ffffff"/>';
+    for(var y=0;y<n;y++){ for(var x=0;x<n;x++){ if(q.isDark(y,x))
+      out+='<rect x="'+x+'" y="'+y+'" width="1.02" height="1.02" fill="#002461"/>'; } }
+    svg.setAttribute('viewBox',(-b)+' '+(-b)+' '+(n+2*b)+' '+(n+2*b));
+    svg.setAttribute('role','img');
+    svg.setAttribute('aria-label','Referral QR code for Gopher ID '+REFERRAL_ID);
+    svg.innerHTML=out;
+  }catch(_){ svg.innerHTML=''; }
+}
+
+/* ---- toast ---- */
+let toastT;
+function toast(msg){const t=$('#toast');$('#toastMsg').textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* ---- sheet open/close ---- */
+let openSheetEl=null;
+function openSheet(el){ if(openSheetEl) openSheetEl.classList.remove('show'); openSheetEl=el; $('#back').classList.add('show'); el.classList.add('show'); }
+function closeSheet(){ if(openSheetEl) openSheetEl.classList.remove('show'); openSheetEl=null; $('#back').classList.remove('show'); }
+$('#back').addEventListener('click',closeSheet);
+$$('[data-close]').forEach(b=>b.addEventListener('click',closeSheet));
+
+function showView(sheet,name){ $$('.view',sheet).forEach(v=>v.classList.toggle('on', v.dataset.view===name)); }
+
+/* ================= Recommend MY Gopher ================= */
+const recSel=new Set();
+function renderRcList(){
+  $('#rcList').innerHTML=MY_GOPHERS.map((g,i)=>`
+    <div class="rc-row" data-rci="${i}">
+      <div class="rc-photo" style="background:${avColor(g.name)}">${initials(g.name)}</div>
+      <div class="rc-main"><div class="rc-name">${g.name}</div><div class="rc-spec">${g.spec}</div></div>
+      <div class="rc-check"></div>
+    </div>`).join('');
+  $$('#rcList .rc-row').forEach(row=>row.addEventListener('click',()=>{
+    const i=row.dataset.rci;
+    if(recSel.has(i)){recSel.delete(i);row.classList.remove('selected');}
+    else{recSel.add(i);row.classList.add('selected');}
+    syncRec();
+  }));
+}
+function syncRec(){
+  const n=recSel.size;
+  $('#rcContinue').disabled = n===0;
+  $('#rcContinue').textContent = n===0 ? 'Refer MY Gophers' : `Refer ${n} MY Gopher${n>1?'s':''}`;
+  $('#selectAllBox').classList.toggle('on', n===MY_GOPHERS.length && n>0);
+}
+function openRecommend(){
+  recSel.clear(); renderRcList(); syncRec();
+  $('#rcHeadTitle').textContent='Recommend MY Gophers';
+  showView($('#shRecommend'),'pick');
+  openSheet($('#shRecommend'));
+}
+$('#selectAll').addEventListener('click',()=>{
+  const all = recSel.size===MY_GOPHERS.length;
+  recSel.clear();
+  $$('#rcList .rc-row').forEach(r=>{
+    if(all){ r.classList.remove('selected'); }
+    else { r.classList.add('selected'); recSel.add(r.dataset.rci); }
+  });
+  syncRec();
+});
+$('#rcContinue').addEventListener('click',()=>{ if(recSel.size===0)return; showView($('#shRecommend'),'channel'); });
+$$('#shRecommend [data-rcback]').forEach(b=>b.addEventListener('click',()=>showView($('#shRecommend'),'pick')));
+$$('#shRecommend [data-rcchan]').forEach(b=>b.addEventListener('click',()=>{
+  const chan=b.dataset.rcchan, t=todayStr();
+  [...recSel].forEach(i=>{ const g=MY_GOPHERS[+i]; if(g) REFERRALS.pending.unshift({date:t, info:`${g.name} (MY Gopher)`, type: chan==='sms'?'SMS':'Email'}); });
+  showView($('#shRecommend'),'done');
+}));
+$('#shRecommend [data-rcrestart]').addEventListener('click',openRecommend);
+
+/* ================= Refer by SMS / Email ================= */
+let referChan='sms'; let referChips=[];
+let referApp='';
+function ensureChanToggle(){
+  if(document.getElementById('rfChan')) return;
+  const entry=$('#shRefer [data-view="entry"]'); if(!entry) return;
+  const t=document.createElement('div'); t.className='rs-chan'; t.id='rfChan';
+  t.innerHTML='<button data-chan="email">Email</button><button data-chan="sms">SMS</button>';
+  entry.insertBefore(t, entry.firstChild);
+  t.addEventListener('click',e=>{ const b=e.target.closest('[data-chan]'); if(b) setChan(b.dataset.chan); });
+}
+function setChan(chan){
+  referChan=chan;
+  $$('#rfChan [data-chan]').forEach(b=>b.classList.toggle('on', b.dataset.chan===chan));
+  if($('#rfLabel')) $('#rfLabel').textContent = chan==='sms'?'Add number':'Add email';
+  if($('#rfInput')) $('#rfInput').placeholder = chan==='sms'?'555-555-5555':'name@email.com';
+  if($('#rfInput')){ $('#rfInput').setAttribute('inputmode', chan==='sms'?'numeric':'email');
+    if(chan==='sms'){ const v=$('#rfInput').value.replace(/\D/g,''); if(v!==$('#rfInput').value) $('#rfInput').value=v; } }
+}
+function openRefer(chan, appLabel){
+  referChan=chan||'email'; referApp=appLabel||''; referChips=[];
+    /* KIND-AWARE MODELLING (owner ruling 2026-08-17). The live POST /referrals is kind-blind —
+       every card would send the identical message. The rebuild's rail is kind-aware, so each card
+       here shows ITS OWN destination link with the referrer's bare id, which is what makes credit
+       survive a phone-number mismatch. Not wired to a real send: outward-facing sends need a
+       per-surface go-ahead. */
+    (function(){
+      var links={
+        'Gopher Go':      'gophergo.io/gopher-go.html?ref='+REFERRAL_ID,
+        'Gopher Request': 'gophergo.io/gopher-request.html?ref='+REFERRAL_ID,
+        'Gopher Connect': 'gophergo.io/gopher-connect.html?ref='+REFERRAL_ID,
+        /* Shape derived from the receiving end, not invented: gopher-deals.html gates its
+           "Referred by — Gopher ID" field on discovery_source="Referral" unhiding #regReferredRow,
+           whose input is name="referred_by_gopher_id". ?ref=<id> sets and fills it. The receiving
+           handler is the Go -> Deal Registration session's lane. */
+        'Gopher Deals':   'gophergo.io/gopher-deals.html?ref='+REFERRAL_ID
+      };
+      var host=$('#rfHeadTitle'); if(!host) return;
+      var old=document.getElementById('rfKindLink'); if(old) old.remove();
+      var url=links[referApp]; if(!url) return;
+      var el=document.createElement('div');
+      el.id='rfKindLink';
+      el.style.cssText='font-family:\'DM Sans\';font-size:10.5px;color:#5C6685;background:#f6f4ee;border-radius:10px;padding:7px 10px;margin:8px 0 2px;word-break:break-all;';
+      el.textContent='They get: '+url;
+      host.parentNode.insertBefore(el, host.nextSibling);
+    })();
+  $('#rfHeadTitle').textContent = referApp ? ('Refer '+referApp) : (referChan==='sms'?'Refer via SMS':'Refer via Email');
+  ensureChanToggle(); setChan(referChan);
+  $('#rfInput').value='';
+  renderRfChips();
+  showView($('#shRefer'),'entry');
+  openSheet($('#shRefer'));
+}
+function renderRfChips(){
+  $('#rfChips').innerHTML = referChips.map((c,i)=>`<span class="chip"><b>${c}</b><span class="x" data-chipx="${i}">×</span></span>`).join('');
+  $$('#rfChips [data-chipx]').forEach(x=>x.addEventListener('click',()=>{ referChips.splice(+x.dataset.chipx,1); renderRfChips(); syncRf(); }));
+  syncRf();
+}
+function syncRf(){ $('#rfSubmit').disabled = referChips.length===0; }
+function addReferChip(v){ v=(v||'').trim(); if(!v)return; if(!referChips.includes(v))referChips.push(v); $('#rfInput').value=''; renderRfChips(); }
+$('#rfInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();addReferChip($('#rfInput').value);} });
+$('#rfInput').addEventListener('input',function(){ if(referChan==='sms'){ const v=this.value.replace(/\D/g,''); if(v!==this.value) this.value=v; } });
+$('#rfInput').addEventListener('blur',()=>addReferChip($('#rfInput').value));
+$('#rfAddContact').addEventListener('click',()=>{
+  const sample = referChan==='sms' ? ['704-555-0142','919-555-7781'] : ['avery@gmail.com','dana.lee@outlook.com'];
+  sample.forEach(addReferChip); toast('Added from contacts');
+});
+$$('#shRefer [data-rfback]').forEach(b=>b.addEventListener('click',closeSheet));
+$('#rfSubmit').addEventListener('click',()=>{
+  if(referChips.length===0)return; const t=todayStr();
+  referChips.forEach(c=>REFERRALS.pending.unshift({date:t, info:c, type: referChan==='sms'?'SMS':'Email'}));
+  showView($('#shRefer'),'done');
+});
+$('#shRefer [data-rfrestart]').addEventListener('click',()=>openRefer(referChan));
+
+/* ================= Track Referral History ================= */
+function openTrack(tab){ renderTrack(tab||'pending'); openSheet($('#shTrack')); }
+function renderTrack(tab){
+  $$('#shTrack .tt').forEach(t=>t.classList.toggle('on', t.dataset.tab===tab));
+  const rows=REFERRALS[tab]||[];
+  $('#trackList').innerHTML = rows.length
+    ? rows.map(r=>`<div class="tr-row"><span class="tr-date">${r.date}</span><span class="tr-info">${r.info}</span><span class="tr-type">${r.type}</span></div>`).join('')
+    : `<div class="tr-empty">Nothing here yet.</div>`;
+}
+$$('#shTrack .tt').forEach(t=>t.addEventListener('click',()=>renderTrack(t.dataset.tab)));
+
+/* ---- shared ---- */
+function todayStr(){const d=new Date();return `${d.getMonth()+1}/${d.getDate()}/${String(d.getFullYear()).slice(2)}`;}
+$$('[data-totrack]').forEach(b=>b.addEventListener('click',()=>{ openTrack('pending'); }));
+
+/* ---- hub rows ---- */
+$$('.rs-tile[data-rk]').forEach(b=>b.addEventListener('click',()=>{
+  const k=b.dataset.rk;
+  if(k==='recommend') openRecommend();
+  else if(k==='go') openRefer('email','Gopher Go');
+  else if(k==='request') openRefer('email','Gopher Request');
+  else if(k==='connect') openRefer('email','Gopher Connect'); else if(k==='deals') openRefer('email','Gopher Deals');
+}));
+$('#qrSms').addEventListener('click',()=>openRefer('sms','Gopher Request'));
+$('#qrEmail').addEventListener('click',()=>openRefer('email','Gopher Request'));
+$('#qrCopy').addEventListener('click',()=>{ const id=($('#qrId').textContent||'').trim();
+  if(!id){ toast&&toast('No code yet'); return; }
+  try{ navigator.clipboard.writeText(id); }catch(_){}
+  const b=$('#qrCopy'); b.textContent='Copied!'; setTimeout(()=>{ b.textContent='Copy code'; },1400); });
+function renderRsTrack(tab){
+  $$('.rs-tab[data-rstab]').forEach(t=>t.classList.toggle('active', t.dataset.rstab===tab));
+  const rows=(REFERRALS[tab]||[]);
+  const tb=$('#rsTbody'); if(!tb) return;
+  tb.innerHTML = rows.length ? rows.map(r=>`<tr><td>${r.date}</td><td>${r.info}</td><td>${r.type}</td></tr>`).join('') : `<tr><td colspan="3" style="color:#8C8675;">Nothing here yet.</td></tr>`;
+}
+$$('.rs-tab[data-rstab]').forEach(t=>t.addEventListener('click',()=>renderRsTrack(t.dataset.rstab)));
+renderRsTrack('pending');
+
+/* ---- nav (Home + Request navigate; Activity/Account are prototype stubs; Refer is current) ---- */
+function gotoURL(u){ if(window.__navHook){ window.__navHook(u); return; } location.href=u; }
+$$('.nav .nv').forEach(n=>n.addEventListener('click',()=>{
+  const dest={Home:'gopher-request-home.html',Request:'gopher-request-flow.html'}[n.dataset.nav];
+  if(dest){ gotoURL(dest); return; }
+  if(n.dataset.nav==='Account'){ gotoURL('gopher-request-home.html?sheet=account'); return; }
+  if(n.dataset.nav==='Activity'){ gotoURL('gopher-request-home.html?sheet=activity'); return; }
+  if(n.classList.contains('on'))return;
+  toast(n.dataset.nav+' — coming soon in this prototype'); }));
+
+/* ---- boot ---- */
+(function(){ var q=document.getElementById('qrId'); if(q){ q.textContent=REFERRAL_ID; buildQR(); } })();
+
+/* ===== app-shell embed shim: when inside the Gopher Request simulator, escalate the
+   Account/Activity tabs (placeholder stubs here) up to the shell. No effect standalone. ===== */
+(function(){ return; /* superseded: Account/Activity route to Home sheets */ if(window.top===window.self) return;
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('[data-nav],[data-toast]'); if(!b) return;
+    var label = b.getAttribute('data-nav') || b.getAttribute('data-toast');
+    if(label==='Account' || label==='Activity'){
+      e.preventDefault(); e.stopImmediatePropagation();
+      try{ window.top.postMessage({source:'gopher', type:label.toLowerCase()}, '*'); }catch(_){}
+    }
+  }, true);
+})();
+</script>
+<script src="../../assets/js/qrcode-generator.js"></script>
+</body>
+</html>

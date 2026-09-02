@@ -1,0 +1,1289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gopher — Web ↔ Go (live, shared PT bridge)</title>
+<style>
+  :root{ --navy:#002461; --green:#33D975; --green-deep:#1CB061; --muted:#5b6472; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; min-height:100%; }
+  body{ font-family:'Nunito','DM Sans',system-ui,sans-serif;
+        background:radial-gradient(1200px 600px at 50% -10%, #0b1b3f 0%, #060d22 60%, #04081a 100%);
+        color:#fff; }
+
+  /* ── top bar ─────────────────────────────────────────────────────────── */
+  .bar{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:13px 20px;
+        background:rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.08);
+        position:sticky; top:0; z-index:40; backdrop-filter:blur(6px); }
+  .bar h1{ font-size:15px; font-weight:900; margin:0; display:flex; align-items:center; gap:9px; }
+  .bar h1 .dot{ width:9px; height:9px; border-radius:50%; background:var(--green);
+                box-shadow:0 0 0 4px rgba(51,217,117,.25); }
+  .bar .spacer{ flex:1; }
+  .status{ width:100%; font-size:12.5px; color:rgba(255,255,255,.78);
+           font-family:'DM Sans',sans-serif; line-height:1.5; }
+  .status b{ color:var(--green); }
+  .status.warn{ color:#ffd9d9; } .status.warn b{ color:#ff9d9d; }
+
+  .btn{ font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#cfe0ff;
+        background:rgba(120,170,255,.15); border:1px solid rgba(120,170,255,.38);
+        border-radius:99px; padding:7px 15px; cursor:pointer; white-space:nowrap;
+        transition:background .15s, opacity .15s; }
+  .btn:hover{ background:rgba(120,170,255,.30); }
+  .btn:active{ transform:translateY(1px); }
+  .btn[disabled]{ opacity:.5; cursor:default; }
+  .btn.deals-on{ color:#b9f4cf; background:rgba(51,217,117,.16); border-color:rgba(51,217,117,.45); }
+  .btn.deals-off{ color:#ffc9c9; background:rgba(233,90,90,.16); border-color:rgba(233,90,90,.45); }
+
+  /* ── stage ───────────────────────────────────────────────────────────── */
+  .stage{ display:flex; gap:34px; justify-content:center; align-items:flex-start;
+          padding:24px 20px 44px; flex-wrap:wrap; }
+  .col{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .col .label{ font-weight:900; font-size:12.5px; letter-spacing:.4px; text-transform:uppercase;
+               color:rgba(255,255,255,.75); display:flex; align-items:center; gap:8px; }
+  .col .label .pill{ font-size:10px; font-weight:800; padding:3px 9px; border-radius:99px; }
+  .col.web .pill{ background:rgba(51,217,117,.18); color:#8ff0b4; }
+  .col.go  .pill{ background:rgba(120,170,255,.18); color:#b9d2ff; }
+
+  /* Web | App switch. The requester exists on BOTH in production, and the same
+     order has to render correctly in both, so the toggle swaps the CHASSIS while
+     the data underneath stays put. It is not two demos — it is one requester,
+     two clients. */
+  .modesw{ display:inline-flex; border:1px solid rgba(120,170,255,.38); border-radius:99px;
+           overflow:hidden; background:rgba(120,170,255,.10); }
+  .modesw button{ font-family:'DM Sans',sans-serif; font-size:11px; font-weight:800;
+                  letter-spacing:.3px; text-transform:uppercase; color:#cfe0ff;
+                  background:transparent; border:0; padding:5px 13px; cursor:pointer;
+                  transition:background .15s, color .15s; }
+  .modesw button.on{ background:var(--green); color:#04121f; }
+  .modesw button:not(.on):hover{ background:rgba(120,170,255,.22); }
+  /* ⛔ THE INACTIVE CHASSIS IS MOVED OFF-SCREEN, NEVER `display:none`.
+     display:none on the web chassis STALLED EVERY RELAY: with the pane switched
+     to App, a Gopher's Accept on the Go phone did not reach the requester at
+     all, and it landed the instant Web was shown again — which reads exactly
+     like a broken relay rather than a hidden one. An un-laid-out iframe is not a
+     reliable place to keep a running app; this repo has already recorded a
+     sibling of it (an occluded pane freezing CSS transitions).
+     Off-screen keeps both clients LIVE, which is also the honest model: in
+     production the requester's phone does not stop existing while they are
+     looking at the browser. */
+  .app-na{ position:absolute; inset:11px; border-radius:34px; z-index:30;
+           background:rgba(8,14,30,.93); backdrop-filter:blur(3px);
+           display:flex; flex-direction:column; align-items:center; justify-content:center;
+           text-align:center; padding:26px 24px; gap:9px; }
+  .app-na[hidden]{ display:none; }
+  .app-na .app-na-i{ font-size:34px; }
+  .app-na b{ font-family:'Nunito',sans-serif; font-size:14.5px; color:#fff; }
+  .app-na p{ font-family:'DM Sans',sans-serif; font-size:12px; line-height:1.55;
+             color:rgba(255,255,255,.72); margin:0; }
+  .app-na code{ font-family:ui-monospace,Menlo,monospace; font-size:11px; color:#b9d2ff; }
+  .app-na .app-na-s{ color:rgba(255,255,255,.5); }
+  .col.web{ position:relative; }
+  .col.web .chassis:not(.on){ position:absolute; left:-100000px; top:0; }
+
+  /* Desktop browser chassis — the web apps are desktop surfaces, so they get a
+     browser window, not a phone. The iframe renders at a fixed logical desktop
+     size and is scaled down to fit; the app never sees a narrow viewport. */
+  .browser{ background:#1b2233; border-radius:14px; padding:0; overflow:hidden;
+            box-shadow:0 30px 90px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08); }
+  .chrome{ display:flex; align-items:center; gap:8px; padding:9px 13px; background:#232c40;
+           border-bottom:1px solid rgba(255,255,255,.07); }
+  .chrome .lights{ display:flex; gap:6px; }
+  .chrome .lights i{ width:11px; height:11px; border-radius:50%; display:block; }
+  .chrome .lights i:nth-child(1){ background:#ff5f57; }
+  .chrome .lights i:nth-child(2){ background:#febc2e; }
+  .chrome .lights i:nth-child(3){ background:#28c840; }
+  .chrome .url{ flex:1; margin-left:6px; background:#141b2b; border-radius:7px; padding:5px 12px;
+                font-family:'DM Sans',sans-serif; font-size:11.5px; color:rgba(255,255,255,.55);
+                white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .viewport{ position:relative; overflow:hidden; background:#fff; }
+  .viewport iframe{ position:absolute; top:0; left:0; border:0;
+                    transform-origin:top left; background:#fff; }
+
+  /* Phone chassis — unchanged from split-screen.html so the Go side is identical. */
+  .phone{ position:relative; width:390px; height:844px; max-height:calc(100vh - 170px);
+          background:#000; border-radius:44px; padding:11px;
+          box-shadow:0 30px 90px rgba(0,0,0,.6), 0 0 0 2px rgba(255,255,255,.06) inset; }
+  .screen{ position:relative; width:100%; height:100%; border-radius:34px;
+           overflow:hidden; overflow:clip; background:#fff; }
+  .screen iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .notch{ position:absolute; top:11px; left:50%; transform:translateX(-50%); width:150px; height:26px;
+          background:#000; border-radius:0 0 16px 16px; z-index:20; pointer-events:none; }
+
+  .hint{ max-width:1000px; margin:0 auto; padding:0 20px 44px; color:rgba(255,255,255,.55);
+         font-family:'DM Sans',sans-serif; font-size:12.5px; line-height:1.7; }
+  .hint b{ color:rgba(255,255,255,.8); }
+  .hint code{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px;
+              background:rgba(255,255,255,.07); padding:1px 5px; border-radius:4px; }
+  .hint .gap{ margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,.09); }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1><span class="dot"></span> Gopher · Web ↔ Go — live</h1>
+  <span class="spacer"></span>
+  <button id="dealsLive" class="btn" type="button"
+    title="Launch gate — Gopher Deals is Raleigh-DMA-only at launch. This toggles the GO PHONE only; website gating was deferred by the owner (2026-07-16), so the web pane is unaffected.">Deals: …</button>
+  <button id="resetDemo" class="btn" type="button" title="Clear both panes and start fresh">↺ Reset demo</button>
+  <div class="status" id="status">Booting the web app and the Go phone…</div>
+</div>
+
+<div class="stage">
+  <div class="col web">
+    <div class="label">Requester <span class="pill" id="webPill">Request · web</span>
+      <span class="modesw" id="modeSw">
+        <button type="button" data-mode="web" class="on">Web</button>
+        <button type="button" data-mode="app">App</button>
+      </span>
+    </div>
+    <div class="browser chassis on" id="chassisWeb">
+      <div class="chrome">
+        <div class="lights"><i></i><i></i><i></i></div>
+        <div class="url" id="webUrl">gophergo.io/gopher-request.html</div>
+      </div>
+      <div class="viewport" id="webViewport"><iframe id="webFrame" title="Gopher web app"></iframe></div>
+    </div>
+    <div class="phone chassis" id="chassisApp">
+      <div class="notch"></div>
+      <div class="screen"><iframe id="appFrame" title="Gopher Request app"></iframe></div>
+      <!-- Shown only while the web pane is on Connect. Saying nothing would leave
+           the Request phone on screen looking like Connect's app, which is the
+           misreading this whole gate exists to prevent. -->
+      <div class="app-na" id="appNA" hidden>
+        <div class="app-na-i">📵</div>
+        <b>There is no Connect app prototype</b>
+        <p><code>_prototypes/</code> holds <b>Request</b> and <b>Go</b> only, so Connect has no phone
+           counterpart to show. This is the <b>Request</b> phone and it still holds the requests made
+           on Request — it is deliberately not being fed Connect's business orders.</p>
+        <p class="app-na-s">Switch the pane back to <b>Web</b>, or navigate the site to Request.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col go">
+    <div class="label">Gopher <span class="pill">Go app</span></div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen"><iframe id="goFrame" title="Gopher Go"></iframe></div>
+    </div>
+  </div>
+</div>
+
+<div class="hint">
+  <b>How it works —</b> there is no server and no fake bridge. The left pane is <b>the live web
+  site</b> — navigate it exactly as a requester would, including the site's own Connect ↔ Request
+  links; the harness re-applies <code>?pt=1</code> to whatever page lands there. The right pane is
+  the <b>real Gopher Go prototype</b>. Under that flag each web app publishes
+  <code>window.GWeb</code> — a GReq-shaped view of its own dashboard store — and the Go prototype
+  publishes the <code>__pt*</code> hooks it already had. This page is only the wire between them.
+  <br><br>
+  <b>Nothing here is demo data.</b> No seeded requests, no request history, no saved Gophers, no
+  recommended-Gopher inbox, and no pool of fake workers. Every request is one you submitted, and
+  the <b>only</b> Gopher who can ever appear is the real one on the Go phone — a request stays
+  <i>Broadcasting</i> until they actually accept it. What that acceptance then means is decided by
+  the request's own worker-selection mode: under <b>First available</b> the acceptance <i>is</i> the
+  hire; under <b>I'll select my worker</b> it arrives as a candidacy you must Hire. That difference
+  is the single most important thing this playground exists to prove.
+  <br><br>
+  Each page keeps its own requests across navigation, so you can leave Request, use Connect, and
+  come back to find your work intact. The Go phone holds jobs from both.
+  <div class="gap">
+    <b>Not yet relayed</b> — the Go app raises these, but the web dashboards have no surface that
+    can receive them, so they are deliberately <i>not</i> faked: no-show timer, dispute, turn-by-turn
+    navigation state, report-a-request, and Refer-Yourself. Cost adjustment is representable
+    (<code>r.pendingAdjustment</code>) and is wired.
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ═══ Constants ═════════════════════════════════════════════════════════ */
+  var GOPHER = 'Marcus Hale';          // the one Gopher on the Go phone
+  var SURFACES = {
+    request: { file:'../gopher-request.html', url:'gophergo.io/gopher-request.html',
+               pill:'Request · web', open:'openRequestDashboard' },
+    connect: { file:'../gopher-connect.html', url:'gophergo.io/gopher-connect.html',
+               pill:'Connect · web', open:'__openDashboard' }
+  };
+  var WEB_W = 1440, WEB_H = 900;       // logical desktop viewport handed to the web app
+
+  /* ═══ Elements ══════════════════════════════════════════════════════════ */
+  var webFrame = document.getElementById('webFrame'),
+      appFrame = document.getElementById('appFrame'),
+      goFrame  = document.getElementById('goFrame'),
+      viewport = document.getElementById('webViewport'),
+      statusEl = document.getElementById('status'),
+      webPill  = document.getElementById('webPill'),
+      webUrl   = document.getElementById('webUrl'),
+      resetBtn = document.getElementById('resetDemo'),
+      dealsBtn = document.getElementById('dealsLive');
+
+  var surface = 'request';
+
+  function L(){ try{ return webFrame.contentWindow; }catch(_){ return null; } }
+  function R(){ try{ return goFrame.contentWindow;  }catch(_){ return null; } }
+  function A(){ try{ return appFrame.contentWindow; }catch(_){ return null; } }
+  /* The Request APP's own store. It is sessionStorage-backed and sessionStorage
+     is per-TAB and shared by every iframe in it, so this is not a second copy of
+     the data — it is the same tab-level store the reference App Prototype Split
+     already treats as the database. That is what makes one requester in two
+     clients possible without inventing a bridge. */
+  function GR(){ var a=A(); try{ return (a && a.GReq) || null; }catch(_){ return null; } }
+  function W(){ var l=L(); try{ return (l && l.GWeb) || null; }catch(_){ return null; } }
+  function status(m, warn){ statusEl.innerHTML=m; statusEl.className='status'+(warn?' warn':''); }
+
+  /* ═══ Layout — scale the desktop viewport to fit the pane ═══════════════ */
+  function fitWeb(){
+    var avail = Math.max(360, Math.min(window.innerWidth - 390 - 130, 1180));
+    var availH = Math.max(400, window.innerHeight - 190);
+    var s = Math.min(avail / WEB_W, availH / WEB_H);
+    webFrame.style.width  = WEB_W + 'px';
+    webFrame.style.height = WEB_H + 'px';
+    webFrame.style.transform = 'scale(' + s + ')';
+    viewport.style.width  = Math.round(WEB_W * s) + 'px';
+    viewport.style.height = Math.round(WEB_H * s) + 'px';
+  }
+  window.addEventListener('resize', fitWeb);
+
+  /* ═══ Relay bookkeeping ═════════════════════════════════════════════════
+     Keyed by request id. Reset with the demo and on every surface swap — a
+     Connect id and a Request id can never collide (GC- vs GR-), but the Go
+     phone is rebooted on a swap, so stale "already relayed" marks would
+     swallow the first event of the new session. */
+  var injected, offered, hired, countered, counterDecided, statusSeen,
+      goMsgSeen, reqMsgSeen, goCancelSeen, reqCancelSeen, adjustSeen, counterPending,
+      startNarrated, adjustPending, adjustDecided, disputeSeen, navSeen,
+      noShowSeen, noShowDone;
+  function clearRelays(){
+    injected={}; offered={}; hired={}; countered={}; counterDecided={}; statusSeen={};
+    startNarrated={}; orderSurface={}; offSurfaceWarned={}; mirrored={};
+    adjustPending={}; adjustDecided={}; disputeSeen={}; navSeen={};
+    noShowSeen={}; noShowDone={};
+    goMsgSeen={}; reqMsgSeen={}; goCancelSeen={}; reqCancelSeen={}; adjustSeen={};
+    counterPending={};
+  }
+  clearRelays();
+
+  /* ═══ Web record → Go order ═════════════════════════════════════════════
+     Byte-for-byte the same mapping split-screen.html uses, because GWeb is
+     published in the GReq shape precisely so this function does not fork.
+     A second, drifting copy of this map is exactly the failure the shared
+     modules exist to prevent. */
+  function orderFromReq(r){
+    return {
+      id:r.order, cat:r.cat, title:r.title,
+      bids:!!r.bids, topOffer:(r.offerBand==='generous'),
+      pay:+r.pay||0, cost:+r.cost||0, workers:+r.workers||1,
+      ageRestricted:!!r.ageRestricted, trustShield:!!r.trustShield,
+      deal:!!r.deal, dealMerchant:r.dealMerchant||'',
+      pickup:r.pickup||'', dropoff:r.dropoff?[r.dropoff]:[],
+      scope:r.scope||r.title, dist:r.dist||'2.4',
+      pickupStairs:+r.pickupStairs||0, destStairs:+r.destStairs||0,
+      serviceElevatorPickup:!!r.serviceElevatorPickup, serviceElevatorDest:!!r.serviceElevatorDest,
+      scheduled:!!r.scheduledForLater,
+      when:(r.scheduledForLater && r.timingLabel) ? r.timingLabel : (r.when||'Now · ASAP'),
+      requestor:r.requestor||'A requester',
+      directBooking:!!r.directBooking, provider:r.provider||'',
+      workerSelection:(function(v){ v=String(v||'first'); return v==='prioritize'?'my':v; })(r.workerSelection)
+    };
+  }
+
+  /* ═══ Web → Go : a submitted request becomes a live Available job ═══════ */
+  var orderSurface={};      // order id -> the page it was submitted on
+  var offSurfaceWarned={};  // narrated once per job, not once per tick
+
+  function watchNative(){
+    try{
+      var g=W(); if(!g) return;
+      var list=g.all()||[];
+      for(var i=0;i<list.length;i++){
+        var r=list[i];
+        if(!r || r.stage!=='searching' || r.cancelled || r.gCancelled) continue;
+        if(r.directTo && r.directTo!==GOPHER) continue;     // a directed provider deal is not an open broadcast
+        var seq=r.resubmitSeq||0;
+        if(injected[r.order]===seq) continue;
+        var w=R(); if(!(w && w.__injectJob)) continue;      // Go mid-reload — retry next tick
+        var edited = injected[r.order]!==undefined;
+        injected[r.order]=seq;
+        orderSurface[r.order]=surface;
+        w.__injectJob(orderFromReq(r));
+        status(edited
+          ? 'Request <b>'+r.order+'</b> was <b>edited &amp; resubmitted</b> → the Go phone got a fresh notification.'
+          : 'Request <b>'+r.order+'</b> submitted on <b>'+surface+' web</b> → it is now a live job on the Go phone. '
+            +'Tap the banner → open the job → <b>Accept</b>.');
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Go → Web : an acceptance, read through INV-ACCEPT ═════════════════
+     GWeb.offer() owns the rule (first / select / my) so it is decided in ONE
+     place and cannot drift from the app's own __createDashboardRequest logic.
+     The Go side is checked for readiness BEFORE the web side is mutated —
+     otherwise an auto-hire could land on the web while the Go phone, mid
+     reload, never learned it was approved. */
+  function watchAccept(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in w.__ptJobs){
+        var job=w.__ptJobs[id];
+        if(!job || !job.accepted || offered[id]) continue;
+        /* Skip only while a counter is genuinely IN FLIGHT. `job.counter` stays
+           set after the requester decides, so testing it bare meant a DENIED
+           counter permanently disabled this relay: the Gopher could then press
+           Accept, see themselves accepted, and the requester would never learn
+           — the request sat "Broadcasting" forever. Decided counters (accepted
+           or declined) must not suppress a later plain acceptance. */
+        var counterPending = job.counter && !job.counterAccepted && !job.counterDeclined;
+        if(job.bid || counterPending || job.bidAccepted || job.counterAccepted || job.approved) continue;
+        var rec=g.get(id);
+        if(!rec){
+          /* The Go phone holds jobs from BOTH pages; the web pane shows one at a
+             time. Acting on a job whose page is not loaded cannot be relayed —
+             say which page to go back to instead of retrying in silence. */
+          var from=orderSurface[id];
+          if(from && from!==surface && !offSurfaceWarned[id]){
+            offSurfaceWarned[id]=true;
+            status('The Gopher accepted <b>'+id+'</b>, which was submitted on <b>'+SURFACES[from].pill
+              +'</b>. Navigate the left pane back there to hire them — the acceptance is held until you do.');
+          }
+          continue;
+        }
+        if(!(w.__ptApprove && w.__ptBidResult)) continue;           // Go hooks not ready — retry
+
+        /* ⚠️ `distanceMi` AS WELL AS `dist`. The bridge's offer() reads
+           `worker.distanceMi`; this sent only `dist`, so distanceMi was ALWAYS
+           null and the >15 mi approval branch could never fire — a silent no-op,
+           not a rule that happened not to trigger. It was invisible because the
+           absence of a pause looks exactly like a nearby worker.
+           `dist` stays: the worker card's stats line renders it as a string. */
+        var _d = rec.dist != null && rec.dist !== '' ? Number(rec.dist) : null;
+        var res=g.offer(id, { name:GOPHER, tier:'elite+', dist:rec.dist,
+                              distanceMi: (isFinite(_d) ? _d : null) });
+        if(!res) continue;
+        offered[id]=true;
+
+        if(res.hired){
+          var okd=false; try{ okd=!!w.__ptApprove(id); }catch(_){}
+          if(okd) hired[id]=true;
+          startNarrated[id]='started';   // auto-started: there is no gate to narrate
+          status('Gopher <b>accepted</b> '+id+' — the request is <b>'
+            +(res.mode==='my'?'Prioritize MY Gophers</b> and '+GOPHER+' is one of yours'
+                             :'first available</b>')
+            +', so he is hired <b>and on the job</b> immediately. No action needed from you — '
+            +'First Available "requires little to no engagement on your part".');
+        }else{
+          status('Gopher <b>accepted</b> '+id+' → it is a <b>candidacy</b>, not a hire. '
+            +'Open the request in the web dashboard and press <b>Hire</b> — only then does it go Active on both panes.');
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Web → Go : the requester pressed Hire on a candidacy ══════════════ */
+  function watchHire(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in w.__ptJobs){
+        if(hired[id]) continue;
+        var job=w.__ptJobs[id]; if(!job || !job.accepted) continue;
+        /* Same rule as watchCounterDecision: read the OUTCOME, not a name. The
+           web is the only place a hire can happen and there is one worker on
+           the Go phone, so "someone is hired" is unambiguous — whereas a name
+           comparison silently stops relaying the moment the two sides spell
+           the worker differently, which the Go prototype already does. */
+        var rec=g.get(id); if(!rec || !rec.hired) continue;           // not hired on the web yet
+        if(!(w.__ptBidResult && w.__ptJobs[id])) continue;            // Go not ready — retry
+        try{ w.__ptBidResult(id, 'accepted', String(rec.pay||'')); }catch(_){ continue; }
+        hired[id]=true;
+        status('You <b>hired</b> '+GOPHER+' on '+id+' → the Go phone was notified and the job is now <b>Active</b> on both panes. 🎉');
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Web-only : the requester still has to press "Start job" ══════════
+     A REAL DIVERGENCE, not a harness gap. On web, Hire and Start are two
+     separate acts — startJob() is the single place status flips pending →
+     in-progress, and it fires from #startJobBtn, not from Hire. The Go app has
+     no equivalent gate: the moment the worker is hired it shows them as on the
+     job. So between Hire and Start the two panes genuinely disagree, and
+     without this narration the playground looks stalled when it is in fact
+     showing the seam accurately. Do NOT "fix" it by auto-starting — that would
+     hide the difference this playground exists to expose. */
+  function watchStart(){
+    try{
+      var g=W(); if(!g) return;
+      var list=g.all()||[];
+      for(var i=0;i<list.length;i++){
+        var r=list[i];
+        if(!r || !r.hired) continue;
+        if(r.stage==='searching' && !startNarrated[r.order]){
+          startNarrated[r.order]='waiting';
+          status('⚠️ '+r.order+' is <b>hired but not started</b>. The web app needs the requester to press '
+            +'<b>Start job</b> — Hire and Start are two separate acts on web, and the Go app has no such gate. '
+            +'Until you press it the two panes disagree on purpose.');
+        } else if(r.stage!=='searching' && startNarrated[r.order]==='waiting'){
+          startNarrated[r.order]='started';
+          status('You pressed <b>Start job</b> → '+r.order+' is now <b>In Progress</b> with a live tracker. '
+            +'Advance it from the Go phone (Update request → Start the job → Items picked up → Mark job complete).');
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Go → Web : a counter-offer lands on the dashboard's counter card ══ */
+  function watchCounter(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in w.__ptJobs){
+        var job=w.__ptJobs[id];
+        if(!job || !job.counter || countered[id] || job.counterAccepted || job.counterDeclined) continue;
+        var rec=g.get(id); if(!rec) continue;
+        var c=job.counter;
+        var pay=+c.amt||0, cost=+rec.cost||0, cog=cost+pay;
+        var itf=0.08*(cog+0.99), reqFee=0.99+itf;
+        /* ⚠️ The Go prototype names this worker TWICE, differently: its account
+           state is fn:'Marcus' ln:'Hale', but the counter-offer payload
+           hardcodes by:'Marcus K.' (gopher-go-prototype.html:3273/3276). Relaying
+           c.by verbatim would show the requester one name when he accepts and a
+           different one when he counters — the same person, twice. Normalise to
+           the account identity; the prototype's own hardcode is a defect for the
+           Go workstream, not something this bridge should propagate.
+           (_prototypes/split-screen.html hid it by hardcoding 'Marcus K.' on its
+           accept path to match — matching the bug rather than the account.) */
+        var ok=g.counter(id, {
+          changed:'offer', comment:c.note||null, worker:GOPHER, tier:'elite+', dist:rec.dist,
+          counter:{ costOfItems:cost, workerPay:pay, workersNeeded:+rec.workers||1,
+                    gopherFee:0.99, ageFee:0, instantTransfer:itf, requestFee:reqFee,
+                    fullGopherFee:0.99, fullAgeFee:0, fullInstantTransfer:itf, fullRequestFee:reqFee,
+                    promo:null, promoDiscount:0, trustShieldDiscount:0,
+                    cogOffer:cog, gmvTotal:cog+reqFee }
+        });
+        if(!ok) continue;
+        countered[id]=true;
+        counterPending[id]=true;
+        status('Gopher <b>countered</b> '+id+' at <b>$'+c.amt+'</b> (you offered $'+c.was+') → '
+          +'a <b>counter-offer card</b> is on the request in the web dashboard. Open it and <b>Accept</b> or <b>Deny</b>.');
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Web → Go : the requester's Accept / Deny on that counter ══════════
+     The web app's acceptCounterOffer()/deny both SPLICE the counter out of
+     r.counterOffers; only Accept also pushes the countering worker in as
+     'hired'. Reading the pair is sound here because this playground puts
+     exactly one counter in flight at a time — the Go phone has one Gopher. */
+  function watchCounterDecision(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in counterPending){
+        if(!counterPending[id] || counterDecided[id]) continue;
+        var raw=g.raw(id); if(!raw) continue;
+        var still=(raw.counterOffers||[]).some(function(co){ return co.fromGoApp; });
+        if(still) continue;                                           // requester has not decided yet
+        if(!(w.__ptDecision && w.__ptJobs[id])) continue;              // Go not ready — retry
+        var rec=g.get(id);
+        /* ⛔ Detect the outcome from the RECORD, never from a name match.
+           This previously read `rec.hired === GOPHER`, and the Go prototype
+           writes its counter under a different name than its account
+           (`Marcus K.` vs `Marcus Hale`) — so an ACCEPTED $42 counter was
+           relayed to the worker as a DECLINE. The requester was charged $46.43
+           while the Gopher was told "your counter was declined, you'll earn
+           $30". A money disagreement across the two panes, produced by a string
+           comparison. acceptCounterOffer() is the only thing that sets a hired
+           worker here, so its presence IS the accept. */
+        var accepted = !!(rec && rec.hired);
+        var amt = accepted ? String(rec.pay||'') : '';
+        try{ w.__ptDecision(id, accepted?'accepted':'declined', amt); }catch(_){ continue; }
+        counterDecided[id]=true; counterPending[id]=false;
+        if(accepted){ offered[id]=true; hired[id]=true; }
+        status(accepted
+          ? 'You <b>accepted</b> the $'+amt+' counter → '+id+' is <b>Active</b> and the Gopher is hired at the new price. 🎉'
+          : 'You <b>denied</b> the counter → the Gopher was notified; '+id+' stays open.');
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Go → Web : worker progress ticks the live tracker's step list ═════ */
+  var SUBSTAGE_STEP = { inprogress:'In-Progress', items:'Items Purchased', completed:'Completed' };
+  function watchStatus(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in w.__ptJobs){
+        var job=w.__ptJobs[id];
+        if(!job || !job.accepted || !job.substage) continue;
+        if(job.noShow) continue;   // a no-show completion is narrated by watchNoShow, not as a normal finish
+        if(statusSeen[id]===job.substage) continue;
+        var step=SUBSTAGE_STEP[job.substage]; if(!step) continue;
+        /* Completion carries the worker's drop-off photos with it. Relaying them
+           in the same call as the status change keeps them atomic — the
+           requester never sees "completed" with the photos arriving a tick later,
+           which would render the details modal empty and then repopulate it. */
+        var extra=(job.substage==='completed' && Array.isArray(job.completionPhotos))
+          ? { photos:job.completionPhotos } : null;
+        if(!g.substage(id, step, extra)) continue;                     // no live tracker yet — retry
+        statusSeen[id]=job.substage;
+        var LB={ inprogress:'started the job', items:'secured the items', completed:'completed the job' };
+        var nPhotos=(extra && extra.photos) ? extra.photos.length : 0;
+        status('Gopher <b>'+(LB[job.substage]||('→ '+job.substage))+'</b> for '+id+'.'
+          +(job.substage==='completed'
+             ? (nPhotos ? ' '+nPhotos+' drop-off photo'+(nPhotos>1?'s':'')+' came with it — ' : ' ')
+               +'the request now needs your <b>confirmation</b> before payout.'
+             : ''));
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Go ↔ Web : messaging, both directions ════════════════════════════ */
+  function watchMessages(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in w.__ptJobs){
+        var job=w.__ptJobs[id]; var rec=g.get(id); if(!rec) continue;
+
+        var goMsgs=job.msgs||[], seen=goMsgSeen[id]||0;
+        if(seen < goMsgs.length){
+          for(var i=seen;i<goMsgs.length;i++){
+            g.message(id, GOPHER, goMsgs[i].text, { from:'worker', flagged:!!goMsgs[i].flagged });
+          }
+          goMsgSeen[id]=goMsgs.length;
+          status('New message from the Gopher on '+id+' → it is in the web <b>Inbox</b> thread. 🔔');
+        }
+
+        var reqMsgs=g.messagesFrom(id, GOPHER);
+        var rseen=reqMsgSeen[id]||0;
+        if(rseen < reqMsgs.length && w.__ptInboxDeliver){
+          for(var j=rseen;j<reqMsgs.length;j++){
+            try{ w.__ptInboxDeliver(id, reqMsgs[j].text, reqMsgs[j].flagged); }catch(_){}
+          }
+          reqMsgSeen[id]=reqMsgs.length;
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Go → Web : the worker adjusts the agreed charge on site ═══════════
+     ⚠️ This relay previously read `adj.offer` / `adj.cost` / `adj.note` — field
+     names that do not exist. The Go app writes `newOffer` / `newCost` /
+     `comment`, plus `origOffer` / `origCost` / `status` / `hasReceipt`
+     (gopher-go-prototype.html:3471). It would have relayed a $0 adjustment.
+     Second invented-vocabulary bug in this file; read the app, never guess.
+
+     It also ignored `status`, which carries a real product rule: an adjustment
+     that RAISES the total (or settles a dispute) is 'pending' and needs the
+     requester's approval, because Stripe cannot capture more than the original
+     authorization (G40-18). Same-or-lower outside a dispute is 'applied' and
+     takes effect immediately with no approval. Collapsing the two would have
+     put an approval gate in front of a price DROP. */
+  function feeShape(offer, cost, workers){
+    var cog=offer+cost, itf=Math.round(0.08*(cog+0.99)*100)/100, reqFee=Math.round((0.99+itf)*100)/100;
+    return { costOfItems:cost, workerPay:offer, workersNeeded:workers||1,
+             gopherFee:0.99, ageFee:0, instantTransfer:itf, requestFee:reqFee,
+             fullGopherFee:0.99, fullAgeFee:0, fullInstantTransfer:itf, fullRequestFee:reqFee,
+             promo:null, promoDiscount:0, trustShieldDiscount:0,
+             cogOffer:cog, gmvTotal:Math.round((cog+reqFee)*100)/100 };
+  }
+
+  function watchAdjust(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in w.__ptJobs){
+        var job=w.__ptJobs[id];
+        var adj=job && job.adjust; if(!adj || !adj.seq) continue;
+        if(adjustSeen[id]===adj.seq) continue;
+        var raw=g.raw(id); if(!raw) continue;
+        /* Request never builds a reviewSnapshot for a user-created request (see
+           the bridge's note) — without one the web's adjustment card cannot
+           render, so create it before relaying rather than skipping forever. */
+        g.ensureSnapshot(id);
+        if(!raw.reviewSnapshot) continue;
+
+        var offer=+adj.newOffer||0, cost=+adj.newCost||0;
+        var A=feeShape(offer, cost, +raw.workersNeeded||1);
+
+        if(adj.status==='applied'){
+          /* Same or lower, outside a dispute — no re-authorization needed, so it
+             lands on the agreed price directly rather than asking permission. */
+          raw.reviewSnapshot.fee = A;
+          raw.reviewSnapshot.costOfItems=cost; raw.reviewSnapshot.workerPay=offer;
+          raw.reviewSnapshot.total=A.gmvTotal;
+          g.update(id, { perWorkerCost:offer, costOfItems:cost,
+                         amount:'$'+A.gmvTotal.toFixed(2)+' total' });
+          adjustSeen[id]=adj.seq;
+          status('Gopher <b>lowered the charge</b> on '+id+' to <b>$'+A.gmvTotal.toFixed(2)+'</b> — '
+            +'same or less than agreed, so it applied immediately with no approval needed.');
+        } else {
+          /* Receipt — G40-101. Owner ruling 2026-09-01: the receipt gate on a
+             cost-of-goods INCREASE is in play for the prototype, so it has to
+             survive the relay as a RECEIPT, not as a sentence. It previously
+             arrived as the words '(receipt attached)' appended to the comment,
+             which is the one thing the requester cannot act on: the web card's
+             whole point is 'zoom in and verify the line items and total BEFORE
+             you approve'. Text cannot be zoomed into.
+
+             Both ends were already built — Go gates the submit on
+             `receiptAttached` (gopher-go-prototype.html:3461) and the web card
+             renders `window.__receiptThumb(P.receipt && P.receipt.src)` when
+             `P.receipt` is truthy (gopher-request.html:22446). Only this relay
+             dropped it.
+
+             `src` is null ON PURPOSE. The Go app's attach button records the
+             FACT of a receipt, not an image, so there is no URL to carry — and
+             the receipt component documents null as its stand-in: "When src is
+             null/undefined the demo receipt shows; pass the real URL and the
+             demo generator is never called." That is also exactly what the
+             reference App Prototype Split does (split-screen.html:488 relays
+             the boolean; gopher-request-home.html:1577 draws the demo from it),
+             so the two harnesses now behave identically. The seam for a real
+             image is `receipt.src` and nothing else changes. */
+          g.update(id, { pendingAdjustment:{ comment:(adj.comment||'').trim(),
+                                             receipt: adj.hasReceipt ? { src:null } : null,
+                                             adjusted:A },
+                         needsAttention:true });
+          adjustPending[id]={ seq:adj.seq, total:A.gmvTotal, offer:offer, cost:cost };
+          adjustSeen[id]=adj.seq;
+          status('Gopher requested a <b>cost adjustment</b> on '+id+' — $'+A.gmvTotal.toFixed(2)
+            +(adj.dispute?' (dispute resolution)':' (raises the charge)')
+            +'. It needs your <b>approval</b> before the job continues.');
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Web → Go : the requester's approve / decline on that adjustment ═════
+     resolveAdjustment() deletes r.pendingAdjustment for BOTH outcomes and only
+     APPROVE rewrites reviewSnapshot.total to the adjusted figure. So compare
+     the NUMBER, not a name — the same lesson the counter relay cost us. */
+  function watchAdjustDecision(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in adjustPending){
+        var pend=adjustPending[id]; if(!pend) continue;
+        if(adjustDecided[id]===pend.seq) continue;
+        var raw=g.raw(id); if(!raw) continue;
+        if(raw.pendingAdjustment) continue;                      // requester has not decided yet
+        if(!(w.__ptAdjustDecision && w.__ptJobs[id])) continue;   // Go not ready — retry
+        var snapTotal=(raw.reviewSnapshot && +raw.reviewSnapshot.total)||0;
+        var approved = Math.abs(snapTotal - pend.total) < 0.005;
+        try{ w.__ptAdjustDecision(id, approved, pend.offer, pend.cost); }catch(_){ continue; }
+        adjustDecided[id]=pend.seq;
+        adjustPending[id]=null;
+        status(approved
+          ? 'You <b>approved</b> the adjustment on '+id+' → the new total is <b>$'+pend.total.toFixed(2)
+            +'</b> and the Gopher was told they are clear to continue.'
+          : 'You <b>declined</b> the adjustment on '+id+' → the Gopher was notified; the agreed price stands.');
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Go → Web : requester no-show at an age-restricted drop-off ═══════
+     G40-192. The worker is at the door and the requester is not there to show
+     ID. Go starts a 10-minute countdown (`noShowActive` increments) and keeps
+     its "Report as No Show" button LOCKED for the whole window because the
+     outcome affects pay.
+
+     The requester's half has to arrive WHILE THE CLOCK RUNS — the delivery is
+     still savable by walking to the door — so this relays the deadline, not just
+     the eventual result. The Go app owns the authoritative timer and the
+     decision; the web countdown is informational, which is why a second of drift
+     between them is harmless.
+
+     Three transitions, all of which matter:
+       start    noShowActive rises      -> deadline on the card
+       averted  noShowActive returns 0  -> clear it; the requester made it
+       reported job.noShow set          -> terminal: items NOT released, worker
+                                           paid in full (never a cancellation fee) */
+  var NO_SHOW_WINDOW_MS = 10*60*1000;
+  function watchNoShow(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in w.__ptJobs){
+        var job=w.__ptJobs[id];
+        var rec=g.get(id); if(!rec) continue;
+
+        // terminal — reported
+        if(job.noShow && !noShowDone[id]){
+          noShowDone[id]=true;
+          g.update(id, { noShow:true, noShowReminded:false, noShowRemindedAt:null, needsAttention:true });
+          status('⏱ <b>Reported as a no-show</b> on '+id+'. You were not at the drop-off to verify ID '
+            +'within the window, so the <b>items were not released</b> — and the Gopher waited it out, '
+            +'so they are <b>paid in full</b>. No cancellation fee is involved.');
+          continue;
+        }
+        // started — a new countdown
+        var active=+job.noShowActive||0;
+        if(active && noShowSeen[id]!==active){
+          noShowSeen[id]=active;
+          /* Stamp the moment the Gopher tapped, and let the web derive the
+             deadline from it — the live contract is `requestor_reminded_at`
+             from POST gopher_reached, NOT a deadline computed on the reader's
+             device. Here the Go phone is that authority. */
+          g.update(id, { noShowReminded:true, noShowRemindedAt:new Date().toISOString(), needsAttention:true });
+          status('⏱ Your Gopher is <b>at the drop-off and you are not there</b> to verify ID for '+id+'. '
+            +'You have <b>10 minutes</b> — the card is counting down. Go to the door and the delivery '
+            +'completes normally.');
+          continue;
+        }
+        // averted — the requester turned up before 0:00
+        if(!active && !job.noShow && noShowSeen[id] && g.raw(id) && g.raw(id).noShowReminded){
+          g.update(id, { noShowReminded:false, noShowRemindedAt:null });
+          noShowSeen[id]=0;
+          status('You made it — the no-show window on '+id+' was <b>cleared</b> and the Gopher is '
+            +'verifying your ID now.');
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Go → Web : the worker opened turn-by-turn navigation ═════════════
+     LIVE-APP INVARIANT, and the whole reason this relay exists: navigation
+     NEVER interrupts the live location feed. The worker is inside their maps
+     app; the requester's tracking keeps running. The web card therefore states
+     both facts in one line — "navigating to the pick-up · live location stays
+     on" — because "navigating" alone would imply tracking had paused.
+
+     `j.navigating = {to, addr, seq}` and the Go app clears it to null the moment
+     the worker advances the status, so the nav line must clear too — a stale
+     "is navigating" on a job that has already moved on is worse than none. */
+  function watchNavigate(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in w.__ptJobs){
+        var job=w.__ptJobs[id];
+        var rec=g.get(id); if(!rec) continue;
+        var nav=job && job.navigating;
+        if(nav && nav.seq && navSeen[id]!==nav.seq){
+          navSeen[id]=nav.seq;
+          g.update(id, { navTo: nav.to||'stop', navAddr: nav.addr||'' });
+          status('Gopher opened <b>turn-by-turn navigation</b> to the '
+            +String(nav.to||'stop').toLowerCase()+' → the requester\'s card shows it, and their '
+            +'<b>live location feed stays ON</b>. Navigation never pauses tracking.');
+        }
+        // Worker advanced the status (or finished) — Go cleared it, so clear ours.
+        if(!nav && navSeen[id]!==undefined && g.raw(id) && g.raw(id).navTo){
+          g.update(id, { navTo:null, navAddr:'' });
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Web → Go : the requester disputed the completed job ══════════════
+     The web owns a full state machine — 'entry' (reason box) → 'disputed'
+     (submitted, `disputeReason` holds the requester's own words) — and the Go
+     app already has `__ptDisputed(id, note)`, which puts payment on hold, shows
+     the worker WHY, and opens the job. Only the wire between them was missing,
+     so a dispute stopped dead on the web: the requester was told "your Gopher
+     has been notified" and the Gopher was never told anything.
+
+     Relayed on the TRANSITION into 'disputed', and re-armed if the state leaves
+     it, so a dispute raised again after a failed resolution is not swallowed.
+     The reason is passed through verbatim — it is the requester's own text and
+     the worker is being asked to act on it. */
+  function watchDispute(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      var list=g.all()||[];
+      for(var i=0;i<list.length;i++){
+        var r=list[i];
+        if(!r) continue;
+        if(r.disputeState!=='disputed'){ disputeSeen[r.order]=false; continue; }   // re-arm
+        if(disputeSeen[r.order]) continue;
+        if(!(w.__ptDisputed && w.__ptJobs[r.order])) continue;          // Go not ready — retry
+        try{ w.__ptDisputed(r.order, r.disputeReason||''); }catch(_){ continue; }
+        disputeSeen[r.order]=true;
+        status('You <b>disputed</b> '+r.order+' → the Gopher was notified with your reason, '
+          +'payment is on hold, and they can resolve it with a <b>cost adjustment</b> '
+          +'(which always needs your approval, even when it lowers the price).');
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Go → Web : the Gopher cancelled ══════════════════════════════════
+     Guarded on !cancelledByReq — a REQUESTER cancel also lands on the Go job
+     as `cancelled`, and echoing that back as "your Gopher cancelled" is the
+     bug that once resurrected cancelled requests through the recovery sheet. */
+  function watchGoCancel(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in w.__ptJobs){
+        var job=w.__ptJobs[id];
+        if(!job || !job.cancelled || job.cancelledByReq || goCancelSeen[id]) continue;
+        if(!g.get(id)) continue;
+        g.gopherCancelled(id, job.cancelReason||'');
+        goCancelSeen[id]=true;
+        injected[id]=undefined; offered[id]=false; hired[id]=false;   // re-broadcastable
+        status('Gopher <b>cancelled</b> '+id+' → the request is back to <b>Pending</b> on the web '
+          +'and is broadcasting again.');
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Web → Go : the requester cancelled ═══════════════════════════════
+     ⚠️ This watched `g.all()` for a record with `cancelled` set — but the web
+     app does not FLAG a cancellation, it MOVES the record:
+     __cancelDashboardRequest lifts it out of activeRequests and into
+     cancelledRequests. So the request simply vanished from the list this loop
+     reads, the relay never fired, and the Gopher kept a dead job on their
+     board — still driving to a pickup the customer had called off.
+
+     Disappearance IS the signal. Guards, because a record can also vanish for
+     innocent reasons: only for jobs THIS page raised (a Connect id disappears
+     from view whenever you navigate to Request, which is not a cancellation),
+     and never for one the Go side already considers finished. */
+  function watchReqCancel(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      for(var id in injected){
+        if(injected[id]===undefined) continue;
+        if(orderSurface[id]!==surface) continue;        // that page is not loaded — absence proves nothing
+        if(reqCancelSeen[id]) continue;
+        var job=w.__ptJobs[id]; if(!job) continue;
+        if(job.cancelled || job.substage==='completed') continue;   // already ended by the other side
+        if(g.get(id)) continue;                          // still live on the web — not cancelled
+        if(!w.__ptReqCancelled) continue;                // Go hook mid-reload — retry
+        try{ w.__ptReqCancelled(id, 'cancel'); }catch(_){ continue; }
+        reqCancelSeen[id]=true;
+        status('You <b>cancelled</b> '+id+' → the Gopher was notified and the job left their board.');
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Web ⇄ App : ONE requester, TWO clients ════════════════════════════
+     In production the requester is a person with a phone AND a browser, and the
+     server is the single truth both render. Nothing here should behave as if
+     "the web request" and "the app request" are different objects — they are
+     one order, drawn twice.
+
+     ⚠️ SO THIS IS A MIRROR, NOT A SECOND STORE. The web app owns DASH_DATA and
+     the app owns GReq; the harness keeps GReq equal to the web's projection of
+     the same orders. GWeb.all() has emitted GReq-SHAPED records since the day it
+     was written — that was the point of shaping it that way — so the mirror is a
+     field-for-field copy rather than a translation layer with its own opinions.
+
+     ⚠️ Written ONLY when the signature changes. Writing every tick would fight
+     the app's own renderer 1.6 times a second and make a typed sheet unusable;
+     it would also make an echo loop indistinguishable from a real change.
+
+     ⚠️ Direction is deliberate and currently ONE-WAY (web → app). The app can
+     create requests of its own (Home -> a category -> gopher-request-flow.html
+     writes GReq.add), and adopting those into the web's DASH_DATA is the other
+     half of the job — see the note on appOnly below. Until that lands, an
+     app-created request is left ALONE rather than half-mirrored: a record the
+     web pane cannot render is worse than one it does not show. */
+  var mirrored = {};                 // order -> signature of what we last wrote
+  var MIRROR_KEEP = ['order','cat','title','scope','stage','substage','hired','accepted',
+    'cancelled','gCancelled','cancelReason','confirmed','rating','disputeState','disputeReason',
+    'bids','pay','cost','workers','amount','pickup','dropoff','when','timingLabel','dist',
+    'scheduledForLater','noShow','noShowReminded','noShowRemindedAt','ageRestricted',
+    'trustShield','deal','dealMerchant','requestor','workerSelection','navTo','navAddr'];
+
+  /* ⛔ THE APP PANE IS THE **REQUEST** APP. IT MUST NEVER HOLD CONNECT'S ORDERS.
+     `_prototypes/` has a Request app and a Go app. There is NO Connect app
+     prototype, so when the web pane is on Connect there is simply nothing on the
+     phone side to mirror into.
+
+     Without this gate both passes ran on whatever page was loaded, and both were
+     wrong in their own way — verified, not theorised:
+
+       · MIRROR: submitting on Connect put **GC-00201, "Pallet of printer paper
+         from the depot to our Durham office"** — a business order — inside the
+         consumer Request phone. Not a sync glitch; a category error. Connect is
+         the business surface and Request is the personal one, and the whole
+         point of this switch is that the two panes are the SAME requester.
+       · PRUNE: the mirror's removal pass drops GReq orders the web no longer
+         has. On Connect the web has only GC- orders, so navigating Request ->
+         Connect would have WIPED the phone of every Request order the person
+         actually made.
+       · ADOPT: and a request created on the phone would have been adopted into
+         Connect's dashboard, which is the first failure again, backwards.
+
+     So both passes are scoped to the surface the phone belongs to. On Connect
+     they do NOTHING — GReq is left exactly as it is, which is also the honest
+     model: your phone still holds your requests while you are looking at a
+     different site. */
+  function appSurfaceLive(){ return surface === 'request'; }
+
+  /* ── App → Web : adopt what the requester's PHONE created ───────────────
+     The app writes its own submissions straight into GReq
+     (gopher-request-flow.html -> buildPending -> GReq.add). Without this the
+     switch was one-way: the browser could never see what the phone submitted,
+     which is not "one requester, two clients" — it is two half-requesters.
+
+     ⚠️ PROVENANCE IS STAMPED ON THE RECORD, NOT HELD IN THIS PAGE. `__ptAdopted`
+     goes into GReq itself, because the app pane RELOADS on its own navigation
+     (home -> flow -> home) and anything this page remembers is gone by then.
+     With page-local memory a reload would re-adopt every order the web already
+     had, and the requester would watch their request duplicate itself.
+
+     So the rule reads off the record, and it is total:
+       GReq order, in GWeb                        -> nothing to do
+       GReq order, NOT in GWeb, tagged by either
+         direction (__ptAdopted / __ptMirrored)   -> the web dropped it: REMOVE
+       GReq order, NOT in GWeb, UNTAGGED          -> the phone made it: ADOPT
+     After adoption the order lives in BOTH stores and GWeb is the working copy
+     every relay mutates, so it goes back to flowing web -> app. Adoption happens
+     exactly once, which is why there is no echo to break. */
+  function adoptFromApp(){
+    if(!appSurfaceLive()) return;                    // see appSurfaceLive()
+    var g=W(), gr=GR(); if(!(g && gr)) return;
+    var list=gr.all()||[];
+    for(var i=0;i<list.length;i++){
+      var r=list[i]; if(!r || !r.order) continue;
+      if(g.get(r.order)) continue;                    // both stores have it
+      /* The web does not have it. Provenance decides which way that cuts:
+         it came FROM here (adopted) or was WRITTEN here (mirrored) -> the web has
+         since dropped it, so follow. Neither tag -> the phone made it. */
+      if(r.__ptAdopted || r.__ptMirrored){
+        try{ gr.remove(r.order); }catch(_){}
+        delete mirrored[r.order];
+        continue;
+      }
+      var rec=null;
+      try{ rec=g.adopt(r); }catch(_){ rec=null; }
+      if(!rec) continue;                              // bridge not ready — retry next tick
+      try{ gr.update(r.order, { __ptAdopted:true }); }catch(_){}
+      status('Submitted on the <b>Request app</b> — <b>'+r.order+'</b> is now on the web dashboard too '
+        +'and broadcasting to the Go phone. One requester, both clients.');
+    }
+  }
+
+  function mirrorToApp(){
+    if(!appSurfaceLive()) return;                    // see appSurfaceLive()
+    var g=W(), gr=GR(); if(!(g && gr)) return;
+    var live=g.all()||[];
+    var seen={}, touched=false;
+    for(var i=0;i<live.length;i++){
+      var r=live[i]; if(!r || !r.order) continue;
+      seen[r.order]=true;
+      var flat={};
+      for(var k=0;k<MIRROR_KEEP.length;k++){
+        var f=MIRROR_KEEP[k];
+        if(r[f]!==undefined) flat[f]=r[f];
+      }
+      /* ⛔ STAMP WHAT WE WROTE. Without this, a mirrored copy left in the app
+         after a web reset is INDISTINGUISHABLE from a request the phone created
+         — and the adoption pass, seeing an untagged order the web does not have,
+         faithfully adopts it back. Observed exactly that: reset the web, reload,
+         and the deleted request reappeared in all three panes, resurrected by the
+         round trip. Both directions have to leave a fingerprint or the rule
+         cannot tell "the phone made this" from "the browser used to have this". */
+      flat.__ptMirrored=true;
+      var sig=JSON.stringify(flat);
+      if(mirrored[r.order]===sig) continue;            // unchanged — leave the app alone
+      mirrored[r.order]=sig;
+      touched=true;
+      if(gr.get(r.order)) gr.update(r.order, flat); else gr.add(flat);
+    }
+    /* A request the web no longer has (reset, or a purge) must not linger in the
+       app. An APP-CREATED order is not in `live` either, so it is excluded by
+       provenance — `mirrored` only ever contains orders this mirror wrote. */
+    for(var o in mirrored){
+      if(seen[o]) continue;
+      delete mirrored[o];
+      try{ gr.remove(o); }catch(_){}
+      touched=true;
+    }
+    if(touched) repaintApp();
+  }
+
+  /* The app renders from GReq on demand, so a store write is invisible until it
+     redraws. Both entry points are optional: this must never throw into the tick. */
+  function repaintApp(){
+    var a=A(); if(!a) return;
+    try{ if(typeof a.renderPending==='function') a.renderPending(); }catch(_){}
+    try{ if(typeof a.renderHome==='function') a.renderHome(); }catch(_){}
+  }
+
+  /* ═══ The Web | App switch ══════════════════════════════════════════════ */
+  var mode='web';
+  var modeSw=document.getElementById('modeSw'),
+      chassisWeb=document.getElementById('chassisWeb'),
+      chassisApp=document.getElementById('chassisApp');
+
+  function setMode(next){
+    if(next===mode) return;
+    mode=next;
+    chassisWeb.classList.toggle('on', mode==='web');
+    chassisApp.classList.toggle('on', mode==='app');
+    [].forEach.call(modeSw.querySelectorAll('button'), function(b){
+      b.classList.toggle('on', b.getAttribute('data-mode')===mode);
+    });
+    /* Bring the pane being revealed up to date IMMEDIATELY rather than waiting
+       for the next tick — a switch that shows a stale screen for half a second
+       reads as "they are out of sync", which is the exact claim this feature
+       exists to disprove. */
+    paintAppAvailability();
+    if(mode==='app'){ mirrorToApp(); repaintApp(); }
+    status(mode==='app'
+      ? 'Requester switched to the <b>Gopher Request app</b>. Same orders, same data — this is the '
+        +'phone the requester carries. The Go phone on the right is unchanged.'
+      : 'Requester switched back to the <b>web site</b>. Same orders — navigate it freely; '
+        +'Connect and Request both live here.');
+  }
+  modeSw.addEventListener('click', function(e){
+    var b=e.target.closest('button[data-mode]'); if(b) setMode(b.getAttribute('data-mode'));
+  });
+
+  /* ⚠️ THE APP IS MULTI-PAGE TOO. Home links to gopher-request-flow.html to
+     create a request, and that link carries no query string — so ?pt=1 has to be
+     re-applied here exactly as it is for the web pane, or the app lands on the
+     flow with the DEMO SEED restored and the pane quietly stops being empty. */
+  function onAppLoad(){
+    var a=A(), loc;
+    try{ loc=a.location; var _probe=loc.pathname; }catch(_){ return; }
+    if(new URLSearchParams(loc.search).get('pt')!=='1'){
+      var sep = loc.search ? '&' : '?';
+      try{ loc.replace(loc.pathname + loc.search + sep + 'pt=1&v=' + Date.now()); }catch(_){}
+      return;
+    }
+    /* ⛔ THIS USED TO WIPE THE APP STORE, AND THAT LINE IS NOW A BUG, NOT A
+       CLEANUP. While the mirror was one-way GReq held nothing but copies, so
+       wiping and re-mirroring was a safe way to clear orphans left by a reset.
+       The moment the phone could create its own requests the same line became
+       destructive: the app RELOADS on its own navigation (home -> flow -> home),
+       so a wipe here would delete a request the requester had just submitted, on
+       the very navigation that follows submitting it. The warning left on it
+       yesterday said exactly this would happen; it is being honoured rather than
+       discovered.
+
+       Orphans are handled by provenance now, in adoptFromApp(): an adopted order
+       the web no longer has is removed, an un-adopted one is the phone's own new
+       work and is adopted. Both decided from the record, not from what this page
+       remembers. */
+    mirrored={};              // fresh page, fresh store view — re-mirror from scratch
+    adoptFromApp();
+    mirrorToApp();
+  }
+  appFrame.addEventListener('load', onAppLoad);
+
+  /* ═══ Boot ══════════════════════════════════════════════════════════════ */
+  function bootFrames(){
+    /* Cache-bust: without it Safari/Chrome happily serve a stale ?pt=1 copy of
+       either pane, which reads as "the fix did not work" when it did. */
+    var v='&v='+Date.now();
+    webFrame.src = SURFACES[surface].file + '?pt=1' + v;
+    appFrame.src = 'Request/gopher-request-home.html?pt=1' + v;
+    goFrame.src  = 'Go/gopher-go-prototype.html?pt=1' + v;
+    mirrored={};
+    paintPane();
+    fitWeb();
+  }
+
+  function paintPane(){
+    webPill.textContent = SURFACES[surface].pill;
+    webUrl.textContent  = SURFACES[surface].url;
+    paintAppAvailability();
+  }
+
+  /* Called from paintPane (surface changes) and setMode (pane changes), because
+     the notice depends on BOTH and either one moving alone can make it wrong. */
+  function paintAppAvailability(){
+    var na=document.getElementById('appNA');
+    if(na) na.hidden = appSurfaceLive();
+  }
+
+  /* ═══ The left pane is THE SITE, not a fixed app ═════════════════════════
+     There is no Request/Connect switcher here: the site links the two pages to
+     each other, so the requester navigates the way a real one would. What the
+     harness owns is the pane, so it re-applies ?pt=1 to whatever page lands in
+     it — the site's own links carry no query string, and without the flag the
+     bridge would not install and the pane would go quietly dead.
+
+     PT stays non-sticky (never written to sessionStorage as a mode) precisely
+     because it is re-applied HERE, by the frame that owns the pane, rather than
+     remembered by the app. A stale sticky flag is how the prototype's own store
+     once contaminated an ordinary visit. */
+  function onWebLoad(){
+    var l=L(), loc;
+    try{ loc=l.location; var _probe=loc.pathname; }catch(_){ return; }   // cross-origin: not ours
+    if(new URLSearchParams(loc.search).get('pt')!=='1'){
+      var sep = loc.search ? '&' : '?';
+      try{ loc.replace(loc.pathname + loc.search + sep + 'pt=1&v=' + Date.now()); }catch(_){}
+      return;                                        // the replace fires load again, with the flag
+    }
+    var next = /connect/i.test(loc.pathname) ? 'connect' : 'request';
+    var moved = (next !== surface);
+    surface = next;
+    signedIn = false;
+    paintPane();
+    if(moved){
+      status('You navigated to <b>'+SURFACES[surface].pill+'</b>. Its own requests come back with it; '
+        +'the Go phone keeps every job from both.');
+    }
+  }
+  webFrame.addEventListener('load', onWebLoad);
+
+  /* The web dashboard only exists for a signed-in user — the flow's own
+     submitRequestAndCapture() returns null otherwise and NOTHING broadcasts.
+     Rather than leave that as a silent dead end, sign the demo user in as soon
+     as the pane is ready. */
+  var signedIn=false;
+  function autoSignIn(){
+    if(signedIn) return;
+    var l=L(); if(!l) return;
+    var fn=SURFACES[surface].open;
+    try{
+      if(typeof l[fn]!=='function') return;
+      l[fn]({ name:'John Newbury', email:'john.demo@gophergo.io', phone:'(919) 555-0124',
+              city:'Holly Springs, NC', dob:'01-01-1990', trustShield:true });
+      signedIn=true;
+      /* Opening the dashboard seeds demo requests. Drop them NOW, before the
+         first tick, or watchNative broadcasts the seed to the Go phone as if
+         somebody had submitted it. Twice: once immediately, once after the
+         dashboard's own deferred renders have settled. */
+      /* purgeSeed() also restores this page's saved requests, so it must run
+         AFTER the dashboard has seeded. Repeated because the dashboard's own
+         renders are deferred and the seed can land late. */
+      var purge=function(){ try{ if(l.GWeb) l.GWeb.purgeSeed(); }catch(_){} };
+      purge(); setTimeout(purge, 400); setTimeout(purge, 1400); setTimeout(purge, 3000);
+    }catch(_){}
+  }
+
+  /* ═══ Self-check — a quiet pane is not proof of a quiet system ══════════
+     Three things fail SILENTLY here and each one makes the playground look
+     healthy while proving nothing: a wrong document root (GopherIQData 404s),
+     a web app served without the bridge (no window.GWeb), and a Go pane that
+     came up without its PT hooks. Say so loudly instead. */
+  function selfCheck(){
+    var l=L(), w=R(), problems=[];
+    /* Document-root probe belongs on the GO pane, not the web pane. Go pulls
+       ../../Final/assets/js/gopher-iq-data.js — a relative hop that only
+       resolves when the server root is the repo root, so it is the reliable
+       canary. The web pane is NOT: gopher-connect.html never loads that module
+       at all (its three GopherIQData references are guarded), so asserting it
+       there reported a healthy Connect session as broken. */
+    try{ if(w && !w.GopherIQData) problems.push('the Go pane has no <b>GopherIQData</b> — serve from the REPO ROOT, not from <code>_prototypes/</code>'); }catch(_){}
+    try{ if(l && !l.GWeb) problems.push('the web pane published no <b>window.GWeb</b> — <code>gopher-web-pt-bridge.js</code> did not load or install'); }catch(_){}
+    try{ if(w && !w.__injectJob) problems.push('the Go pane has no <b>__injectJob</b> — it did not boot in <code>?pt=1</code> mode'); }catch(_){}
+    if(problems.length){
+      status('⚠️ <b>This playground is not wired.</b> '+problems.join('; ')+'. Nothing below proves anything until this is fixed.', true);
+      return false;
+    }
+    /* Prove the world is empty rather than assuming it — a stray demo record is
+       invisible until it broadcasts a job nobody asked for. */
+    var dirty=[];
+    try{
+      var wl=l.GWeb.world();
+      for(var k in wl){ if(k!=='activeRequests' && wl[k]>0) dirty.push(k+'='+wl[k]); }
+    }catch(_){}
+    if(dirty.length){
+      status('⚠️ <b>Demo data still present</b> ('+dirty.join(', ')+'). The playground must start from '
+        +'nothing — anything here was not created by a real interaction.', true);
+      return false;
+    }
+    status('Two real apps sharing one live bridge — <b>no demo data, no fake Gophers</b>. In the left pane '
+      +'(<b>'+SURFACES[surface].pill+'</b>) start a request and submit it; it appears as a live job on the '
+      +'<b>Go</b> phone. Nobody accepts it until the Gopher on the right actually does. '
+      +'Navigate the site freely — each page keeps its own requests.');
+    return true;
+  }
+
+  /* ═══ Controls ══════════════════════════════════════════════════════════ */
+  resetBtn.addEventListener('click', function(){
+    resetBtn.disabled=true;
+    try{ var g=W(); if(g) g.reset(); }catch(_){}
+    clearRelays(); signedIn=false;
+    bootFrames();
+    status('Resetting both panes…');
+    setTimeout(function(){ autoSignIn(); setTimeout(function(){ selfCheck(); resetBtn.disabled=false; }, 1400); }, 1200);
+  });
+
+  /* Deals launch gate — Raleigh-DMA-only at launch. This reboots the GO pane;
+     website gating was deferred by the owner (2026-07-16), so the web pane is
+     honestly left alone rather than half-gated. */
+  function dealsLive(){ try{ return localStorage.getItem('gopherDealsLive')!=='0'; }catch(_){ return true; } }
+  function paintDealsBtn(){
+    var on=dealsLive();
+    dealsBtn.textContent='Deals: '+(on?'LIVE':'OFF')+' (Go)';
+    dealsBtn.className='btn '+(on?'deals-on':'deals-off');
+  }
+  dealsBtn.addEventListener('click', function(){
+    dealsBtn.disabled=true;
+    try{ localStorage.setItem('gopherDealsLive', dealsLive()?'0':'1'); }catch(_){}
+    paintDealsBtn();
+    var v='&v='+Date.now();
+    goFrame.src='Go/gopher-go-prototype.html?pt=1'+v;
+    status('Gopher Deals '+(dealsLive()?'is <b>LIVE</b>':'is <b>gated OFF</b>')+' on the Go phone — '
+      +'the web pane is unchanged (website gating deferred, owner 2026-07-16).');
+    setTimeout(function(){ dealsBtn.disabled=false; }, 1200);
+  });
+  paintDealsBtn();
+
+  /* ═══ Tick ══════════════════════════════════════════════════════════════ */
+  /* ⛔ THE TICK MUST NOT BE ABLE TO DIE, AND MUST SAY WHY IT IS IDLE.
+     A stalled relay is indistinguishable from a broken feature: the panes just
+     stop agreeing. It cost three separate investigations in one day before this
+     was instrumented — twice diagnosed wrongly from the outside (blamed on
+     "Reset demo", then on a hidden pane) because there was no way to tell
+       (a) the loop threw and stopped rescheduling,   from
+       (b) the loop is fine but PARKED on !signedIn,  from
+       (c) the loop is running and a watcher is wrong.
+     All three look identical from the panes. So: every pass is guarded, the loop
+     always reschedules, and it publishes its own vitals. `window.__tick` is a
+     debugging seam, not a feature — read it, never drive from it. */
+  window.__tick = { n:0, parked:0, lastError:null, lastAt:0 };
+  function tick(){
+    window.__tick.n++; window.__tick.lastAt = Date.now();
+    try{
+      autoSignIn();
+      /* Relays stay parked until the dashboard is open AND its demo seed has been
+         dropped. A tick that fires early broadcasts the seed. */
+      /* ⛔ NO setTimeout HERE. The `finally` below schedules the next pass — for
+         EVERY exit path, which is the whole point of it being a finally. An
+         earlier version scheduled here too, so a parked pass queued TWO ticks
+         and the loop doubled every 600ms: 1,369,180 passes in about a minute,
+         which starved the event loop badly enough that the web pane never
+         finished loading, and the empty pane read as "Connect's bridge is
+         broken". It was not; the loop was eating the page. Return, and let the
+         finally do its job. */
+      if(!signedIn){ window.__tick.parked++; return; }
+      tickBody();
+    }catch(err){
+      /* Swallowing this would recreate the very failure the guard exists for, so
+         it is recorded and surfaced rather than ignored. The loop keeps going:
+         one bad pass must not take every relay down with it.
+
+         ⛔ EVEN READING THE ERROR IS WRAPPED. `err` can be a cross-realm object
+         from one of the iframes, and touching `.message` — or String()-ing it —
+         can itself throw. That is not hypothetical: it is what killed this loop
+         the first time, AFTER it had been "made unkillable". The handler threw,
+         so the reschedule below never ran, and the panes quietly stopped
+         agreeing again. */
+      try{ window.__tick.lastError = (err && err.message) || String(err); }
+      catch(_){ window.__tick.lastError = 'unreadable error object (cross-realm?)'; }
+      try{ console.error('[playground] relay pass failed:', err); }catch(_){}
+    }finally{
+      /* ⛔ FINALLY, NOT AFTER THE CATCH. A reschedule that lives after the catch
+         block is only reached if the catch block itself completes — which is
+         exactly the assumption that failed. This is the line that makes the
+         "the tick cannot die" claim true rather than intended. */
+      setTimeout(tick, 600);
+    }
+  }
+  function tickBody(){
+    watchNative(); watchAccept(); watchHire(); watchStart();
+    /* Hire, Start job and counter-accept all mutate the record from INSIDE the
+       app, where the bridge's own mutators never run — so snapshot every tick or
+       navigating away would lose them. */
+    try{ var _g=W(); if(_g) _g.persist(); }catch(_){}
+    watchCounter(); watchCounterDecision();
+    watchStatus(); watchNoShow(); watchNavigate(); watchAdjust(); watchAdjustDecision(); watchDispute(); watchMessages();
+    watchGoCancel(); watchReqCancel();
+    /* LAST, deliberately. Every relay above can move an order, and the app pane
+       should show the state AFTER this tick's work rather than the state before
+       it — a one-tick lag is exactly what "they disagree" looks like to a human.
+       Adoption runs FIRST so a phone-created request is in GWeb before the
+       outward mirror decides what the app should be showing. */
+    adoptFromApp();
+    mirrorToApp();
+  }
+
+  bootFrames();
+  setTimeout(function(){ autoSignIn(); setTimeout(selfCheck, 1600); }, 1200);
+  tick();
+})();
+</script>
+</body>
+</html>

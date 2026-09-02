@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gopher — Request ↔ Go (live, shared prototype DB)</title>
+<style>
+  :root{ --navy:#002461; --green:#33D975; --muted:#5b6472; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; min-height:100%; }
+  body{ font-family:'Nunito','DM Sans',system-ui,sans-serif; background:radial-gradient(1200px 600px at 50% -10%, #0b1b3f 0%, #060d22 60%, #04081a 100%); color:#fff; }
+
+  .bar{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:13px 20px; background:rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.08); position:sticky; top:0; z-index:40; backdrop-filter:blur(6px); }
+  .bar h1{ font-size:15px; font-weight:900; margin:0; display:flex; align-items:center; gap:9px; }
+  .bar h1 .dot{ width:9px; height:9px; border-radius:50%; background:var(--green); box-shadow:0 0 0 4px rgba(51,217,117,.25); }
+  .bar .spacer{ flex:1; }
+  .status{ width:100%; font-size:12.5px; color:rgba(255,255,255,.78); font-family:'DM Sans',sans-serif; line-height:1.5; }
+  .status b{ color:var(--green); }
+  .reset{ font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#cfe0ff; background:rgba(120,170,255,.15); border:1px solid rgba(120,170,255,.38); border-radius:99px; padding:7px 15px; cursor:pointer; white-space:nowrap; transition:background .15s, opacity .15s; }
+  .reset:hover{ background:rgba(120,170,255,.30); }
+  .reset:active{ transform:translateY(1px); }
+  .reset[disabled]{ opacity:.5; cursor:default; }
+  /* Deals launch gate (Raleigh-DMA-only rollout): green = live, red = gated off */
+  .reset.deals-on{ color:#b9f4cf; background:rgba(51,217,117,.16); border-color:rgba(51,217,117,.45); }
+  .reset.deals-off{ color:#ffc9c9; background:rgba(233,90,90,.16); border-color:rgba(233,90,90,.45); }
+
+  .stage{ display:flex; gap:44px; justify-content:center; align-items:flex-start; padding:26px 20px 44px; flex-wrap:wrap; }
+  .col{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .col .label{ font-weight:900; font-size:12.5px; letter-spacing:.4px; text-transform:uppercase; color:rgba(255,255,255,.75); display:flex; align-items:center; gap:8px; }
+  .col .label .pill{ font-size:10px; font-weight:800; padding:3px 9px; border-radius:99px; }
+  .col.request .pill{ background:rgba(51,217,117,.18); color:#8ff0b4; }
+  .col.go .pill{ background:rgba(120,170,255,.18); color:#b9d2ff; }
+
+  .phone{ position:relative; width:390px; height:844px; max-height:calc(100vh - 150px); background:#000; border-radius:44px; padding:11px; box-shadow:0 30px 90px rgba(0,0,0,.6), 0 0 0 2px rgba(255,255,255,.06) inset; }
+  .screen{ position:relative; width:100%; height:100%; border-radius:34px; overflow:hidden; overflow:clip; background:#fff; }
+  .screen iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .notch{ position:absolute; top:11px; left:50%; transform:translateX(-50%); width:150px; height:26px; background:#000; border-radius:0 0 16px 16px; z-index:20; pointer-events:none; }
+
+  .hint{ max-width:900px; margin:0 auto; padding:0 20px 44px; color:rgba(255,255,255,.55); font-family:'DM Sans',sans-serif; font-size:12.5px; line-height:1.7; }
+  .hint b{ color:rgba(255,255,255,.8); }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1><span class="dot"></span> Gopher · Request ↔ Go — live</h1>
+  <span class="spacer"></span>
+  <button id="dealsLive" class="reset" type="button" title="Launch gate — Gopher Deals is Raleigh-DMA-only at launch. Toggle OFF to see the apps as every other market gets them (no Deals surfaces).">Deals: …</button>
+  <button id="resetDemo" class="reset" type="button" title="Clear both phones and start fresh">↺ Reset demo</button>
+  <div class="status" id="status">Two real apps sharing one in-browser database. In the <b>Request</b> phone (left), tap <b>＋ start a request</b>, fill in the details and submit — it appears live as a job on the <b>Go</b> phone (right) with a notification. Accept it there to update the request.</div>
+</div>
+
+<div class="stage">
+  <div class="col request">
+    <div class="label">Requester <span class="pill">Request app</span></div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen"><iframe id="reqFrame" data-src="Request/gopher-request-home.html?pt=1" title="Gopher Request"></iframe></div>
+    </div>
+  </div>
+  <div class="col go">
+    <div class="label">Gopher <span class="pill">Go app</span></div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen"><iframe id="goFrame" data-src="Go/gopher-go-prototype.html?pt=1" title="Gopher Go"></iframe></div>
+    </div>
+  </div>
+</div>
+
+<div class="hint">
+  <b>How it works —</b> there is no server and no fake bridge. Both phones load the real apps, empty of any demo requests, and share one browser-side store. A request you submit on the left is written to that store; the Go app reads it as a genuine <b>Available job</b> and raises a notification. When the Gopher opens and <b>accepts</b> it, that flips back through the same store and the request moves to your <b>Active</b> list on the left. Tap <b>↺ Reset demo</b> (top-right) to wipe both phones and start fresh.
+</div>
+
+<script>
+(function(){
+  var reqFrame=document.getElementById('reqFrame'), goFrame=document.getElementById('goFrame');
+  var statusEl=document.getElementById('status');
+  // Always load the CURRENT app files — a cache-bust token defeats Safari/Chrome serving a
+  // stale ?pt=1 copy of either phone (which would show old baked jobs / miss recent fixes).
+  var _v='&v='+Date.now();
+  reqFrame.src=reqFrame.getAttribute('data-src')+_v;
+  goFrame.src=goFrame.getAttribute('data-src')+_v;
+  function L(){ try{ return reqFrame.contentWindow; }catch(_){ return null; } }
+  function R(){ try{ return goFrame.contentWindow;  }catch(_){ return null; } }
+  function status(m){ statusEl.innerHTML=m; }
+  /* Branded Gopher Request banner (G40-306), rendered inside the request phone. */
+  function reqBanner(t,s){ try{ var l=L(); if(l && l.GopherBanner) l.GopherBanner.show({app:'request',title:t,sub:s}); }catch(_){}}
+
+  var injected={};   // GReq order id -> true  (already pushed to Go)
+  var injectedSeq={};// GReq order id -> last resubmitSeq injected (re-inject on edit-resubmit)
+  var accepted={};   // GReq order id -> true  (already synced back to Request)
+  var countered={};  // GReq order id -> true  (Go counter already surfaced on Request)
+  var decided={};    // GReq order id -> true  (requester's Accept/Decline already relayed to Go)
+  var statusSeen={}; // GReq order id -> last post-accept substage relayed to Request
+  var ratingSeen={}; // GReq order id -> true  (requester's star rating already relayed to Go)
+  var confirmSeen={};// GReq order id -> true  (requester's COMPLETION CONFIRM already relayed — tracked
+                     // separately from ratingSeen because rating is optional and must not gate confirm)
+  var bidSeen={};    // GReq order id -> true  (worker's bid already surfaced on Request)
+  var bidDecided={}; // GReq order id -> true  (requester's bid Accept/Decline already relayed to Go)
+  var goMsgSeen={};  // GReq order id -> count of Gopher messages already relayed to Request
+  var reqMsgSeen={}; // GReq order id -> count of Requester messages already relayed to Go
+  var adjustSeen={}; // GReq order id -> last charge-adjustment seq relayed to Request
+  var adjustDecided={}; // GReq order id -> last adjust approve/decline seq relayed back to Go
+  var noShowAlerted={}; // GReq order id -> last no-show-timer seq the requester was alerted about
+  var noShowDone={};    // GReq order id -> true (no-show completion already relayed)
+  var disputeSeen={};   // GReq order id -> last dispute seq relayed to the Gopher
+  var goCancelSeen={};  // GReq order id -> true (Gopher's cancellation already relayed to Request)
+  var navSeen={};       // GReq order id -> last navigation seq relayed to Request (nav state on the card)
+  var flagSeen={};      // GReq order id -> last report-a-request seq narrated (goes to Gopher HQ, NOT the requester)
+  var reqCancelSeen={}; // GReq order id -> last reqCancelSeq relayed to Go (requester cancel/repost)
+  var referralSeen=0;   // last Refer-Yourself seq relayed to the requester's inbox
+  var DEMO_GOPHER='Marcus';  // the one Gopher on the Go phone; a provider deal only surfaces here when it's directed to them
+
+  /* Build the Go-side order from a Request-app GReq record (enriched by the flow). */
+  function orderFromReq(r){
+    return {
+      id:r.order, cat:r.cat, title:r.title,
+      bids:!!r.bids, topOffer:(r.offerBand==='generous'), pay:+r.pay||0, cost:+r.cost||0, workers:+r.workers||1,
+      ageRestricted:!!r.ageRestricted, trustShield:!!r.trustShield, deal:!!r.deal, dealMerchant:r.dealMerchant||'',
+      pickup:r.pickup||'', dropoff:r.dropoff?[r.dropoff]:[],
+      scope:r.scope||r.title, dist:r.dist||'2.4',
+    /* Access details ride along (owner 2026-08-19) — a worker decides on stairs. */
+    pickupStairs:+r.pickupStairs||0, destStairs:+r.destStairs||0,
+    serviceElevatorPickup:!!r.serviceElevatorPickup, serviceElevatorDest:!!r.serviceElevatorDest,
+      // Scheduled bookings broadcast too (workers accept in advance; the Go app files them under its
+      // Scheduled tab once accepted). timingLabel is the human label ("Jul 23 · 7:00 PM").
+      scheduled:!!r.scheduledForLater,
+      when:(r.scheduledForLater && r.timingLabel) ? r.timingLabel : (r.when||'Now · ASAP'),
+      requestor:r.requestor||'A requester',
+      directBooking:!!r.directBooking, provider:r.provider||'',
+      // Worker-selection mode drives the Go card badge + whether an accept auto-hires ('first') or
+      // becomes an application the requester approves ('select'/'my'). Was dropped here.
+      /* Normalised at the WRITE as well as the read: the Go phone never receives the retired
+         'prioritize', so the relayed record is canonical even when the source record is old.
+         Go's own alias stays as a backstop rather than a dependency. */
+      workerSelection:(function(v){ v=String(v||'first'); return v==='prioritize' ? 'my' : v; })(r.workerSelection)
+    };
+  }
+
+  /* ── Request → shared store → Go: adopt any request the app natively creates ── */
+  function watchNative(){
+    try{
+      var l=L();
+      if(l && l.GReq){
+        var list=l.GReq.all()||[];
+        for(var i=0;i<list.length;i++){
+          var r=list[i];
+          // G40-78 exclusion: a repost that excludes the demo Gopher is NOT re-broadcast to this
+          // phone — the status line narrates it (other Gophers would see it; Marcus can't).
+          // A cancelled record keeps stage 'searching' (the cancel patch only sets cancelled/gCancelled)
+          // — without this guard a page refresh re-injected cancelled requests as live Go jobs.
+          // Scheduled bookings broadcast like any other request (owner 2026-07-19) — workers accept in
+          // advance and the Go app files them under its Scheduled tab until start time.
+          if(r && r.stage==='searching' && !r.cancelled && !r.gCancelled
+             && (!r.directTo || r.directTo===DEMO_GOPHER)
+             && !(r.excludeGopher && r.excludeGopher.indexOf(DEMO_GOPHER)===0)){
+            var seq=r.resubmitSeq||0;
+            if(!injected[r.order] || injectedSeq[r.order]!==seq){   // first submit, or an edit-resubmit (seq bumped)
+              var edited=(injected[r.order] && injectedSeq[r.order]!==seq);
+              injected[r.order]=true; injectedSeq[r.order]=seq;
+              var w=R(); if(w && w.__injectJob){ w.__injectJob(orderFromReq(r)); }
+              status('Request <b>'+r.order+'</b> '+(edited?'was <b>edited &amp; resubmitted</b> → the Go phone got a fresh notification'
+                :((r.scheduledForLater?'submitted (scheduled) → it is a live job on the Go phone; once accepted it files under the <b>Scheduled</b> tab':'submitted → it is now a live job on the Go phone (right) with a notification')+'. Tap the banner → open the job → <b>Accept</b>'))+'.');
+            }
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Go → shared store → Request: a Gopher accepting is an APPLICATION pending the requester's
+        approval — NOT an auto-hire (owner 2026-07-20: "if not approved by the requester, it is NOT
+        active"). Surface it on the request card through the SAME hire/consider/deny the bid flow uses;
+        the requester's Hire relays back (watchBidDecision → __ptBidResult) and only THEN does the job
+        go Active on both phones. Bid/counter jobs keep their own relays and are excluded here. ── */
+  function watchAccept(){
+    try{
+      var w=R();
+      if(w && w.__ptJobs){
+        for(var id in w.__ptJobs){
+          var job=w.__ptJobs[id];
+          if(job && job.accepted && !job.bid && !job.counter && !job.bidAccepted && !job.counterAccepted && !job.approved && !accepted[id]){
+            var l=L(); if(!(l && l.GReq)){ continue; }
+            var r0=l.GReq.get(id); if(!r0){ continue; }   // request not ready yet — retry next tick
+            accepted[id]=true;
+            var setPay=+r0.pay||0;
+            // Which mode was the request submitted under? The Go app already derives this
+            // (requesterPicks, gopher-go-prototype.html) — the harness was ignoring it and putting
+            // EVERY acceptance through the approval queue, so "First available — fastest match"
+            // behaved exactly like "I'll select my worker".
+            /* ENUM SETTLED (owner, 2026-08-22): the third workerSelection value is 'my', NOT
+   'prioritize'. The reason outlives the spelling: **MY is a proper name — Michael Yorrie**,
+   the first Favorite Gopher (3,600+ requests, never below 5 stars); the feature exists
+   because customers kept asking for him by name. So MY is ALWAYS capitalized in copy and is
+   never a possessive — do not "correct" it to "my Gophers". Legacy records may still carry
+   'prioritize'; wsMode() below accepts it and returns 'my', so nothing breaks either way. */
+        function wsMode(v){ v=String(v||'first'); return v==='prioritize' ? 'my' : v; }  // legacy alias
+        var wsel=wsMode(r0.workerSelection);
+        /* THREE ACCEPTANCE PATHS (owner, 2026-08-21 — canonical INV-ACCEPT, amended):
+             'first'      First available   — the first acceptance IS the hire, no approval.
+             'select'     I'll select my worker — every acceptance is a candidacy to approve.
+             'my' Prioritize MY Gopher(s) — SPLIT behaviour: a MY Gopher accepting
+                          behaves like First available (auto-hire); anyone else is a candidacy
+                          the requester approves. That split is the whole point of the mode —
+                          it prioritises the people you already trust without locking out the
+                          rest of the workforce.
+           The bug this replaces: this mode was lumped with 'select', so a MY Gopher
+           accepting still sat in the approval queue and the mode behaved identically to
+           "I'll select my worker". */
+        var accBy='Marcus K.';
+        var isMine=false;
+        try{ isMine = !!(l.isMyGopher && l.isMyGopher(accBy)); }catch(_){ isMine=false; }
+        var requesterPicks = (wsel==='select') || (wsel==='my' && !isMine);
+
+            if(!requesterPicks){
+              /* FIRST AVAILABLE — the first accept IS the hire. No bidsList, no attention, no
+                 ACTION NEEDED: the job goes Active on both phones immediately. Same store shape a
+                 Hire produces in bidAction('hire'), minus bidDecision (that relay speaks in bid
+                 language — "hired you at your $X bid" — which is wrong for a set-price accept). */
+              var okd=false; try{ okd=!!w.__ptApprove(id); }catch(_){}
+              if(!okd){ accepted[id]=false; continue; }   // Go not ready — retry next tick
+              l.GReq.update(id, { stage:'active', accepted:1, hired:'Marcus K.',
+                                  attention:null, bidsList:null,
+                                  when:'Accepted \u00b7 on the job' });
+              try{ if(l.uiBucket!==undefined){ l.uiBucket='active'; l.uiIdx=0; } }catch(_){}
+              try{ if(l.renderPending) l.renderPending(); }catch(_){}
+              reqBanner('Your Gopher Is On The Job','Marcus K. accepted — select here to view');
+              status('Gopher <b>accepted</b> '+id+' \u2014 '+(wsel==='my'?'<b>Prioritize MY Gophers</b> and Marcus is one of yours, so he is hired on the spot':'<b>first available</b>, so Marcus is hired on the spot')+'. <b>Active</b> on both phones.');
+              continue;
+            }
+
+            /* I'LL SELECT MY WORKER / PRIORITIZE MY GOPHERS — accepting is an APPLICATION pending
+               the requester's approval (owner 2026-07-20: "if not approved by the requester, it is
+               NOT active"). Surfaced through the same hire/consider/deny the bid flow uses. */
+            var cand={by:'Marcus K.', cost:0, labor:setPay, amt:setPay, dist:(r0.dist||'2.4')+' mi', rating:'4.9', jobs:212, note:'', status:'new', real:true, viaAccept:true};
+            l.GReq.update(id, { bidsList:[cand], attention:{ type:'bid', label:'Marcus accepted — approve to hire', count:1 } });
+            try{ if(l.uiBucket!==undefined){ l.uiBucket='submitted'; l.uiIdx=0; } }catch(_){}
+            try{ if(l.renderPending) l.renderPending(); }catch(_){}
+            reqBanner('A Gopher Accepted Your Request','Approve to hire — select here to view');
+            status('Gopher <b>accepted</b> '+id+' → open the request and <b>approve</b> to hire. It becomes <b>Active</b> on both phones only after you approve.');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Go → shared store → Request: a Gopher's counter-offer surfaces on the request card ── */
+  function watchCounter(){
+    try{
+      var w=R(), l=L();
+      if(w && w.__ptJobs && l && l.GReq){
+        for(var id in w.__ptJobs){
+          var job=w.__ptJobs[id];
+          if(job && job.counter && !countered[id] && !job.counterAccepted && !job.counterDeclined){
+            var r=l.GReq.get(id); if(!r){ continue; }   // request not ready yet — retry next tick, don't mark done
+            countered[id]=true;
+            var c=job.counter, by=c.by||'A Gopher';
+            l.GReq.update(id, { attention:{ type:'counter',
+              label:'Counter-offer from '+by+' — $'+c.amt+' (offer was $'+c.was+')',
+              amt:c.amt, was:c.was, by:by, note:c.note||'' } });
+            try{ if(l.uiBucket!==undefined){ l.uiBucket='submitted'; l.uiIdx=0; } }catch(_){}
+            try{ if(l.renderPending) l.renderPending(); }catch(_){}
+            try{ if(l.__counterAlert) l.__counterAlert(id); }catch(_){}   // fire the requester's NEEDS-ATTENTION banner
+            reqBanner('Gopher Interested In Your Request','Select here to view details');
+            status('Gopher <b>countered</b> '+id+' at <b>$'+c.amt+'</b> (you offered $'+c.was+') → the requester\'s card lit up a <b>banner</b>. Tap <b>Review now</b> to Accept or Decline.');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Request → shared store → Go: relay the requester's Accept/Decline back to the Gopher ── */
+  function watchDecision(){
+    try{
+      var l=L(), w=R();
+      if(l && l.GReq){
+        var list=l.GReq.all()||[];
+        for(var i=0;i<list.length;i++){
+          var r=list[i];
+          if(r && r.counterDecision && !decided[r.order]){
+            // Only mark relayed once the Go side actually has the hook AND the job — otherwise a tick
+            // where the Go phone is mid-reload would swallow the accept/decline forever (retry next tick).
+            if(!(w && w.__ptDecision && w.__ptJobs && w.__ptJobs[r.order])){ continue; }
+            var amt=r.counterAmt||'';
+            try{ w.__ptDecision(r.order, r.counterDecision, amt); }catch(_){ continue; }
+            decided[r.order]=true;
+            if(r.counterDecision==='accepted') accepted[r.order]=true;   // this WAS the accept — don't let watchAccept re-fire
+            status(r.counterDecision==='accepted'
+              ? 'You <b>accepted</b> the $'+amt+' counter → '+r.order+' is now <b>Active</b> and the Gopher is hired at the new price. 🎉'
+              : 'You <b>declined</b> the counter → the Gopher was notified; '+r.order+' stays open for offers.');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Go → shared store → Request: the worker advances the job status after accepting;
+        each step (on the way → arrived → complete) reflects live on the request card. ── */
+  function watchStatus(){
+    try{
+      var w=R(), l=L();
+      if(w && w.__ptJobs && l && l.GReq){
+        for(var id in w.__ptJobs){
+          var job=w.__ptJobs[id];
+          if(job && job.accepted && job.substage && statusSeen[id]!==job.substage && !job.noShow){   // no-show is relayed by watchNoShow instead
+            var r=l.GReq.get(id); if(!r){ continue; }   // request not ready — retry next tick
+            statusSeen[id]=job.substage;
+            var patch={ stage:'active', substage:job.substage, navTo:null };   // a status advance ends any turn-by-turn nav state
+            if(job.substage==='completed'){ patch.attention={ type:'confirm',
+              label:(r.hired||'Your Gopher')+' marked the job complete — confirm or report' };
+              if(job.completionPhotos && job.completionPhotos.length) patch.completionPhotos=job.completionPhotos.slice(); }   // drop-off photos → requester confirm screen
+            l.GReq.update(id, patch);
+            try{ if(l.uiBucket!==undefined) l.uiBucket='active'; }catch(_){}
+            try{ if(l.renderPending) l.renderPending(); }catch(_){}
+            var LB={inprogress:'started the job',items:'secured the items',completed:'completed the job'};
+            var GB={inprogress:['Your Request Is In-Progress','Select here to view details'],
+                    items:['Your Items Have Been Purchased','Select here to view details'],
+                    completed:['Your Request Was Completed!','Please select here to confirm']};
+            if(GB[job.substage]) reqBanner(GB[job.substage][0],GB[job.substage][1]);
+            status('Gopher <b>'+(LB[job.substage]||('→ '+job.substage))+'</b> for '+id+'.'
+              +(job.substage==='completed'?' Open the request card on the left and tap <b>Rate now</b>.':''));
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Go → shared store → Request: the worker opened TURN-BY-TURN NAVIGATION to the pick-up or
+        drop-off. CRITICAL invariant (live-app parity): navigation NEVER interrupts the live location
+        feed — the requester's card flips to "navigating · live location on", proving the feed stays
+        alive while the worker is inside their maps app. A status advance ends the nav state. ── */
+  function watchNavigate(){
+    try{
+      var w=R(), l=L();
+      if(w && w.__ptJobs && l && l.GReq){
+        for(var id in w.__ptJobs){
+          var job=w.__ptJobs[id]; var r=l.GReq.get(id); if(!r){ continue; }
+          if(job.navigating && job.navigating.seq && navSeen[id]!==job.navigating.seq){
+            navSeen[id]=job.navigating.seq;
+            l.GReq.update(id, { navTo: job.navigating.to||'stop' });
+            try{ if(l.renderPending) l.renderPending(); }catch(_){}
+            status('Gopher opened <b>turn-by-turn navigation</b> to the '+String(job.navigating.to||'stop').toLowerCase()+' → the requester\'s card shows it, and their <b>live location feed stays ON</b> — navigation never pauses tracking.');
+          }
+          // Nav ended (worker advanced the status / completed) → clear the card's nav line.
+          if(!job.navigating && navSeen[id] && r.navTo){
+            l.GReq.update(id, { navTo:null });
+            try{ if(l.renderPending) l.renderPending(); }catch(_){}
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Go → status line only: the worker REPORTED the request (⚑ Report A Request). Live parity:
+        the report posts to Gopher HQ Trust & Safety (POST orders/<id>/flag { description }) — the
+        REQUESTER is never notified, so nothing changes on the left phone. ── */
+  function watchFlagReport(){
+    try{
+      var w=R();
+      if(w && w.__ptJobs){
+        for(var id in w.__ptJobs){
+          var job=w.__ptJobs[id];
+          if(job && job.flagReport && job.flagReport.seq && flagSeen[id]!==job.flagReport.seq){
+            flagSeen[id]=job.flagReport.seq;
+            status('Gopher <b>reported</b> '+id+' — &ldquo;'+job.flagReport.reason+'&rdquo; → logged for <b>Gopher HQ Trust &amp; Safety</b> (live: POST orders/&lt;id&gt;/flag). The requester is not notified.');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Go → shared store → Request: a "Refer Yourself" referral from the Gopher lands in the requester's
+        inbox with an "Add to MY Gophers" option. ── */
+  function watchReferral(){
+    try{
+      var w=R(), l=L();
+      if(w && l && l.GReq){
+        var ref=w.__ptReferral;
+        if(ref && ref.seq && referralSeen!==ref.seq){
+          referralSeen=ref.seq;
+          try{ if(l.__referralInbox) l.__referralInbox(ref.gopher, ref.refId); }catch(_){}
+          status('Gopher <b>'+ref.gopher+'</b> sent a <b>Refer-Yourself</b> referral → it landed in the requester\'s <b>inbox</b> with an "Add to MY Gophers" option. 🎉');
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Age-restricted no-show (G40-192): the worker is at the drop-off but the requester isn't present.
+        Alert the requester during the 10-min window; on report/expiry auto-complete as a no-show. ── */
+  function watchNoShow(){
+    try{
+      var w=R(), l=L();
+      if(w && w.__ptJobs && l && l.GReq){
+        for(var id in w.__ptJobs){
+          var job=w.__ptJobs[id]; var r=l.GReq.get(id); if(!r){ continue; }
+          if(job.noShowActive && noShowAlerted[id]!==job.noShowActive){
+            noShowAlerted[id]=job.noShowActive;
+            try{ if(l.__noShowAlert) l.__noShowAlert(id); }catch(_){}
+            status('Gopher is at the age-restricted drop-off for '+id+' but '+(r.hired||'the requester')+' isn\'t present — <b>10-minute no-show timer</b> started. ⏳');
+          }
+          // Requester arrived (worker cancelled the window without a no-show) → clear the card countdown.
+          if(!job.noShowActive && !job.noShow && noShowAlerted[id] && r.noShowWait){
+            l.GReq.update(id, { noShowWait:null });
+            try{ if(l.renderPending) l.renderPending(); }catch(_){}
+            status('Requester arrived on '+id+' — no-show window cleared, back to the ID check.');
+          }
+          if(job.noShow && !noShowDone[id]){
+            noShowDone[id]=true; statusSeen[id]='completed';   // block watchStatus's normal completed→confirm
+            l.GReq.update(id, { stage:'active', substage:'completed', noShow:1, attention:null, when:'No show · 10-min timer expired' });
+            try{ if(l.uiBucket!==undefined) l.uiBucket='active'; }catch(_){}
+            try{ if(l.renderPending) l.renderPending(); }catch(_){}
+            try{ if(l.__noShowComplete) l.__noShowComplete(id); }catch(_){}
+            status('No-show on '+id+' → '+(r.hired||'the Gopher')+' was paid in full, items not released; order marked <b>Completed (No Show)</b>.');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Request → shared store → Go: the REQUESTER cancelled (G40-40 early cancel or G40-78
+        Cancel) or re-posted after an accept (G40-78 Repost). The Go phone drops the job; an
+        accepted Gopher is notified. A G40-78 repost EXCLUDES the dropped Gopher (locked rule)
+        — with one demo Gopher, the re-broadcast is therefore invisible on the right phone and
+        the status line explains why. ── */
+  function watchReqCancel(){
+    try{
+      var l=L(), w=R();
+      if(l && l.GReq && w && w.__ptJobs){
+        var list=l.GReq.all()||[];
+        for(var i=0;i<list.length;i++){
+          var r=list[i];
+          if(r && r.reqCancelSeq && reqCancelSeen[r.order]!==r.reqCancelSeq){
+            if(!(w.__ptReqCancelled && w.__ptJobs[r.order])){ continue; }   // Go mid-reload — retry next tick
+            try{ w.__ptReqCancelled(r.order, r.reqCancelKind||'cancel'); }catch(_){ continue; }
+            reqCancelSeen[r.order]=r.reqCancelSeq;
+            status(r.reqCancelKind==='repost'
+              ? 'You <b>put '+r.order+' back out</b> — the accepting Gopher was released &amp; notified. Per the exclusion rule they <b>can’t re-accept</b> it, so the re-broadcast doesn’t appear on this demo’s one-Gopher phone; other Gophers would see it.'
+              : 'You <b>cancelled</b> '+r.order+' → it left the Go phone’s feed'+(w.__ptJobs[r.order].accepted?' and the Gopher was notified':'')+'. No charge.');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Go → shared store → Request: the GOPHER cancelled an accepted request (G40-9) — the
+        requester gets a banner + the 3-option recovery sheet (Assign New Gopher ASAP · Edit ·
+        Cancel), with the 15-minute no-action auto-cancel. ── */
+  function watchGoCancel(){
+    try{
+      var w=R(), l=L();
+      if(w && w.__ptJobs && l && l.GReq){
+        for(var id in w.__ptJobs){
+          var job=w.__ptJobs[id];
+          // Only a cancel the GOPHER initiated (their flow sets cancelReason) relays G40-9 recovery
+          // to the requester. A requester-initiated cancel also lands here as job.cancelled — echoing
+          // it back as "Your Gopher Cancelled" resurrected the request via the recovery sheet.
+          if(job && job.cancelled && !job.cancelledByReq && !goCancelSeen[id]){
+            var r=l.GReq.get(id); if(!r){ continue; }               // request not ready — retry next tick
+            if(!l.__gopherCancelled){ continue; }                   // Request hook mid-reload — retry
+            try{ l.__gopherCancelled(id, job.cancelReason||'', r.hired||'Your Gopher'); }catch(_){ continue; }
+            goCancelSeen[id]=true;
+            reqBanner('Your Gopher Cancelled','Select here to review your options');
+            status('Gopher <b>cancelled</b> '+id+' → the requester got the <b>G40-9 recovery options</b> (Assign New Gopher ASAP · Edit · Cancel) with a 15-min auto-cancel. Assign or an edit re-broadcasts under a new order #.');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Go → shared store → Request: the worker adjusts the agreed charge (offer + item cost) on site;
+        the new amount reflects on the requester's card + tracker. ── */
+  function watchAdjust(){
+    try{
+      var w=R(), l=L();
+      if(w && w.__ptJobs && l && l.GReq){
+        for(var id in w.__ptJobs){
+          var job=w.__ptJobs[id];
+          if(job && job.adjust && adjustSeen[id]!==job.adjust.seq){
+            var r=l.GReq.get(id); if(!r){ continue; }
+            var a=job.adjust;
+            if(a.status==='pending'){
+              // Raises the charge OR resolves a dispute → the requester must approve/decline before it applies.
+              // Only mark relayed once the Request hook exists (else a mid-reload tick would swallow it).
+              if(!l.__adjustApproval){ continue; }
+              try{ l.__adjustApproval(id, {
+                seq:a.seq, origOffer:+a.origOffer||0, origCost:+a.origCost||0,
+                newOffer:+a.newOffer||0, newCost:+a.newCost||0, comment:a.comment||'',
+                hasReceipt:!!a.hasReceipt, dispute:!!a.dispute, ageRestricted:!!a.ageRestricted, trustShield:!!a.trustShield
+              }); }catch(_){ continue; }
+              adjustSeen[id]=a.seq;
+              status('Gopher <b>submitted a cost adjustment</b> on '+id+(a.dispute?' (dispute resolution)':' (raises the charge)')+' → waiting for the requester to <b>approve or decline</b>.');
+            } else {
+              // status 'applied' — same/lower total OUTSIDE a dispute, no re-auth needed → reflect immediately.
+              // (A dispute-resolution adjustment is NEVER 'applied' — it always relays as 'pending' and goes
+              //  through the requester's approve/decline gate, same protocol as any cost adjustment.)
+              var offer=+a.newOffer||0, cost=+a.newCost||0;
+              var fee=Math.round(0.08*offer*100)/100; var total=offer+cost+fee;
+              var patch2={ pay:offer, cost:cost, amount:'$'+total.toFixed(2) };
+              l.GReq.update(id, patch2);
+              try{ if(l.renderPending) l.renderPending(); }catch(_){}
+              try{ if(l.__adjustAlert) l.__adjustAlert(id, offer, cost, total); }catch(_){}
+              adjustSeen[id]=a.seq;
+              status('Gopher adjusted '+id+' with <b>no charge increase</b> → applied automatically (new total $'+total.toFixed(2)+').');
+            }
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Request → shared store → Go: the requester DISPUTED the completion — the Gopher is notified
+        IMMEDIATELY with the requester's comments; their pay card flips to on-hold (red) with message +
+        cost-adjustment CTAs to resolve it. ── */
+  function watchDispute(){
+    try{
+      var l=L(), w=R();
+      if(l && l.GReq){
+        var list=l.GReq.all()||[];
+        for(var i=0;i<list.length;i++){
+          var r=list[i];
+          if(r && r.disputed && r.disputeSeq && disputeSeen[r.order]!==r.disputeSeq){
+            if(!(w && w.__ptDisputed && w.__ptJobs && w.__ptJobs[r.order])){ continue; }   // Go not ready — retry next tick
+            try{ w.__ptDisputed(r.order, r.disputeNote||''); }catch(_){ continue; }
+            disputeSeen[r.order]=r.disputeSeq;
+            status('You <b>reported an issue</b> on '+r.order+' → the Gopher was notified immediately with your comments; their payment is on hold. They can <b>message you</b> or send a <b>cost adjustment</b> to resolve it. ⚑');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Request → shared store → Go: relay the requester's APPROVE/DECLINE on a cost adjustment back to
+        the worker. Approve applies the new charge on both sides; decline leaves the original. ── */
+  function watchAdjustDecision(){
+    try{
+      var l=L(), w=R();
+      if(l && l.GReq){
+        var list=l.GReq.all()||[];
+        for(var i=0;i<list.length;i++){
+          var r=list[i];
+          if(r && r.adjustDecision && adjustDecided[r.order]!==r.adjustDecision.seq){
+            if(!(w && w.__ptAdjustDecision && w.__ptJobs && w.__ptJobs[r.order])){ continue; }
+            var d=r.adjustDecision;
+            try{ w.__ptAdjustDecision(r.order, !!d.approved, d.newOffer, d.newCost); }catch(_){ continue; }
+            adjustDecided[r.order]=d.seq;
+            status(d.approved
+              ? 'You <b>approved</b> the cost adjustment on '+r.order+' → the new total is authorized and the Gopher was notified. ✅'
+              : 'You <b>declined</b> the cost adjustment on '+r.order+' → the original charge stands; the Gopher was notified.');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Request → shared store → Go: relay the requester's star rating back to the worker. ── */
+  function watchRating(){
+    try{
+      var l=L(), w=R();
+      if(l && l.GReq){
+        var list=l.GReq.all()||[];
+        for(var i=0;i<list.length;i++){
+          var r=list[i];
+          /* CONFIRM relays on its OWN, before and independently of any rating (owner, 2026-08-09).
+             This loop used to fire only on `r.rating`, so a requester who tapped CONFIRM COMPLETED
+             and then skipped the rating — which is optional — never had their confirmation reach the
+             worker: the Go app sat on "Pending confirmation" forever. Live splits these into
+             /confirm_payout/:id and /ratings, and /ratings changes no order state, so the relay is
+             split to match. Separate seen-map, so a rating arriving later still relays too. */
+          if(r && r.confirmed && !confirmSeen[r.order]){
+            if(!(w && w.__ptConfirmed && w.__ptJobs && w.__ptJobs[r.order])){ continue; }   // Go not ready — retry next tick
+            try{ w.__ptConfirmed(r.order); }catch(_){ continue; }
+            confirmSeen[r.order]=true;
+            status('You confirmed <b>'+r.order+'</b> — payout released and their app updated immediately. Rating is optional and changes nothing about the payout. ✅');
+          }
+          if(r && r.rating && !ratingSeen[r.order]){
+            if(!(w && w.__ptRated && w.__ptJobs && w.__ptJobs[r.order])){ continue; }   // Go not ready — retry next tick
+            try{ w.__ptRated(r.order, r.rating, !!r.myGopher); }catch(_){ continue; }   // 3rd arg: favorited → Go's congrats modal
+            ratingSeen[r.order]=true;
+            status('You rated your Gopher on <b>'+r.order+'</b> — their app returned home. Ratings stay private to each side. ✅');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Go → shared store → Request: a worker's bid on an open-to-bids job surfaces on the request card. ── */
+  function watchBid(){
+    try{
+      var w=R(), l=L();
+      if(w && w.__ptJobs && l && l.GReq){
+        for(var id in w.__ptJobs){
+          var job=w.__ptJobs[id];
+          if(job && job.bid && !bidSeen[id] && !job.bidAccepted && !job.bidDeclined){
+            var r=l.GReq.get(id); if(!r){ continue; }   // request not ready yet — retry next tick
+            bidSeen[id]=true;
+            var bd=job.bid, by=bd.by||'Marcus K.';
+            var rc=+bd.cost||0, rl=(+bd.labor|| (+bd.amt-rc))||+bd.amt||0, ra=+bd.amt||(rc+rl);
+            var real={by:by, cost:rc, labor:rl, amt:ra, dist:(r.dist||'2.4')+' mi', rating:'4.9', jobs:212, note:bd.note||'', status:'new', real:true};
+            // This is a 1-requester ↔ 1-gopher prototype — surface ONLY the real Gopher's bid, no demo bidders.
+            var list=[real];
+            l.GReq.update(id, { bidsList:list, attention:{ type:'bid', label:'New bid from '+by+' — review & hire', count:1 } });
+            try{ if(l.uiBucket!==undefined){ l.uiBucket='submitted'; l.uiIdx=0; } }catch(_){}
+            try{ if(l.renderPending) l.renderPending(); }catch(_){}
+            reqBanner('Gopher Interested In Your Request','Select here to view details');
+            status('Gopher <b>bid $'+ra+'</b> on '+id+' → open the request card and tap <b>Review bids</b> to compare & hire.');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Request → shared store → Go: relay the requester's bid Accept/Decline back to the worker. ── */
+  function watchBidDecision(){
+    try{
+      var l=L(), w=R();
+      if(l && l.GReq){
+        var list=l.GReq.all()||[];
+        for(var i=0;i<list.length;i++){
+          var r=list[i];
+          if(r && r.bidDecision && !bidDecided[r.order]){
+            if(!(w && w.__ptBidResult && w.__ptJobs && w.__ptJobs[r.order])){ continue; }   // Go not ready — retry next tick
+            var amt=r.bidAmt||'';
+            try{ w.__ptBidResult(r.order, r.bidDecision, amt); }catch(_){ continue; }
+            bidDecided[r.order]=true;
+            if(r.bidDecision==='accepted') accepted[r.order]=true;   // this WAS the hire — don't let watchAccept re-fire
+            status(r.bidDecision==='accepted'
+              ? 'You <b>hired</b> '+(r.hired||'the Gopher')+' at <b>$'+amt+'</b> → '+r.order+' is now Active. 🎉'
+              : 'You <b>passed</b> on the bid → '+r.order+' stays open for more bids.');
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── Inbox sync (both ways): Gopher messages light up the requester's inbox (banner + badge);
+        requester replies are delivered to the worker's thread. ── */
+  function watchMessages(){
+    try{
+      var l=L(), w=R();
+      if(l && l.GReq && w && w.__ptJobs){
+        for(var id in w.__ptJobs){
+          var job=w.__ptJobs[id]; var r=l.GReq.get(id); if(!r){ continue; }
+          // Gopher → requester
+          var goMsgs=job.msgs||[];
+          var prevSeen=goMsgSeen[id]||0;
+          if(prevSeen < goMsgs.length){
+            var rm=(r.messages||[]).slice();
+            // flagged = the Gopher chose "Send as-is" on a guard hit — the requester sees the terms-violation note
+            for(var i=prevSeen; i<goMsgs.length; i++){ rm.push({from:'gopher', text:goMsgs[i].text, flagged:goMsgs[i].flagged?1:0}); }
+            goMsgSeen[id]=goMsgs.length;
+            l.GReq.update(id, { messages:rm, unread:((r.unread||0) + (goMsgs.length-prevSeen)) });
+            try{ if(l.__inboxAlert) l.__inboxAlert(id, goMsgs[goMsgs.length-1].text); }catch(_){}
+            reqBanner('New Message Available','Select here to view details');
+            status('New message from the Gopher on '+id+' → the requester\'s <b>inbox</b> lit up (banner + red badge). 🔔');
+          }
+          // requester → Gopher
+          var reqMsgs=(r.messages||[]).filter(function(m){return m.from==='req';});
+          if((reqMsgSeen[id]||0) < reqMsgs.length){
+            for(var j=(reqMsgSeen[id]||0); j<reqMsgs.length; j++){ try{ if(w.__ptInboxDeliver) w.__ptInboxDeliver(id, reqMsgs[j].text, reqMsgs[j].flagged); }catch(_){} }
+            reqMsgSeen[id]=reqMsgs.length;
+          }
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ── One-click reset: wipe the shared store + harness memory and reboot both phones empty. ── */
+  var resetBtn=document.getElementById('resetDemo');
+  function resetDemo(){
+    if(resetBtn){ resetBtn.disabled=true; }
+    status('Resetting… clearing both phones.');
+    // 1) clear the shared store + any persisted state on both same-origin frames
+    try{ var l=L(); if(l){ if(l.GReq) l.GReq.save([]); if(l.sessionStorage) l.sessionStorage.clear(); } }catch(_){}
+    try{ var w=R(); if(w && w.sessionStorage) w.sessionStorage.clear(); }catch(_){}
+    // Also forget the purchase-needed "Do not show me this again" choice (localStorage, same key as the
+    // live app) so a fresh demo run gets the Attention! acknowledgment again.
+    try{ localStorage.removeItem('hideAcceptRequestAttentionModalChecked'); }catch(_){}
+    // 2) forget everything the harness has relayed so the fresh frames start clean
+    /* Every seen-map declared above must be listed here. Order ids are reused across runs
+       (GR-00128 every time), so a map that survives Reset silently suppresses its relay on the
+       second run — the relay looks dead and the product looks broken. confirmSeen was added
+       2026-08-09 and missed here: after one Reset, CONFIRM COMPLETED stopped reaching the Go
+       phone and the worker sat on "Pending confirmation" forever, reproducing the exact bug that
+       change fixed. Add the new map here in the SAME commit that declares it.
+       The seq-keyed maps are the subtler half of this: navSeen and flagSeen compare against
+       job.<x>.seq, which restarts at 1 on a rebooted frame (seq:((j.x&&j.x.seq)||0)+1), so a
+       stale 1 from the previous run matches the fresh 1 and swallows the FIRST nav / first
+       report after a Reset. Both were missing here too. Asserted by
+       docs/handoff/category-mismatch/run_splitscreen_reset_test.py. */
+    injected={}; injectedSeq={}; accepted={}; countered={}; decided={}; statusSeen={}; ratingSeen={}; confirmSeen={}; bidSeen={}; bidDecided={}; goMsgSeen={}; reqMsgSeen={}; adjustSeen={}; adjustDecided={}; noShowAlerted={}; noShowDone={}; disputeSeen={}; goCancelSeen={}; navSeen={}; flagSeen={}; reqCancelSeen={}; referralSeen=0;
+    // 3) reboot both phones to their empty state (cache-busted, like the first load)
+    var v='&v='+Date.now();
+    reqFrame.src=reqFrame.getAttribute('data-src')+v;
+    goFrame.src=goFrame.getAttribute('data-src')+v;
+    // 4) re-enable once both frames have reloaded
+    var pending=2;
+    function done(){ if(--pending<=0){ if(resetBtn) resetBtn.disabled=false;
+      status('Ready — both phones are empty. On the <b>Request</b> phone (left), tap <b>＋ start a request</b> and submit; it appears live on the <b>Go</b> phone (right).'); } }
+    reqFrame.onload=done; goFrame.onload=done;
+  }
+  if(resetBtn) resetBtn.addEventListener('click', resetDemo);
+
+  /* ── Deals launch gate (Raleigh DMA only at launch) ──────────────────────────────────────────
+        One shared flag (localStorage 'gopherDealsLive', same-origin with both phones): ON = the
+        Raleigh experience (Deals everywhere it's built), OFF = every other market — no Deals
+        surfaces on either phone, but all the rest of the new UX ships as-is. The flag survives
+        ⟳ Reset demo on purpose: the gate is market state, not demo state. ── */
+  var dealsBtn=document.getElementById('dealsLive');
+  function dealsLive(){ try{ return localStorage.getItem('gopherDealsLive')!=='0'; }catch(_){ return true; } }
+  function paintDealsBtn(){ if(!dealsBtn) return; var on=dealsLive();
+    dealsBtn.textContent = on ? 'Deals: LIVE · Raleigh DMA' : 'Deals: OFF · other markets';
+    dealsBtn.classList.toggle('deals-on', on); dealsBtn.classList.toggle('deals-off', !on); }
+  function toggleDeals(){
+    var next=dealsLive()?'0':'1';
+    try{ localStorage.setItem('gopherDealsLive', next); }catch(_){}
+    paintDealsBtn();
+    // Reboot both phones so every Deals surface re-renders under the new gate (store is kept).
+    if(dealsBtn) dealsBtn.disabled=true;
+    var v='&v='+Date.now();
+    reqFrame.src=reqFrame.getAttribute('data-src')+v;
+    goFrame.src=goFrame.getAttribute('data-src')+v;
+    var pending=2;
+    function done(){ if(--pending<=0){ if(dealsBtn) dealsBtn.disabled=false;
+      status(next==='1'
+        ? 'Gopher Deals is <b>LIVE</b> (Raleigh DMA experience) — Deals surfaces are back on both phones.'
+        : 'Gopher Deals is <b>OFF</b> — this is the launch experience <b>outside the Raleigh DMA</b>: no Deals on either phone; everything else unchanged.'); } }
+    reqFrame.onload=done; goFrame.onload=done;
+  }
+  if(dealsBtn){ paintDealsBtn(); dealsBtn.addEventListener('click', toggleDeals); }
+
+  // Serve-root guard. Both phones pull shared modules from ../../Final/, so this folder must be
+  // served with the REPO ROOT as the document root (…/Code/), not with _prototypes/ as the root.
+  // Get that wrong and gopher-iq-data.js 404s: coverage/FAQ answers quietly degrade with nothing
+  // on screen to say so. Fail loudly instead of letting a demo look fine while the brain is missing.
+  function checkServeRoot(){
+    var missing=[];
+    [['Request',L()],['Go',R()]].forEach(function(p){
+      var w=p[1]; if(!w) return;
+      try{ if(!w.GopherIQData) missing.push(p[0]); }catch(_){}
+    });
+    if(!missing.length) return;
+    statusEl.innerHTML='<b style="color:#ff8f6b">⚠ Shared modules failed to load ('+missing.join(' + ')+').</b> '+
+      'Serve the <b>repo root</b>, not <code>_prototypes/</code> — the phones reference '+
+      '<code>../../Final/assets/js/</code>. From <code>…/Code/</code> run '+
+      '<code>python3 -m http.server 8123</code>, then open '+
+      '<code>/_prototypes/split-screen.html</code>. Coverage and FAQ answers are unreliable until this is fixed.';
+  }
+  // Late enough that both frames have booted and run their own scripts.
+  setTimeout(checkServeRoot, 2500);
+
+  function tick(){ watchNative(); watchAccept(); watchCounter(); watchDecision(); watchNoShow(); watchStatus(); watchNavigate(); watchFlagReport(); watchDispute(); watchGoCancel(); watchReqCancel(); watchAdjust(); watchAdjustDecision(); watchRating(); watchBid(); watchBidDecision(); watchMessages(); watchReferral(); setTimeout(tick, 600); }
+  tick();
+})();
+</script>
+</body>
+</html>

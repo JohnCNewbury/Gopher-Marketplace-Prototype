@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<!-- Gopher Privacy Policy — header: Request/Connect/Service Providers/Deals/Services/Login — build 2026-05-23-standard-header -->
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact Us – Gopher</title>
+  <!-- SEO -->
+  <meta name="description" content="Get in touch with Gopher — support, partnerships, and press. We're a local team ready to help.">
+  <link rel="canonical" href="https://gophergo.io/gopher-contact-us.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Gopher">
+  <meta property="og:title" content="Contact Us – Gopher">
+  <meta property="og:description" content="Get in touch with Gopher — support, partnerships, and press. We're a local team ready to help.">
+  <meta property="og:url" content="https://gophergo.io/gopher-contact-us.html">
+  <meta property="og:image" content="https://gophergo.io/assets/img/og-default.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Contact Us – Gopher">
+  <meta name="twitter:description" content="Get in touch with Gopher — support, partnerships, and press. We're a local team ready to help.">
+  <meta name="twitter:image" content="https://gophergo.io/assets/img/og-default.jpg">
+
+<link rel="stylesheet" href="assets/css/gopher-fonts.css">
+<style>
+  :root {
+    --green: #33D975;
+    --green-dark: #1CB061;        /* Mountain Meadow / hover — style guide §3 */
+    --green-light: #e8f7ea;
+    --navy: #002461;
+    --navy-mid: #253a7e;
+    --navy-light: #eef0f8;
+    --white: #ffffff;
+    --gray: #f5f6fa;
+    --sand: #fbf3e4;              /* Official light background — style guide §3 */
+    --rule: #e7e2d3;             /* Sand-rule border — style guide §3 */
+    --terracotta: #D97757;       /* Warm accent — style guide §3 */
+    --text: #2c2c3e;
+    --muted: #6b7280;
+    --shadow: 0 4px 24px rgba(0,36,97,0.10);
+    --radius: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { font-family:'DM Sans',sans-serif; color:var(--text); background:var(--white); overflow-x:hidden; }
+  a { color:inherit; }
+
+  /* ── PAGE HERO ── */
+  /* ── CONTACT HERO ── */
+  .contact-hero {
+    position:relative;
+    padding:94px 48px 90px;
+    background:var(--sand);
+    text-align:center;
+  }
+  .contact-hero::before {
+    content:''; position:absolute; inset:0; overflow:hidden; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(820px 360px at 12% -20%, rgba(51,217,117,0.12), transparent 60%),
+      radial-gradient(680px 340px at 100% 130%, rgba(51,217,117,0.08), transparent 55%);
+  }
+  .contact-hero::after {
+    content:''; position:absolute; left:0; right:0; bottom:0; height:1px; z-index:0;
+    background:var(--rule);
+  }
+  .contact-hero-inner { max-width:760px; margin:0 auto; position:relative; z-index:1; }
+  .contact-eyebrow {
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Nunito',sans-serif; font-weight:800;
+    font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--terracotta);
+    background:rgba(217,119,87,0.10); border:1px solid rgba(217,119,87,0.45);
+    padding:7px 16px; border-radius:999px; margin-bottom:20px;
+  }
+  .contact-eyebrow span {
+    width:7px; height:7px; background:var(--green); border-radius:50%;
+    display:inline-block; animation:eyebrowPulse 2s infinite;
+  }
+  @keyframes eyebrowPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  .contact-hero h1 {
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:44px; line-height:1.08;
+    color:var(--navy); margin:0 0 14px;
+  }
+  .contact-hero p.lead { font-size:16.5px; line-height:1.6; color:rgba(0,36,97,0.62); max-width:600px; margin:0 auto; }
+
+  /* ── BODY LAYOUT ── */
+  .contact-wrap {
+    max-width:980px; margin:-54px auto 0; position:relative; z-index:5;
+    padding:0 28px 80px;
+    display:grid; grid-template-columns:1fr 1.15fr; gap:26px; align-items:start;
+  }
+
+  /* helpful pre-form cards */
+  .contact-aside { display:flex; flex-direction:column; gap:16px; }
+  .help-card {
+    background:#fff; border-radius:18px; padding:24px 24px;
+    box-shadow:0 18px 44px -20px rgba(0,36,97,0.20), 0 0 0 1px rgba(0,36,97,0.05);
+  }
+  .help-card h3 { font-family:'Nunito',sans-serif; font-weight:800; font-size:16px; color:var(--navy); margin:0 0 6px; display:flex; align-items:center; gap:9px; }
+  .help-card h3 .hc-ico { width:30px; height:30px; flex:0 0 auto; border-radius:9px; background:var(--green-light); color:var(--green-dark); display:flex; align-items:center; justify-content:center; }
+  .help-card h3 .hc-ico svg { width:17px; height:17px; }
+  .help-card p { font-size:13.5px; line-height:1.6; color:var(--muted); margin:0 0 12px; }
+  .help-card .hc-links { display:flex; flex-direction:column; gap:8px; }
+  .help-card a.hc-link {
+    display:inline-flex; align-items:center; gap:6px; text-decoration:none;
+    font-family:'Nunito',sans-serif; font-weight:700; font-size:13.5px; color:var(--green-dark);
+    transition:gap 0.18s;
+  }
+  .help-card a.hc-link:hover { gap:10px; }
+  .help-card.faq-card { background:linear-gradient(135deg, var(--green-light) 0%, #f0fbf3 100%); border:1px solid rgba(51,217,117,0.28); box-shadow:none; }
+
+  /* ── FORM CARD ── */
+  .form-card {
+    background:#fff; border-radius:22px;
+    box-shadow:0 24px 64px -18px rgba(0,36,97,0.22), 0 0 0 1px rgba(0,36,97,0.05);
+    padding:34px 34px 36px;
+  }
+  .form-card h2 { font-family:'Nunito',sans-serif; font-weight:900; font-size:24px; color:var(--navy); margin:0 0 6px; }
+  .form-card .form-sub { font-size:14px; color:var(--muted); margin:0 0 24px; line-height:1.55; }
+  .field { margin-bottom:18px; }
+  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .field label {
+    display:block; font-family:'Nunito',sans-serif; font-weight:700; font-size:13px;
+    color:var(--navy); margin-bottom:7px;
+  }
+  .field label .req { color:#e0463f; }
+  .field input, .field textarea {
+    width:100%; border:1.5px solid var(--navy-light); border-radius:12px;
+    padding:12px 14px; font-family:'DM Sans',sans-serif; font-size:15px; color:var(--text);
+    background:#fbfcfe; transition:border-color 0.18s, box-shadow 0.18s, background 0.18s;
+  }
+  .field input:focus, .field textarea:focus {
+    outline:none; border-color:var(--green); background:#fff;
+    box-shadow:0 0 0 4px rgba(51,217,117,0.12);
+  }
+  .field textarea { resize:vertical; min-height:130px; line-height:1.55; }
+  .field input::placeholder, .field textarea::placeholder { color:#aab1bd; }
+  /* honeypot — hidden from humans */
+  .hp-field { position:absolute; left:-9999px; top:-9999px; height:0; width:0; overflow:hidden; }
+  .form-submit {
+    width:100%; border:none; cursor:pointer; margin-top:4px;
+    background:var(--green); color:#fff;
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:16px;
+    padding:15px; border-radius:999px; transition:background 0.2s, transform 0.18s;
+  }
+  .form-submit:hover { background:var(--green-dark); transform:translateY(-1px); }
+  .form-note { font-size:12px; color:var(--muted); text-align:center; margin:14px 0 0; line-height:1.5; }
+  .form-note a { color:var(--green-dark); font-weight:700; text-decoration:none; }
+  .form-note a:hover { text-decoration:underline; }
+  .form-error { color:#e0463f; font-size:12.5px; margin-top:6px; display:none; font-family:'Nunito',sans-serif; font-weight:600; }
+  .field.invalid input, .field.invalid textarea { border-color:#e0463f; background:#fff6f5; }
+  .field.invalid .form-error { display:block; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width:900px) {
+    .contact-hero { padding:72px 24px 64px; }
+    .contact-wrap { grid-template-columns:1fr; gap:18px; padding:0 20px 64px; }
+    .field-row { grid-template-columns:1fr; gap:0; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER (canonical self-mounting component) -->
+<div id="gopher-header"></div>
+
+<!-- HERO -->
+<header class="contact-hero">
+  <div class="contact-hero-inner">
+    <span class="contact-eyebrow"><span></span>We're Here to Help</span>
+    <h1>Contact Us</h1>
+    <p class="lead">New to the Gopher Marketplace? Our tutorials and FAQs answer most questions in seconds. Still need a hand, have a suggestion, or just want to reach us? Send a message below.</p>
+  </div>
+</header>
+
+<!-- BODY -->
+<div class="contact-wrap">
+
+  <!-- HELPFUL LINKS -->
+  <div class="contact-aside">
+    <div class="help-card">
+      <h3><span class="hc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>Watch a quick tutorial</h3>
+      <p>Everything you need to know about the features and functionality of the app you're using.</p>
+      <div class="hc-links">
+        <a class="hc-link" href="gopher-request.html">Gopher Request &mdash; request a service &rarr;</a>
+        <a class="hc-link" href="gopher-go.html">Gopher Go &mdash; provide a service &rarr;</a>
+      </div>
+    </div>
+
+    <div class="help-card faq-card">
+      <h3><span class="hc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Browse the FAQs</h3>
+      <p>Find answers to most questions instantly &mdash; for customers, workers, and beyond &mdash; with smart search.</p>
+      <div class="hc-links">
+        <a class="hc-link" href="gopher-faqs.html">Go to FAQs &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="form-card">
+    <h2>Send us a message</h2>
+    <p class="form-sub">Fill out the form and we'll get back to you. Fields marked <span style="color:#e0463f;">*</span> are required.</p>
+
+    <form id="contactForm" novalidate>
+      <div class="field-row">
+        <div class="field" id="f-first">
+          <label for="firstName">First Name <span class="req">*</span></label>
+          <input type="text" id="firstName" name="firstName" autocomplete="given-name" placeholder="Jane">
+          <div class="form-error">Please enter your first name.</div>
+        </div>
+        <div class="field" id="f-last">
+          <label for="lastName">Last Name <span class="req">*</span></label>
+          <input type="text" id="lastName" name="lastName" autocomplete="family-name" placeholder="Doe">
+          <div class="form-error">Please enter your last name.</div>
+        </div>
+      </div>
+
+      <div class="field" id="f-email">
+        <label for="email">Email Address <span class="req">*</span></label>
+        <input type="email" id="email" name="email" autocomplete="email" placeholder="jane@example.com">
+        <div class="form-error">Please enter a valid email address.</div>
+      </div>
+
+      <div class="field" id="f-message">
+        <label for="message">How can we help you? <span class="req">*</span></label>
+        <textarea id="message" name="message" placeholder="Tell us what's on your mind&hellip;"></textarea>
+        <div class="form-error">Please let us know how we can help.</div>
+      </div>
+
+      <!-- honeypot: hidden anti-spam field; bots fill it, humans don't -->
+      <div class="hp-field" aria-hidden="true">
+        <label for="website">If you are human, leave this field blank.</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <button type="submit" class="form-submit">Submit</button>
+      <p class="form-note">Prefer email? Reach us directly at <a href="mailto:support@gophergo.io">support@gophergo.io</a></p>
+    </form>
+  </div>
+
+</div>
+<span id="top"></span>
+
+<span id="top"></span>
+<script>
+  (function(){
+    var form = document.getElementById('contactForm');
+    if(!form) return;
+
+    function setInvalid(id, bad){
+      var el = document.getElementById(id);
+      if(el) el.classList.toggle('invalid', bad);
+    }
+    function val(id){ var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+    function isEmail(s){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s); }
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+
+      // Honeypot: if filled, silently ignore (likely a bot)
+      if(val('website') !== '') return;
+
+      var first = val('firstName');
+      var last  = val('lastName');
+      var email = val('email');
+      var msg   = val('message');
+
+      var ok = true;
+      setInvalid('f-first', !first);  if(!first) ok = false;
+      setInvalid('f-last',  !last);   if(!last)  ok = false;
+      setInvalid('f-email', !isEmail(email)); if(!isEmail(email)) ok = false;
+      setInvalid('f-message', !msg);  if(!msg)   ok = false;
+      if(!ok) return;
+
+      // Build a pre-filled email to support and open the visitor's mail app.
+      // SWAP HERE: to use a form service instead of mailto, replace this block
+      // with a fetch() POST to your endpoint (e.g. Formspree/Web3Forms).
+      var subject = 'Gopher Contact: ' + first + ' ' + last;
+      var body =
+        'Name: ' + first + ' ' + last + '\n' +
+        'Email: ' + email + '\n\n' +
+        'Message:\n' + msg + '\n';
+      var href = 'mailto:support@gophergo.io'
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(body);
+      window.location.href = href;
+    });
+
+    // Clear the invalid state as the user fixes a field
+    ['firstName','lastName','email','message'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.addEventListener('input', function(){
+        this.closest('.field').classList.remove('invalid');
+      });
+    });
+  })();
+</script>
+<!--
+  GOPHER FOOTER — solid navy variant
+  =================================================================
+  Simplified footer per design pivot (2026-05-29):
+    • No gradient — solid Midnight Blue background throughout
+    • Brand block (logo + tagline + socials) on the LEFT
+    • Three link columns: Marketplace · Company · Legal
+    • Bottom strip: copyright (left) + "Need it now? Gopher it!" (right)
+
+  Brand-rule alignment:
+    §3.1  Midnight Blue #002461 — official footer surface
+    §3.1  Shamrock Green — approved for callouts / CTAs
+    §11   White on navy passes AA at high contrast
+  =================================================================
+-->
+
+<link rel="stylesheet" href="assets/css/gopher-footer.css">
+
+<footer class="gopher-footer">
+
+  <div class="gf-inner">
+
+    <!-- Brand block (left) -->
+    <div class="gf-brand">
+      <a href="index.html" class="gf-logo-wrap" aria-label="Gopher home">
+        <img src="assets/img/gopher-logo.svg" alt="Gopher">
+      </a>
+      <p class="gf-tagline">
+        Connecting customers, businesses, merchants, and local workers with fair-priced services.
+      </p>
+
+      <!-- Social row -->
+      <div class="gf-social" aria-label="Gopher on social media">
+        <a href="https://www.facebook.com/GopherMobileApp" aria-label="Facebook" title="Facebook">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.52 1.49-3.91 3.78-3.91 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/gopherinc/" aria-label="Instagram" title="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.2" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="https://www.tiktok.com/@gopherinc" aria-label="TikTok" title="TikTok">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.07-2.82h-3.1v12.6a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12V9.96a5.7 5.7 0 0 0-.78-.05 5.69 5.69 0 1 0 5.69 5.69V9.01a7.35 7.35 0 0 0 4.29 1.37V7.28a4.28 4.28 0 0 1-3.22-1.46z"/></svg>
+        </a>
+        <a href="https://www.youtube.com/@gopherinc" aria-label="YouTube" title="YouTube">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.51a3.02 3.02 0 0 0-2.12-2.14C19.5 3.86 12 3.86 12 3.86s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.51 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.49 3.02 3.02 0 0 0 2.12 2.14C4.5 20.14 12 20.14 12 20.14s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.49zM9.6 15.57V8.43L15.82 12 9.6 15.57z"/></svg>
+        </a>
+        <a href="https://nextdoor.com/page/gopher-llc-holly-springs-nc" aria-label="Nextdoor" title="Nextdoor">
+          <!-- House silhouette — universally readable as "neighborhood/home"
+               which is Nextdoor's identity. The hover tooltip reinforces it. -->
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5 1.6 11.2l1.3 1.6 1.6-1.3v9h6v-6h3v6h6v-9l1.6 1.3 1.3-1.6L12 2.5z"/></svg>
+        </a>
+        <a href="https://www.reddit.com/r/GopherMobileApp/" aria-label="Reddit" title="Reddit">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 11.82a2.2 2.2 0 0 0-3.73-1.57 10.84 10.84 0 0 0-5.5-1.7l.94-4.4 3.07.66a1.56 1.56 0 1 0 .2-1.05l-3.43-.73a.52.52 0 0 0-.62.4l-1.05 4.94a10.9 10.9 0 0 0-5.6 1.7 2.2 2.2 0 1 0-2.42 3.62 4.3 4.3 0 0 0-.05.66c0 3.35 3.9 6.07 8.71 6.07s8.71-2.72 8.71-6.07a4.3 4.3 0 0 0-.05-.65A2.2 2.2 0 0 0 22 11.82zM7 13.4a1.56 1.56 0 1 1 3.12 0 1.56 1.56 0 0 1-3.12 0zm8.73 4.12a5.7 5.7 0 0 1-3.73 1.16 5.7 5.7 0 0 1-3.73-1.16.42.42 0 1 1 .56-.62A4.9 4.9 0 0 0 12 17.85a4.9 4.9 0 0 0 3.17-.95.42.42 0 0 1 .56.62zm-.29-2.56a1.56 1.56 0 1 1 0-3.12 1.56 1.56 0 0 1 0 3.12z"/></svg>
+        </a>
+        <a href="https://x.com/GopherMobileApp" aria-label="X" title="X">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.22-6.82-5.97 6.82H1.66l7.73-8.84L1.23 2.25h6.83l4.71 6.23 5.47-6.23zm-1.16 17.52h1.83L7.01 4.13H5.04l12.04 15.64z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/company/gopher-mobile-app/" aria-label="LinkedIn" title="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Marketplace column -->
+    <div class="gf-col">
+      <h4>Marketplace</h4>
+      <ul>
+        <li><a href="gopher-request.html">Gopher Request</a></li>
+        <li><a href="gopher-connect.html">Gopher Connect</a></li>
+        <li><a href="gopher-go.html">Gopher Go</a></li>
+        <li><a href="gopher-deals.html">Deals</a></li>
+      </ul>
+    </div>
+
+    <!-- Company column — Tutorials is an expandable submenu (uses
+         <details>/<summary> so it works without JS and stays accessible) -->
+    <div class="gf-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="gopher-our-story.html">Our Story</a></li>
+        <li><a href="gopher-blog.html">Gopher Blog</a></li>
+        <li class="gf-expandable">
+          <details>
+            <summary>
+              <span>Tutorials</span>
+              <svg class="gf-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="4 6 8 10 12 6"/>
+              </svg>
+            </summary>
+            <ul class="gf-submenu">
+              <li><a href="gopher-request-101.html">Gopher Request 101</a></li>
+              <li><a href="gopher-connect-101.html">Gopher Connect 101</a></li>
+              <li><a href="gopher-go-101.html">Gopher Go 101</a></li>
+              <li><a href="gopher-deals-101.html">Gopher Deals 101</a></li>
+            </ul>
+          </details>
+        </li>
+        <li><a href="gopher-contact-us.html">Contact Us</a></li>
+        <li><a href="gopher-faqs.html">FAQs</a></li>
+      </ul>
+    </div>
+
+    <!-- Legal column -->
+    <div class="gf-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="gopher-privacy.html">Privacy Policy</a></li>
+        <li><a href="gopher-terms-of-service.html">Terms of Service</a></li>
+        <li><a href="gopher-merchant-agreement.html">Merchant Agreement</a></li>
+        <li><a href="gopher-prohibited-list.html">Prohibited List</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Bottom strip -->
+  <div class="gf-bottom">
+    <div class="gf-copyright">&copy; 2026 Gopher, Inc. All rights reserved.</div>
+    <div class="gf-signoff">Need it now? Gopher it!</div>
+  </div>
+
+</footer>
+
+
+<script src="assets/js/gopher-header.js" defer></script>
+</body>
+</html>
+

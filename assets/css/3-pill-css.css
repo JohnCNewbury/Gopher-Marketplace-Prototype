@@ -1,0 +1,55 @@
+  /* ================================================================
+     THE PILL — navy outline when inactive, green outline when focused.
+     This is the host-page styling the engine attaches to. The engine
+     does NOT restyle .ai-bar itself.
+     ================================================================ */
+  /* Branded per style guide: .demo-ai-pill spec.
+     White bar, 1.5px Midnight Blue border, fully rounded, soft hairline
+     shadow; green circular "+" with navy glyph; green focus glow. */
+  .ai-bar {
+    display: flex; align-items: center; gap: 12px;
+    width: min(560px, 92vw);
+    background: #fff;
+    border: 1.5px solid var(--navy);
+    border-radius: 999px;
+    padding: 12px 18px;
+    box-shadow: 0 1px 0 rgba(0,36,97,0.04);
+    transition: border-color 0.18s ease-out, box-shadow 0.18s ease-out;
+  }
+  /* Active / focused state: Shamrock Green border + 4px soft green glow */
+  .ai-bar:focus-within {
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(51,217,117,0.12);
+  }
+  /* The "+" is a green circle with a navy glyph (style-guide .dap-plus) */
+  .ai-bar .ai-plus {
+    width: 28px; height: 28px; flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--green);
+    color: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ai-bar .ai-plus svg { width: 16px; height: 16px; display: block; }
+  .ai-bar input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--navy);
+    min-width: 0;
+  }
+  .ai-bar input::placeholder { color: var(--muted); }
+  .ai-bar .ai-scope {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 12.5px;
+    color: var(--navy);
+    padding: 6px 12px 6px 14px;
+    border: none; border-left: 1px solid var(--navy-light, #eef0f8);
+    background: transparent; cursor: pointer;
+    transition: color 0.18s ease-out;
+  }
+  .ai-bar .ai-scope:hover { color: var(--green-dark, #1CB061); }
+  .ai-bar .ai-mic {
+    flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--navy); color: #fff;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: background 0.18s ease-out, transform 0.18s ease-out;
+  }
+  .ai-bar .ai-mic:hover { background: var(--green-dark, #1CB061); transform: scale(1.05); }

@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gopher Request Tutorial</title>
+  <!-- SEO -->
+  <meta name="description" content="How Gopher Request works — describe your task, set your price, and a vetted local Gopher gets it done. A step-by-step walkthrough.">
+  <link rel="canonical" href="https://gophergo.io/gopher-request-101.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Gopher">
+  <meta property="og:title" content="Gopher Request Tutorial">
+  <meta property="og:description" content="How Gopher Request works — describe your task, set your price, and a vetted local Gopher gets it done. A step-by-step walkthrough.">
+  <meta property="og:url" content="https://gophergo.io/gopher-request-101.html">
+  <meta property="og:image" content="https://gophergo.io/assets/img/og-default.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Gopher Request Tutorial">
+  <meta name="twitter:description" content="How Gopher Request works — describe your task, set your price, and a vetted local Gopher gets it done. A step-by-step walkthrough.">
+  <meta name="twitter:image" content="https://gophergo.io/assets/img/og-default.jpg">
+
+<link rel="stylesheet" href="assets/css/gopher-fonts.css">
+<style>
+/* ============================================================
+   GOPHER REQUEST — TUTORIAL / SUPPORT PAGE
+   Brand tokens lifted from the live app (gopher-request_LATEST):
+   green #33d975 · navy #2a3654 · midnight #002461 · sand #fbf3e4
+   Fonts: Nunito (display) / DM Sans (body) / Caveat (accent)
+   ============================================================ */
+:root{
+  --green:#33d975;          /* Shamrock Green */
+  --green-dark:#1cb061;      /* Mountain Meadow — hover / shadow */
+  --green-light:#e8f7ea;     /* pale green tint — fills & active states */
+  --green-soft:#f2fdf6;      /* softest tint */
+  --sand:#fbf3e4;            /* official light background */
+  --sand-deep:#f4e8d2;
+  --terracotta:#d97757;      /* Caveat accent color */
+  --terracotta-soft:#fbe9df;
+  --navy:#002461;            /* Midnight Blue */
+  --navy-mid:#253a7e;
+  --navy-light:#eef0f8;
+  --midnight:#002461;
+  --ink:#424242;             /* Body Copy gray */
+  --muted:#6b7280;
+  --line:#e7e2d3;            /* hairline rule */
+  --paper:#ffffff;
+  --card-shadow:0 4px 24px rgba(42,54,84,0.08);
+  --card-shadow-lg:0 18px 50px rgba(42,54,84,0.14);
+  --sidebar-w:288px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  font-family:'DM Sans',sans-serif;
+  color:var(--ink);
+  background:var(--sand);
+  background-image:
+    radial-gradient(900px 500px at 88% -8%, rgba(51,217,117,0.10), transparent 60%),
+    radial-gradient(700px 460px at -5% 14%, rgba(217,119,87,0.08), transparent 55%);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.6;
+}
+h1,h2,h3,h4{font-family:'Nunito',sans-serif;color:var(--navy);line-height:1.18;margin:0;}
+a{color:var(--navy);}
+.scribble{font-family:'Caveat',cursive;color:var(--terracotta);}
+
+/* Mobile "Sections" launcher (FAB) — hidden on desktop */
+.page-sections-fab{display:none;}
+
+/* ── Layout shell ──────────────────────────────────── */
+.shell{display:grid;grid-template-columns:var(--sidebar-w) 1fr;align-items:start;max-width:1280px;margin:0 auto;}
+
+/* ── Sidebar (quick reference) ─────────────────────── */
+.sidebar{
+  position:sticky;top:66px;align-self:start;
+  height:calc(100vh - 66px);
+  overflow-y:auto;overscroll-behavior:contain;
+  padding:26px 16px 60px 22px;
+  border-right:1px solid var(--line);
+}
+.sidebar::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(42,54,84,.16);border-radius:8px;}
+.side-lead{font-family:'Nunito';font-weight:900;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);margin:0 0 4px 6px;}
+.side-sub{font-size:12px;color:var(--muted);margin:0 0 16px 6px;}
+.side-group{font-family:'Nunito';font-weight:800;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--navy-mid);margin:22px 0 7px 6px;display:flex;align-items:center;gap:7px;}
+.side-group::before{content:"";width:14px;height:2.5px;border-radius:2px;background:var(--green);}
+.side-nav{list-style:none;margin:0;padding:0;}
+.side-nav a{
+  display:flex;align-items:center;gap:10px;
+  text-decoration:none;color:var(--navy);
+  font-size:13.5px;font-weight:600;
+  padding:8px 11px;border-radius:9px;
+  border-left:3px solid transparent;
+  transition:background .15s ease, color .15s ease, border-color .15s;
+}
+.side-nav a .num{
+  flex:none;width:21px;height:21px;border-radius:50%;
+  display:grid;place-items:center;
+  background:var(--navy-light);color:var(--navy-mid);
+  font-family:'Nunito';font-weight:800;font-size:11px;
+}
+.side-nav a:hover{background:var(--green-soft);color:var(--green-dark);}
+.side-nav a.active{
+  background:var(--green-light);color:var(--midnight);
+  border-left-color:var(--green);font-weight:800;
+}
+.side-nav a.active .num{background:var(--green);color:var(--navy);}
+.side-help{margin:26px 6px 0;padding:14px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:var(--card-shadow);}
+.side-help h4{font-size:13px;margin-bottom:5px;}
+.side-help p{font-size:12px;color:var(--muted);margin:0 0 10px;}
+.side-help a{display:inline-block;font-family:'Nunito';font-weight:800;font-size:12px;color:var(--navy);text-decoration:none;}
+
+/* ── Main column ───────────────────────────────────── */
+.main{padding:0 clamp(20px,4vw,64px) 120px;min-width:0;}
+
+/* hero */
+.hero{padding:54px 0 30px;}
+.hero .scribble{font-size:30px;display:block;margin-bottom:2px;transform:rotate(-2deg);}
+.hero h1{font-size:clamp(34px,5vw,52px);font-weight:900;letter-spacing:-.5px;}
+.hero h1 em{font-style:normal;color:var(--green-dark);}
+.hero p.lede{font-size:17.5px;color:var(--navy);max-width:620px;margin:16px 0 0;}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+.chip{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:700;font-family:'Nunito';color:var(--navy);box-shadow:var(--card-shadow);}
+.chip b{color:var(--navy);}
+
+/* section blocks */
+.section{scroll-margin-top:84px;padding:42px 0 8px;border-top:1px dashed var(--line);}
+.section:first-of-type{border-top:none;}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:'Nunito';font-weight:800;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--navy);margin-bottom:10px;}
+.eyebrow .step-pill{background:var(--midnight);color:#fff;border-radius:999px;padding:3px 11px;font-size:11px;letter-spacing:.06em;}
+.section h2{font-size:clamp(24px,3vw,32px);font-weight:900;letter-spacing:-.3px;}
+.section h2 .scribble{font-size:26px;}
+.section > p{font-size:15.5px;color:var(--ink);max-width:760px;}
+.section h3{font-size:18px;font-weight:800;margin:26px 0 6px;}
+
+/* The real GO mark — assets/img/go-mark.svg, the same file the Request app uses.
+   "GO-To" is always branded with the logo, never typed. Sized in em so it tracks
+   whatever text it sits in; the margin is left-only because the mark is always
+   followed by the hyphen, and a right margin would float that off the lockup. */
+.go-mark{display:inline-block;width:auto;height:1.02em;vertical-align:-0.16em;margin:0 0 0 0.08em;}
+.section h2 .go-mark{height:0.88em;vertical-align:-0.08em;}
+.section h3 .go-mark{height:0.95em;vertical-align:-0.12em;}
+/* the mark + its hyphen are one lockup — never let a line break split them */
+.goto-word{white-space:nowrap;}
+
+/* generic card / grid bits */
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px;box-shadow:var(--card-shadow);margin-top:18px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px;}
+
+/* category tiles — mirror the real "What do you need today?" product cards
+   (photo + badge), so the tutorial matches gopher-request.html exactly. */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px;}
+.cat{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:0;overflow:hidden;box-shadow:var(--card-shadow);transition:transform .15s, border-color .15s, box-shadow .15s;}
+.cat:hover{transform:translateY(-3px);border-color:var(--green);box-shadow:var(--card-shadow-lg);}
+.cat .thumb{position:relative;aspect-ratio:16/10;background:var(--line);overflow:hidden;}
+.cat .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.cat .badge{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.93);color:var(--navy);font-family:'Nunito';font-weight:800;font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;box-shadow:0 1px 5px rgba(0,20,60,.18);}
+.cat .txt{padding:11px 13px 13px;}
+.cat .nm{font-family:'Nunito';font-weight:800;font-size:14px;color:var(--navy);line-height:1.2;}
+.cat .tg{font-size:11.5px;color:var(--muted);margin-top:3px;}
+
+/* numbered list with brand dots */
+ul.brand,ol.brand{list-style:none;margin:14px 0 0;padding:0;}
+ul.brand li,ol.brand li{position:relative;padding:7px 0 7px 30px;font-size:15px;color:var(--ink);}
+ul.brand li::before{content:"";position:absolute;left:4px;top:14px;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px var(--green-light);}
+ol.brand{counter-reset:bl;}
+ol.brand li{counter-increment:bl;padding-left:38px;}
+ol.brand li::before{content:counter(bl);position:absolute;left:0;top:6px;width:24px;height:24px;border-radius:50%;background:var(--midnight);color:#fff;font-family:'Nunito';font-weight:800;font-size:12.5px;display:grid;place-items:center;}
+
+/* callouts */
+.note{border-radius:16px;padding:16px 18px 16px 18px;margin-top:18px;font-size:14.5px;display:flex;gap:13px;align-items:flex-start;}
+.note .nico{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:16px;}
+.note.tip{background:var(--green-soft);border:1px solid var(--green);} 
+.note.tip .nico{background:var(--green);color:var(--navy);}
+.note.warn{background:var(--terracotta-soft);border:1px solid var(--terracotta);}
+.note.warn .nico{background:var(--terracotta);color:#fff;}
+.note.info{background:var(--navy-light);border:1px solid #c9d2ee;}
+.note.info .nico{background:var(--navy-mid);color:#fff;}
+.note b{color:var(--navy);}
+.note .h{font-family:'Nunito';font-weight:800;color:var(--navy);display:block;margin-bottom:2px;}
+
+/* heart-? hint button + memorial tooltip */
+.hint-wrap{position:relative;display:inline-flex;vertical-align:middle;}
+.hint-btn{position:relative;width:23px;height:23px;border:none;background:transparent;cursor:pointer;padding:0;display:grid;place-items:center;}
+.hint-btn svg{width:23px;height:23px;fill:var(--green);stroke:var(--green-dark);stroke-width:.9;transition:transform .15s ease;}
+.hint-btn:hover svg,.hint-btn.open svg{transform:scale(1.14);}
+.hint-q{position:absolute;inset:0;display:grid;place-items:center;font-family:'Nunito';font-weight:900;font-size:11px;color:var(--navy);padding-top:1px;pointer-events:none;}
+.hint-pop{
+  position:absolute;left:-10px;top:calc(100% + 13px);
+  width:min(370px,76vw);
+  background:var(--midnight);color:rgba(255,255,255,.92);
+  font-family:'DM Sans';font-weight:400;font-size:13px;line-height:1.6;
+  padding:16px 18px;border-radius:14px;box-shadow:0 18px 50px rgba(0,36,97,.42);
+  opacity:0;visibility:hidden;transform:translateY(6px);
+  transition:opacity .2s ease, transform .2s ease;z-index:40;text-align:left;
+}
+.hint-pop::before{content:"";position:absolute;left:16px;top:-7px;width:14px;height:14px;background:var(--midnight);border-radius:3px;transform:rotate(45deg);}
+.hint-pop b{color:var(--green);font-family:'Nunito';font-weight:900;}
+.hint-wrap:hover .hint-pop,
+.hint-btn:focus-visible + .hint-pop,
+.hint-btn.open + .hint-pop{opacity:1;visibility:visible;transform:translateY(0);}
+/* ⛔ The bubble hangs off an INLINE button that can sit anywhere on the line,
+   so anchoring it to that button (left:-10px, or right:-10px as this rule used
+   to) pushes it off whichever edge the button is nearest — at 375px the MY
+   Gophers bubble rendered at left:-78px, cut off (owner-reported 2026-08-26).
+   On phones it becomes a viewport-pinned sheet, which cannot overflow wherever
+   the button sits. The arrow is dropped because it no longer points at
+   anything. Verified no ancestor carries transform/filter, so position:fixed
+   resolves against the viewport here. */
+@media (max-width:520px){
+  .hint-pop{
+    position:fixed; left:12px; right:12px; top:auto; bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+    width:auto; max-height:60vh; overflow-y:auto;
+  }
+  .hint-pop::before{ display:none; }
+}
+
+/* mini mock UI elements (mirror the app) */
+.mock{margin-top:18px;background:linear-gradient(180deg,#fff,#fffdf8);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--card-shadow);}
+.mock-label{font-family:'Nunito';font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.radio-row{display:flex;align-items:center;gap:11px;border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:10px;font-weight:700;font-family:'Nunito';color:var(--navy);font-size:14.5px;background:#fff;}
+.radio-row .dot{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid #cfd5e3;}
+.radio-row.sel{border-color:var(--green);background:var(--green-soft);}
+.radio-row.sel .dot{border-color:var(--green);background:var(--green);box-shadow:inset 0 0 0 3px #fff;}
+.radio-row small{font-weight:500;font-family:'DM Sans';color:var(--muted);font-size:12px;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--line);border-radius:12px;padding:12px 15px;margin-bottom:10px;background:#fff;}
+.toggle-row .tl{font-family:'Nunito';font-weight:700;color:var(--navy);font-size:14px;}
+.toggle-row .tl small{display:block;font-family:'DM Sans';font-weight:400;color:var(--muted);font-size:11.5px;}
+.switch{flex:none;width:44px;height:25px;border-radius:999px;background:#d4dae6;position:relative;transition:background .15s;}
+.switch.on{background:var(--green);}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.switch.on::after{left:22px;}
+
+/* worker card mock */
+.wk{display:flex;gap:13px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff;margin-bottom:10px;}
+.wk .av{flex:none;width:46px;height:46px;border-radius:50%;background:var(--navy-light);display:grid;place-items:center;font-family:'Nunito';font-weight:800;color:var(--navy-mid);}
+.wk .nm{font-family:'Nunito';font-weight:800;color:var(--navy);font-size:14.5px;}
+.wk .nm .badge{font-size:10px;background:var(--green-light);color:var(--green-dark);border-radius:999px;padding:1px 7px;margin-left:6px;font-weight:800;}
+.wk .meta{font-size:12px;color:var(--muted);}
+.wk .acts{margin-left:auto;display:flex;gap:7px;}
+.btn-sm{border:none;border-radius:9px;padding:8px 13px;font-family:'Nunito';font-weight:800;font-size:12.5px;cursor:default;}
+.btn-hire{background:var(--green);color:var(--navy);}
+.btn-out{background:#fff;border:1.5px solid var(--navy-light);color:var(--navy);}
+.btn-deny{background:#fff;border:1.5px solid var(--terracotta-soft);color:var(--terracotta);}
+
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-top:16px;}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;box-shadow:var(--card-shadow);}
+.kpi .v{font-family:'Nunito';font-weight:900;font-size:24px;color:var(--midnight);}
+.kpi .k{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.kpi.attn{border-color:var(--terracotta);background:var(--terracotta-soft);}
+.kpi.attn .v{color:var(--terracotta);}
+
+/* the big green Gopher-it button */
+.gopher-it{display:inline-flex;align-items:center;gap:10px;background:var(--green);color:var(--navy);font-family:'Nunito';font-weight:900;font-size:17px;padding:14px 30px;border-radius:14px;box-shadow:0 8px 22px rgba(51,217,117,.4);border:none;margin-top:8px;}
+
+/* TrustShield feature card */
+.ts-card{display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center;margin-top:20px;background:#fff;border:5px solid var(--navy);border-radius:22px;padding:26px 30px;box-shadow:var(--card-shadow);}
+.ts-shield{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.ts-shield svg{width:118px;height:auto;display:block;filter:drop-shadow(0 6px 14px rgba(0,36,97,.18));}
+.ts-shield .cap{font-family:'Nunito';font-weight:900;font-size:13px;color:var(--navy);letter-spacing:.01em;}
+.ts-card h3{margin:0 0 8px;}
+.ts-card p{margin:0 0 8px;color:var(--ink);font-size:15px;}
+.ts-card ul.brand{margin-top:6px;}
+.ts-card ul.brand li{padding-top:5px;padding-bottom:5px;font-size:14.5px;}
+@media (max-width:640px){
+  .ts-card{grid-template-columns:1fr;gap:16px;text-align:center;padding:22px;}
+  .ts-card ul.brand{text-align:left;}
+}
+
+/* fee table — wrapped in .fee-wrap so it scrolls inside its own box on very
+   narrow phones (≤~340px) instead of bleeding the whole page. */
+.fee-wrap{margin-top:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px;box-shadow:var(--card-shadow);border:1px solid var(--line);}
+.fee{width:100%;border-collapse:collapse;font-size:14px;background:#fff;}
+.fee th,.fee td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line);}
+.fee th{background:var(--navy-light);font-family:'Nunito';font-weight:800;color:var(--navy);font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;}
+.fee tr:last-child td{border-bottom:none;}
+.fee td b{color:var(--midnight);font-family:'Nunito';}
+.fee .ex{background:var(--green-soft);}
+
+/* example receipt */
+.receipt{margin-top:16px;background:#fff;border:1px dashed var(--green);border-radius:16px;padding:18px 20px;max-width:420px;box-shadow:var(--card-shadow);}
+.receipt .rl{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;border-bottom:1px dotted var(--line);}
+.receipt .rl:last-child{border-bottom:none;font-family:'Nunito';font-weight:900;color:var(--midnight);font-size:16px;padding-top:11px;}
+.receipt .rl span:last-child{font-weight:700;font-family:'Nunito';}
+
+/* (page footer styles now provided by the shared .gopher-footer component) */
+
+/* back to top */
+.totop{position:fixed;right:22px;bottom:calc(22px + env(safe-area-inset-bottom, 0px));z-index:50;width:46px;height:46px;border-radius:50%;background:var(--midnight);color:#fff;border:none;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 24px rgba(0,36,97,.4);opacity:0;pointer-events:none;transition:opacity .25s, transform .2s;}
+.totop.show{opacity:1;pointer-events:auto;}
+.totop:hover{transform:translateY(-3px);}
+
+/* mobile sidebar overlay */
+.scrim{display:none;}
+
+@media (max-width:980px){
+  :root{--sidebar-w:0px;}
+  .page-sections-fab{
+    display:inline-flex;align-items:center;gap:8px;
+    position:fixed;left:18px;bottom:calc(22px + env(safe-area-inset-bottom, 0px));z-index:1190;
+    background:var(--navy);color:#fff;border:none;border-radius:999px;
+    padding:11px 18px;font-family:'Nunito';font-weight:800;font-size:13.5px;
+    box-shadow:0 8px 24px rgba(0,36,97,.4);cursor:pointer;
+  }
+  .page-sections-fab svg{width:16px;height:16px;}
+  body.nav-open .page-sections-fab{display:none;}
+  .shell{grid-template-columns:1fr;}
+  .sidebar{
+    position:fixed;top:0;left:0;z-index:1200;height:100vh;width:300px;
+    background:var(--sand);border-right:1px solid var(--line);
+    transform:translateX(-105%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 0 40px rgba(0,0,0,.18);padding-top:22px;
+  }
+  body.nav-open .sidebar{transform:translateX(0);}
+  body.nav-open .scrim{display:block;position:fixed;inset:0;z-index:1150;background:rgba(0,36,97,.4);}
+  .cat-grid{grid-template-columns:repeat(2,1fr);}
+  .kpis{grid-template-columns:repeat(2,1fr);}
+  .grid2,.grid3{grid-template-columns:1fr;}
+}
+@media (max-width:520px){
+  .wk{flex-wrap:wrap;}.wk .acts{margin-left:0;width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- ░░ CANONICAL GOPHER HEADER (shared component; per-page logo: Request) ░░ -->
+<script>window.GopherHeader = { logo: 'request' };</script>
+<div id="gopher-header"></div>
+<script src="assets/js/gopher-header.js" defer></script>
+
+<div class="scrim" id="scrim"></div>
+<!-- Mobile-only launcher for the left quick-reference menu -->
+<button class="page-sections-fab" id="menuToggle" aria-label="Jump to a section" aria-expanded="false">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  Sections
+</button>
+
+<div class="shell">
+
+  <!-- ░░ LEFT QUICK-REFERENCE MENU ░░ -->
+  <aside class="sidebar" id="sidebar">
+    <p class="side-lead">Quick Reference</p>
+    <p class="side-sub">Jump straight to what you need.</p>
+
+    <div class="side-group">Getting started</div>
+    <ul class="side-nav">
+      <li><a href="#welcome">Welcome</a></li>
+      <li><a href="#signin">Sign in &amp; create account</a></li>
+      <li><a href="#profile">Complete your profile</a></li>
+    </ul>
+
+    <div class="side-group">Making a request</div>
+    <ul class="side-nav">
+      <li><a href="#step1"><span class="num">1</span> Pick a service</a></li>
+      <li><a href="#step2"><span class="num">2</span> Job details</a></li>
+      <li><a href="#step3"><span class="num">3</span> Worker info</a></li>
+      <li><a href="#step4"><span class="num">4</span> Locations</a></li>
+      <li><a href="#step5"><span class="num">5</span> Worker pay</a></li>
+      <li><a href="#step6"><span class="num">6</span> Review &amp; schedule</a></li>
+      <li><a href="#step7"><span class="num">7</span> Submitted!</a></li>
+    </ul>
+
+    <div class="side-group">After you submit</div>
+    <ul class="side-nav">
+      <li><a href="#tracking">Tracking &amp; alerts</a></li>
+      <li><a href="#hiring">Choosing &amp; hiring</a></li>
+      <li><a href="#messaging">Messaging your Gopher</a></li>
+      <li><a href="#confirm">Confirm &amp; rate</a></li>
+      <li><a href="#history">History &amp; request again</a></li>
+    </ul>
+
+    <div class="side-group">Good to know</div>
+    <ul class="side-nav">
+      <li><a href="#fees">Fees &amp; pricing</a></li>
+      <li><a href="#age">Age-restricted &amp; TrustShield</a></li>
+      <li><a href="#safety">Safety &amp; the no-charge promise</a></li>
+      <li><a href="#help">Need help?</a></li>
+    </ul>
+
+    <div class="side-help">
+      <h4>Still stuck?</h4>
+      <p>The Help Center lives under <b>More</b> in the app.</p>
+      <a href="mailto:support@gophergo.io">support@gophergo.io →</a>
+    </div>
+  </aside>
+
+  <!-- ░░ MAIN CONTENT ░░ -->
+  <main class="main">
+
+    <!-- HERO -->
+    <section class="hero" id="welcome">
+      <span class="scribble">welcome to</span>
+      <h1>Gopher Request, <em>made simple.</em></h1>
+      <p class="lede">This is your step-by-step guide to getting anything done — a delivery, a move, a haul, a ride, a hand around the house. You describe what you need, you decide what to pay, and a trusted local Gopher comes to you.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Live <b>24 / 7 / 365</b></span>
+        <span class="chip">💵 You set the price — <b>100% goes to your Gopher</b></span>
+        <span class="chip">🛡️ <b>No charge</b> if no one accepts</span>
+      </div>
+      <div class="note info" style="margin-top:26px;">
+        <span class="nico">🧭</span>
+        <div><span class="h">How to use this page</span>Every request follows the same <b>7 steps</b>. Some steps change slightly depending on the service you pick — that's noted inline. Use the menu on the left to jump to any section at any time.</div>
+      </div>
+    </section>
+
+    <!-- SIGN IN -->
+    <section class="section" id="signin">
+      <span class="eyebrow">Getting started</span>
+      <h2>Sign in or create your account</h2>
+      <p>Gopher is passwordless — there's nothing to remember. You sign in with a one-time code sent to your phone or email.</p>
+      <ol class="brand">
+        <li>Open the app and choose <b>Sign in with phone</b> or <b>Sign in with email</b>.</li>
+        <li>Enter your number or email and tap <b>Send Code</b>.</li>
+        <li>Type the 6-digit code we text or email you. That's it — you're in.</li>
+      </ol>
+      <h3>New here?</h3>
+      <p>Tap <b>Create an account</b> and add your name, phone, email, address, and date of birth. We'll verify your phone and email with the same quick code step. You'll also tell us how you discovered Gopher — and if a friend referred you, you can enter their 6-digit Gopher User ID (or tap “skip” if you don't have it).</p>
+      <div class="note tip"><span class="nico">✓</span><div><span class="h">Use your legal name</span>Your name and date of birth can't be changed after signup, so double-check before saving. If something needs to change later, email <a href="mailto:support@gophergo.io">support@gophergo.io</a>.</div></div>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="section" id="profile">
+      <span class="eyebrow">Getting started</span>
+      <h2>Complete your profile</h2>
+      <p>From your dashboard, open <b>Account → Personal Info</b> to review everything on file: your name, email, phone, address, date of birth, and how you found Gopher.</p>
+      <h3>Payment method</h3>
+      <p>You won't need this until your first request. When you're ready, your card is added securely through <b>Stripe</b>, our trusted payment partner — you can pick it (and apply a promo code) right on the Review step.</p>
+      <div class="note info"><span class="nico">🔒</span><div>A photo, your contact details, and a payment method are all you need before making a request. Everything is stored securely and only used to fulfill your requests.</div></div>
+    </section>
+
+    <!-- STEP 1 -->
+    <section class="section" id="step1">
+      <span class="eyebrow"><span class="step-pill">Step 1 of 7</span> Pick a service</span>
+      <h2>How to submit a request for a service</h2>
+      <p>Start by tapping the service that fits best. The category you choose decides which workers see your request and what details we ask for next — so pick the closest match.</p>
+      <div class="note tip"><span class="nico">⏱️</span><div><span class="h">We'll go slow here — the real thing is fast</span>This guide walks through every option so nothing's a surprise, but actually <b>submitting a request takes less than a minute</b>. Once you've made one, saving it as a <b><span class="goto-word"><img class="go-mark" src="assets/img/go-mark.svg" alt="GO">-To</span></b> under <b>Previous requests</b> gets it down to a single tap.</div></div>
+      <div class="cat-grid">
+        <div class="cat"><div class="thumb"><span class="badge">Errand</span><img src="assets/img/01-delivery.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Delivery / Errand</div><div class="tg">Pick-up &amp; drop-off</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Hauling</span><img src="assets/img/05-junk.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Junk Removal</div><div class="tg">Furniture &amp; debris haul-away</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Relocation</span><img src="assets/img/px-7464687-600x360.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Moving</div><div class="tg">Load, move &amp; unload</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Services</span><img src="assets/img/px-8005368-600x360.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Home / Office Services</div><div class="tg">Handyman needs, simple to skilled</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Labor</span><img src="assets/img/04-labor.jpg" alt="" loading="lazy"></div><div class="txt"><div class="nm">Hourly / Day Labor</div><div class="tg">Crews by the hour</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Outdoor</span><img src="assets/img/06-yard.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Yard / Outdoor Projects</div><div class="tg">Mowing, cleanup &amp; tree work</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Ride</span><img src="assets/img/07-ride.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Ride Sharing</div><div class="tg">Rides &amp; airport runs</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Custom</span><img src="assets/img/px-3184418-600x360.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Other</div><div class="tg">Anything else</div></div></div>
+      </div>
+      <div class="note tip"><span class="nico">💡</span><div><span class="h">Can't find your category?</span>Pick <b>Other</b> and describe it — we'll route it to the right local pro. Choosing the right category matters because workers only see the categories they've signed up for.</div></div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section class="section" id="step2">
+      <span class="eyebrow"><span class="step-pill">Step 2 of 7</span> Job details</span>
+      <h2>Describe the job <span class="scribble">clearly</span></h2>
+      <p>This is the most important screen. Your description is exactly what workers read when deciding whether to take your job — so be specific.</p>
+      <div class="grid2">
+        <div class="card">
+          <h3 style="margin-top:0;">✅ A great description</h3>
+          <p style="font-size:14px;margin:0;color:var(--ink);">“I need 12 yards of mulch laid in my backyard. Worker must bring their own equipment.” <em>(plus a photo)</em></p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0;">🚫 Too vague</h3>
+          <p style="font-size:14px;margin:0;color:var(--muted);">“Need mulch spread in my backyard.”</p>
+        </div>
+      </div>
+      <p style="margin-top:18px;">You can attach <b>up to 3 photos</b> so workers know exactly what they're walking into.</p>
+
+      <h3>Details that change by service</h3>
+      <p>Depending on the category you picked in Step 1, you'll also see one of these:</p>
+      <ul class="brand">
+        <li><b>Delivery → Delivery Type.</b> Flip on <b>Age-Restricted</b> if your order contains items like alcohol or tobacco (this turns on ID safeguarding). Flip on <b>Items Purchased</b> if your Gopher needs to buy something for you, then enter the <b>Cost of Goods</b> so they can pay on your behalf.</li>
+        <li><b>Ride Sharing → Rider Info.</b> Set the number of riders and bags, plus any special instructions for your driver.</li>
+        <li><b>Moving &amp; Junk Removal → Item Info.</b> Tell us the item count and flag anything hazardous. Hit 5+ items and we'll automatically switch you to multi-item mode.</li>
+      </ul>
+      <div class="note warn"><span class="nico">!</span><div><span class="h">Keep it in the app</span>Don't put your phone number in the description. You can message workers safely through Gopher before and during your request.</div></div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section class="section" id="step3">
+      <span class="eyebrow"><span class="step-pill">Step 3 of 7</span> Worker info</span>
+      <h2>Who does the work — and how you pick them</h2>
+      <p>For bigger jobs (moving, labor, yard, junk), tell us how many workers you need and whether you're paying by the hour.</p>
+      <div class="mock">
+        <div class="mock-label">Worker setup</div>
+        <div class="toggle-row"><div class="tl">More than one worker?<small>Set the crew size for your job</small></div><div class="switch on"></div></div>
+        <div class="toggle-row"><div class="tl">Pay by the hour?<small>Instead of a flat job price</small></div><div class="switch"></div></div>
+      </div>
+
+      <h3>How is your worker selected?</h3>
+      <p>For <b>Delivery, Junk Removal, and Ride Sharing</b>, you can choose how a Gopher is matched. Every other service has you pick your own worker.</p>
+      <div class="mock">
+        <div class="mock-label">Worker selection</div>
+        <div class="radio-row sel"><span class="dot"></span>First available worker <small>— fastest match.</small></div>
+        <div class="radio-row"><span class="dot"></span>I'll select my worker <small>— review interested workers' ratings, reviews &amp; history, then choose.</small></div>
+        <div class="radio-row"><span class="dot"></span>Prioritize MY Gophers <small>— send it to your saved Gophers first. Unlocks once you've favorited a Gopher from a completed job.</small></div>
+      </div>
+      <div class="note tip"><span class="nico">⭐</span><div>
+        <span class="h" style="display:inline-flex;align-items:center;gap:8px;">MY Gophers
+          <span class="hint-wrap">
+            <button type="button" class="hint-btn" aria-label="The story behind MY Gophers">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6C6.5 16.8 3 13.3 3 9.25 3 6.6 5.1 4.7 7.6 4.7c1.6 0 3.15.78 4.4 2.42C13.25 5.48 14.8 4.7 16.4 4.7 18.9 4.7 21 6.6 21 9.25c0 4.05-3.5 7.55-9 11.35z"/></svg>
+              <span class="hint-q">?</span>
+            </button>
+            <span class="hint-pop" role="tooltip">This feature is the only one of its kind in the on-demand marketplace space. We created it because our customers kept asking to request our 1st Gopher Pro at the time, Michael Yorrie. Michael completed over 3,600 requests and never once received less than 5 stars — the most incredible feat we've ever witnessed. The “Favorite Gopher” feature was an instant success and is now used by most customers. On November 1st, 2024, we lost our dear friend Michael. On November 2nd, our CEO John Newbury changed the Favorite Gopher feature name to <b>MY</b> Gopher so <b>M</b>ichael <b>Y</b>orrie would never be forgotten.</span>
+          </span>
+        </span>
+        After any completed request you can save that Gopher to <b>MY Gophers</b> — they collect in their own spot on your dashboard, where you can <b>Hire Again</b> or pull up a profile anytime. Once you've saved at least one, the <b>Prioritize MY Gophers</b> option appears here: pick which saved Gophers to notify and they get <b>first dibs</b>. If none accept — or you skip — your request opens to the wider workforce after your broadcast window, and any worker outside MY Gophers needs your approval before they're hired.
+      </div></div>
+    </section>
+
+    <!-- STEP 4 -->
+    <section class="section" id="step4">
+      <span class="eyebrow"><span class="step-pill">Step 4 of 7</span> Locations</span>
+      <h2>Where it happens</h2>
+      <p>Enter your <b>pickup</b> and <b>destination</b> as needed for your service. When you type an address, Gopher pings the area and shows how many workers are nearby.</p>
+      <ul class="brand">
+        <li>For <b>Moving</b>, note any stairs at each location so your crew arrives prepared.</li>
+        <li>For flexible <b>deliveries</b>, you can choose <b>“No specific pickup”</b> so your Gopher buys from the closest store.</li>
+        <li>Got more than one stop? Enter the final destination here and list the other stops in your <b>description</b> — we recommend full store addresses, not just names.</li>
+      </ul>
+      <div class="note info"><span class="nico">📍</span><div>Suggestions appear as you type — pick the matching address from the list so your Gopher gets the exact spot. If nothing appears, just finish typing the full street address; you can continue either way.</div></div>
+    </section>
+
+    <!-- STEP 5 -->
+    <section class="section" id="step5">
+      <span class="eyebrow"><span class="step-pill">Step 5 of 7</span> Worker pay</span>
+      <h2>Decide what to pay</h2>
+      <p>Gopher is unlike any other platform: <b>you set the price, and 100% of it goes to your Gopher.</b> Think of your offer as a fair wage, not a tip — your Gopher works for you, not for Gopher, Inc.</p>
+      <div class="mock">
+        <div class="mock-label">How would you like to pay?</div>
+        <div class="radio-row sel"><span class="dot"></span>Set your offer <small>— you name the flat rate up front. Great for errands, rides &amp; deliveries.</small></div>
+        <div class="radio-row"><span class="dot"></span>Request bids <small>— not sure what's fair? Let Gophers send offers and pick the best one.</small></div>
+      </div>
+      <p style="margin-top:16px;font-size:14px;color:var(--muted);"><em>Bids aren't offered for Delivery or Ride Sharing, or when a job needs more than one worker.</em></p>
+
+      <h3>Not sure what to offer? Ask Gopher iQ</h3>
+      <p>On <b>Delivery</b> and <b>Ride Sharing</b>, tap the <b>Gopher iQ</b> suggestion to get a fair-rate estimate built from thousands of similar requests in your area. You always have the final say on the amount.</p>
+      <div class="note tip"><span class="nico">💡</span><div><span class="h">Why offers matter</span>A typical delivery takes 30–45 minutes, so an offer works out roughly like an hourly wage. If a request isn't getting picked up, nudging the offer up brings in workers from a little further away.</div></div>
+    </section>
+
+    <!-- STEP 6 -->
+    <section class="section" id="step6">
+      <span class="eyebrow"><span class="step-pill">Step 6 of 7</span> Review &amp; schedule</span>
+      <h2>Confirm the details and pick your timing</h2>
+      <p>Here's your whole request in one place. Apply a <b>promo code</b>, choose your <b>payment method</b>, and decide <b>when</b> you need it. Need a sanity check? Tap <b>“Second set of eyes”</b> for quick tips on your category.</p>
+
+      <h3>When do you need it?</h3>
+      <div class="grid3">
+        <div class="card"><h3 style="margin-top:0;">⚡ Need ASAP</h3><p style="font-size:14px;margin:0;">A Gopher gets moving the moment they accept. Expires after about an hour if no one takes it.</p></div>
+        <div class="card"><h3 style="margin-top:0;">🗓️ Flexible</h3><p style="font-size:14px;margin:0;">Within 24 hours, a week, or two weeks. You and your Gopher lock a firm time after they accept.</p></div>
+        <div class="card"><h3 style="margin-top:0;">📅 Specific date &amp; time</h3><p style="font-size:14px;margin:0;">Pick the exact day and time slot you want it done. Just say when.</p></div>
+      </div>
+
+      <div class="note warn" style="margin-top:22px;"><span class="nico">✍️</span><div><span class="h">One last box to check</span>You'll need to accept the short <b>liability waiver</b> before the submit button turns on. It's right above the final confirmation.</div></div>
+
+      <p style="margin-top:22px;">When everything looks good…</p>
+      <button class="gopher-it">Gopher it! →</button>
+    </section>
+
+    <!-- STEP 7 -->
+    <section class="section" id="step7">
+      <span class="eyebrow"><span class="step-pill">Step 7 of 7</span> Submitted!</span>
+      <h2>You're looking for a Gopher 🎉</h2>
+      <p>Your request is now broadcasting to local workers. You'll often see a banner showing how many Gophers are <b>already interested</b>. From here, everything happens on your dashboard.</p>
+      <div class="note tip"><span class="nico">🛡️</span><div><span class="h">Nothing's charged yet</span>Broadcasting a request never charges your card. When a Gopher accepts, we place a temporary <b>authorization</b> only — the final charge happens after you confirm the job is complete.</div></div>
+    </section>
+
+    <!-- TRACKING -->
+    <section class="section" id="tracking">
+      <span class="eyebrow">After you submit</span>
+      <h2>Tracking &amp; alerts</h2>
+      <p>Your dashboard groups every request and shows live counts. Anytime something needs you — an interested worker, a new message, a completed job — you'll get a notification and an attention flag.</p>
+      <div class="kpis">
+        <div class="kpi attn"><div class="v">1</div><div class="k">Pending</div></div>
+        <div class="kpi"><div class="v">1</div><div class="k">Active</div></div>
+        <div class="kpi"><div class="v">2</div><div class="k">Scheduled</div></div>
+        <div class="kpi"><div class="v">4</div><div class="k">All</div></div>
+      </div>
+      <p style="margin-top:14px;font-size:14px;color:var(--muted);">Tap any tile to filter your requests. Once a worker marks a pick-up/drop-off job “in progress,” you'll see their location on the map.</p>
+      <div class="note info"><span class="nico">📱</span><div><span class="h">On the web vs. in the app</span>This grouped dashboard is the <b>web</b> experience. The app has <b>no separate dashboard</b> — everything you see here appears right on your <b>Home Screen</b>.</div></div>
+    </section>
+
+    <!-- HIRING -->
+    <section class="section" id="hiring">
+      <span class="eyebrow">After you submit</span>
+      <h2>Choosing &amp; hiring your Gopher</h2>
+      <p>Open your live request to see everyone who's interested. For each worker you can review their profile, then take an action:</p>
+      <div class="mock">
+        <div class="mock-label">Workers interested</div>
+        <div class="wk">
+          <div class="av">DM</div>
+          <div><div class="nm">Devon M. <span class="badge">elite+</span></div><div class="meta">⭐ 4.97 (218 jobs) · 3 mi away · Available now</div></div>
+          <div class="acts"><span class="btn-sm btn-hire">Hire</span><span class="btn-sm btn-out">Consider</span><span class="btn-sm btn-deny">Deny</span></div>
+        </div>
+        <div class="wk">
+          <div class="av">JR</div>
+          <div><div class="nm">Jordan R. <span class="badge">pro+</span></div><div class="meta">⭐ 4.88 (96 jobs) · 5 mi away · Available 1pm</div></div>
+          <div class="acts"><span class="btn-sm btn-hire">Hire</span><span class="btn-sm btn-out">Consider</span><span class="btn-sm btn-deny">Deny</span></div>
+        </div>
+      </div>
+      <ul class="brand">
+        <li><b>Hire</b> — lock in that worker for the job.</li>
+        <li><b>Consider</b> — set them aside in a shortlist while you compare. You can <b>Approve</b> or <b>Deny</b> them later.</li>
+        <li><b>Deny</b> — pass on that worker.</li>
+      </ul>
+      <p>If your job needs a set number of workers, Gopher won't let you hire more than that — you'll get a heads-up if approving would go over your crew size.</p>
+      <div class="note tip"><span class="nico">▶️</span><div><span class="h">Start the job</span>Once your crew is fully hired, tap <b>Start Job</b>. Your request flips to in-progress and your worker cards switch to <b>“Your Gopher(s)”</b> with quick <b>Message</b> and <b>Review profile</b> buttons.</div></div>
+    </section>
+
+    <!-- MESSAGING -->
+    <section class="section" id="messaging">
+      <span class="eyebrow">After you submit</span>
+      <h2>Messaging your Gopher</h2>
+      <p>All messaging happens inside the app, in your <b>Inbox</b>. Before you hire, a worker can ask a clarifying question; once hired, you and your Gopher can chat freely about the job.</p>
+      <div class="note warn"><span class="nico">🔐</span><div><span class="h">Protect your privacy</span>Sharing phone numbers, emails, or other personal contact info through in-app messaging is against our terms. If a message asks for something it shouldn't, flag it and contact support. You're never obligated to reply.</div></div>
+    </section>
+
+    <!-- CONFIRM -->
+    <section class="section" id="confirm">
+      <span class="eyebrow">After you submit</span>
+      <h2>Confirm &amp; rate</h2>
+      <p>When your Gopher marks the job complete, you'll get an app notification and a text. Tap through to the confirmation screen.</p>
+      <ol class="brand">
+        <li>Tap <b>Confirm</b> once you've verified the job was done right.</li>
+        <li>Rate your Gopher on accuracy, communication, quality, and timeliness — this shapes the jobs they see next, so a job well done deserves 5 stars.</li>
+        <li>Optionally add them as <b>MY Gopher</b> for next time.</li>
+      </ol>
+      <div class="note warn"><span class="nico">⏳</span><div><span class="h">Confirm promptly</span>Confirming releases your Gopher's payout, so please do it as soon as the job's done — especially if they paid for items out of pocket. If you don't confirm within <b>48 hours</b>, a non-refundable auto-confirmation kicks in. Only confirm if the task was truly completed.</div></div>
+      <p style="margin-top:16px;">Something wrong? Use <b>Dispute</b> instead, add a comment, and give your Gopher a chance to make it right before escalating.</p>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="section" id="history">
+      <span class="eyebrow">After you submit</span>
+      <h2>History &amp; request again</h2>
+      <p>Every request you've made lives under <b>Previous requests</b> in the sidebar, filtered by the pills across the top — <b>All</b> (the default), <b><span class="goto-word"><img class="go-mark" src="assets/img/go-mark.svg" alt="GO">-To&rsquo;s</span></b>, <b>Completed</b>, <b>Expired</b>, and <b>Cancelled</b>. Open any one to see the full details.</p>
+
+      <h3>Two ways to run a request again</h3>
+      <ul class="brand">
+        <li><b>Request again NOW ⚡️</b> — re-sends that request exactly as it was, immediately. If the Gopher who did it is one of your MY Gophers, they get first dibs automatically.</li>
+        <li><b>Request again w/ edits</b> — prefills a new request from the old one, lets you pick which MY Gophers get first dibs, and takes you to <b>Review &amp; submit</b> so you can change anything before it goes out.</li>
+      </ul>
+
+      <h3>My <span class="goto-word"><img class="go-mark" src="assets/img/go-mark.svg" alt="GO">-To&rsquo;s</span> — the requests you make over and over</h3>
+      <p>Got a request you make every week? Save it as a <b><span class="goto-word"><img class="go-mark" src="assets/img/go-mark.svg" alt="GO">-To</span></b> and it re-sends with a single tap — no review screen, no confirmation. Tick the checkbox on any <b>Completed</b> request to start one. The first time you do, a short intro explains the one-tap behaviour before the editor opens.</p>
+      <p style="margin-top:10px;">A <span class="goto-word"><img class="go-mark" src="assets/img/go-mark.svg" alt="GO">-To</span> is a <b>copy you own</b>, so everything is editable before you save it:</p>
+      <ol class="brand">
+        <li><b>Name it</b> something you'll recognise — &ldquo;Friday grocery run.&rdquo;</li>
+        <li><b>Adjust the service type and details</b> if the job has drifted since last time.</li>
+        <li><b>Set the payment to your Gopher.</b> It arrives carrying the amount a Gopher already accepted for that job — your best odds of it being picked up again — but you can change it.</li>
+        <li><b>Choose the card</b> that gets charged, and <b>which MY Gophers</b> it goes to first.</li>
+        <li><b>Accept the liability waiver</b>, pre-ticked directly above Save.</li>
+        <li><b>Save.</b> It appears as a card at the top of Previous requests with one button: <b>Request my <span class="goto-word"><img class="go-mark" src="assets/img/go-mark.svg" alt="GO">-To</span> NOW ⚡️</b>.</li>
+      </ol>
+      <div class="note warn"><span class="nico">⚡</span><div><span class="h">One tap means one tap</span>There's no review step and no &ldquo;are you sure&rdquo; — the button sends the request and authorises the card straight away. That's why Save won't unlock until there's a payment above $0 and the waiver is accepted, and why only <b>Completed</b> requests can be saved: a job that already worked, at an amount a Gopher already took.</div></div>
+      <div class="note info"><span class="nico">📋</span><div><span class="h">It's a copy, not a shortcut to the original</span>The request you saved it from stays in your history untouched, and every send gets a brand-new request ID. Save as many as you like from the same job — one for the small order, one for the big one — and edit or remove any of them any time.</div></div>
+    </section>
+
+    <!-- FEES -->
+    <section class="section" id="fees">
+      <span class="eyebrow">Good to know</span>
+      <h2>Fees &amp; pricing, explained</h2>
+      <p>Your offer is 100% what your Gopher earns. On top of your offer, a few small platform fees apply:</p>
+      <div class="fee-wrap">
+      <table class="fee">
+        <thead><tr><th>Fee</th><th>Amount</th><th>What it's for</th></tr></thead>
+        <tbody>
+          <tr><td><b>Gopher Fee</b></td><td>$0.99 – $4.99</td><td>Varies by service type</td></tr>
+          <tr><td><b>Instant Transfer Fee</b></td><td>8% of total</td><td>Pays your Gopher immediately on completion</td></tr>
+          <tr><td><b>Age-Restricted Fee</b></td><td>$1.99</td><td>Only on age-restricted deliveries</td></tr>
+          <tr class="ex"><td><b>TrustShield™ Discount</b></td><td>– $1.00</td><td>Applied to age-restricted and ride sharing orders when you add the free TrustShield badge</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>A worked example</h3>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:0;">A general-errand delivery where you want to pay your Gopher $30 total (including $20 you're reimbursing for goods):</p>
+      <div class="receipt">
+        <div class="rl"><span>Cost of goods (reimbursed)</span><span>$20.00</span></div>
+        <div class="rl"><span>Your offer to the Gopher</span><span>$10.00</span></div>
+        <div class="rl"><span>Gopher Fee</span><span>$0.99</span></div>
+        <div class="rl"><span>Instant Transfer Fee (8%)</span><span>$2.48</span></div>
+        <div class="rl"><span>You pay</span><span>$33.47</span></div>
+      </div>
+      <p style="margin-top:14px;font-size:14px;">Your Gopher receives the full <b>$30</b> — using the app cost you just <b>$3.47</b>.</p>
+      <div class="note info"><span class="nico">💳</span><div>When a Gopher accepts, your card is pre-authorized (typically the total plus ~20%). The final amount is charged only after you confirm. If a request expires unaccepted, there's <b>no charge — not even an authorization.</b></div></div>
+    </section>
+
+    <!-- AGE / TRUSTSHIELD -->
+    <section class="section" id="age">
+      <span class="eyebrow">Good to know</span>
+      <h2>Age-restricted orders &amp; TrustShield</h2>
+      <p>For age-restricted items (like alcohol or tobacco), the law and our policy are strict — and we follow them to the letter.</p>
+      <ul class="brand">
+        <li>You must agree to the <b>age-restricted waiver</b> at submission.</li>
+        <li>You must <b>verify your identity to place the order</b> &mdash; either submit identification for that one order, or add <b>TrustShield</b>, which keeps you verified for as long as you carry the badge. You can&rsquo;t submit an age-restricted request without one of the two.</li>
+        <li>You must be <b>21 or older</b>. Age-restricted deals aren&rsquo;t available to anyone under 21.</li>
+        <li>You must be present with a <b>valid government-issued ID</b> at delivery. <b>Contactless delivery is never allowed</b> for these items.</li>
+        <li>If you can't show ID after your Gopher has already purchased the items, there's no refund for the goods or the offer — so don't request these unless your ID will be on hand.</li>
+        <li><b>You have to be there.</b> If your Gopher arrives and you're not present, they start a <b>10-minute timer</b> and we text the number on your account. If the timer runs out, the request completes as a <b>No-Show Completion</b> — your Gopher keeps the items and is paid in full, and it's <b>not refundable</b>.</li>
+      </ul>
+      <div class="note warn">
+        <span class="nico">⏱️</span>
+        <div><span class="h">The most common way this goes wrong</span>Ordering late, falling asleep, and not hearing the door. Your Gopher can't leave age-restricted items unattended and can't hand them to anyone else — so if nobody comes to the door with an ID, the only lawful outcome is that they leave with the items and are paid for the trip and the goods they already bought. Keep your phone nearby and the volume up. Full rule: <a href="gopher-terms-of-service.html#age">Terms of Service §9</a>.</div>
+      </div>
+      <h3>Gopher TrustShield™ — free, and saves you money</h3>
+      <div class="ts-card">
+        <div class="ts-shield">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336.54 400" role="img" aria-label="Gopher TrustShield">
+  <g>
+    <path fill="#32d876" d="m168.27,0C79.89,0,0,41.93,0,41.93v61.25c8.34-6.79,17.16-13.21,26.42-19.21,47.71-30.9,106.92-50.85,170.32-56.01,43.98-3.58,89.98-.06,135.56,11.87C314.72,31.33,244.68,0,168.27,0Z"/>
+    <path fill="#012462" d="m310.12,48.13v124.67c0,62.43-24.68,115.12-73.37,156.61-27.3,23.26-55.11,36.63-68.53,42.28-13.14-5.5-40.01-18.38-67.1-41.14-49.57-41.64-74.71-94.72-74.71-157.74v-41.6C112.84,61.43,190.08,47.87,261.06,41c-34.75-2.8-69.87-.94-104.49,5.7-48.62,9.32-93.31,27.72-130.15,53.14-9.33,6.44-18.16,13.33-26.42,20.64v52.32c0,171.67,168.27,227.2,168.27,227.2,0,0,168.27-55.52,168.27-227.2V54.65c-8.75-2.49-17.56-4.65-26.42-6.52Z"/>
+  </g>
+  <g>
+    <path fill="#32d876" d="m247.93,140.65c-.04.05-.08.11-.13.16.04-.05.08-.11.13-.16Z"/>
+    <path fill="#32d876" d="m248.93,139.23c-.15.24-.3.47-.46.7.16-.23.31-.46.46-.7Z"/>
+    <path fill="#32d876" d="m238.37,145.96c-.11.01-.22.03-.33.04.11-.01.22-.03.33-.04Z"/>
+    <path fill="#32d876" d="m239.71,145.74c-.09.02-.18.04-.26.05.09-.02.18-.04.26-.05Z"/>
+    <path fill="#32d876" d="m117.97,146.07c0,.65-.05,1.29-.14,1.91v95.78s.09,0,.14,0v-97.69Z"/>
+    <path fill="#32d876" d="m117.96,145.8c0,.09.01.18.01.28v-.28h-.01Z"/>
+    <path fill="#32d876" d="m106.55,145.8c-.98,0-1.81-.14-2.65-.28-.14,0-.42-.14-.7-.14-.7-.14-1.25-.28-1.81-.56-.28-.14-.42-.14-.7-.28-.84-.28-1.53-.7-2.23-1.11l-.14-.14c-.56-.42-1.11-.84-1.67-1.39-.14-.14-.42-.42-.56-.56-.42-.42-.84-.98-1.11-1.39-.28-.28-.42-.42-.56-.7-.42-.7-.84-1.39-1.11-2.09.14-7.11,5.99-12.82,13.1-12.82,3.76,0,7.24,1.67,9.61,4.32l6.27,6.27c8.22-18.95,27.17-32.32,49.18-32.32h.14v21.87c11.29,0,20.34,9.06,20.34,20.34v12.53c6.27,1.94,10.96,7.72,11.42,14.5.28,8.92-6.83,16.3-15.74,16.3-1.35,0-2.66-.17-3.9-.48v9.53c6.35,3.77,10.85,10.41,11.56,18.26l3.8,39.45c.68-.27,1.41-.44,2.19-.44,2.65,0,4.74,1.67,5.57,4.04,1.11-1.39,2.65-2.37,4.6-2.37,1.39,0,2.65.42,3.62,1.25.56-4.04,4.04-7.11,8.22-7.11.68,0,1.32.1,1.95.25v-102.32c-.09-.65-.14-1.31-.14-2,0-8.5,6.97-15.46,15.46-15.46.16,0,.31.02.46.03.17,0,.34-.03.51-.03,3.76,0,7.11,2.23,8.78,5.43-.34,1.06-.8,2.08-1.37,3.02,1.39-2.22,2.21-4.83,2.21-7.61,0-7.94-6.41-14.49-14.49-14.49-4.04,0-7.66,1.67-10.31,4.18l-6.69,6.69-.14.14c-6.69-11.15-17.14-19.78-29.68-23.96l2.09-3.62c-5.99-2.23-12.54-3.48-19.37-3.48-21.6,0-40.26,12.54-49.18,30.79l-6.69-6.69c-2.65-2.65-6.27-4.18-10.31-4.18-7.94,0-14.49,6.55-14.49,14.49s6.55,14.49,14.49,14.49h4.45s0-.09,0-.14h-4.31Z"/>
+    <path fill="#1baf61" d="m159.49,197.2v-9.44c-1.12.25-2.29.39-3.48.39-7.7,0-14.04-5.51-15.45-12.76,0,.03-.01.05-.02.08-.01-.1-.02-.19-.03-.28-.19-1.08-.28-2.2-.25-3.34.23-6.73,4.82-12.48,11.01-14.46v-12.57c0-11.29,9.06-20.34,20.34-20.34v-21.87h-.14c-22.01,0-40.96,13.38-49.18,32.32l-6.27-6.27c-2.37-2.65-5.85-4.32-9.61-4.32-7.11,0-12.96,5.71-13.1,12.82.28.7.7,1.39,1.11,2.09.14.28.28.42.56.7.28.42.7.98,1.11,1.39.14.14.42.42.56.56.56.56,1.11.98,1.67,1.39l.14.14c.7.42,1.39.84,2.23,1.11.28.14.42.14.7.28.56.28,1.11.42,1.81.56.28,0,.56.14.7.14.84.14,1.67.28,2.65.28h4.31c-.13-7.12-5.09-13.12-11.97-14.77,1.25-.28,2.37-.42,3.62-.42,8.4,0,15.3,6.82,15.45,15.19h.01v97.97c4.34.29,7.8,3.92,7.8,8.33,0,.56,0,.98-.14,1.53.7-.42,1.67-.7,2.65-.7,2.79,0,5.15,1.95,5.71,4.46,1.25-3.07,4.32-5.29,7.8-5.29.9,0,1.75.17,2.56.44l3.57-37.09c.71-7.85,5.21-14.49,11.56-18.26Z"/>
+    <path fill="#86f7bc" d="m183.73,197.2v.84c0,.56-.42.98-.98.98h-3.36c-1.78,1.35-4.6,2.23-7.79,2.23s-6.01-.88-7.79-2.23h-3.36c-.56,0-.98-.42-.98-.98v-.84c-6.35,3.77-10.85,10.41-11.56,18.26l-3.57,37.09c2.97.99,5.22,3.63,5.66,6.8,1.11-1.11,2.51-1.81,4.18-1.81,1.81,0,3.2.84,4.32,1.95v-.7c0-3.2,2.65-5.85,5.85-5.85s5.85,2.65,5.85,5.85v.14c1.25-.84,2.93-1.39,4.6-1.39,2.23,0,4.18.84,5.71,2.23.98-3.48,4.18-5.99,7.94-5.99,3.2,0,5.99,1.81,7.38,4.46.57-1.53,1.75-2.72,3.24-3.32l-3.8-39.45c-.71-7.85-5.21-14.49-11.56-18.26Z"/>
+    <path fill="#1baf61" d="m163.82,199.02c1.78,1.35,4.6,2.23,7.79,2.23s6.01-.88,7.79-2.23h-15.58Z"/>
+    <path fill="#ffffff" d="m172.73,177.7c-.28-.84-1.53-.84-1.81,0-1.84,5.06-6.14,8.87-11.42,10.06v10.28c0,.56.42.98.98.98h22.29c.56,0,.98-.42.98-.98v-10.37c-5.15-1.28-9.21-5.04-11.01-9.97Z"/>
+    <path fill="#ffffff" d="m151.27,144.82v12.57c1.24-.4,2.55-.66,3.9-.73h2.05c2.02-3.48,7.69-5.99,14.39-5.99s12.38,2.51,14.39,5.99h2.19c1.3.07,2.56.31,3.76.69v-12.53c0-11.29-9.06-20.34-20.34-20.34s-20.34,9.06-20.34,20.34Zm25.77-5.99c0-1.25,1.11-2.37,2.37-2.37s2.37.98,2.37,2.37v5.85c0,1.25-1.11,2.37-2.37,2.37s-2.37-1.11-2.37-2.37v-5.85Zm-15.47,0c0-1.25,1.11-2.37,2.37-2.37s2.37.98,2.37,2.37v5.85c0,1.25-1.11,2.37-2.37,2.37s-2.37-1.11-2.37-2.37v-5.85Z"/>
+    <path fill="#1baf61" d="m140.51,175.19c-.13-1.14-.25-2.18-.25-3.34-.04,1.14.05,2.26.25,3.34Z"/>
+    <path fill="#1baf61" d="m186,156.66c.51.88.79,1.81.79,2.79,0,4.85-6.8,8.78-15.19,8.78-6.61,0-12.22-2.44-14.3-5.85h-2.14c-7.36.42-13.46,5.81-14.61,13.02,1.41,7.25,7.75,12.76,15.45,12.76,1.2,0,2.36-.14,3.48-.39,5.28-1.19,9.59-5,11.42-10.06.28-.84,1.53-.84,1.81,0,1.8,4.94,5.85,8.7,11.01,9.97,1.24.31,2.55.48,3.9.48,8.92,0,16.02-7.38,15.74-16.3-.47-6.78-5.16-12.56-11.42-14.5-1.2-.37-2.46-.62-3.76-.69h-2.19Z"/>
+    <path fill="#32d876" d="m155.17,162.37h2.14c-.56-.92-.88-1.9-.88-2.93s.29-1.91.79-2.79h-2.05c-1.35.07-2.66.33-3.9.73-6.19,1.98-10.77,7.73-11.01,14.46,0,1.16.12,2.2.25,3.34.01.1.02.19.03.28,0-.03.01-.05.02-.08,1.15-7.2,7.26-12.6,14.61-13.02Z"/>
+    <path fill="#012462" d="m157.31,162.37c2.09,3.41,7.69,5.85,14.3,5.85,8.39,0,15.19-3.93,15.19-8.78,0-.98-.29-1.91-.79-2.79-2.02-3.48-7.69-5.99-14.39-5.99s-12.37,2.51-14.39,5.99c-.51.88-.79,1.81-.79,2.79,0,1.03.32,2.01.88,2.93Z"/>
+    <path fill="#1baf61" d="m241.55,130.75c-.17,0-.34.02-.51.03,1.1.03,2.18.15,3.16.39-6.83,1.53-11.84,7.66-11.84,14.91h4.32c.46,0,.92-.03,1.37-.07.11-.01.22-.03.33-.04.36-.04.72-.1,1.07-.17.09-.02.18-.04.26-.05,3.25-.69,6.09-2.47,8.1-4.93.04-.05.08-.11.13-.16.19-.23.37-.47.54-.72.16-.23.32-.46.46-.7,0-.01.01-.02.02-.04.57-.94,1.04-1.95,1.37-3.02-1.67-3.2-5.02-5.43-8.78-5.43Z"/>
+    <g>
+      <path fill="#012462" d="m228.73,110.27c-3.07.98-5.71,2.79-8.08,5.15l-.14.14c-5.15-6.13-11.56-11.29-18.81-15.05l1.39-2.51c.42-.7.14-1.67-.7-1.95l-7.52-2.93c-3.76-1.39-7.52-2.51-11.42-3.2-24.52-4.04-47.79,5.99-61.58,24.94-4.18-3.9-9.61-5.99-15.33-5.99-13.65,0-24.52,11.98-22.43,26.05,1.53,11.15,11.56,19.37,22.99,19.37h2.65v85.45c-.23-.02-.46-.05-.7-.05-4.04,0-7.52,2.93-8.22,6.83-.84-.42-1.67-.56-2.51-.56-3.2,0-5.85,2.65-5.85,5.85v.14c-.42,0-.7-.14-1.11-.14-4.6,0-8.36,3.76-8.36,8.36s3.76,8.36,8.36,8.36c.98,0,1.95-.14,2.79-.56.84,2.23,2.93,3.9,5.43,3.9,1.39,0,2.65-.56,3.62-1.39,1.53,2.37,4.04,3.9,6.97,3.9,1.67,0,3.2-.56,4.6-1.39.7,2.37,2.93,4.04,5.57,4.04,1.53,0,2.93-.56,3.9-1.53,1.39,2.79,4.18,4.6,7.38,4.6,2.93,0,5.57-1.53,7.11-3.9,1.39,1.25,3.34,1.95,5.29,1.95,2.65,0,4.88-1.25,6.41-3.07.42,2.79,2.79,5.02,5.71,5.02,2.65,0,4.88-1.81,5.57-4.32,1.53,1.39,3.48,2.37,5.71,2.37,1.95,0,3.76-.7,5.29-1.95,1.11,3.34,4.18,5.71,7.94,5.71,3.48,0,6.41-2.09,7.66-5.02,1.11,1.53,2.79,2.51,4.74,2.51,1.81,0,3.34-.84,4.46-2.09,1.39,2.65,4.18,4.6,7.38,4.6,2.93,0,5.57-1.53,7.11-3.9,1.53,2.37,4.04,3.9,7.11,3.9,3.34,0,6.27-2.09,7.66-5.02,1.53,0,2.93-.56,3.9-1.53,1.53,1.67,3.62,2.65,6.13,2.65,3.48,0,6.41-2.09,7.66-5.02,1.67-.14,3.2-.98,4.18-2.23.7.14,1.39.28,2.09.28,4.6,0,8.36-3.76,8.36-8.36.42-2.93-.98-5.29-3.07-6.83.14-.56.28-.98.28-1.53,0-3.2-2.65-5.85-5.85-5.85-1.25,0-2.37.42-3.34,1.11-.98-3.62-4.18-6.27-8.08-6.27v-.42c0-3.16-2.57-5.76-5.71-5.84v-82.63h2.51c12.26,0,22.71-9.33,23.41-21.46.98-15.6-14.21-28.14-30.51-22.71Zm20.22,28.93s-.01.02-.02.04c-.15.24-.3.47-.46.7-.17.25-.35.48-.54.72-.04.05-.08.11-.13.16-2.02,2.46-4.85,4.24-8.1,4.93-.09.02-.18.04-.26.05-.35.07-.71.12-1.07.17-.11.01-.22.03-.33.04-.45.04-.91.07-1.37.07h-4.32c0-7.24,5.02-13.38,11.84-14.91-.98-.24-2.06-.36-3.16-.39-.16,0-.31-.03-.46-.03-8.5,0-15.46,6.97-15.46,15.46,0,.69.05,1.35.14,2v102.32c-.63-.15-1.27-.25-1.95-.25-4.18,0-7.66,3.07-8.22,7.11-.98-.84-2.23-1.25-3.62-1.25-1.95,0-3.48.98-4.6,2.37-.84-2.37-2.93-4.04-5.57-4.04-.78,0-1.52.16-2.19.44-1.49.6-2.67,1.79-3.24,3.32-1.39-2.65-4.18-4.46-7.38-4.46-3.76,0-6.97,2.51-7.94,5.99-1.53-1.39-3.48-2.23-5.71-2.23-1.67,0-3.34.56-4.6,1.39v-.14c0-3.2-2.65-5.85-5.85-5.85s-5.85,2.65-5.85,5.85v.7c-1.11-1.11-2.51-1.95-4.32-1.95-1.67,0-3.07.7-4.18,1.81-.44-3.17-2.69-5.81-5.66-6.8-.81-.27-1.66-.44-2.56-.44-3.48,0-6.55,2.23-7.8,5.29-.56-2.51-2.93-4.46-5.71-4.46-.98,0-1.95.28-2.65.7.14-.56.14-.98.14-1.53,0-4.41-3.46-8.04-7.8-8.33-.05,0-.09,0-.14,0v-95.78c.09-.62.14-1.25.14-1.91,0-.09-.01-.19-.01-.28-.15-8.37-7.05-15.19-15.45-15.19-1.25,0-2.37.14-3.62.42,6.88,1.65,11.84,7.65,11.97,14.77,0,.05,0,.09,0,.14h-4.45c-7.94,0-14.49-6.55-14.49-14.49s6.55-14.49,14.49-14.49c4.04,0,7.66,1.53,10.31,4.18l6.69,6.69c8.92-18.25,27.59-30.79,49.18-30.79,6.83,0,13.37,1.25,19.37,3.48l-2.09,3.62c12.54,4.18,22.99,12.82,29.68,23.96l.14-.14,6.69-6.69c2.65-2.51,6.27-4.18,10.31-4.18,8.08,0,14.49,6.55,14.49,14.49,0,2.79-.82,5.39-2.21,7.61Z"/>
+      <path fill="#012462" d="m253.12,273.97c-3.2,0-5.85,2.65-5.85,5.85s2.65,5.85,5.85,5.85,5.85-2.65,5.85-5.85-2.51-5.85-5.85-5.85Z"/>
+      <path fill="#012462" d="m73.95,254.05c-3.2,0-5.85,2.65-5.85,5.85s2.65,5.85,5.85,5.85,5.85-2.65,5.85-5.85c-.14-3.2-2.65-5.85-5.85-5.85Z"/>
+      <path fill="#012462" d="m264.82,265.06c-2.09,0-3.76,1.67-3.76,3.76s1.67,3.62,3.76,3.62,3.62-1.67,3.62-3.62c.14-2.09-1.53-3.76-3.62-3.76Z"/>
+    </g>
+    <path fill="#012462" d="m179.41,147.05c1.25,0,2.37-1.11,2.37-2.37v-5.85c0-1.39-1.11-2.37-2.37-2.37s-2.37,1.11-2.37,2.37v5.85c0,1.25,1.11,2.37,2.37,2.37Z"/>
+    <path fill="#012462" d="m163.95,147.05c1.25,0,2.37-1.11,2.37-2.37v-5.85c0-1.39-1.11-2.37-2.37-2.37s-2.37,1.11-2.37,2.37v5.85c0,1.25,1.11,2.37,2.37,2.37Z"/>
+  </g>
+</svg>
+          <span class="cap">TrustShield™</span>
+        </div>
+        <div class="ts-copy">
+          <p>Add the free <b>TrustShield</b> badge to verify your identity once — a quick three-step check right on the web: a live photo of the front of your government-issued ID, the back, then a selfie. After that you get:</p>
+          <ul class="brand">
+            <li><b>$1 off</b> every age-restricted and ride sharing order.</li>
+            <li>Skip re-entering your ID each time — verify once, use everywhere.</li>
+          </ul>
+          <p style="margin-top:10px;margin-bottom:0;">You'll still show your physical ID if it's an age-restricted delivery, but ordering gets much faster.</p>
+        </div>
+      </div>
+      <div class="note tip"><span class="nico">🛡️</span><div>Set up with your legal name to use TrustShield. If you signed up under an alias, contact <a href="mailto:support@gophergo.io">support@gophergo.io</a> and we'll help you update the name on your account &mdash; please don't email a photo of your ID. TrustShield is an identity-verification mark — not a background or credit check.</div></div>
+    </section>
+
+    <!-- SAFETY -->
+    <section class="section" id="safety">
+      <span class="eyebrow">Good to know</span>
+      <h2>Safety &amp; the no-charge promise</h2>
+      <ul class="brand">
+        <li><b>Your money is protected.</b> When a request is accepted, funds move to a secure holding account via Stripe. If the job isn't completed, the authorization is released back to your card.</li>
+        <li><b>No worker, no charge.</b> If we can't connect you with a Gopher, your request simply expires — with no charge and no authorization.</li>
+        <li><b>Gopher isn't auto-fulfillment.</b> It's an open marketplace; a worker decides whether your offer is worth it. A fair offer in an active area is usually accepted fast.</li>
+        <li><b>Cancelling.</b> Before your Gopher starts you can cancel or repost for free; once a Gopher marks a job in-progress and/or purchases items, cancelling is subject to a flat $5 fee, and if items were already purchased you are also responsible for their cost. See the Terms for full details.</li>
+      </ul>
+      <div class="note warn"><span class="nico">🚩</span><div><span class="h">Never pay outside the app</span>If a Gopher ever asks for money outside Gopher, that's a terms violation — don't do it, and report it to us right away.</div></div>
+    </section>
+
+    <!-- HELP -->
+    <section class="section" id="help">
+      <span class="eyebrow">Good to know</span>
+      <h2>Need help?</h2>
+      <p>You're ready to go! For anything else:</p>
+      <ul class="brand">
+        <li>Tap <b>More → Help Center</b> in the app, then <b>“Send us a message.”</b></li>
+        <li>Browse the full <a href="gopher-faqs.html">FAQs</a> — updated weekly.</li>
+        <li>Email us at <a href="mailto:support@gophergo.io">support@gophergo.io</a>.</li>
+      </ul>
+      <div class="note info"><span class="nico">🌱</span><div><span class="h">The marketplace is growing every day</span>Don't hesitate to submit a request in a brand-new area. If no Gophers are available yet, it just expires at no cost — and that's our cue to spread the word locally. Referring the app is the fastest way to get your area buzzing.</div></div>
+      <p style="margin-top:24px;font-family:'Caveat';font-size:30px;color:var(--terracotta);transform:rotate(-1.5deg);">Now you're ready to Gopher it!</p>
+    </section>
+
+  </main>
+</div>
+
+<link rel="stylesheet" href="assets/css/gopher-footer.css">
+
+<footer class="gopher-footer">
+
+  <div class="gf-inner">
+
+    <!-- Brand block (left) -->
+    <div class="gf-brand">
+      <a href="index.html" class="gf-logo-wrap" aria-label="Gopher home">
+        <img src="assets/img/gopher-logo.svg" alt="Gopher">
+      </a>
+      <p class="gf-tagline">
+        Connecting customers, businesses, merchants, and local workers with fair-priced services.
+      </p>
+
+      <!-- Social row -->
+      <div class="gf-social" aria-label="Gopher on social media">
+        <a href="https://www.facebook.com/GopherMobileApp" aria-label="Facebook" title="Facebook">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.52 1.49-3.91 3.78-3.91 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/gopherinc/" aria-label="Instagram" title="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.2" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="https://www.tiktok.com/@gopherinc" aria-label="TikTok" title="TikTok">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.07-2.82h-3.1v12.6a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12V9.96a5.7 5.7 0 0 0-.78-.05 5.69 5.69 0 1 0 5.69 5.69V9.01a7.35 7.35 0 0 0 4.29 1.37V7.28a4.28 4.28 0 0 1-3.22-1.46z"/></svg>
+        </a>
+        <a href="https://www.youtube.com/@gopherinc" aria-label="YouTube" title="YouTube">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.51a3.02 3.02 0 0 0-2.12-2.14C19.5 3.86 12 3.86 12 3.86s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.51 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.49 3.02 3.02 0 0 0 2.12 2.14C4.5 20.14 12 20.14 12 20.14s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.49zM9.6 15.57V8.43L15.82 12 9.6 15.57z"/></svg>
+        </a>
+        <a href="https://nextdoor.com/page/gopher-llc-holly-springs-nc" aria-label="Nextdoor" title="Nextdoor">
+          <!-- House silhouette — universally readable as "neighborhood/home"
+               which is Nextdoor's identity. The hover tooltip reinforces it. -->
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5 1.6 11.2l1.3 1.6 1.6-1.3v9h6v-6h3v6h6v-9l1.6 1.3 1.3-1.6L12 2.5z"/></svg>
+        </a>
+        <a href="https://www.reddit.com/r/GopherMobileApp/" aria-label="Reddit" title="Reddit">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 11.82a2.2 2.2 0 0 0-3.73-1.57 10.84 10.84 0 0 0-5.5-1.7l.94-4.4 3.07.66a1.56 1.56 0 1 0 .2-1.05l-3.43-.73a.52.52 0 0 0-.62.4l-1.05 4.94a10.9 10.9 0 0 0-5.6 1.7 2.2 2.2 0 1 0-2.42 3.62 4.3 4.3 0 0 0-.05.66c0 3.35 3.9 6.07 8.71 6.07s8.71-2.72 8.71-6.07a4.3 4.3 0 0 0-.05-.65A2.2 2.2 0 0 0 22 11.82zM7 13.4a1.56 1.56 0 1 1 3.12 0 1.56 1.56 0 0 1-3.12 0zm8.73 4.12a5.7 5.7 0 0 1-3.73 1.16 5.7 5.7 0 0 1-3.73-1.16.42.42 0 1 1 .56-.62A4.9 4.9 0 0 0 12 17.85a4.9 4.9 0 0 0 3.17-.95.42.42 0 0 1 .56.62zm-.29-2.56a1.56 1.56 0 1 1 0-3.12 1.56 1.56 0 0 1 0 3.12z"/></svg>
+        </a>
+        <a href="https://x.com/GopherMobileApp" aria-label="X" title="X">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.22-6.82-5.97 6.82H1.66l7.73-8.84L1.23 2.25h6.83l4.71 6.23 5.47-6.23zm-1.16 17.52h1.83L7.01 4.13H5.04l12.04 15.64z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/company/gopher-mobile-app/" aria-label="LinkedIn" title="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Marketplace column -->
+    <div class="gf-col">
+      <h4>Marketplace</h4>
+      <ul>
+        <li><a href="gopher-request.html">Gopher Request</a></li>
+        <li><a href="gopher-connect.html">Gopher Connect</a></li>
+        <li><a href="gopher-go.html">Gopher Go</a></li>
+        <li><a href="gopher-deals.html">Deals</a></li>
+      </ul>
+    </div>
+
+    <!-- Company column — Tutorials is an expandable submenu (uses
+         <details>/<summary> so it works without JS and stays accessible) -->
+    <div class="gf-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="gopher-our-story.html">Our Story</a></li>
+        <li><a href="gopher-blog.html">Gopher Blog</a></li>
+        <li class="gf-expandable">
+          <details>
+            <summary>
+              <span>Tutorials</span>
+              <svg class="gf-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="4 6 8 10 12 6"/>
+              </svg>
+            </summary>
+            <ul class="gf-submenu">
+              <li><a href="gopher-request-101.html">Gopher Request 101</a></li>
+              <li><a href="gopher-connect-101.html">Gopher Connect 101</a></li>
+              <li><a href="gopher-go-101.html">Gopher Go 101</a></li>
+              <li><a href="gopher-deals-101.html">Gopher Deals 101</a></li>
+            </ul>
+          </details>
+        </li>
+        <li><a href="gopher-contact-us.html">Contact Us</a></li>
+        <li><a href="gopher-faqs.html">FAQs</a></li>
+      </ul>
+    </div>
+
+    <!-- Legal column -->
+    <div class="gf-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="gopher-privacy.html">Privacy Policy</a></li>
+        <li><a href="gopher-terms-of-service.html">Terms of Service</a></li>
+        <li><a href="gopher-merchant-agreement.html">Merchant Agreement</a></li>
+        <li><a href="gopher-prohibited-list.html">Prohibited List</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Bottom strip -->
+  <div class="gf-bottom">
+    <div class="gf-copyright">&copy; 2026 Gopher, Inc. All rights reserved.</div>
+    <div class="gf-signoff">Need it now? Gopher it!</div>
+  </div>
+
+</footer>
+
+<button class="totop" id="toTop" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<script>
+/* ── Scroll-spy: highlight the active section in the left menu ── */
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.side-nav a'));
+  var map = {};
+  links.forEach(function(a){
+    var id = a.getAttribute('href').slice(1);
+    var sec = document.getElementById(id);
+    if(sec) map[id] = a;
+  });
+  var sections = Object.keys(map).map(function(id){ return document.getElementById(id); });
+
+  function setActive(id){
+    links.forEach(function(a){ a.classList.remove('active'); });
+    if(map[id]){
+      map[id].classList.add('active');
+      // keep the active link visible in the scrolling sidebar
+      var sb = document.getElementById('sidebar');
+      var a = map[id];
+      var top = a.offsetTop, bottom = top + a.offsetHeight;
+      if(top < sb.scrollTop + 60 || bottom > sb.scrollTop + sb.clientHeight - 20){
+        sb.scrollTo({ top: top - sb.clientHeight/2, behavior:'smooth' });
+      }
+    }
+  }
+
+  var obs = new IntersectionObserver(function(entries){
+    // pick the entry nearest the top that is intersecting
+    var visible = entries.filter(function(e){ return e.isIntersecting; });
+    if(visible.length){
+      visible.sort(function(a,b){ return a.boundingClientRect.top - b.boundingClientRect.top; });
+      setActive(visible[0].target.id);
+    }
+  }, { rootMargin:'-84px 0px -62% 0px', threshold:0 });
+
+  sections.forEach(function(s){ obs.observe(s); });
+
+  // close mobile menu after tapping a link
+  links.forEach(function(a){
+    a.addEventListener('click', function(){ document.body.classList.remove('nav-open'); });
+  });
+})();
+
+/* ── Mobile menu toggle ── */
+(function(){
+  var t = document.getElementById('menuToggle');
+  var scrim = document.getElementById('scrim');
+  t.addEventListener('click', function(){ document.body.classList.toggle('nav-open'); });
+  scrim.addEventListener('click', function(){ document.body.classList.remove('nav-open'); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') document.body.classList.remove('nav-open'); });
+})();
+
+/* ── Back to top ── */
+(function(){
+  var btn = document.getElementById('toTop');
+  window.addEventListener('scroll', function(){
+    if(window.scrollY > 600) btn.classList.add('show'); else btn.classList.remove('show');
+  }, { passive:true });
+  btn.addEventListener('click', function(){ window.scrollTo({ top:0, behavior:'smooth' }); });
+})();
+
+/* ── Heart-? hint: tap to toggle (mobile), hover handled in CSS ── */
+(function(){
+  var btns = Array.prototype.slice.call(document.querySelectorAll('.hint-btn'));
+  btns.forEach(function(b){
+    b.addEventListener('click', function(e){
+      e.stopPropagation();
+      var wasOpen = b.classList.contains('open');
+      btns.forEach(function(x){ x.classList.remove('open'); });
+      if(!wasOpen) b.classList.add('open');
+    });
+  });
+  document.addEventListener('click', function(){ btns.forEach(function(x){ x.classList.remove('open'); }); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') btns.forEach(function(x){ x.classList.remove('open'); }); });
+})();
+</script>
+</body>
+</html>

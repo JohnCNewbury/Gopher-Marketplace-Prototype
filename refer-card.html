@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refer a driver</title>
+<link rel="stylesheet" href="assets/css/gopher-fonts.css">
+<style>
+  :root{ --green:#33D975; --green-dark:#1CB061; --navy:#002461; --navy-2:#0a3478; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  /* demo backdrop only — your page section already provides this */
+  .vidsection{ min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;
+    padding:48px 20px; font-family:'DM Sans',sans-serif;
+    background:radial-gradient(120% 120% at 20% 0%, #0a3a7a 0%, #04204e 55%, #021634 100%); }
+
+  /* ---- the video card (this is the drop-in piece) ---- */
+  .vcard{ width:100%; max-width:640px; background:#24262b; border-radius:18px; padding:14px;
+    box-shadow:0 24px 60px -20px rgba(0,0,0,.6); }
+  .vwrap{ position:relative; border-radius:11px; overflow:hidden; background:#000; aspect-ratio:16/9; }
+  .vwrap video{ width:100%; height:100%; display:block; object-fit:cover; }
+
+  /* initial poster play button */
+  .vplay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; border:none; background:transparent; transition:opacity .2s ease; }
+  .vplay::before{ content:""; position:absolute; inset:0; background:rgba(0,0,0,.18); }
+  .vplay .circle{ position:relative; width:72px; height:72px; border-radius:50%; background:var(--green);
+    display:flex; align-items:center; justify-content:center; box-shadow:0 8px 28px -6px rgba(0,0,0,.5);
+    transition:transform .16s ease; }
+  .vplay:hover .circle{ transform:scale(1.06); }
+  .vplay .circle svg{ width:28px; height:28px; margin-left:4px; fill:var(--navy); }
+
+  /* clean replay overlay shown when the clip ends (replaces YouTube end screen) */
+  .vend{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+    background:rgba(8,12,20,.6); backdrop-filter:blur(3px); cursor:pointer; }
+  .vend.show{ display:flex; }
+  .vend .circle{ width:64px; height:64px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 28px -6px rgba(0,0,0,.5); transition:transform .16s ease; }
+  .vend:hover .circle{ transform:scale(1.06); }
+  .vend .circle svg{ width:26px; height:26px; stroke:var(--navy); fill:none; stroke-width:2.4; }
+  .vend .label{ font-family:'Nunito',sans-serif; font-weight:800; color:#fff; font-size:15px; letter-spacing:.01em; }
+
+  /* ---- CTA buttons (on-brand: 8px radius, Nunito 800, green w/ navy text) ---- */
+  .vbtns{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+  .vbtn{ font-family:'Nunito',sans-serif; font-weight:800; font-size:16px; padding:15px 28px; border-radius:8px; text-decoration:none;
+    display:inline-flex; align-items:center; gap:10px; cursor:pointer; border:none; transition:transform .16s ease, box-shadow .16s ease; }
+  .vbtn-primary{ background:var(--green); color:var(--navy); box-shadow:0 12px 30px -10px rgba(51,217,117,.6); }
+  .vbtn-primary:hover{ transform:translateY(-2px); }
+  .vbtn-ghost{ background:transparent; color:#fff; border:1.6px solid rgba(255,255,255,.4); }
+  .vbtn-ghost:hover{ border-color:#fff; }
+</style>
+</head>
+<body>
+  <section class="vidsection">
+
+    <!-- ════ DROP-IN: video card ════ -->
+    <div class="vcard">
+      <div class="vwrap" id="vwrap">
+        <video id="rvid" playsinline preload="metadata" poster="poster.jpg" controlslist="nodownload">
+          <source src="recruiting-out-of-area.mp4" type="video/mp4">
+        </video>
+        <button class="vplay" id="vplay" aria-label="Play video">
+          <span class="circle"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        </button>
+        <div class="vend" id="vend" role="button" tabindex="0" aria-label="Watch again">
+          <span class="circle"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg></span>
+          <span class="label">Watch again</span>
+        </div>
+      </div>
+    </div>
+    <!-- ════ /DROP-IN ════ -->
+
+    <div class="vbtns">
+      <a class="vbtn vbtn-primary" href="#">Refer a driver &rarr;</a>
+      <a class="vbtn vbtn-ghost" href="#">Back to Delivery &amp; Errands</a>
+    </div>
+  </section>
+
+<script>
+  (function(){
+    var v = document.getElementById('rvid');
+    var playBtn = document.getElementById('vplay');
+    var endOv = document.getElementById('vend');
+    function start(){ endOv.classList.remove('show'); playBtn.style.opacity='0'; playBtn.style.pointerEvents='none';
+      v.setAttribute('controls',''); var p=v.play(); if(p&&p.catch){p.catch(function(){});} }
+    function replay(){ v.currentTime=0; start(); }
+    playBtn.addEventListener('click', start);
+    endOv.addEventListener('click', replay);
+    endOv.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' ') replay(); });
+    v.addEventListener('play', function(){ endOv.classList.remove('show'); });
+    v.addEventListener('ended', function(){ endOv.classList.add('show'); });
+  })();
+</script>
+</body>
+</html>

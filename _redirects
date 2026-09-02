@@ -1,0 +1,19 @@
+# Netlify redirect rules for the Gopher prototype (Final/ deployed as site root).
+# This file is Netlify-specific and is ignored by the GitHub Pages / TigerTech deploys.
+#
+# Serve the Gopher Deals pre-registration page at the bare domain so the link
+# you send merchants can be just https://<your-site>.netlify.app/
+# (200! = FORCED rewrite: index.html exists at "/", so without the ! Netlify
+# serves the file and ignores this rule. /index.html still serves the homepage
+# directly, so nav "Home" links keep working.)
+/            /gopher-deals.html   200!
+
+# Friendly short paths that also land on the pre-registration page.
+# (/audience appears as a URL pill in the social carousel art — keep it resolving.)
+/deals       /gopher-deals.html   200
+/register    /gopher-deals.html   200
+/audience    /gopher-deals.html   200
+
+# Internal file mask: CLAUDE.md must live in Final/ for tooling, but should not
+# be readable on the public site. Forced (301!) so the rule wins over the file.
+/CLAUDE.md   /   301!

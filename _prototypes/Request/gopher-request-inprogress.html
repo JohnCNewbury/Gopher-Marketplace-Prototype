@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gopher Request — In Progress</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{ --radius-pill:99px; --radius-card:16px; --radius-md:12px; --radius-sm:8px; --font-heading:'Nunito'; --font-body:'DM Sans'; --font-script:'Caveat';  --z-deals:#F3F5F8; --z-jobs:#EEF7F1; --z-tools:#EDF1F8; --z-acct:#E9F1FC; --z-perks:#FBF1E8;  --border:#EDF0F5; --warning:#FFDE00; --terra:#C8623C; --aqua:#87F7BD; 
+  --green:#1CB061; --green-bright:#33D975; --green-dark:#1CB061; --green-light:#e2f3e9; --green-tint:#E8F5EE;
+  --navy:#002461; --ink:#002461; --ink-soft:#3A4D74; --navy-mid:#1a3a7a; --navy-light:#eef0f8;
+  --paper:#FBF7EF;--shadow-sheet:0 -10px 40px rgba(0,0,0,.25); --card:#fff; --sand:#FBF3E4; --muted:#8C8675; --muted-cool:#6b7280;
+  --terracotta:#D97757; --warning-text:#92580D; --error:#C44257; --cornflower:#BADBFC;
+  --line:#EAE3D5; --line-cool:#E3E7EF; --navy-bar:#03143A;
+  --card-sh:0 2px 4px rgba(0,36,97,.05),0 9px 20px rgba(0,36,97,.10);
+  --raise-sh:0 8px 24px -8px rgba(0,36,97,.22);
+  --over-sh:0 16px 40px -10px rgba(0,36,97,.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+/* Form controls do NOT inherit font — the UA stylesheet pins them to Arial 13.3333px.
+   Measured 2026-08-02: every element painting a non-brand font was a form control or a
+   descendant of one. font-weight deliberately NOT reset — buttons that look bold declare
+   their own, and `font:inherit` would flatten them. docs/screen-spec/TYPE-AND-SHAPE-SCALE.md */
+button,input,select,textarea{font-family:inherit;font-size:inherit;}
+
+body{background:#dfe4ec;font-family:'DM Sans',-apple-system,system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;padding:20px;min-height:100vh;}
+#phone{position:relative;width:390px;max-width:100%;height:844px;max-height:calc(100vh - 40px);background:var(--paper);border-radius:42px;overflow:hidden;overflow:clip;display:flex;flex-direction:column;box-shadow:0 30px 60px -20px rgba(0,16,42,.5);}
+.status-bar{flex:0 0 auto;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-family:'Nunito';font-weight:800;font-size:13px;color:var(--navy);background:var(--paper);}
+.sb-right{display:flex;align-items:center;gap:6px;}
+.sb-right svg{height:13px;width:auto;}
+#scroll{flex:1;overflow-y:auto;padding:0 0 96px;}
+
+.rd-head{display:flex;align-items:center;gap:12px;padding:8px 20px 14px;background:var(--paper);}
+.rd-back{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;}
+.rd-back svg{width:17px;height:17px;fill:none;stroke:var(--navy);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.rd-htext{font-family:'Nunito';font-weight:900;font-size:18px;color:var(--navy);letter-spacing:-.3px;}
+.rd-logo{height:22px;width:auto;margin-left:auto;display:block;}
+.rd-body{padding:4px 18px 0;display:flex;flex-direction:column;gap:14px;}
+
+.req-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px;box-shadow:var(--card-sh);position:relative;}
+.rc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.rc-title{font-family:'Nunito';font-weight:900;font-size:14.5px;color:var(--navy);line-height:1.25;}
+.rc-pill{font-family:'Nunito';font-weight:900;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--green-dark);background:var(--green-tint);border-radius:99px;padding:4px 9px;white-space:nowrap;flex:0 0 auto;}
+.rc-meta{margin-top:7px;font-family:'DM Sans';font-weight:500;font-size:12px;color:var(--ink-soft);line-height:1.5;}
+.rc-meta b{color:var(--navy);font-weight:700;}
+
+.sec-title{font-family:'Nunito';font-weight:900;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink);margin:6px 2px 2px;}
+
+.gph-row{display:flex;align-items:center;gap:12px;}
+.gph-pic{width:42px;height:42px;border-radius:50%;background:var(--green-tint);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-family:'Nunito';font-weight:900;font-size:14px;flex:0 0 auto;}
+.gph-info{flex:1;min-width:0;}
+.gph-nm{font-family:'Nunito';font-weight:900;font-size:13.5px;color:var(--navy);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.tierbadge{display:inline-flex;align-items:center;background:linear-gradient(135deg,var(--green-bright),var(--green-dark));color:#fff;font-family:'Nunito';font-weight:900;font-size:9px;letter-spacing:.3px;padding:2px 8px;border-radius:99px;text-transform:lowercase;}
+.gph-sub{margin-top:3px;font-family:'DM Sans';font-weight:500;font-size:11.5px;color:var(--ink-soft);}
+.gph-actions{display:flex;gap:9px;margin-top:13px;}
+.gph-btn{flex:1;font-family:'Nunito';font-weight:800;font-size:12.5px;border-radius:11px;padding:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.gph-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;}
+.gph-msg{background:var(--green-bright);color:var(--navy);border:none;}
+.gph-call{background:var(--card);color:var(--navy);border:1px solid var(--line);}
+
+/* ── Live Location map (embedded inside details) ── */
+.map-wrap{position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#e7edf5;box-shadow:var(--card-sh);}
+.map-wrap svg.map{display:block;width:100%;height:208px;}
+.map-eta{position:absolute;left:12px;bottom:12px;background:var(--navy);color:#fff;font-family:'Nunito';font-weight:800;font-size:11.5px;border-radius:99px;padding:8px 13px;display:flex;align-items:center;gap:7px;box-shadow:var(--raise-sh);}
+.map-eta .dotmark{width:7px;height:7px;border-radius:50%;background:var(--green-bright);flex:0 0 auto;box-shadow:0 0 0 3px rgba(51,217,117,.3);}
+.map-seam{margin-top:9px;font-family:'DM Sans';font-size:10.5px;line-height:1.5;color:var(--muted);padding:0 2px;}
+.map-seam b{color:var(--ink-soft);font-weight:700;}
+
+/* ── Status — terracotta stepper ── */
+.eta-line{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;}
+.eta-ic{width:30px;height:30px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.eta-big{font-family:'Nunito';font-weight:900;font-size:13.5px;color:var(--navy);}
+.eta-sub{font-family:'DM Sans';font-weight:500;font-size:11px;color:var(--ink-soft);margin-top:2px;}
+.steps{display:flex;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 12px;}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;position:relative;}
+.step .dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Nunito';font-weight:900;font-size:13px;z-index:2;}
+.step .lab{font-family:'Nunito';font-weight:700;font-size:9.5px;text-align:center;line-height:1.2;}
+.step::before{content:'';position:absolute;top:13px;left:-50%;width:100%;height:2px;z-index:1;}
+.step:first-child::before{display:none;}
+/* completed steps green; current = terracotta; upcoming muted */
+.step.done .dot{background:var(--green);color:#fff;}
+.step.done .lab{color:var(--navy);}
+.step.done::before{background:var(--green);}
+.step.current .dot{background:#fff;border:2.5px solid var(--terracotta);color:var(--terracotta);}
+.step.current .lab{color:var(--terracotta);}
+.step.current::before{background:linear-gradient(90deg,var(--green),var(--terracotta));}
+.step.todo .dot{background:#fff;border:2px solid var(--line-cool);color:#c2c8d4;}
+.step.todo .lab{color:var(--muted-cool);}
+.step.todo::before{background:var(--line-cool);}
+
+/* recap */
+.recap{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px 15px;}
+.rrow{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-family:'DM Sans';font-size:12.5px;}
+.rrow:last-child{border-bottom:none;}
+.rrow .rl{color:var(--ink-soft);font-weight:600;}
+.rrow .rv{color:var(--navy);font-weight:700;text-align:right;}
+.rrow.total .rl,.rrow.total .rv{font-family:'Nunito';font-weight:900;font-size:14px;color:var(--navy);}
+.pics{display:flex;gap:9px;padding:11px 0;border-bottom:1px solid var(--line);}
+.pic{width:58px;height:58px;border-radius:10px;overflow:hidden;background:var(--green-tint);flex:0 0 auto;}
+.pic img{width:100%;height:100%;object-fit:cover;display:block;}
+.preauth{font-family:'DM Sans';font-size:11px;line-height:1.6;color:var(--muted);background:var(--sand);border-radius:12px;padding:12px 14px;margin-top:2px;}
+
+/* footer nav */
+.nav{position:absolute;left:0;right:0;bottom:0;background:var(--navy-bar);display:flex;align-items:flex-end;justify-content:space-around;padding:11px 8px 18px;z-index:20;}
+.nv{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#7E8EB0;font-family:'Nunito';font-weight:700;font-size:9.5px;cursor:pointer;background:none;border:none;}
+.nv svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.nv.on{color:#fff;font-weight:900;}
+.nv.c{color:#fff;font-weight:900;}
+.nv.c .cc{width:54px;height:54px;border-radius:18px;background:var(--green-bright);color:var(--navy);display:flex;align-items:center;justify-content:center;margin-top:-26px;box-shadow:0 10px 24px rgba(51,217,117,.45);}
+.nv.c .cc svg{width:26px;height:26px;stroke:var(--navy);stroke-width:2.1;}
+
+html.embedded body{padding:0;min-height:0;}
+html.embedded #phone{position:absolute;inset:0;width:auto;height:auto;max-width:none;max-height:none;border-radius:0;box-shadow:none;}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   G40-9 — Auto-Repost recovery UX (Gopher-cancels -> Requestor recovery), MOBILE.
+   FRONT-END PROTOTYPE ONLY. Ported from Final/gopher-request.html (source of
+   truth) to the Request App mobile prototype as a bottom-sheet (tap) flow using
+   THIS screen's tokens. Semantic g40-* classNames. Nothing wired to real
+   payments/persistence/matching — see "G40-9 BACKEND SEAM" notes in the module.
+   ══════════════════════════════════════════════════════════════════════════ */
+.g40-demobar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border:1px dashed #c9c2b0;border-radius:13px;background:var(--sand);padding:9px 11px;}
+.g40-demobar .g40-tag{font-family:'Nunito';font-weight:900;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--muted);border-radius:5px;padding:3px 6px;}
+.g40-demobar .g40-note{flex:1 1 130px;font-family:'DM Sans';font-size:10.5px;line-height:1.4;color:var(--ink-soft);}
+.g40-simbtn{font-family:'Nunito';font-weight:800;font-size:11.5px;cursor:pointer;border:1px solid var(--navy);color:var(--navy);background:var(--card);border-radius:10px;padding:7px 11px;}
+.g40-banner{display:flex;align-items:flex-start;gap:10px;border:1px solid #eecf95;border-left:4px solid var(--terracotta);background:#FBF3E4;border-radius:14px;padding:11px 13px;}
+.g40-banner[hidden]{display:none;}
+.g40-banner.is-resolved{border-color:#a9e3c7;border-left-color:var(--green);background:var(--green-tint);}
+.g40-banner .g40-b-ico{font-size:17px;line-height:1.2;}
+.g40-banner .g40-b-title{font-family:'Nunito';font-weight:900;font-size:12.5px;color:var(--navy);}
+.g40-banner .g40-b-sub{font-family:'DM Sans';font-size:11px;color:var(--ink-soft);margin-top:2px;line-height:1.45;}
+.g40-banner .g40-b-cta{font-family:'Nunito';font-weight:800;font-size:11px;cursor:pointer;border:none;background:none;color:var(--warning-text);padding:5px 0 0;text-decoration:underline;}
+.g40-banner.is-resolved .g40-b-cta{color:var(--green-dark);}
+.g40-ovl{position:absolute;inset:0;z-index:60;background:rgba(0,16,42,.45);display:flex;align-items:flex-end;justify-content:center;}
+.g40-ovl[hidden]{display:none;}
+.sheet{width:100%;max-height:88%;overflow-y:auto;background:var(--paper);border-radius:26px 26px 0 0;box-shadow:var(--shadow-sheet);padding:22px 20px 26px;animation:g40rise .34s cubic-bezier(.2,.8,.3,1);}
+@keyframes g40rise{from{transform:translateY(22px);opacity:.6}to{transform:translateY(0);opacity:1}}
+.g40-grip{width:40px;height:4px;border-radius:99px;background:#d9d2c2;margin:6px auto 12px;}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.sheet-title{font-family:'Nunito';font-weight:900;font-size:16px;color:var(--navy);}
+.sheet-x{width:28px;height:28px;border-radius:50%;border:none;background:var(--navy-light);color:var(--ink-soft);font-size:15px;cursor:pointer;flex:0 0 auto;}
+.sheet-copy{font-family:'DM Sans';font-size:12px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px;}
+.g40-timer{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px;font-family:'Nunito';font-weight:800;font-size:12px;color:var(--warning-text);background:#FBF3E4;border:1px solid #eecf95;border-radius:11px;padding:8px 10px;margin:0 0 13px;}
+.g40-timer .g40-clock{font-variant-numeric:tabular-nums;font-weight:900;}
+.g40-timer .g40-demo{font-weight:700;font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+.g40-opts{display:flex;flex-direction:column;gap:10px;}
+.g40-opt{display:flex;align-items:center;gap:12px;text-align:left;width:100%;cursor:pointer;border:1px solid var(--line);border-radius:15px;background:var(--card);padding:13px 14px;box-shadow:var(--card-sh);}
+.g40-opt:active{transform:scale(.99);}
+.g40-opt .g40-o-ico{font-size:19px;width:24px;text-align:center;flex:0 0 auto;}
+.g40-opt .g40-o-main{flex:1;min-width:0;display:block;}
+.g40-opt .g40-o-title{display:block;font-family:'Nunito';font-weight:900;font-size:13.5px;color:var(--navy);}
+.g40-opt .g40-o-sub{display:block;font-family:'DM Sans';font-size:11px;color:var(--ink-soft);margin-top:2px;line-height:1.4;}
+.g40-opt .g40-o-arrow{color:#b9b3a3;font-size:18px;font-weight:800;flex:0 0 auto;}
+/* G40-9: shamrock glow marks Assign New Gopher ASAP as the recommended/default option. */
+.g40-opt.g40-opt-recommended{border-color:#3CB54A;box-shadow:0 0 0 3px rgba(60,181,74,.14),0 6px 16px rgba(60,181,74,.24);}
+.g40-field{margin:0 0 12px;}
+.g40-field label{display:block;font-family:'Nunito';font-weight:800;font-size:11.5px;color:var(--navy);margin:0 0 5px;}
+.g40-field input,.g40-field textarea{width:100%;box-sizing:border-box;font-family:'DM Sans';font-size:13.5px;color:var(--ink);border:1px solid var(--line-cool);border-radius:11px;padding:10px 12px;background:var(--card);}
+.g40-field textarea{min-height:58px;resize:vertical;line-height:1.45;}
+.g40-row{display:flex;gap:10px;}
+.g40-row .g40-field{flex:1;}
+.g40-note{font-family:'DM Sans';font-size:10.5px;color:var(--muted);line-height:1.45;margin:1px 0 13px;}
+.g40-rate-worker{display:flex;flex-direction:column;align-items:center;gap:8px;margin:4px 0 10px;}
+.g40-rate-name{font-family:'Nunito';font-weight:900;font-size:13.5px;color:var(--navy);}
+.g40-stars{display:flex;justify-content:center;gap:8px;margin:0 0 12px;}
+.g40-star{font-size:30px;line-height:1;color:#d9d2c2;background:none;border:none;cursor:pointer;padding:0;}
+.g40-star.on{color:var(--green-bright);}
+.g40-actions{display:flex;flex-direction:column;gap:9px;margin-top:14px;}
+.g40-btn-primary{font-family:'Nunito';font-weight:900;font-size:14px;border:none;border-radius:13px;padding:13px;cursor:pointer;background:var(--green-bright);color:var(--navy);}
+.g40-btn-ghost{font-family:'Nunito';font-weight:800;font-size:13px;border:1px solid var(--line);border-radius:13px;padding:12px;cursor:pointer;background:var(--card);color:var(--ink-soft);}
+.nav .g40nv{color:#c3cee3;font-family:'Nunito';font-weight:800;font-size:12.5px;gap:2px;}.nav .g40nv.c{color:var(--green-bright);}.nav .g40nv.c .cc svg{stroke:none;}.nav .g40nv.c .cc svg rect{fill:#002461;stroke:none;}.nav .g40nv .g40ic{width:21px;height:21px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;margin-bottom:1px;}.nav .g40nv[aria-current=page]{color:#33D975;}</style>
+</head>
+<body>
+<script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
+<div id="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span class="sb-right">
+      <svg viewBox="0 0 24 24" fill="var(--navy)"><path d="M2 17h2v-5H2v5zm4 0h2V9H6v8zm4 0h2V5h-2v12zm4 0h2v-8h-2v8zm4 0h2V7h-2v10z"/></svg>
+      <svg viewBox="0 0 24 24" fill="var(--navy)"><path d="M12 18a2 2 0 100 4 2 2 0 000-4zM4.5 11.5a10 10 0 0115 0l-1.5 1.5a8 8 0 00-12 0l-1.5-1.5zM1.5 8.5a14 14 0 0121 0L20 10a12 12 0 00-16 0L1.5 8.5z"/></svg>
+      <svg viewBox="0 0 28 24" fill="var(--navy)"><rect x="1" y="6" width="22" height="12" rx="3" fill="none" stroke="var(--navy)" stroke-width="1.5"/><rect x="3" y="8" width="17" height="8" rx="1.5"/><rect x="24" y="10" width="2" height="4" rx="1"/></svg>
+    </span>
+  </div>
+
+  <div id="scroll">
+    <div class="rd-head">
+      <button class="rd-back" data-back aria-label="Back to dashboard"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <span class="rd-htext">Request Details</span>
+      <img class="rd-logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjcxIiBoZWlnaHQ9IjE5NSIgdmlld0JveD0iMCAwIDY3MSAxOTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF84ODhfMTgyMTgpIj4KPHBhdGggZD0iTTE3OS42MiA0OS43Njg2QzE3OS40NzIgNTAuMDA2IDE3OS4zMTggNTAuMjMwNiAxNzkuMTU4IDUwLjQ2MTdDMTc5LjMxOCA1MC4yMzcxIDE3OS40NzIgNTAuMDA2IDE3OS42MiA0OS43Njg2WiIgZmlsbD0iIzMyRDg3NiIvPgo8cGF0aCBkPSJNMTY5LjEzNiA1Ni40NDI5QzE2OS4wMjYgNTYuNDU1NyAxNjguOTE3IDU2LjQ3NSAxNjguODA4IDU2LjQ4MTRDMTY4LjkxNyA1Ni40Njg1IDE2OS4wMjYgNTYuNDU1NyAxNjkuMTM2IDU2LjQ0MjlaIiBmaWxsPSIjMzJEODc2Ii8+CjxwYXRoIGQ9Ik0xNzAuNDUzIDU2LjIyNTFDMTcwLjM2NCA1Ni4yNDQ0IDE3MC4yOCA1Ni4yNjM2IDE3MC4xOSA1Ni4yNzY0QzE3MC4yOCA1Ni4yNTcyIDE3MC4zNjQgNTYuMjQ0NCAxNzAuNDUzIDU2LjIyNTFaIiBmaWxsPSIjMzJEODc2Ii8+CjxwYXRoIGQ9Ik00OS41NDA3IDU2LjU1MjJDNDkuNTQwNyA1Ny4yMDA0IDQ5LjQ4OTUgNTcuODI5NCA0OS40MDY0IDU4LjQ0NTVWMTUzLjQzQzQ5LjQ1MTEgMTUzLjQzIDQ5LjQ5NTkgMTUzLjQzIDQ5LjU0MDcgMTUzLjQzNlY1Ni41NTIyWiIgZmlsbD0iIzMyRDg3NiIvPgo8cGF0aCBkPSJNNDkuNTI4NSA1Ni4yNzY0QzQ5LjUyODUgNTYuMzY2MiA0OS41NDEzIDU2LjQ2MjUgNDkuNTQxMyA1Ni41NTIzVjU2LjI3NjRINDkuNTI4NVoiIGZpbGw9IiMzMkQ4NzYiLz4KPHBhdGggZD0iTTM4LjE5NTggNTYuMjc2NUMzNy4yMjUxIDU2LjI3NjUgMzYuMzk1OSA1Ni4xMzUzIDM1LjU2NjcgNTYuMDAwNUMzNS40MjUyIDU2LjAwMDUgMzUuMTQ4OCA1NS44NTkzIDM0Ljg3MjQgNTUuODU5M0MzNC4xNzgyIDU1LjcxODEgMzMuNjI1NCA1NS41ODM0IDMzLjA3MjYgNTUuMzA3NEMzMi43OTYyIDU1LjE2NjIgMzIuNjU0NyA1NS4xNjYyIDMyLjM3ODMgNTUuMDMxNEMzMS41NDkxIDU0Ljc1NTUgMzAuODU0OSA1NC4zMzgzIDMwLjE2NzEgNTMuOTI3NkwzMC4wMzIxIDUzLjc4NjRDMjkuNDc5MyA1My4zNjkyIDI4LjkyNjQgNTIuOTU4NSAyOC4zNzM2IDUyLjQwNjVDMjguMjMyMiA1Mi4yNjUzIDI3Ljk1NTggNTEuOTg5NCAyNy44MjA4IDUxLjg1NDZDMjcuNDAzIDUxLjQzNzQgMjYuOTkxNiA1MC44ODU1IDI2LjcxNTIgNTAuNDc0OEMyNi40Mzg4IDUwLjE5ODggMjYuMjk3MyA1MC4wNTc2IDI2LjE2MjQgNDkuNzgxNkMyNS43NDQ1IDQ5LjA4ODUgMjUuMzMzMSA0OC40MDE4IDI1LjA1NjcgNDcuNzA4N0MyNS4xOTgxIDQwLjY2MTkgMzEuMDA5MSAzNC45OTQ5IDM4LjA2NzIgMzQuOTk0OUM0MS44MDE5IDM0Ljk5NDkgNDUuMjYwMiAzNi42NTA3IDQ3LjYxMjkgMzkuMjc1Nkw1My44NDE3IDQ1LjQ5NDVDNjIuMDA1NCAyNi43MDMgODAuODI2OSAxMy40MzczIDEwMi42ODkgMTMuNDM3M0gxMDIuODI0VjM1LjEyOTdDMTE0LjAzNCAzNS4xMjk3IDEyMy4wMjcgNDQuMTA4MiAxMjMuMDI3IDU1LjMwMVY2Ny43MjU5QzEyOS4yNSA2OS42NTEzIDEzMy45MSA3NS4zODI0IDEzNC4zNzMgODIuMTA4M0MxMzQuNjQ5IDkwLjk1MjEgMTI3LjU5MSA5OC4yNzQ5IDExOC43MzMgOTguMjc0OUMxMTcuMzkgOTguMjc0OSAxMTYuMDkxIDk4LjEwODEgMTE0Ljg1NyA5Ny44MDY0VjEwNy4yNTNDMTIxLjE3IDExMC45ODkgMTI1LjYzNyAxMTcuNTczIDEyNi4zNDQgMTI1LjM1OEwxMzAuMTE4IDE2NC40ODFDMTMwLjc4NiAxNjQuMjEyIDEzMS41MTkgMTY0LjA0NSAxMzIuMjk3IDE2NC4wNDVDMTM0LjkyNiAxNjQuMDQ1IDEzNy4wMDIgMTY1LjcwMSAxMzcuODMxIDE2OC4wNUMxMzguOTM3IDE2Ni42NyAxNDAuNDYgMTY1LjcwMSAxNDIuMzk1IDE2NS43MDFDMTQzLjc3NyAxNjUuNzAxIDE0NS4wMjQgMTY2LjExOCAxNDUuOTk1IDE2Ni45NDZDMTQ2LjU0OCAxNjIuOTQxIDE1MC4wMDYgMTU5Ljg5OSAxNTQuMTU5IDE1OS44OTlDMTU0LjgzNCAxNTkuODk5IDE1NS40NzYgMTYwLjAwMiAxNTYuMDkzIDE2MC4xNDNWNTguNjcwM0MxNTYuMDAzIDU4LjAyODYgMTU1Ljk1OCA1Ny4zNjc1IDE1NS45NTggNTYuNjg3MkMxNTUuOTU4IDQ4LjI2MDYgMTYyLjg3NSA0MS4zNDg2IDE3MS4zMjIgNDEuMzQ4NkMxNzEuNDc2IDQxLjM0ODYgMTcxLjYzIDQxLjM2NzggMTcxLjc4NCA0MS4zNzQyQzE3MS45NTIgNDEuMzY3OCAxNzIuMTE5IDQxLjM0ODYgMTcyLjI5MiA0MS4zNDg2QzE3Ni4wMjcgNDEuMzQ4NiAxNzkuMzUgNDMuNTU2MyAxODEuMDA5IDQ2LjczOTZDMTgwLjY3NSA0Ny43OTIxIDE4MC4yMTIgNDguNzk5NyAxNzkuNjQ2IDQ5LjczMDNDMTgxLjAyOCA0Ny41MjkgMTgxLjgzOCA0NC45NDI2IDE4MS44MzggNDIuMTgyOUMxODEuODM4IDM0LjMwODIgMTc1LjQ3NCAyNy44MTMzIDE2Ny40NDUgMjcuODEzM0MxNjMuNDM0IDI3LjgxMzMgMTU5LjgzNSAyOS40NjkxIDE1Ny4yMDYgMzEuOTU5MkwxNTAuNTY1IDM4LjU4ODlMMTUwLjQzIDM4LjczMDFDMTQzLjc5IDI3LjY3ODUgMTMzLjQwOSAxOS4xMTA3IDEyMC45NTEgMTQuOTY0OEwxMjMuMDI3IDExLjM3MDhDMTE3LjA3NSA5LjE2MzAzIDExMC41NyA3LjkxNzk3IDEwMy43OTQgNy45MTc5N0M4Mi4zNDM5IDcuOTE3OTcgNjMuNzk4OSAyMC4zNTU4IDU0Ljk0NzQgMzguNDU0MUw0OC4zMDcxIDMxLjgyNDVDNDUuNjc4MSAyOS4xOTk2IDQyLjA3ODMgMjcuNjc4NSAzOC4wNjcyIDI3LjY3ODVDMzAuMTc5OSAyNy42Nzg1IDIzLjY3NDcgMzQuMTczNCAyMy42NzQ3IDQyLjA0ODFDMjMuNjc0NyA0OS45MjI4IDMwLjE3OTkgNTYuNDE3NyAzOC4wNjcyIDU2LjQxNzdINDIuNDg5N0M0Mi40ODk3IDU2LjM3MjggNDIuNDg5NyA1Ni4zMjc4IDQyLjQ4OTcgNTYuMjc2NUgzOC4yMDg2SDM4LjE5NThaIiBmaWxsPSIjMzJEODc2Ii8+CjxwYXRoIGQ9Ik05MC43ODQgMTA3LjI1M1Y5Ny44ODk0Qzg5LjY3MiA5OC4xMzk3IDg4LjUxNDkgOTguMjgwOSA4Ny4zMjU3IDk4LjI4MDlDNzkuNjc2MyA5OC4yODA5IDczLjM4MzIgOTIuODEyOSA3MS45ODE4IDg1LjYyNDlDNzEuOTgxOCA4NS42NTA2IDcxLjk2OSA4NS42NzYzIDcxLjk2OSA4NS43MDg0QzcxLjk1NjEgODUuNjEyMSA3MS45NDk3IDg1LjUyMjMgNzEuOTM2OCA4NS40MjZDNzEuNzQ0IDg0LjM1NDIgNzEuNjU0IDgzLjI1MDMgNzEuNjkyNiA4Mi4xMTQ0QzcxLjkyNCA3NS40Mzk4IDc2LjQ3NTEgNjkuNzQwOCA4Mi42MjY4IDY3Ljc3NjlWNTUuMzEzNEM4Mi42MjY4IDQ0LjEyMDcgOTEuNjE5NyAzNS4xNDIxIDEwMi44MyAzNS4xNDIxVjEzLjQ0MzRIMTAyLjY5NUM4MC44MzMzIDEzLjQ0MzQgNjIuMDExOSAyNi43MDkxIDUzLjg0ODIgNDUuNTAwNUw0Ny42MTkzIDM5LjI4MTZDNDUuMjY2NyAzNi42NTY3IDQxLjgwODMgMzUuMDAwOSAzOC4wNzM2IDM1LjAwMDlDMzEuMDE1NiAzNS4wMDA5IDI1LjIwNDYgNDAuNjY3OSAyNS4wNjMyIDQ3LjcxNDdDMjUuMzM5NiA0OC40MDc4IDI1Ljc1NzQgNDkuMDk0NSAyNi4xNjg4IDQ5Ljc4NzdDMjYuMzEwMiA1MC4wNjM2IDI2LjQ0NTIgNTAuMjA0OCAyNi43MjE2IDUwLjQ4MDhDMjYuOTk4IDUwLjg5NzkgMjcuNDE1OCA1MS40NDk5IDI3LjgyNzIgNTEuODYwNkMyNy45Njg3IDUyLjAwMTggMjguMjQ1MSA1Mi4yNzc4IDI4LjM4MDEgNTIuNDEyNkMyOC45MzI5IDUyLjk2NDUgMjkuNDg1NyA1My4zODE3IDMwLjAzODUgNTMuNzkyNEwzMC4xNzM1IDUzLjkzMzZDMzAuODY3NyA1NC4zNTA4IDMxLjU1NTUgNTQuNzYxNSAzMi4zODQ4IDU1LjAzNzVDMzIuNjYxMiA1NS4xNzg2IDMyLjgwMjYgNTUuMTc4NiAzMy4wNzkgNTUuMzEzNEMzMy42MzE4IDU1LjU4OTQgMzQuMTg0NiA1NS43MzA2IDM0Ljg3ODkgNTUuODY1NEMzNS4xNTUzIDU1Ljg2NTQgMzUuNDMxNyA1Ni4wMDY2IDM1LjU3MzEgNTYuMDA2NkMzNi40MDIzIDU2LjE0NzcgMzcuMjMxNSA1Ni4yODI1IDM4LjIwMjIgNTYuMjgyNUg0Mi40ODMzQzQyLjM1NDcgNDkuMjIyOSAzNy40MjQ0IDQzLjI3MzUgMzAuNTkxMyA0MS42MzdDMzEuODM4NCA0MS4zNjEgMzIuOTQ0IDQxLjIxOTggMzQuMTkxMSA0MS4yMTk4QzQyLjU0MTEgNDEuMjE5OCA0OS4zODcxIDQ3Ljk3NzggNDkuNTM0OSA1Ni4yODI1SDQ5LjU0NzhWMTUzLjQ0MkM1My44NjEgMTUzLjczMSA1Ny4zMDAxIDE1Ny4zMzIgNTcuMzAwMSAxNjEuNzAyQzU3LjMwMDEgMTYyLjI1NCA1Ny4zMDAxIDE2Mi42NzEgNTcuMTU4NiAxNjMuMjIzQzU3Ljg1MjkgMTYyLjgwNiA1OC44MTcxIDE2Mi41MyA1OS43ODc3IDE2Mi41M0M2Mi41NTgyIDE2Mi41MyA2NC45MTA5IDE2NC40NjIgNjUuNDYzNyAxNjYuOTUyQzY2LjcxMDggMTYzLjkxIDY5Ljc1MTMgMTYxLjcwMiA3My4yMTYgMTYxLjcwMkM3NC4xMDMxIDE2MS43MDIgNzQuOTUxNiAxNjEuODc1IDc1Ljc2MTYgMTYyLjE0NUw3OS4zMDk5IDEyNS4zNjRDODAuMDE3IDExNy41NzkgODQuNDg0NSAxMTAuOTk1IDkwLjc5NjkgMTA3LjI2TDkwLjc4NCAxMDcuMjUzWiIgZmlsbD0iIzFCQUY2MSIvPgo8cGF0aCBkPSJNMTE0Ljg1NyAxMDcuMjUzVjEwOC4wODhDMTE0Ljg1NyAxMDguNjQgMTE0LjQzOSAxMDkuMDU3IDExMy44ODcgMTA5LjA1N0gxMTAuNTVDMTA4Ljc4MyAxMTAuMzk4IDEwNS45OCAxMTEuMjY1IDEwMi44MTEgMTExLjI2NUM5OS42NDIgMTExLjI2NSA5Ni44MzkzIDExMC4zOTIgOTUuMDcxNiAxMDkuMDU3SDkxLjczNTRDOTEuMTgyNiAxMDkuMDU3IDkwLjc2NDggMTA4LjY0IDkwLjc2NDggMTA4LjA4OFYxMDcuMjUzQzg0LjQ1MjQgMTEwLjk4OSA3OS45ODQ4IDExNy41NzMgNzkuMjc3NyAxMjUuMzU4TDc1LjcyOTQgMTYyLjEzOUM3OC42Nzk5IDE2My4xMjcgODAuOTE2OSAxNjUuNzMzIDgxLjM1NCAxNjguODg0QzgyLjQ1OTYgMTY3Ljc4IDgzLjg0ODEgMTY3LjA4NyA4NS41MDY2IDE2Ny4wODdDODcuMzA2NCAxNjcuMDg3IDg4LjY4ODUgMTY3LjkxNSA4OS43OTQxIDE2OS4wMTlWMTY4LjMyNkM4OS43OTQxIDE2NS4xNDkgOTIuNDIzMiAxNjIuNTI0IDk1LjYwNTEgMTYyLjUyNEM5OC43ODcgMTYyLjUyNCAxMDEuNDE2IDE2NS4xNDkgMTAxLjQxNiAxNjguMzI2VjE2OC40NjdDMTAyLjY2MyAxNjcuNjM5IDEwNC4zMjIgMTY3LjA4NyAxMDUuOTggMTY3LjA4N0MxMDguMTkxIDE2Ny4wODcgMTEwLjEzMyAxNjcuOTE1IDExMS42NTYgMTY5LjI5NUMxMTIuNjI3IDE2NS44NDIgMTE1LjgwOSAxNjMuMzUyIDExOS41NDMgMTYzLjM1MkMxMjIuNzI1IDE2My4zNTIgMTI1LjQ5NiAxNjUuMTQ5IDEyNi44NzggMTY3Ljc3NEMxMjcuNDUgMTY2LjI1MyAxMjguNjIgMTY1LjA3MiAxMzAuMDk4IDE2NC40NzVMMTI2LjMyNSAxMjUuMzUyQzEyNS42MTggMTE3LjU2NyAxMjEuMTUgMTEwLjk4MiAxMTQuODM4IDEwNy4yNDdMMTE0Ljg1NyAxMDcuMjUzWiIgZmlsbD0iIzg2RjdCQyIvPgo8cGF0aCBkPSJNOTUuMDg0NCAxMDkuMDU3Qzk2Ljg1MjEgMTEwLjM5OCA5OS42NTQ4IDExMS4yNjQgMTAyLjgyNCAxMTEuMjY0QzEwNS45OTMgMTExLjI2NCAxMDguNzk2IDExMC4zOTIgMTEwLjU2MyAxMDkuMDU3SDk1LjA5MDhIOTUuMDg0NFoiIGZpbGw9IiMxQkFGNjEiLz4KPHBhdGggZD0iTTEwMy45MjkgODcuOTE2M0MxMDMuNjUzIDg3LjA4ODQgMTAyLjQwNiA4Ny4wODg0IDEwMi4xMyA4Ny45MTYzQzEwMC4zMDQgOTIuOTI4NyA5Ni4wMjkzIDk2LjcxNTIgOTAuNzg0IDk3Ljg4OTdWMTA4LjA4OEM5MC43ODQgMTA4LjY0IDkxLjIwMTggMTA5LjA1NyA5MS43NTQ2IDEwOS4wNTdIMTEzLjg5OUMxMTQuNDUyIDEwOS4wNTcgMTE0Ljg3IDEwOC42NCAxMTQuODcgMTA4LjA4OFY5Ny44MDYyQzEwOS43NTMgOTYuNTQxOSAxMDUuNzIzIDkyLjgxMzIgMTAzLjkzNiA4Ny45MTYzSDEwMy45MjlaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNODIuNjEzOSA1NS4zMDcxVjY3Ljc3MDZDODMuODQ4MSA2Ny4zNzI3IDg1LjE0NjYgNjcuMTE2IDg2LjQ5MDEgNjcuMDQ1NEg4OC41Mjc4QzkwLjUzMzMgNjMuNTkyNiA5Ni4xNzA4IDYxLjEwMjQgMTAyLjgyNCA2MS4xMDI0QzEwOS40NzcgNjEuMTAyNCAxMTUuMTE0IDYzLjU5MjYgMTE3LjEyIDY3LjA0NTRIMTE5LjI5M0MxMjAuNTg1IDY3LjEwOTYgMTIxLjgzMiA2Ny4zNTM0IDEyMy4wMjcgNjcuNzI1N1Y1NS4zMDA3QzEyMy4wMjcgNDQuMTA4IDExNC4wMzQgMzUuMTI5NCAxMDIuODI0IDM1LjEyOTRDOTEuNjEzMyAzNS4xMjk0IDgyLjYyMDMgNDQuMTA4IDgyLjYyMDMgNTUuMzAwN0w4Mi42MTM5IDU1LjMwNzFaTTEwOC4yMTcgNDkuMzY0MkMxMDguMjE3IDQ4LjExOTEgMTA5LjMyMyA0Ny4wMTUzIDExMC41NyA0Ny4wMTUzQzExMS44MTcgNDcuMDE1MyAxMTIuOTIyIDQ3Ljk4NDQgMTEyLjkyMiA0OS4zNjQyVjU1LjE2NTlDMTEyLjkyMiA1Ni40MTEgMTExLjgxNyA1Ny41MTQ5IDExMC41NyA1Ny41MTQ5QzEwOS4zMjMgNTcuNTE0OSAxMDguMjE3IDU2LjQxMSAxMDguMjE3IDU1LjE2NTlWNDkuMzY0MlpNOTIuODUzOSA0OS4zNjQyQzkyLjg1MzkgNDguMTE5MSA5My45NTk1IDQ3LjAxNTMgOTUuMjA2NiA0Ny4wMTUzQzk2LjQ1MzYgNDcuMDE1MyA5Ny41NTkyIDQ3Ljk4NDQgOTcuNTU5MiA0OS4zNjQyVjU1LjE2NTlDOTcuNTU5MiA1Ni40MTEgOTYuNDUzNiA1Ny41MTQ5IDk1LjIwNjYgNTcuNTE0OUM5My45NTk1IDU3LjUxNDkgOTIuODUzOSA1Ni40MTEgOTIuODUzOSA1NS4xNjU5VjQ5LjM2NDJaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNzEuOTMwNCA4NS40MTk1QzcxLjgwMTggODQuMjkgNzEuNjg2MSA4My4yNTY3IDcxLjY4NjEgODIuMTA3OUM3MS42NDc2IDgzLjI0MzkgNzEuNzM3NiA4NC4zNDc3IDcxLjkzMDQgODUuNDE5NVoiIGZpbGw9IiMxQkFGNjEiLz4KPHBhdGggZD0iTTExNy4xMTQgNjcuMDUxOEMxMTcuNjE1IDY3LjkxODIgMTE3LjkwNCA2OC44NDg4IDExNy45MDQgNjkuODE3OUMxMTcuOTA0IDc0LjYyNDkgMTExLjE0OCA3OC41MjA1IDEwMi44MTcgNzguNTIwNUM5Ni4yNTQzIDc4LjUyMDUgOTAuNjgxMiA3Ni4wOTQ2IDg4LjYxMTMgNzIuNzE4OEg4Ni40OUM3OS4xODEzIDczLjEyOTUgNzMuMTEzMiA3OC40ODIgNzEuOTc1NCA4NS42MjUxQzczLjM3NjcgOTIuODEzMSA3OS42Njk4IDk4LjI4MTEgODcuMzE5MyA5OC4yODExQzg4LjUwODUgOTguMjgxMSA4OS42NjU1IDk4LjEzOTkgOTAuNzc3NiA5Ny44ODk2Qzk2LjAyMjkgOTYuNzE1MSAxMDAuMjk4IDkyLjkyODYgMTAyLjEyMyA4Ny45MTYzQzEwMi40IDg3LjA4ODQgMTAzLjY0NyA4Ny4wODg0IDEwMy45MjMgODcuOTE2M0MxMDUuNzEgOTIuODEzMSAxMDkuNzQgOTYuNTQxOSAxMTQuODU3IDk3LjgwNjJDMTE2LjA5MSA5OC4xMTQyIDExNy4zOSA5OC4yNzQ3IDExOC43MzMgOTguMjc0N0MxMjcuNTkxIDk4LjI3NDcgMTM0LjY0OSA5MC45NTE5IDEzNC4zNzMgODIuMTA4MUMxMzMuOTEgNzUuMzg4NiAxMjkuMjUgNjkuNjUxMSAxMjMuMDI3IDY3LjcyNTdDMTIxLjgzMiA2Ny4zNTM1IDEyMC41ODUgNjcuMTA5NiAxMTkuMjkzIDY3LjA0NTRIMTE3LjEyTDExNy4xMTQgNjcuMDUxOFoiIGZpbGw9IiMxQkFGNjEiLz4KPHBhdGggZD0iTTg2LjQ5MDEgNzIuNzE4N0g4OC42MTEzQzg4LjA1MjEgNzEuODA3NCA4Ny43MzcxIDcwLjgzODMgODcuNzM3MSA2OS44MTc5Qzg3LjczNzEgNjguNzk3NCA4OC4wMTk5IDY3LjkyNDYgODguNTI3OCA2Ny4wNTE4SDg2LjQ5MDFDODUuMTQ2NiA2Ny4xMjI0IDgzLjg1NDUgNjcuMzc5MSA4Mi42MTM5IDY3Ljc3N0M3Ni40NjIyIDY5Ljc0MDggNzEuOTExMSA3NS40Mzk5IDcxLjY3OTcgODIuMTE0NUM3MS42Nzk3IDgzLjI2MzMgNzEuODAxOSA4NC4yOTY1IDcxLjkyNCA4NS40MjYxQzcxLjkzNjggODUuNTIyMyA3MS45NDMzIDg1LjYxMjIgNzEuOTU2MSA4NS43MDg1QzcxLjk1NjEgODUuNjgyOCA3MS45NjkgODUuNjU3MSA3MS45NjkgODUuNjI1QzczLjEwNjggNzguNDgxOSA3OS4xNzQ5IDczLjEyOTUgODYuNDgzNiA3Mi43MTg3SDg2LjQ5MDFaIiBmaWxsPSIjMzJEODc2Ii8+CjxwYXRoIGQ9Ik04OC42MTEzIDcyLjcxODhDOTAuNjgxMiA3Ni4wOTQ2IDk2LjI1NDMgNzguNTIwNSAxMDIuODE3IDc4LjUyMDVDMTExLjE0OCA3OC41MjA1IDExNy45MDQgNzQuNjI0OSAxMTcuOTA0IDY5LjgxNzlDMTE3LjkwNCA2OC44NDg4IDExNy42MjEgNjcuOTI0NiAxMTcuMTEzIDY3LjA1MThDMTE1LjEwOCA2My41OTkgMTA5LjQ3IDYxLjEwODkgMTAyLjgxNyA2MS4xMDg5Qzk2LjE2NDMgNjEuMTA4OSA5MC41MjY5IDYzLjU5OSA4OC41MjEzIDY3LjA1MThDODguMDEzNSA2Ny45MTgyIDg3LjczMDcgNjguODQ4OCA4Ny43MzA3IDY5LjgxNzlDODcuNzMwNyA3MC44MzgzIDg4LjA1MjEgNzEuODA3NCA4OC42MDQ5IDcyLjcxODhIODguNjExM1oiIGZpbGw9IiMwMTI0NjIiLz4KPHBhdGggZD0iTTE3Mi4yOTIgNDEuMzU1QzE3Mi4xMTkgNDEuMzU1IDE3MS45NTIgNDEuMzc0MiAxNzEuNzg0IDQxLjM4MDdDMTcyLjg3MSA0MS40MTI3IDE3My45NTEgNDEuNTI4MyAxNzQuOTIxIDQxLjc3MjFDMTY4LjE0IDQzLjI5MzIgMTYzLjE1OCA0OS4zNzA5IDE2My4xNTggNTYuNTU4OUgxNjcuNDQ1QzE2Ny45MDIgNTYuNTU4OSAxNjguMzU4IDU2LjUzMzIgMTY4LjgwMiA1Ni40ODgzQzE2OC45MTEgNTYuNDc1NCAxNjkuMDIgNTYuNDYyNiAxNjkuMTMgNTYuNDQ5OEMxNjkuNDkgNTYuNDA0OCAxNjkuODQzIDU2LjM1MzUgMTcwLjE5IDU2LjI4MjlDMTcwLjI4IDU2LjI2MzcgMTcwLjM2NCA1Ni4yNTA4IDE3MC40NTQgNTYuMjMxNkMxNzMuNjgxIDU1LjU0NDkgMTc2LjQ5NiA1My43Nzk5IDE3OC41MDIgNTEuMzQxMkMxNzguNTQ3IDUxLjI4OTggMTc4LjU4NSA1MS4yMzIxIDE3OC42MyA1MS4xODA3QzE3OC44MTcgNTAuOTQ5NyAxNzguOTk3IDUwLjcxMjIgMTc5LjE2NCA1MC40NjgzQzE3OS4zMjUgNTAuMjQzNyAxNzkuNDc5IDUwLjAxMjcgMTc5LjYyNyA0OS43NzUyQzE3OS42MzMgNDkuNzYyNCAxNzkuNjQgNDkuNzQ5NSAxNzkuNjQ2IDQ5LjczNjdDMTgwLjIxMiA0OC44MDYxIDE4MC42NzUgNDcuNzk4NSAxODEuMDA5IDQ2Ljc0NkMxNzkuMzUgNDMuNTY5MSAxNzYuMDI3IDQxLjM1NSAxNzIuMjkyIDQxLjM1NVoiIGZpbGw9IiMxQkFGNjEiLz4KPHBhdGggZD0iTTE1OS41NTggMjEuMDQyMkMxNTYuNTExIDIyLjAxMTMgMTUzLjg4MiAyMy44MDgzIDE1MS41MyAyNi4xNTczTDE1MS4zODggMjYuMjk4NUMxNDYuMjY1IDIwLjIyMDggMTM5LjkwMSAxNS4xMDU3IDEzMi43MDggMTEuMzc3TDEzNC4wOSA4Ljg4NjgyQzEzNC41MDggOC4xOTM3IDEzNC4yMzIgNy4yMzEwMiAxMzMuMzk2IDYuOTU1MDVMMTI1LjkyIDQuMDU0MThDMTIyLjE4NSAyLjY3NDM0IDExOC40NDQgMS41NjQwNiAxMTQuNTc0IDAuODc3MzQ2QzkwLjIxODQgLTMuMTI3MzkgNjcuMTA5MyA2LjgyMDI3IDUzLjQxMTEgMjUuNjExN0M0OS4yNTg1IDIxLjc0MTggNDMuODY1MyAxOS42Njg4IDM4LjE4OTMgMTkuNjY4OEMyNC42MjYgMTkuNjY4OCAxMy44MzMzIDMxLjU0ODMgMTUuOTA5NSA0NS41MDcxQzE3LjQzMyA1Ni41NTg2IDI3LjM5NjYgNjQuNzA5MyAzOC43NDIxIDY0LjcwOTNINDEuMzcxMlYxNDkuNDUxQzQxLjEzOTggMTQ5LjQzMSA0MC45MTQ4IDE0OS40MDYgNDAuNjc3IDE0OS40MDZDMzYuNjY1OSAxNDkuNDA2IDMzLjIwMTEgMTUyLjMwNyAzMi41MTMzIDE1Ni4xNzdDMzEuNjg0MSAxNTUuNzU5IDMwLjg1NDkgMTU1LjYyNSAzMC4wMTkyIDE1NS42MjVDMjYuODM3MyAxNTUuNjI1IDI0LjIwODIgMTU4LjI0OSAyNC4yMDgyIDE2MS40MjZWMTYxLjU2OEMyMy43OTA0IDE2MS41NjggMjMuNTE0IDE2MS40MjYgMjMuMTAyNiAxNjEuNDI2QzE4LjUzODYgMTYxLjQyNiAxNC43OTc1IDE2NS4xNTUgMTQuNzk3NSAxNjkuNzE4QzE0Ljc5NzUgMTc0LjI4MSAxOC41MzIyIDE3OC4wMSAyMy4xMDI2IDE3OC4wMUMyNC4wNzMyIDE3OC4wMSAyNS4wMzc0IDE3Ny44NjkgMjUuODczMSAxNzcuNDU4QzI2LjcwMjMgMTc5LjY2NiAyOC43Nzg2IDE4MS4zMjggMzEuMjcyNyAxODEuMzI4QzMyLjY1NDcgMTgxLjMyOCAzMy45MDE4IDE4MC43NzYgMzQuODcyNCAxNzkuOTQ4QzM2LjM5NTkgMTgyLjI5NyAzOC44ODM2IDE4My44MTggNDEuNzg5MSAxODMuODE4QzQzLjQ0NzUgMTgzLjgxOCA0NC45NzEgMTgzLjI2NiA0Ni4zNTMgMTgyLjQzOEM0Ny4wNDczIDE4NC43ODcgNDkuMjU4NSAxODYuNDQzIDUxLjg4NzYgMTg2LjQ0M0M1My40MTExIDE4Ni40NDMgNTQuNzkzMSAxODUuODkxIDU1Ljc2MzggMTg0LjkyMkM1Ny4xNDU4IDE4Ny42ODggNTkuOTE2MyAxODkuNDc5IDYzLjA5ODIgMTg5LjQ3OUM2Ni4wMDM3IDE4OS40NzkgNjguNjMyOCAxODcuOTU4IDcwLjE1NjMgMTg1LjYwOUM3MS41MzgzIDE4Ni44NTQgNzMuNDc5NiAxODcuNTQxIDc1LjQxNDQgMTg3LjU0MUM3OC4wNDM1IDE4Ny41NDEgODAuMjU0OCAxODYuMjk1IDgxLjc3ODMgMTg0LjQ5OEM4Mi4xOTYxIDE4Ny4yNjUgODQuNTQ4OCAxODkuNDcyIDg3LjQ1NDMgMTg5LjQ3MkM5MC4wODM0IDE4OS40NzIgOTIuMjk0NiAxODcuNjc1IDkyLjk4ODkgMTg1LjE5MkM5NC41MTIzIDE4Ni41NzEgOTYuNDQ3MiAxODcuNTQxIDk4LjY2NDkgMTg3LjU0MUMxMDAuNiAxODcuNTQxIDEwMi40IDE4Ni44NDcgMTAzLjkyMyAxODUuNjA5QzEwNS4wMjkgMTg4LjkyNyAxMDguMDc2IDE5MS4yNzYgMTExLjgxIDE5MS4yNzZDMTE1LjI2OSAxOTEuMjc2IDExOC4xNzQgMTg5LjIwMyAxMTkuNDIxIDE4Ni4zMDJDMTIwLjUyNyAxODcuODIzIDEyMi4xOTIgMTg4Ljc5MiAxMjQuMTI3IDE4OC43OTJDMTI1LjkyNiAxODguNzkyIDEyNy40NSAxODcuOTY0IDEyOC41NTYgMTg2LjcxOUMxMjkuOTM4IDE4OS4zNDQgMTMyLjcwOCAxOTEuMjc2IDEzNS44OSAxOTEuMjc2QzEzOC43OTUgMTkxLjI3NiAxNDEuNDI1IDE4OS43NTUgMTQyLjk0OCAxODcuNDA2QzE0NC40NzEgMTg5Ljc1NSAxNDYuOTU5IDE5MS4yNzYgMTUwLjAwNiAxOTEuMjc2QzE1My4zMjkgMTkxLjI3NiAxNTYuMjM1IDE4OS4yMDMgMTU3LjYxNyAxODYuMzAyQzE1OS4xNCAxODYuMzAyIDE2MC41MjIgMTg1Ljc1IDE2MS40OTMgMTg0Ljc4MUMxNjMuMDE3IDE4Ni40MzcgMTY1LjA5MyAxODcuNDA2IDE2Ny41ODEgMTg3LjQwNkMxNzEuMDM5IDE4Ny40MDYgMTczLjk0NCAxODUuMzMzIDE3NS4xOTEgMTgyLjQzMkMxNzYuODUgMTgyLjI5MSAxNzguMzczIDE4MS40NjMgMTc5LjM0NCAxODAuMjI0QzE4MC4wMzggMTgwLjM2NSAxODAuNzI2IDE4MC41IDE4MS40MiAxODAuNUMxODUuOTg0IDE4MC41IDE4OS43MjUgMTc2Ljc3MSAxODkuNzI1IDE3Mi4yMDhDMTkwLjE0MyAxNjkuMzA3IDE4OC43NTUgMTY2Ljk1OSAxODYuNjc4IDE2NS40MzdDMTg2LjgyIDE2NC44ODYgMTg2Ljk1NSAxNjQuNDY4IDE4Ni45NTUgMTYzLjkxNkMxODYuOTU1IDE2MC43NCAxODQuMzI2IDE1OC4xMTUgMTgxLjE0NCAxNTguMTE1QzE3OS44OTcgMTU4LjExNSAxNzguNzkxIDE1OC41MzIgMTc3LjgyIDE1OS4yMTlDMTc2Ljg1IDE1NS42MjUgMTczLjY2OCAxNTMgMTY5Ljc5MiAxNTNWMTUyLjU4M0MxNjkuNzkyIDE0OS40NTEgMTY3LjIzMyAxNDYuODcxIDE2NC4xMTYgMTQ2Ljc5NFY2NC44NTA1SDE2Ni42MUMxNzguNzkxIDY0Ljg1MDUgMTg5LjE2NiA1NS41OTU5IDE4OS44NiA0My41NzUzQzE5MC44MzEgMjguMTAxOSAxNzUuNzQ0IDE1LjY2NDEgMTU5LjU1MiAyMS4wNTUxTDE1OS41NTggMjEuMDQyMlpNMTc5LjY0NiA0OS43M0MxNzkuNjQ2IDQ5LjczIDE3OS42MzMgNDkuNzU1NyAxNzkuNjI3IDQ5Ljc2ODVDMTc5LjQ3OSA1MC4wMDYgMTc5LjMyNSA1MC4yMzcgMTc5LjE2NCA1MC40NjE3QzE3OC45OTcgNTAuNzA1NSAxNzguODE3IDUwLjk0MyAxNzguNjMgNTEuMTc0QzE3OC41ODUgNTEuMjI1NCAxNzguNTQ3IDUxLjI4MzIgMTc4LjUwMiA1MS4zMzQ1QzE3Ni41MDMgNTMuNzczMyAxNzMuNjgxIDU1LjUzODIgMTcwLjQ1NCA1Ni4yMjQ5QzE3MC4zNjQgNTYuMjQ0MiAxNzAuMjggNTYuMjYzNCAxNzAuMTkgNTYuMjc2MkMxNjkuODQzIDU2LjM0NjggMTY5LjQ5IDU2LjM5ODIgMTY5LjEzIDU2LjQ0MzFDMTY5LjAyIDU2LjQ1NTkgMTY4LjkxMSA1Ni40NzUyIDE2OC44MDIgNTYuNDgxNkMxNjguMzUyIDU2LjUyNjUgMTY3LjkwMiA1Ni41NTIyIDE2Ny40NDYgNTYuNTUyMkgxNjMuMTU4QzE2My4xNTggNDkuMzcwNiAxNjguMTQgNDMuMjg2NSAxNzQuOTIxIDQxLjc2NTVDMTczLjk1MSA0MS41MjE2IDE3Mi44NzEgNDEuNDA2MSAxNzEuNzg0IDQxLjM3NEMxNzEuNjMgNDEuMzc0IDE3MS40NzYgNDEuMzQ4MyAxNzEuMzIyIDQxLjM0ODNDMTYyLjg4MiA0MS4zNDgzIDE1NS45NTkgNDguMjUzOSAxNTUuOTU5IDU2LjY4N0MxNTUuOTU5IDU3LjM2NzMgMTU2LjAxIDU4LjAyODMgMTU2LjA5MyA1OC42NzAxVjE2MC4xNDNDMTU1LjQ3IDE1OS45OTUgMTU0LjgyNyAxNTkuODk5IDE1NC4xNTkgMTU5Ljg5OUMxNTAuMDA2IDE1OS44OTkgMTQ2LjU0OCAxNjIuOTQxIDE0NS45OTUgMTY2Ljk0NkMxNDUuMDI0IDE2Ni4xMTggMTQzLjc4NCAxNjUuNzAxIDE0Mi4zOTUgMTY1LjcwMUMxNDAuNDYgMTY1LjcwMSAxMzguOTM3IDE2Ni42NyAxMzcuODMxIDE2OC4wNUMxMzcuMDAyIDE2NS43MDEgMTM0LjkyNiAxNjQuMDQ1IDEzMi4yOTcgMTY0LjA0NUMxMzEuNTE5IDE2NC4wNDUgMTMwLjc5MyAxNjQuMjA1IDEzMC4xMTggMTY0LjQ4MUMxMjguNjM5IDE2NS4wNzggMTI3LjQ2OSAxNjYuMjU5IDEyNi44OTcgMTY3Ljc4QzEyNS41MTUgMTY1LjE1NSAxMjIuNzQ1IDE2My4zNTggMTE5LjU2MyAxNjMuMzU4QzExNS44MjggMTYzLjM1OCAxMTIuNjQ2IDE2NS44NDggMTExLjY3NSAxNjkuMzAxQzExMC4xNTIgMTY3LjkyMSAxMDguMjE3IDE2Ny4wOTMgMTA1Ljk5OSAxNjcuMDkzQzEwNC4zNDEgMTY3LjA5MyAxMDIuNjc2IDE2Ny42NDUgMTAxLjQzNSAxNjguNDczVjE2OC4zMzJDMTAxLjQzNSAxNjUuMTU1IDk4LjgwNjMgMTYyLjUzIDk1LjYyNDQgMTYyLjUzQzkyLjQ0MjUgMTYyLjUzIDg5LjgxMzQgMTY1LjE1NSA4OS44MTM0IDE2OC4zMzJWMTY5LjAyNUM4OC43MDc3IDE2Ny45MjEgODcuMzE5MyAxNjcuMDkzIDg1LjUyNTggMTY3LjA5M0M4My44Njc0IDE2Ny4wOTMgODIuNDc4OSAxNjcuNzg2IDgxLjM3MzMgMTY4Ljg5QzgwLjkzNjIgMTY1Ljc0NiA3OC42OTkyIDE2My4xMzMgNzUuNzQ4NyAxNjIuMTQ1Qzc0Ljk0NTIgMTYxLjg3NiA3NC4wOTY3IDE2MS43MDIgNzMuMjAzMiAxNjEuNzAyQzY5Ljc0NDkgMTYxLjcwMiA2Ni42OTc5IDE2My45MSA2NS40NTA5IDE2Ni45NTJDNjQuODk4MSAxNjQuNDYyIDYyLjU0NTQgMTYyLjUzIDU5Ljc3NDkgMTYyLjUzQzU4LjgwNDIgMTYyLjUzIDU3Ljg0IDE2Mi44MDYgNTcuMTQ1OCAxNjMuMjIzQzU3LjI4NzIgMTYyLjY3MSA1Ny4yODcyIDE2Mi4yNTQgNTcuMjg3MiAxNjEuNzAyQzU3LjI4NzIgMTU3LjMzMiA1My44NDgyIDE1My43MzEgNDkuNTM0OSAxNTMuNDQzQzQ5LjQ4OTkgMTUzLjQ0MyA0OS40NDQ5IDE1My40NDMgNDkuMzk5OSAxNTMuNDM2VjU4LjQ0NTVDNDkuNDg5OSA1Ny44Mjk0IDQ5LjUzNDkgNTcuMjAwNCA0OS41MzQ5IDU2LjU1MjJDNDkuNTM0OSA1Ni40NTU5IDQ5LjUyMjEgNTYuMzY2MSA0OS41MjIxIDU2LjI3NjJDNDkuMzc0MiA0Ny45NzggNDIuNTIxOSA0MS4yMTM1IDM0LjE3ODIgNDEuMjEzNUMzMi45MzExIDQxLjIxMzUgMzEuODI1NSA0MS4zNTQ3IDMwLjU3ODUgNDEuNjMwN0MzNy40MDUxIDQzLjI2NzMgNDIuMzQxOSA0OS4yMTY2IDQyLjQ3MDQgNTYuMjc2MkM0Mi40NzA0IDU2LjMyMTIgNDIuNDcwNCA1Ni4zNjYxIDQyLjQ3MDQgNTYuNDE3NEgzOC4wNDc5QzMwLjE2MDYgNTYuNDE3NCAyMy42NTU0IDQ5LjkyMjYgMjMuNjU1NCA0Mi4wNDc5QzIzLjY1NTQgMzQuMTczMiAzMC4xNjA2IDI3LjY3ODMgMzguMDQ3OSAyNy42NzgzQzQyLjA1OSAyNy42NzgzIDQ1LjY1ODggMjkuMTk5MyA0OC4yODc5IDMxLjgyNDJMNTQuOTI4MSAzOC40NTM5QzYzLjc4NiAyMC4zNTU1IDgyLjMzMTEgNy45MTc3MyAxMDMuNzc1IDcuOTE3NzNDMTEwLjU1NyA3LjkxNzczIDExNy4wNjIgOS4xNjI3OSAxMjMuMDA4IDExLjM3MDVMMTIwLjkzMiAxNC45NjQ1QzEzMy4zODkgMTkuMTEwNSAxNDMuNzY0IDI3LjY3ODMgMTUwLjQxMSAzOC43Mjk4TDE1MC41NDYgMzguNTg4NkwxNTcuMTg2IDMxLjk1OUMxNTkuODE1IDI5LjQ2ODkgMTYzLjQxNSAyNy44MTMxIDE2Ny40MjYgMjcuODEzMUMxNzUuNDU1IDI3LjgxMzEgMTgxLjgxOSAzNC4zMDc5IDE4MS44MTkgNDIuMTgyNkMxODEuODE5IDQ0Ljk0ODcgMTgxLjAwMiA0Ny41Mjg3IDE3OS42MjcgNDkuNzNIMTc5LjY0NloiIGZpbGw9IiMwMTI0NjIiLz4KPHBhdGggZD0iTTE4My43NzkgMTgzLjM4OEMxODAuNTk3IDE4My4zODggMTc3Ljk2OCAxODYuMDEzIDE3Ny45NjggMTg5LjE5QzE3Ny45NjggMTkyLjM2NyAxODAuNTk3IDE5NC45OTIgMTgzLjc3OSAxOTQuOTkyQzE4Ni45NjEgMTk0Ljk5MiAxODkuNTkgMTkyLjM2NyAxODkuNTkgMTg5LjE5QzE4OS41OSAxODYuMDEzIDE4Ny4wOTYgMTgzLjM4OCAxODMuNzc5IDE4My4zODhaIiBmaWxsPSIjMDEyNDYyIi8+CjxwYXRoIGQ9Ik01LjgxMSAxNjMuNjI3QzIuNjI5MDkgMTYzLjYyNyAwIDE2Ni4yNTIgMCAxNjkuNDI5QzAgMTcyLjYwNiAyLjYyOTA5IDE3NS4yMzEgNS44MTEgMTc1LjIzMUM4Ljk5MjkxIDE3NS4yMzEgMTEuNjIyIDE3Mi42MDYgMTEuNjIyIDE2OS40MjlDMTEuNDgwNiAxNjYuMjUyIDguOTkyOTEgMTYzLjYyNyA1LjgxMSAxNjMuNjI3WiIgZmlsbD0iIzAxMjQ2MiIvPgo8cGF0aCBkPSJNMTk1LjQwMSAxNzQuNTQ0QzE5My4zMjUgMTc0LjU0NCAxOTEuNjY3IDE3Ni4yIDE5MS42NjcgMTc4LjI3M0MxOTEuNjY3IDE4MC4zNDYgMTkzLjMyNSAxODEuODY3IDE5NS40MDEgMTgxLjg2N0MxOTcuNDc4IDE4MS44NjcgMTk5LjAwMSAxODAuMjExIDE5OS4wMDEgMTc4LjI3M0MxOTkuMTQyIDE3Ni4yIDE5Ny40NzggMTc0LjU0NCAxOTUuNDAxIDE3NC41NDRaIiBmaWxsPSIjMDEyNDYyIi8+CjxwYXRoIGQ9Ik0xMTAuNTcgNTcuNTIxMUMxMTEuODE3IDU3LjUyMTEgMTEyLjkyMiA1Ni40MTcyIDExMi45MjIgNTUuMTcyMlY0OS4zNzA0QzExMi45MjIgNDcuOTkwNiAxMTEuODE3IDQ3LjAyMTUgMTEwLjU3IDQ3LjAyMTVDMTA5LjMyMyA0Ny4wMjE1IDEwOC4yMTcgNDguMTI1NCAxMDguMjE3IDQ5LjM3MDRWNTUuMTcyMkMxMDguMjE3IDU2LjQxNzIgMTA5LjMyMyA1Ny41MjExIDExMC41NyA1Ny41MjExWiIgZmlsbD0iIzAxMjQ2MiIvPgo8cGF0aCBkPSJNOTUuMjA2NiA1Ny41MjExQzk2LjQ1MzYgNTcuNTIxMSA5Ny41NTkzIDU2LjQxNzIgOTcuNTU5MyA1NS4xNzIyVjQ5LjM3MDRDOTcuNTU5MyA0Ny45OTA2IDk2LjQ1MzYgNDcuMDIxNSA5NS4yMDY2IDQ3LjAyMTVDOTMuOTU5NSA0Ny4wMjE1IDkyLjg1MzkgNDguMTI1NCA5Mi44NTM5IDQ5LjM3MDRWNTUuMTcyMkM5Mi44NTM5IDU2LjQxNzIgOTMuOTU5NSA1Ny41MjExIDk1LjIwNjYgNTcuNTIxMVoiIGZpbGw9IiMwMTI0NjIiLz4KPHBhdGggZD0iTTY2My45MzkgNjhDNjY4LjI0MSA2OCA2NzAuODc4IDcxLjEzODMgNjcwLjg3OCA3NC43NTA4QzY3MC44NzggNzguMzYzNCA2NjguMjQxIDgxLjUzNDEgNjYzLjkzOSA4MS41MzQxQzY1OS42MzggODEuNTM0MSA2NTcgNzguMjk4NCA2NTcgNzQuNzUwOEM2NTcgNzEuMjAzMiA2NTkuNjM4IDY4IDY2My45MzkgNjhaTTY1OC4wOTggNzQuNzUwOEM2NTguMDk4IDc3Ljk4NjUgNjYwLjQ1NyA4MC41OTIgNjYzLjkzOSA4MC41OTJDNjY3LjQyMiA4MC41OTIgNjY5Ljc4IDc3Ljk4NjUgNjY5Ljc4IDc0Ljc1MDhDNjY5Ljc4IDcxLjUxNTEgNjY3LjQ1NCA2OC45NDIxIDY2My45MzkgNjguOTQyMUM2NjAuNDI0IDY4Ljk0MjEgNjU4LjA5OCA3MS41MTUxIDY1OC4wOTggNzQuNzUwOFpNNjY1LjE5MyA3NS42MjhMNjY2LjgyNCA3Ny41MTIySDY2NS4yNTJMNjYzLjgwOSA3NS43ODM5SDY2My4wMjNWNzcuNTEyMkg2NjEuNzY5VjcxLjUxNTFINjY0LjI4NEM2NjUuNjAzIDcxLjUxNTEgNjY2LjU0NSA3Mi40ODk3IDY2Ni41NDUgNzMuNjUyOEM2NjYuNTQ1IDc0LjUyOTkgNjY2LjAxMiA3NS4zMTYxIDY2NS4xOTMgNzUuNjI4Wk02NjQuMDYzIDc0Ljc4MzNDNjY0Ljg0OSA3NC43ODMzIDY2NS4zMTcgNzQuMzQxNSA2NjUuMzE3IDczLjY1MjhDNjY1LjMxNyA3Mi45NjQgNjY0Ljg0OSA3Mi41NTQ3IDY2NC4wNjMgNzIuNTU0N0g2NjMuMDIzVjc0Ljc4MzNINjY0LjA2M1oiIGZpbGw9IiMwMTI0NjIiLz4KPHBhdGggZD0iTTI0NC4zOTQgNjYuOTc2Vjg3Ljg0SDI0MC4xN0MyMjguNjUgODcuODQgMjIzLjkxNCA5Mi41NzYgMjIzLjkxNCAxMDUuMTJWMTMySDIwMi45MjJWNjcuNDg4SDIyMy4yNzRWODAuMjg4QzIyNS45NjIgNjkuOTIgMjMzLjg5OCA2Ni45NzYgMjQyLjM0NiA2Ni45NzZIMjQ0LjM5NFpNMjgyLjQ3NSAxMTguMzA0QzI4OC43NDcgMTE4LjMwNCAyOTMuNjExIDExNS44NzIgMjk2LjA0MyAxMTEuOTA0SDMxNS4zNzFDMzExLjQwMyAxMjQuMDY0IDI5OC42MDMgMTMzLjUzNiAyODIuNDc1IDEzMy41MzZDMjU5Ljk0NyAxMzMuNTM2IDI0Ny4xNDcgMTE5LjQ1NiAyNDcuMTQ3IDk5LjYxNkMyNDcuMTQ3IDc5LjY0OCAyNjEuNDgzIDY1Ljk1MiAyODEuNTc5IDY1Ljk1MkMzMDEuNTQ3IDY1Ljk1MiAzMTUuODgzIDc5LjAwOCAzMTUuODgzIDk5Ljg3MlYxMDYuMTQ0SDI2Ny43NTVDMjY5LjAzNSAxMTMuMTg0IDI3My4zODcgMTE4LjMwNCAyODIuNDc1IDExOC4zMDRaTTI4MS44MzUgODAuNTQ0QzI3My44OTkgODAuNTQ0IDI2OC45MDcgODUuMTUyIDI2Ny43NTUgOTMuMjE2SDI5NS43ODdDMjk0Ljc2MyA4NS41MzYgMjg5Ljc3MSA4MC41NDQgMjgxLjgzNSA4MC41NDRaTTM1NC4yMjcgMTMzLjUzNkMzMzUuNTM5IDEzMy41MzYgMzIxLjk3MSAxMTguOTQ0IDMyMS45NzEgOTkuNzQ0QzMyMS45NzEgODAuNTQ0IDMzNS41MzkgNjUuOTUyIDM1NC4yMjcgNjUuOTUyQzM2My45NTUgNjUuOTUyIDM3MS4zNzkgNzAuOTQ0IDM3NC45NjMgNzcuMDg4VjY3LjQ4OEgzOTUuMTg3VjE1OC43NTJIMzc0LjE5NVYxMjIuNEMzNzEuMjUxIDEyOC45MjggMzYzLjk1NSAxMzMuNTM2IDM1NC4yMjcgMTMzLjUzNlpNMzU4LjQ1MSA4My4zNkMzNDkuMzYzIDgzLjM2IDM0Mi45NjMgOTAuNCAzNDIuOTYzIDk5Ljc0NEMzNDIuOTYzIDEwOS4wODggMzQ5LjM2MyAxMTYuMTI4IDM1OC40NTEgMTE2LjEyOEMzNjcuNjY3IDExNi4xMjggMzc0LjE5NSAxMDkuMjE2IDM3NC4xOTUgOTkuNzQ0QzM3NC4xOTUgOTAuMjcyIDM2Ny42NjcgODMuMzYgMzU4LjQ1MSA4My4zNlpNNDQ4LjgyNSAxMDQuNDhWNjcuNDg4SDQ2OS44MTdWMTMySDQ0OS40NjVWMTIyLjRDNDQ2LjY0OSAxMjguNTQ0IDQzOS4yMjUgMTMzLjUzNiA0MzAuMjY1IDEzMy41MzZDNDE0Ljc3NyAxMzMuNTM2IDQwNy4zNTMgMTIyLjkxMiA0MDcuMzUzIDEwNy41NTJWNjcuNDg4SDQyOC4zNDVWMTA0LjM1MkM0MjguMzQ1IDExMS4wMDggNDMxLjI4OSAxMTUuNjE2IDQzOC4zMjkgMTE1LjYxNkM0NDQuOTg1IDExNS42MTYgNDQ4LjgyNSAxMTEuMzkyIDQ0OC44MjUgMTA0LjQ4Wk01MTQuMDQ2IDExOC4zMDRDNTIwLjMxOCAxMTguMzA0IDUyNS4xODIgMTE1Ljg3MiA1MjcuNjE0IDExMS45MDRINTQ2Ljk0MkM1NDIuOTc0IDEyNC4wNjQgNTMwLjE3NCAxMzMuNTM2IDUxNC4wNDYgMTMzLjUzNkM0OTEuNTE4IDEzMy41MzYgNDc4LjcxOCAxMTkuNDU2IDQ3OC43MTggOTkuNjE2QzQ3OC43MTggNzkuNjQ4IDQ5My4wNTQgNjUuOTUyIDUxMy4xNSA2NS45NTJDNTMzLjExOCA2NS45NTIgNTQ3LjQ1NCA3OS4wMDggNTQ3LjQ1NCA5OS44NzJWMTA2LjE0NEg0OTkuMzI2QzUwMC42MDYgMTEzLjE4NCA1MDQuOTU4IDExOC4zMDQgNTE0LjA0NiAxMTguMzA0Wk01MTMuNDA2IDgwLjU0NEM1MDUuNDcgODAuNTQ0IDUwMC40NzggODUuMTUyIDQ5OS4zMjYgOTMuMjE2SDUyNy4zNThDNTI2LjMzNCA4NS41MzYgNTIxLjM0MiA4MC41NDQgNTEzLjQwNiA4MC41NDRaTTU1Mi45MDIgMTExLjkwNEg1NzAuMTgyQzU3MC41NjYgMTE2LjUxMiA1NzMuNTEgMTE5LjQ1NiA1NzkuMTQyIDExOS40NTZDNTgzLjg3OCAxMTkuNDU2IDU4Ni44MjIgMTE2Ljg5NiA1ODYuODIyIDExMy40NEM1ODYuODIyIDExMC40OTYgNTg1LjE1OCAxMDguODMyIDU4MS41NzQgMTA3LjkzNkw1NzIuNzQyIDEwNS42MzJDNTYwLjMyNiAxMDIuNTYgNTU0LjgyMiA5Ni42NzIgNTU0LjgyMiA4Ni4xNzZDNTU0LjgyMiA3My41MDQgNTY1LjgzIDY1Ljk1MiA1NzkuMDE0IDY1Ljk1MkM1OTMuNDc4IDY1Ljk1MiA2MDEuNTQyIDc0LjI3MiA2MDIuNjk0IDg2LjA0OEg1ODUuNDE0QzU4NS4yODYgODMuMjMyIDU4My42MjIgODAuMDMyIDU3OS4zOTggODAuMDMyQzU3NS42ODYgODAuMDMyIDU3My42MzggODIuMDggNTczLjYzOCA4NC44OTZDNTczLjYzOCA4Ny43MTIgNTc1LjQzIDg5LjI0OCA1NzguNjMgOTAuMDE2TDU5MC4wMjIgOTMuMDg4QzYwMC42NDYgOTUuOTA0IDYwNS42MzggMTAyLjA0OCA2MDUuNjM4IDExMS4zOTJDNjA1LjYzOCAxMjQuODMyIDU5My4wOTQgMTMzLjUzNiA1NzkuMzk4IDEzMy41MzZDNTY1LjQ0NiAxMzMuNTM2IDU1NC4zMSAxMjcuMzkyIDU1Mi45MDIgMTExLjkwNFpNNjQ2LjA3OCAxMTYuMTI4QzY0OC42MzggMTE2LjEyOCA2NTAuNjg2IDExNS43NDQgNjUyLjczNCAxMTUuMTA0VjEzMS43NDRDNjUwLjU1OCAxMzIuNjQgNjQ0LjY3IDEzMy41MzYgNjQwLjMxOCAxMzMuNTM2QzYyNC44MyAxMzMuNTM2IDYxNy43OSAxMjQuMzIgNjE3Ljc5IDExMC4xMTJWODQuNzY4SDYwNi42NTRWNjcuNDg4SDYxNy43OVY0OC4xNkg2MzguNzgyVjY3LjQ4OEg2NTMuMzc0Vjg0Ljc2OEg2MzguNzgyVjEwOC44MzJDNjM4Ljc4MiAxMTMuODI0IDY0MS4wODYgMTE2LjEyOCA2NDYuMDc4IDExNi4xMjhaIiBmaWxsPSIjMDEyNDYyIi8+CjwvZz4KPGRlZnM+CjxjbGlwUGF0aCBpZD0iY2xpcDBfODg4XzE4MjE4Ij4KPHJlY3Qgd2lkdGg9IjY3MC44NzgiIGhlaWdodD0iMTk0Ljk5MiIgZmlsbD0id2hpdGUiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4K" alt="Gopher Request">
+    </div>
+
+    <div class="rd-body">
+      <!-- summary -->
+      <div class="req-card">
+        <div class="rc-top">
+          <div class="rc-title">🛒 Grocery run — Harris Teeter to 412 Oakwood Ave</div>
+          <span class="rc-pill">In Progress</span>
+        </div>
+        <div class="rc-meta"><b>#GR-00127</b> · $69.11 total · ETA 14 min · Today, 2:30 PM · Marcus B. (Pro)</div>
+      </div>
+
+      <!-- assigned worker -->
+      <div class="sec-title">Assigned Worker</div>
+      <div class="req-card">
+        <div class="gph-row">
+          <div class="gph-pic">MB</div>
+          <div class="gph-info">
+            <div class="gph-nm">Marcus B. <span class="tierbadge">pro</span></div>
+            <div class="gph-sub">⭐ 4.95 (180 reviews) · ETA 14 min · Today, 2:30 PM</div>
+          </div>
+        </div>
+        <div class="gph-actions">
+          <button class="gph-btn gph-msg"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 01-12 7.6L3 21l1.9-6A8.4 8.4 0 1121 11.5z"/></svg>Text</button>
+          <button class="gph-btn gph-call"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.6A2 2 0 014.1 2h3a2 2 0 012 1.7l.5 2.5a2 2 0 01-.5 1.8L8 9.3a16 16 0 006 6l1.3-1.1a2 2 0 011.8-.5l2.5.5a2 2 0 011.7 2z"/></svg>Call</button>
+        </div>
+      </div>
+
+      <!-- LIVE LOCATION (map embedded in the details) -->
+      <div class="sec-title">Live Location</div>
+      <div class="map-wrap">
+        <svg class="map" viewBox="0 0 560 280" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <rect width="560" height="280" fill="#e7edf5"/>
+          <!-- building blocks -->
+          <g fill="#dde4ef">
+            <rect x="28" y="30" width="150" height="78" rx="9"/>
+            <rect x="212" y="22" width="150" height="64" rx="9"/>
+            <rect x="402" y="34" width="132" height="92" rx="9"/>
+            <rect x="30" y="150" width="120" height="96" rx="9"/>
+            <rect x="186" y="168" width="160" height="86" rx="9"/>
+            <rect x="392" y="156" width="150" height="100" rx="9"/>
+          </g>
+          <!-- faint roads -->
+          <g stroke="#f3f6fb" stroke-width="14" stroke-linecap="round">
+            <line x1="0" y1="130" x2="560" y2="130"/>
+            <line x1="180" y1="0" x2="180" y2="280"/>
+            <line x1="378" y1="0" x2="378" y2="280"/>
+          </g>
+          <!-- green dotted route: driver(70,232) -> up -> right -> up -> destination(498,70) -->
+          <path d="M70 232 L70 150 L292 150 L292 70 L498 70"
+                fill="none" stroke="#33D975" stroke-width="6" stroke-linecap="round" stroke-dasharray="0.5 16"/>
+          <!-- destination pin (terracotta teardrop) -->
+          <g transform="translate(498,70)">
+            <path d="M0 -26 C14 -26 22 -15 22 -5 C22 9 0 26 0 26 C0 26 -22 9 -22 -5 C-22 -15 -14 -26 0 -26 Z" fill="#C44257"/>
+            <circle cy="-6" r="7" fill="#fff"/>
+          </g>
+          <!-- driver pin (navy dot + green pulse) -->
+          <g transform="translate(70,232)">
+            <circle r="20" fill="#33D975" opacity="0.28"><animate attributeName="r" values="15;24;15" dur="1.8s" repeatCount="indefinite"/></circle>
+            <circle r="10" fill="#002461" stroke="#fff" stroke-width="3"/>
+          </g>
+        </svg>
+        <div class="map-eta"><span class="dotmark"></span>Marcus is en route · ETA 14 min</div>
+      </div>
+      <div class="map-seam">🔌 <b>Integration seam (human dev):</b> real map tiles, live worker GPS, and turn-by-turn ETA come from Google Maps + the live location feed. This faked SVG map and the simulated ETA are stand-ins so the UX can be validated now.</div>
+
+      <!-- status -->
+      <div class="sec-title">Status</div>
+      <div class="eta-line">
+        <span class="eta-ic">⏱️</span>
+        <div><div class="eta-big">Est. arrival ~23 min</div><div class="eta-sub">remaining route ~8 min + 15 min to gather items</div></div>
+      </div>
+      <div class="steps">
+        <div class="step done"><span class="dot">✓</span><span class="lab">Accepted</span></div>
+        <div class="step done"><span class="dot">✓</span><span class="lab">In-Progress</span></div>
+        <div class="step current"><span class="dot"></span><span class="lab">Items Purchased</span></div>
+        <div class="step todo"><span class="dot"></span><span class="lab">Completed</span></div>
+      </div>
+
+      <!-- recap -->
+      <div class="sec-title">Request Recap</div>
+      <div class="recap">
+        <div class="rrow"><span class="rl">Category</span><span class="rv">Delivery</span></div>
+        <div class="rrow"><span class="rl">Description</span><span class="rv">Weekly grocery pickup at Harris Teeter — order under "Newbury", keep cold items together, deliver to the front door.</span></div>
+        <div class="pics">
+          <div class="pic" role="img" aria-label="Reference photo — groceries"><svg viewBox="0 0 58 58" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="58" height="58" fill="#E8F5EE"/><g stroke="#1CB061" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 23h20l-2 17H21z"/><path d="M25 23v-2a4 4 0 0 1 8 0v2"/></g></svg></div>
+          <div class="pic" role="img" aria-label="Reference photo — produce"><svg viewBox="0 0 58 58" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="58" height="58" fill="#FBF3E4"/><g stroke="#D97757" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M29 25c-5 0-8 3.5-8 8s3 8 8 8 8-3.5 8-8-3-8-8-8z"/><path d="M29 25c0-3 2-5 5-5"/></g></svg></div>
+          <div class="pic" role="img" aria-label="Reference photo — receipt"><svg viewBox="0 0 58 58" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="58" height="58" fill="#eef0f8"/><g stroke="#002461" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="21" y="18" width="16" height="22" rx="1.5"/><path d="M25 24h8M25 28h8M25 32h5"/></g></svg></div>
+        </div>
+        <div class="rrow"><span class="rl">Pickup location</span><span class="rv">Harris Teeter, 1817 Fordham Blvd</span></div>
+        <div class="rrow"><span class="rl">Drop off location</span><span class="rv">412 Oakwood Ave, Raleigh</span></div>
+        <div class="rrow"><span class="rl">Selected Gopher</span><span class="rv">Marcus B. (Pro)</span></div>
+        <div class="rrow"><span class="rl">Cost of Items</span><span class="rv">$50.00</span></div>
+        <div class="rrow"><span class="rl">Payment to your Gopher</span><span class="rv">$15.00</span></div>
+        <div class="rrow"><span class="rl">Request Fees</span><span class="rv">$4.11</span></div>
+        <div class="rrow total"><span class="rl">Total</span><span class="rv">$69.11</span></div>
+        <div class="rrow"><span class="rl">Payment Method</span><span class="rv">Visa ···· 4242</span></div>
+      </div>
+      <div class="preauth">Your card was pre-authorized for an additional 20% when this request was accepted, adjusting the hold to $82.93. If cost adjustments are necessary, the original total of $69.11 will be charged.</div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="nv g40nv" data-gnav="home"><svg class="g40ic" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg>home</button>
+    <button class="nv g40nv" data-gnav="inbox"><svg class="g40ic" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12 7.6L3 21l1.9-6A8.4 8.4 0 1 1 21 11.5z"/></svg>inbox</button>
+    <button class="nv c g40nv" data-gnav="go"><span class="cc"><svg viewBox="0 0 32 32"><rect x="11.5" y="5" width="9" height="22" rx="3.5"/><rect x="5" y="11.5" width="22" height="9" rx="3.5"/></svg></span>GO</button>
+    <button class="nv g40nv" data-gnav="refer"><svg class="g40ic" viewBox="0 0 24 24"><path d="M12 4.5l2.2 4.6 5 .4-3.8 3.3 1.2 4.9-4.6-2.7-4.6 2.7 1.2-4.9L4.8 9.5l5-.4z"/></svg>refer</button>
+    <button class="nv g40nv" data-gnav="help"><svg class="g40ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.6a2.4 2.4 0 0 1 4.6 1c0 1.6-2.2 2-2.2 3.2"/><circle cx="12" cy="16.6" r=".7"/></svg>help</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  document.getElementById('phone').addEventListener('click', function(e){
+    var t=e.target; if(!t.closest) return;
+    if(t.closest('[data-back]')){ if(window.__navHook) window.__navHook('gopher-request-home.html'); return; }
+  });
+})();
+</script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   G40-9 — Auto-Repost recovery UX (FRONT-END PROTOTYPE ONLY), mobile bottom-sheet.
+   Ported from Final/gopher-request.html to the Request App prototype. When a
+   Gopher cancels this active request, the Requestor gets a banner + a 3-option
+   bottom-sheet (Assign New Gopher ASAP / Edit Request / Cancel Request) + a
+   15-minute demo auto-cancel. This screen is a single static view, so "close
+   original / repost" is reflected on THIS card + banner (no dashboard list).
+   DEFERRED to the human-dev backend track (tagged "G40-9 BACKEND SEAM"):
+   real Stripe reassignment (reuse the manual-capture PaymentIntent, no new auth),
+   order persistence + cancellation logging, matching/re-broadcast, the durable
+   15-min job, and Admin > Orders repost. There is no in-place edit action on this
+   screen (no G40-266 analog to avoid).
+   ════════════════════════════════════════════════════════════════════════ */
+(function initG40RecoveryMobile(){
+  window.GReq = window.GReq || (function(){
+// Store is NAMESPACED BY MODE. Previously both modes shared 'gopher_requests', and all()
+// returns a cached array without ever consulting ptEmpty() \u2014 the PT gate only guarded
+// seed(), the fallback. So a standalone visit cached the demo seed, and the split screen
+// loaded in the SAME TAB (sessionStorage is per-tab, and the iframes share the parent's)
+// re-served it: the requester showed Active(2)+Scheduled(1) while Go showed 0/0/0 with
+// 'No local jobs yet'. One shared store, two phones disagreeing \u2014 impossible by design,
+// reachable in two clicks. Separate keys make the contamination unexpressible, both ways.
+function ptEmpty(){ try{ if(new URLSearchParams(location.search).get('pt')==='1'){ sessionStorage.setItem('gopher_pt','1'); return true; } return sessionStorage.getItem('gopher_pt')==='1'; }catch(_){ return false; } }
+var KEY = ptEmpty() ? 'gopher_requests_pt' : 'gopher_requests';
+function seed(){ if(ptEmpty()) return [];   // PT (split) starts empty, same as the other pages
+ return [
+ {order:'GR-00127',cat:'delivery',title:'Grocery run — Harris Teeter',amount:'$69.11',hired:'Marcus B.',stage:'active',accepted:3,scheduledForLater:false,cost:35,pay:15,pickup:'Harris Teeter',dropoff:'412 Oakwood Ave',when:'ETA 14 min · Today, 2:30 PM'},
+ {order:'GR-00128',cat:'home',title:'Hardware run — drill bits + anchors',amount:'$76.67',hired:'Priya N.',stage:'active',accepted:2,scheduledForLater:false,cost:52,pay:18,pickup:'Ace Hardware',dropoff:'88 Maple Court',when:'ETA 19 min · Today, 3:05 PM'},
+ {order:'GR-00124',cat:'home',title:'Ceiling fan install — conference room',amount:'$145.00',hired:'Rosa P.',stage:'scheduled',scheduledForLater:true,accepted:0,cost:0,pay:120,pickup:'',dropoff:'88 Maple Court',when:'Tomorrow, 9:00 AM'}
+]; }
+function all(){ try{ var a=JSON.parse(sessionStorage.getItem(KEY)); if(Array.isArray(a)) return a; }catch(_){} var s=seed(); save(s); return s; }
+function save(a){ try{ sessionStorage.setItem(KEY, JSON.stringify(a)); }catch(_){} }
+function nextOrder(){ var mx=127; all().forEach(function(x){ var m=/GR-0*(\d+)/.exec(x.order||''); if(m){ var n=+m[1]; if(n>mx) mx=n; } }); return 'GR-'+('00000'+(mx+1)).slice(-5); }
+return { all:all, save:save,
+ add:function(r){ var a=all(); a.unshift(r); save(a); return r; },
+ get:function(o){ return all().filter(function(x){return x.order===o;})[0]||null; },
+ update:function(o,p){ var a=all(); for(var i=0;i<a.length;i++){ if(a[i].order===o){ for(var k in p) a[i][k]=p[k]; } } save(a); },
+ remove:function(o){ save(all().filter(function(x){return x.order!==o;})); },
+ nextOrder:nextOrder,
+ openOrder:function(o){ try{ sessionStorage.setItem('gopher_open', o); }catch(_){} },
+ currentOpen:function(){ try{ return sessionStorage.getItem('gopher_open'); }catch(_){ return null; } } };
+})();
+  try{ if(window.GReq){ var _o=GReq.currentOpen&&GReq.currentOpen(); var _r=_o?GReq.get(_o):null; if(_r){ var _q=function(s){return document.querySelector(s);}; var _t=_q('.rc-title'); if(_t)_t.textContent=_r.title; var _m=_q('.rc-meta'); if(_m)_m.innerHTML='<b>#'+_r.order+'</b> \u00b7 '+(_r.amount||'')+(_r.when?(' \u00b7 '+_r.when):'')+(_r.hired?(' \u00b7 '+_r.hired):''); var _nm=_q('.gph-nm'); if(_nm){ var _b=_nm.querySelector('.tierbadge'); _nm.textContent=(_r.hired||'Your Gopher')+' '; if(_b)_nm.appendChild(_b); } var _p=_q('.gph-pic'); if(_p)_p.textContent=(_r.hired||'G').split(/\s+/).map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase(); } } }catch(_e){}
+  var openReq=(window.GReq&&GReq.currentOpen)?(GReq.get(GReq.currentOpen())||null):null;
+
+  var phone = document.getElementById('phone');
+  if(!phone) return;
+  var body = phone.querySelector('.rd-body');
+  if(!body) return;
+  function $(id){ return document.getElementById(id); }
+  function el(t,c){ var e=document.createElement(t); if(c)e.className=c; return e; }
+
+  var toastEl=null,toastT=null;
+  function g40Toast(msg){
+    if(!toastEl){ toastEl=el('div'); toastEl.style.cssText='position:absolute;left:50%;bottom:86px;transform:translateX(-50%);z-index:80;background:var(--navy);color:#fff;font-family:Nunito;font-weight:800;font-size:12px;padding:10px 15px;border-radius:12px;box-shadow:0 10px 24px rgba(0,16,42,.4);max-width:84%;text-align:center;opacity:0;transition:opacity .25s;'; phone.appendChild(toastEl); }
+    toastEl.textContent=msg; toastEl.style.opacity='1'; clearTimeout(toastT); toastT=setTimeout(function(){ toastEl.style.opacity='0'; },2600);
+  }
+
+  // ── Seed the recovery from the on-screen in-progress order ──
+  var summaryCard = body.querySelector('.req-card');
+  var pillEl  = summaryCard.querySelector('.rc-pill');
+  var metaEl  = summaryCard.querySelector('.rc-meta');
+  var titleEl = summaryCard.querySelector('.rc-title');
+  var gphRaw  = (body.querySelector('.gph-nm')||{}).textContent || 'Marcus B.';
+  var origMetaHTML = metaEl.innerHTML;
+  var titleTxt = (titleEl.textContent||'').replace(/^[^A-Za-z0-9]+/,'').trim();
+  var idM = (metaEl.textContent.match(/#(GR-\d+)/)||[]);
+  var pickup='',dropoff='';
+  var parts = titleTxt.split(/\s+[—-]\s+/);
+  if(parts[1]){ var pp=parts[1].split(/\s+to\s+/i); pickup=(pp[0]||'').trim(); dropoff=(pp[1]||'').trim(); }
+  var seed = {
+    origId: idM[1] || 'GR-00127',
+    gopher: gphRaw.replace(/\s+/g,' ').replace(/\b(pro\+?|elite\+?)\b/ig,'').trim() || 'your Gopher',
+    initials: ((body.querySelector('.gph-pic')||{}).textContent||'MB').trim(),
+    details: titleTxt,
+    cost: 35, pay: 15,                 // demo seed prefill (matches the seeded GR-00127 recap)
+    pickup: pickup || 'Harris Teeter', dropoff: dropoff || '412 Oakwood Ave'
+  };
+
+  // Demo-only order-number mint. Starts at GR-00201 (avoids the seeded GR-00127).
+  // G40-9 BACKEND SEAM: production mints via orders.generateOrderNumber().
+  var g40Seq = 200;
+  function mintId(){ return (window.GReq&&GReq.nextOrder)?GReq.nextOrder():('GR-00'+(++g40Seq)); }
+
+  // ── Demo trigger + banner at the top of the scroll body ──
+  var demobar = el('div','g40-demobar');
+  demobar.innerHTML = '<span class="g40-tag">Demo</span><span class="g40-note">G40-9 preview: simulate your Gopher cancelling this active request. (In production this is triggered by the Gopher app, not a button.)</span><button type="button" class="g40-simbtn" id="g40Sim">Simulate: Gopher cancelled ▸</button>';
+  var banner = el('div','g40-banner'); banner.id='g40Banner'; banner.hidden=true;
+  banner.innerHTML = '<span class="g40-b-ico" id="g40BIco">⚠️</span><div style="flex:1"><div class="g40-b-title" id="g40BTitle">Your Gopher cancelled this request</div><div class="g40-b-sub" id="g40BSub"></div><button type="button" class="g40-b-cta" id="g40BReopen">Review your options →</button></div>';
+  body.insertBefore(banner, body.firstChild);
+  body.insertBefore(demobar, body.firstChild);
+
+  // ── Bottom-sheets appended to the phone frame ──
+  var sheets = el('div'); sheets.id='g40Sheets';
+  sheets.innerHTML = [
+    '<div class="g40-ovl" id="g40RecOvl" hidden><div class="sheet">',
+      '<div class="g40-grip"></div>',
+      '<div class="sheet-head"><div class="sheet-title">Your Gopher cancelled</div><button class="sheet-x" id="g40RecX" aria-label="Close">✕</button></div>',
+      '<p class="sheet-copy" id="g40RecCopy"></p>',
+      '<div class="g40-timer"><span>Auto-cancels in <span class="g40-clock" id="g40Clock">15:00</span> if no action</span><span class="g40-demo">Demo timer — production needs a durable server-side job</span></div>',
+      '<div class="g40-opts">',
+        '<button type="button" class="g40-opt g40-opt-recommended" data-g40-recover="assign" aria-label="Assign New Gopher ASAP (recommended)"><span class="g40-o-ico">🔄</span><span class="g40-o-main"><span class="g40-o-title">Assign New Gopher ASAP</span><span class="g40-o-sub">Repost with the same details &amp; price under a new order # — straight back to the marketplace. No edits.</span></span><span class="g40-o-arrow">›</span></button>',
+        '<button type="button" class="g40-opt" data-g40-recover="edit"><span class="g40-o-ico">📝</span><span class="g40-o-main"><span class="g40-o-title">Edit Request</span><span class="g40-o-sub">Adjust the details, cost of items, or payment, then repost under a new order #.</span></span><span class="g40-o-arrow">›</span></button>',
+        '<button type="button" class="g40-opt g40-opt-cancel" data-g40-recover="cancel"><span class="g40-o-ico">⭐</span><span class="g40-o-main"><span class="g40-o-title">Cancel Request</span><span class="g40-o-sub">Don’t repost. Rate the Gopher who cancelled and close this request.</span></span><span class="g40-o-arrow">›</span></button>',
+      '</div></div></div>',
+
+    '<div class="g40-ovl" id="g40EditOvl" hidden><div class="sheet">',
+      '<div class="g40-grip"></div>',
+      '<div class="sheet-head"><div class="sheet-title">Edit &amp; repost</div><button class="sheet-x" id="g40EditX" aria-label="Close">✕</button></div>',
+      '<p class="g40-note">Pre-filled from your original request. Submitting <b>closes the original</b> and reposts under a <b>new order #</b>. (Recovery edit — not the in-place edit that keeps the same #.)</p>',
+      '<div class="g40-field"><label for="g40fDetails">Details</label><textarea id="g40fDetails"></textarea></div>',
+      '<div class="g40-row"><div class="g40-field"><label for="g40fCost">Cost of items ($)</label><input type="number" id="g40fCost" min="0" step="0.01" inputmode="decimal"></div><div class="g40-field"><label for="g40fPay">Payment to Gopher ($)</label><input type="number" id="g40fPay" min="0" step="0.01" inputmode="decimal"></div></div>',
+      '<div class="g40-row"><div class="g40-field"><label for="g40fPickup">Pickup</label><input type="text" id="g40fPickup"></div><div class="g40-field"><label for="g40fDropoff">Drop-off</label><input type="text" id="g40fDropoff"></div></div>',
+      '<!-- G40-9: Notes field intentionally omitted from recovery edit — avoids a Go build. -->',
+      '<p class="g40-note">G40-9 backend seam: no new card authorization — held funds ride across to the new order. Fees/total shown are a demo estimate, not a real charge.</p>',
+      '<div class="g40-actions"><button class="g40-btn-primary" id="g40EditSubmit">Repost under a new order #</button><button class="g40-btn-ghost" id="g40EditBack">Back to options</button></div>',
+    '</div></div>',
+
+    '<div class="g40-ovl" id="g40RateOvl" hidden><div class="sheet">',
+      '<div class="g40-grip"></div>',
+      '<div class="sheet-head"><div class="sheet-title">Rate your Gopher</div></div>',
+      '<div class="g40-rate-worker"><div class="gph-pic" id="g40RatePic" style="width:52px;height:52px;font-size:16px">MB</div><div class="g40-rate-name" id="g40RateName">Please rate your Gopher</div></div>',
+      '<div class="g40-stars" id="g40Stars"></div>',
+      '<div class="g40-field"><textarea id="g40RateComment" placeholder="Please feel free to leave a comment"></textarea></div>',
+      '<div class="g40-actions"><button class="g40-btn-primary" id="g40RateDone">Done</button></div>',
+    '</div></div>'
+  ].join('');
+  phone.appendChild(sheets);
+
+  var recOvl=$('g40RecOvl'), editOvl=$('g40EditOvl'), rateOvl=$('g40RateOvl');
+  var resolved=false;
+
+  // Recovered view: hide everything in the body except the demo bar, banner, and
+  // summary card (the assigned Gopher / map / stepper are stale once cancelled).
+  function setRecoveredView(on){
+    Array.prototype.forEach.call(body.children, function(ch){
+      if(ch===demobar || ch===banner || ch===summaryCard) return;
+      ch.style.display = on ? 'none' : '';
+    });
+  }
+
+  // ── 15-minute demo countdown ──
+  // G40-9 BACKEND SEAM: production runs this as a durable server-side job keyed to
+  // the order (survives client close/refresh). setInterval is a demo stand-in only.
+  var timer=null, deadline=0;
+  function startTimer(){ stopTimer(); deadline=Date.now()+15*60*1000; paintTimer(); timer=setInterval(paintTimer,1000); }
+  function stopTimer(){ if(timer){ clearInterval(timer); timer=null; } }
+  function paintTimer(){ var c=$('g40Clock'); var ms=Math.max(0,deadline-Date.now()); var s=Math.round(ms/1000); if(c)c.textContent=('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2); if(ms<=0){ stopTimer(); autoCancel(); } }
+
+  // G40-9 BACKEND SEAM: production closes the order + writes a cancellation log
+  // { originalOrderNumber, gopherId, reason, at }. Here we console-log the seam.
+  function closeOriginal(reason){ console.log('[G40-9 BACKEND SEAM] logCancellation', { originalOrderNumber:seed.origId, gopher:seed.gopher, reason:reason, at:new Date().toISOString() }); if(window.GReq&&GReq.remove){ GReq.remove(seed.origId); } }
+
+  function setCardReposted(newId, note){ pillEl.textContent='Reposted · Live'; pillEl.style.color='var(--green-dark)'; pillEl.style.background='var(--green-tint)'; metaEl.innerHTML='<b>#'+newId+'</b> · '+note; }
+  function setCardClosed(label, note){ pillEl.textContent=label; pillEl.style.color='var(--muted-cool)'; pillEl.style.background='var(--navy-light)'; metaEl.innerHTML=note; }
+  function resolveBanner(title, sub){ banner.className='g40-banner is-resolved'; $('g40BIco').innerHTML='✅'; $('g40BTitle').textContent=title; $('g40BSub').textContent=sub; $('g40BReopen').style.display='none'; banner.hidden=false; }
+
+  function onCancelled(){
+    resolved=false;
+    $('g40RecCopy').textContent = seed.gopher+' cancelled request #'+seed.origId+'. Your funds are still held — pick an option below. Nothing is re-charged.';
+    banner.className='g40-banner'; $('g40BIco').innerHTML='⚠️'; $('g40BTitle').textContent='Your Gopher cancelled this request'; $('g40BSub').textContent=seed.gopher+' cancelled request #'+seed.origId+'. Choose how to recover — or it auto-cancels in 15 minutes.'; $('g40BReopen').style.display=''; banner.hidden=false;
+    recOvl.hidden=false; startTimer();
+  }
+
+  // Option A — Assign New Gopher ASAP (AC2 UI; no-reauth is a backend concern)
+  function assign(){
+    stopTimer(); recOvl.hidden=true;
+    var id=mintId();
+    // G40-9 BACKEND SEAM: payments.reassignAuthorization(orig,newOrder) — reuse the
+    // existing manual-capture PaymentIntent; NO new card authorization.
+    closeOriginal('Gopher cancelled · reposted as #'+id); if(window.GReq&&GReq.add){ GReq.add({order:id,cat:'delivery',title:seed.details,amount:(openReq&&openReq.amount)||'',stage:'searching',accepted:0,scheduledForLater:false,cost:seed.cost,pay:seed.pay,pickup:seed.pickup,dropoff:seed.dropoff}); }
+    setCardReposted(id, 'Broadcasting to nearby Gophers · reposted from #'+seed.origId);
+    setRecoveredView(true); resolved=true;
+    resolveBanner('Reposted — live in the marketplace', 'Request #'+seed.origId+' was closed and reposted as #'+id+' with the same details. No new card authorization (funds reused).');
+    g40Toast('Reposted as #'+id+' — live in the marketplace');
+  }
+
+  // Option B — Edit Request -> repost as NEW order # (AC3)
+  function openEdit(){ $('g40fDetails').value=seed.details; $('g40fCost').value=seed.cost; $('g40fPay').value=seed.pay; $('g40fPickup').value=seed.pickup; $('g40fDropoff').value=seed.dropoff; recOvl.hidden=true; editOvl.hidden=false; }
+  function submitEdit(){
+    var cost=parseFloat($('g40fCost').value)||0, pay=parseFloat($('g40fPay').value)||0;
+    stopTimer(); editOvl.hidden=true;
+    var id=mintId();
+    closeOriginal('Gopher cancelled · edited & reposted as #'+id); if(window.GReq&&GReq.add){ GReq.add({order:id,cat:'delivery',title:($('g40fDetails').value.trim()||seed.details),amount:'$'+(cost+pay).toFixed(2)+' (demo est.)',stage:'searching',accepted:0,scheduledForLater:false,cost:cost,pay:pay,pickup:$('g40fPickup').value.trim(),dropoff:$('g40fDropoff').value.trim()}); }
+    setCardReposted(id, 'Broadcasting · $'+(cost+pay).toFixed(2)+' (demo est.) · reposted from #'+seed.origId);
+    setRecoveredView(true); resolved=true;
+    resolveBanner('Edited & reposted', 'Request #'+seed.origId+' was closed and your edits reposted as #'+id+'. Held funds reused — no new authorization.');
+    g40Toast('Edited & reposted as #'+id);
+  }
+
+  // Option C — Cancel Request -> rate the cancelling Gopher (AC4)
+  var rateVal=5;
+  function paintStars(){ var h=$('g40Stars'); if(!h)return; var s=''; for(var n=1;n<=5;n++){ s+='<button type="button" class="g40-star'+(n<=rateVal?' on':'')+'" data-g40star="'+n+'" aria-label="'+n+' star">★</button>'; } h.innerHTML=s; }
+  function openRating(){ rateVal=5; paintStars(); $('g40RateName').textContent='Please rate '+seed.gopher; $('g40RatePic').textContent=seed.initials; $('g40RateComment').value=''; recOvl.hidden=true; rateOvl.hidden=false; }
+  function finishRating(){
+    console.log('[G40-9 BACKEND SEAM] gopher rating (cancelled)', { orderNumber:seed.origId, gopher:seed.gopher, stars:rateVal, comment:$('g40RateComment').value });
+    stopTimer(); rateOvl.hidden=true;
+    closeOriginal('Gopher cancelled · rated & closed (no repost)');
+    setCardClosed('Cancelled', 'Closed — rated '+seed.gopher.replace(/\.$/,'')+' · not reposted');
+    setRecoveredView(true); resolved=true;
+    resolveBanner('Request closed', 'You rated '+seed.gopher+' and closed request #'+seed.origId+'. Nothing was reposted.');
+    g40Toast('Thanks — request #'+seed.origId+' closed');
+  }
+
+  // Auto-cancel (AC5, demo)
+  function autoCancel(){
+    recOvl.hidden=true; editOvl.hidden=true;
+    closeOriginal('Auto-cancelled · no action within 15 min');
+    setCardClosed('Auto-cancelled', 'Closed — no action within 15 minutes (demo).');
+    setRecoveredView(true); resolved=true;
+    resolveBanner('Auto-cancelled', 'No action within 15 minutes, so request #'+seed.origId+' was closed. (Demo timer — production uses a durable server-side job.)');
+    g40Toast('Request #'+seed.origId+' auto-cancelled (15 min, demo)');
+  }
+
+  // Reset so re-simulation starts clean (restore the original card + full view).
+  window.__g40ResetRecovery = function(){
+    stopTimer(); resolved=false;
+    recOvl.hidden=true; editOvl.hidden=true; rateOvl.hidden=true;
+    banner.hidden=true; banner.className='g40-banner';
+    pillEl.textContent='In Progress'; pillEl.style.color=''; pillEl.style.background='';
+    metaEl.innerHTML=origMetaHTML;
+    setRecoveredView(false);
+    g40Seq=200;
+  };
+
+  // ── Wiring (tap) ──
+  $('g40Sim').addEventListener('click', function(){
+    if(resolved){ window.__g40ResetRecovery(); onCancelled(); return; }
+    if(!banner.hidden){ recOvl.hidden=false; return; }   // recovery already open → reopen sheet
+    onCancelled();
+  });
+  $('g40BReopen').addEventListener('click', function(){ if(!resolved) recOvl.hidden=false; });
+  recOvl.addEventListener('click', function(e){
+    var o=e.target.closest && e.target.closest('[data-g40-recover]');
+    if(o){ var w=o.getAttribute('data-g40-recover'); if(w==='assign')assign(); else if(w==='edit')openEdit(); else if(w==='cancel')openRating(); return; }
+    if(e.target.id==='g40RecX' || e.target===recOvl){ recOvl.hidden=true; }   // backdrop keeps banner + timer alive
+  });
+  editOvl.addEventListener('click', function(e){
+    if(e.target.id==='g40EditSubmit'){ submitEdit(); }
+    else if(e.target.id==='g40EditBack' || e.target.id==='g40EditX' || e.target===editOvl){ editOvl.hidden=true; recOvl.hidden=false; }
+  });
+  rateOvl.addEventListener('click', function(e){
+    var st=e.target.closest && e.target.closest('[data-g40star]');
+    if(st){ rateVal=parseInt(st.getAttribute('data-g40star'),10); paintStars(); return; }
+    if(e.target.id==='g40RateDone'){ finishRating(); }
+  });
+
+  // ══ Early-cancellation flow (G40-40) — mobile ══
+  // Pre-acceptance cancel: while a request is still broadcasting, cancelling shows
+  // this sheet instead of a plain confirm. Variant A (fresh + strong coverage →
+  // reassure) or B (standard). "Still need it" re-broadcasts (demo); "Still cancel"
+  // closes/cancels. NOTE: this In-Progress screen is post-acceptance, so there is no
+  // live broadcasting request to hang this on — it's shown here as a component demo.
+  // In production it lives on the "finding your Gopher" screen. Real re-broadcast
+  // push + cancellation logging = backend (same seams as G40-9 above).
+  (function initEarlyCancelMobile(){
+    var ecBar = el('div','g40-demobar');
+    ecBar.innerHTML = '<span class="g40-tag">Demo</span><span class="g40-note">G40-40 preview: early-cancel while your request is still broadcasting (lives on the finding-a-Gopher screen in production).</span><button type="button" class="g40-simbtn" id="ecPrevA">Preview: strong coverage ▸</button><button type="button" class="g40-simbtn" id="ecPrevB">Preview: standard ▸</button>';
+    body.insertBefore(ecBar, body.firstChild);
+
+    var ecOvl = el('div','g40-ovl'); ecOvl.id='ecOvl'; ecOvl.hidden=true;
+    ecOvl.innerHTML = '<div class="sheet"><div class="g40-grip"></div><div id="ecBody"></div></div>';
+    phone.appendChild(ecOvl);
+    var ecBody = $('ecBody');
+
+    function render(variant){
+      if(variant==='A'){
+        ecBody.innerHTML =
+            '<div class="sheet-head"><div class="sheet-title">📣 Hang tight — a Gopher’s close</div><button class="sheet-x" id="ecX" aria-label="Close">✕</button></div>'
+          + '<p class="sheet-copy">You sent this out just moments ago, and there are <b>24+ Gophers</b> active near <b>Holly Springs</b> right now. Requests like yours usually get picked up within minutes. Want us to keep looking?</p>'
+          + '<div class="g40-actions"><button class="g40-btn-primary" id="ecKeep">Still need it — keep looking</button><button class="g40-btn-ghost" id="ecStop" style="color:#C44257">Still cancel</button></div>';
+      } else {
+        ecBody.innerHTML =
+            '<div class="sheet-head"><div class="sheet-title">🔎 Still want us to keep looking?</div><button class="sheet-x" id="ecX" aria-label="Close">✕</button></div>'
+          + '<p class="sheet-copy">We’re still broadcasting your request to Gophers in your area. Tap <b>Still need it</b> and we’ll send a fresh alert to local Gophers — your request stays exactly as it is, so there may be less time left on the clock. Changed your plans? You can cancel below.</p>'
+          + '<div class="g40-actions"><button class="g40-btn-primary" id="ecKeep">Still need it — re-alert Gophers</button><button class="g40-btn-ghost" id="ecStop" style="color:#C44257">Still cancel</button></div>';
+      }
+    }
+    function success(){
+      ecBody.innerHTML =
+          '<div class="sheet-head"><div class="sheet-title">✅ On it!</div><button class="sheet-x" id="ecX" aria-label="Close">✕</button></div>'
+        + '<p class="sheet-copy">We’ve sent a fresh alert to Gophers near you. Hang tight — we’ll let you know the moment someone accepts.</p>'
+        + '<div class="g40-actions"><button class="g40-btn-primary" id="ecDone">Got it</button></div>';
+    }
+    function open(v){ render(v); ecOvl.hidden=false; }
+    function close(){ ecOvl.hidden=true; }
+
+    var pa=$('ecPrevA'), pb=$('ecPrevB');
+    if(pa) pa.addEventListener('click', function(){ open('A'); });
+    if(pb) pb.addEventListener('click', function(){ open('B'); });
+    ecOvl.addEventListener('click', function(e){
+      if(e.target.id==='ecKeep'){ success(); return; }             // Still need! → re-broadcast (demo)
+      if(e.target.id==='ecStop'){ console.log('[G40-40 BACKEND SEAM] cancel broadcasting request'); close(); return; }
+      if(e.target.id==='ecDone' || e.target.id==='ecX' || e.target===ecOvl){ close(); }
+    });
+  })();
+})();
+</script>
+
+<script>/* G40 footer — per-app GO routing (Request: GO -> Categories). */document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-gnav]');if(!t)return;var M={home:'gopher-request-home.html',inbox:'gopher-request-inbox.html',go:'gopher-request-flow.html',refer:'gopher-request-refer.html',help:'gopher-request-help.html'};var p=M[t.getAttribute('data-gnav')];if(p&&window.__navHook){try{window.__navHook(p);}catch(_){}}});</script>
+</body>
+</html>

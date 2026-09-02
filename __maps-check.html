@@ -1,0 +1,30 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<title>Maps key self-check</title></head>
+<body style="font:16px/1.7 monospace;padding:26px">
+<div>key tail: …UVJAU · origin: <span id="org"></span></div>
+<div id="geo">⏳ Geocoding…</div>
+<div id="leg">⏳ Legacy Places autocomplete…</div>
+<div id="new">⏳ New Places autocomplete…</div>
+<script>
+document.getElementById('org').textContent = location.origin;
+var S = function(id, t){ document.getElementById(id).innerHTML = t; };
+window.gm_authFailure = function(){ S('geo','❌ AUTH FAILURE — origin not allowed for this key'); };
+function ready(){
+  new google.maps.Geocoder().geocode({address:'Holly Springs, NC'}, function(res, st){
+    S('geo', st==='OK' ? '✅ Geocoding: OK — '+res[0].geometry.location.toString() : '❌ Geocoding: '+st);
+  });
+  var P = google.maps.places;
+  if (P && P.AutocompleteService){
+    new P.AutocompleteService().getPlacePredictions({input:'My Way Tavern Holly Springs', componentRestrictions:{country:'us'}}, function(preds, st){
+      S('leg', (st==='OK'&&preds&&preds.length) ? '✅ LEGACY autocomplete: OK — "'+preds[0].description+'"' : '❌ LEGACY autocomplete: '+st);
+    });
+  } else S('leg','❌ LEGACY autocomplete: library missing');
+  if (P && P.AutocompleteSuggestion && P.AutocompleteSuggestion.fetchAutocompleteSuggestions){
+    P.AutocompleteSuggestion.fetchAutocompleteSuggestions({input:'My Way Tavern Holly Springs', includedRegionCodes:['us']})
+      .then(function(r){ S('new','✅ NEW autocomplete: OK ('+(((r&&r.suggestions)||[]).length)+' suggestions)'); })
+      .catch(function(e){ S('new','⚠️ NEW autocomplete: '+String((e&&e.message)||e).slice(0,90)+' <i>(fine — page falls back to legacy)</i>'); });
+  } else S('new','⚠️ NEW autocomplete: not present in this Maps build (fine)');
+}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnc2wRsy54nvUgrFKAPcJ5hnMhjfUVJAU&libraries=places&callback=ready" async></script>
+</body></html>

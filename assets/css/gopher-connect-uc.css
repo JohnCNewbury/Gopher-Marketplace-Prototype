@@ -1,0 +1,470 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   gopher-connect-uc.css — Connect "use case" (Learn more) pages.
+
+   DELIBERATELY NOT gopher-fd.css. The 107 consumer service-detail pages use a
+   SOFT tone — 20-32px pillow radii, 60px glow shadows, Caveat handwriting as a
+   core motif, emoji pictograms, "priced like a neighbor" voice. That is the
+   wrong register for a business buyer.
+
+   This sheet amplifies the vocabulary gopher-connect.html ALREADY uses:
+     · tight radii (8-14px, never above 16)   · flat 2-12px shadows
+     · uppercase letter-spaced eyebrows        · per-category accent system
+     · photo-left / content-right spec splits
+
+   Hard rules for this tone — do not reintroduce:
+     · NO Caveat / handwriting          · NO decorative emoji pictograms
+     · NO cream pillow cards            · NO glow shadows
+
+   Each page sets its own accent to match its card in the Connect use-cases
+   grid, via `<body class="uc uc-skilled">` etc. The vivid --accent values are
+   copied from .use-card.uc-* in gopher-connect.html — keep those in sync. The
+   text shades are NOT a straight copy; see the accent block below for why.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root{
+  --green:#33D975; --green-dark:#1CB061;
+  --navy:#002461; --navy-2:#0a1f4d; --navy-mid:#1a3a7a;
+  --ink-on-green:#002461;
+  --white:#fff; --sand:#FBF3E4;
+  --text:#424242; --muted:#6b7280;
+  --line:#e9edf5; --line-dk:#233a6e;
+  --shadow:0 2px 12px rgba(26,42,94,0.05);
+  --shadow-2:0 6px 22px rgba(26,42,94,0.09);
+}
+
+/* per-page accent — mirrors .use-card.uc-* in gopher-connect.html
+   THREE values per category, and they are not interchangeable:
+     --accent      the vivid mark. Graphics only (squares, rules, plates).
+     --accent-ink  darkened for TEXT ON WHITE (eyebrows, ticket keys). Four of
+                   the six are darker here than the matching .use-card value in
+                   gopher-connect.html — the card's inks measure 2.48:1
+                   (warehouse) to 4.17:1 (skilled) against the #eef0f8 step
+                   section, so they were copied over and then taken down to a
+                   pass. Hue and saturation are unchanged, so the category still
+                   reads as itself. The grid card has the same shortfall and is
+                   worth fixing there too.
+     --accent-lt   for TEXT ON THE NAVY SLABS. --accent-ink on navy measures
+                   2.19:1 (logistics) to 3.11:1 (skilled) — all below the 4.5:1
+                   AA floor for 10.5px type, and the photo section puts it over
+                   photography as well. Equal to --accent where that already
+                   clears 4.5:1; lightened for logistics and events, which do
+                   not. Measured against navy #002461, the lighter of the two
+                   dark backdrops (the photo scrim is darker still). */
+body.uc-logistics  { --accent:#2f6df0; --accent-ink:#1f54c4; --accent-lt:#7aa2f5; --accent-soft:rgba(47,109,240,0.12); }
+body.uc-onsite     { --accent:#f5a524; --accent-ink:#955f08; --accent-lt:#f5a524; --accent-soft:rgba(245,165,36,0.14); }
+body.uc-facilities { --accent:#14b8a6; --accent-ink:#0c786d; --accent-lt:#14b8a6; --accent-soft:rgba(20,184,166,0.13); }
+body.uc-skilled    { --accent:#f06a3a; --accent-ink:#b9441b; --accent-lt:#f06a3a; --accent-soft:rgba(240,106,58,0.13); }
+body.uc-events     { --accent:#8b5cf6; --accent-ink:#6d3fd1; --accent-lt:#b090f9; --accent-soft:rgba(139,92,246,0.13); }
+body.uc-warehouse  { --accent:#33D975; --accent-ink:#137a43; --accent-lt:#33D975; --accent-soft:rgba(51,217,117,0.13); }
+
+*,*::before,*::after{ box-sizing:border-box; }
+body.uc{
+  margin:0; background:var(--white); color:var(--text);
+  font-family:'DM Sans',system-ui,sans-serif; font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+body.uc h1,body.uc h2,body.uc h3,body.uc h4{
+  font-family:'Nunito',system-ui,sans-serif; color:var(--navy);
+  margin:0; letter-spacing:-0.02em;
+}
+body.uc a{ color:inherit; }
+body.uc img{ max-width:100%; display:block; }
+
+.uc-wrap{ max-width:1080px; margin:0 auto; padding:0 24px; }
+
+/* ── eyebrow: the signature Connect device (uppercase, tracked, accent) ── */
+.uc-eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:10.5px;
+  letter-spacing:1.4px; text-transform:uppercase; color:var(--accent-ink);
+  margin:0 0 10px;
+}
+.uc-eyebrow::before{
+  content:''; width:7px; height:7px; border-radius:2px; background:var(--accent);
+}
+/* Every eyebrow that sits on a navy surface. There is no `.uc-slab` element —
+   that selector was the intent, but the class never landed on any markup, so
+   the eyebrows on the hero, the photo section, the credential slab, and the
+   closing CTA were all still rendering in --accent-ink at 2.19-3.11:1. */
+.uc-hero .uc-eyebrow,
+.uc-photo .uc-eyebrow,
+.uc-section.dark .uc-eyebrow,
+.uc-close .uc-eyebrow{ color:var(--accent-lt); }
+
+/* ── breadcrumb ── */
+.uc-crumbs{
+  font-size:12.5px; font-weight:600; color:rgba(255,255,255,0.62);
+  margin-bottom:16px; letter-spacing:0.2px;
+}
+.uc-crumbs a{ color:rgba(255,255,255,0.82); text-decoration:none; }
+.uc-crumbs a:hover{ color:var(--accent-lt); }
+.uc-crumbs .sep{ margin:0 8px; opacity:0.45; }
+
+/* ══ HERO — navy slab, spec split ══ */
+.uc-hero{
+  background:var(--navy);
+  background-image:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%);
+  color:#fff; padding:38px 0 46px; position:relative; overflow:hidden;
+}
+/* thin accent rule across the top — job-ticket cue, not decoration */
+.uc-hero::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:4px;
+  background:var(--accent);
+}
+/* NOTE the `body.uc` prefix on every light-on-navy heading: the base rule
+   `body.uc h1` is specificity 0-1-2 and would otherwise beat a bare
+   `.uc-hero h1` (0-1-1), painting navy text on the navy slab. */
+body.uc .uc-hero h1{
+  color:#fff; font-weight:900; font-size:clamp(30px,4.4vw,46px);
+  line-height:1.08; margin-bottom:14px;
+}
+.uc-hero .uc-lede{
+  font-size:16.5px; line-height:1.62; color:rgba(255,255,255,0.80);
+  max-width:53ch; margin:0 0 22px;
+}
+.uc-hero .uc-lede b{ color:#fff; font-weight:700; }
+.uc-hero-grid{ display:grid; grid-template-columns:1fr 380px; gap:38px; align-items:center; }
+.uc-hero-photo{
+  border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.14);
+  box-shadow:0 10px 30px rgba(0,0,0,0.28); aspect-ratio:4/3;
+}
+.uc-hero-photo img{ width:100%; height:100%; object-fit:cover; }
+
+/* spec chips — hard-edged, not pills */
+.uc-chips{ display:flex; flex-wrap:wrap; gap:8px; }
+.uc-chip{
+  display:inline-flex; align-items:center; gap:7px;
+  background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16);
+  border-radius:8px; padding:7px 12px;
+  font-size:12.5px; font-weight:600; color:rgba(255,255,255,0.90);
+}
+.uc-chip b{ color:#fff; font-weight:800; }
+.uc-chip::before{
+  content:''; width:6px; height:6px; border-radius:1px; background:var(--accent); flex:none;
+}
+
+/* ── CTA buttons ── */
+.uc-btn-row{ display:flex; flex-wrap:wrap; gap:11px; margin-bottom:22px; }
+.uc-btn{
+  display:inline-flex; align-items:center; gap:9px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:14.5px;
+  padding:12px 20px; border-radius:10px; text-decoration:none;
+  border:1.5px solid transparent; cursor:pointer; transition:all .2s;
+}
+.uc-btn-primary{ background:var(--green); color:var(--ink-on-green); }
+.uc-btn-primary:hover{ background:var(--green-dark); transform:translateY(-1px); }
+.uc-btn-ghost{ background:transparent; color:#fff; border-color:rgba(255,255,255,0.30); }
+.uc-btn-ghost:hover{ border-color:var(--accent-lt); color:var(--accent-lt); }
+.uc-btn-dark{ background:var(--navy); color:#fff; }
+.uc-btn-dark:hover{ background:var(--navy-mid); }
+
+/* ══ SECTIONS ══ */
+.uc-section{ padding:56px 0; }
+.uc-section.alt{ background:#f7f9fc; border-block:1px solid var(--line); }
+.uc-head{ max-width:660px; margin-bottom:28px; }
+.uc-head h2{ font-size:clamp(23px,2.8vw,31px); font-weight:900; line-height:1.15; margin-bottom:10px; }
+.uc-head p{ margin:0; font-size:15.5px; color:var(--muted); }
+
+/* ══ JOB TICKET — the scenario rows. Reads like a work order, not a blog. ══ */
+.uc-ticket{
+  border:1px solid var(--line); border-radius:12px; background:#fff;
+  box-shadow:var(--shadow); overflow:hidden;
+}
+.uc-ticket-head{
+  background:var(--navy); color:#fff; padding:13px 20px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
+  letter-spacing:1.4px; text-transform:uppercase;
+  display:flex; align-items:center; gap:9px;
+}
+.uc-ticket-head::before{ content:''; width:8px; height:8px; border-radius:2px; background:var(--accent); }
+.uc-row{ display:grid; grid-template-columns:210px 1fr; gap:20px; padding:17px 20px; border-top:1px solid var(--line); }
+.uc-row:first-of-type{ border-top:0; }
+.uc-row .k{
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:10.5px;
+  letter-spacing:1.2px; text-transform:uppercase; color:var(--accent-ink);
+  padding-top:3px;
+}
+.uc-row .v{ font-size:15.2px; line-height:1.55; color:var(--text); }
+.uc-row .v b{ color:var(--navy); font-weight:700; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PHOTO SECTION — rotating work photography behind floating "bubble" chips.
+
+   The rotation reuses gopher-connect.html's hero mechanism verbatim: the same
+   9 connect-hero-img*.webp files, a 45s `ucCycle` with 5s stagger, and the
+   same 1.06 -> 1.0 Ken Burns drift. Keeping the timing identical means this
+   section reads as the same system as the Connect hero rather than a lookalike.
+   ══════════════════════════════════════════════════════════════════════════ */
+.uc-photo{ position:relative; overflow:hidden; padding:64px 0 70px; isolation:isolate; }
+.uc-photo-bg{ position:absolute; inset:0; z-index:0; }
+.uc-photo-bg img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; opacity:0; will-change:opacity,transform;
+  animation:ucCycle 45s infinite;
+}
+@keyframes ucCycle{
+  0%, 9%    { opacity:1; transform:scale(1.06); }
+  13%, 100% { opacity:0; transform:scale(1.0); }
+}
+/* 6-frame variant — one photo per job card, same absolute rhythm as the
+   9-frame cycle (4s hold, 1.8s fade, 5s stagger) on a 30s loop. Opt in with
+   class="uc-photo-bg six"; pages still carrying 9 generic frames keep ucCycle
+   untouched, so the two can coexist while pages migrate one at a time. */
+.uc-photo-bg.six img{ animation:ucCycle6 30s infinite; }
+@keyframes ucCycle6{
+  0%, 13.5%   { opacity:1; transform:scale(1.06); }
+  19.5%, 100% { opacity:0; transform:scale(1.0); }
+}
+/* Scrim: heavier top and bottom, lighter through the middle band where the
+   chips sit, so the photograph still reads as a photograph.
+   Sized for the BRIGHTEST frame in the cycle, not this one — the 9 photos vary
+   a lot in exposure, and copy that only survives the dark frames is a bug that
+   appears 30 seconds after you stop looking. */
+.uc-photo-scrim{
+  position:absolute; inset:0; z-index:1;
+  background:
+    linear-gradient(180deg,
+      rgba(0,18,50,0.93) 0%,
+      rgba(0,20,56,0.74) 34%,
+      rgba(0,22,60,0.72) 66%,
+      rgba(0,16,46,0.90) 100%),
+    linear-gradient(115deg, rgba(0,36,97,0.44) 0%, rgba(0,0,0,0) 62%);
+}
+.uc-photo .uc-wrap{ position:relative; z-index:2; }
+body.uc .uc-photo h2{ color:#fff; }
+.uc-photo .uc-head p{ color:rgba(255,255,255,0.74); }
+
+@media (prefers-reduced-motion: reduce){
+  .uc-photo-bg img{ animation:none; opacity:0; }
+  .uc-photo-bg img:first-child{ opacity:1; }
+}
+
+/* ══ REAL JOB POSTS — floating Gopher Go cards ═════════════════════════════
+   These reproduce the .job-card anatomy from gopher-go.html so a business
+   buyer sees exactly how their request lands in front of a worker. The class
+   names and structure are copied from Go's feed (jc-top / jc-pay / jc-scope /
+   jc-stats / jc-flags) so the two stay comparable by eye.
+
+   Go's own styles are inline in gopher-go.html and can't be linked from here,
+   so these are a faithful re-cut of them. If Go's card changes, update this to
+   match — the whole point is that it isn't an approximation.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.uc-posts{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:18px;
+  align-items:start;
+}
+.uc-post{
+  position:relative; background:#fff; border:1px solid #edf0f5; border-radius:18px;
+  padding:15px; display:flex; flex-direction:column; gap:5px; overflow:hidden;
+  /* deeper than Go's own shadow — these are floating over photography */
+  box-shadow:0 16px 34px -12px rgba(0,12,40,0.52), 0 3px 8px rgba(0,12,40,0.20);
+  animation:ucFloat 8s ease-in-out infinite;
+  transition:transform .22s cubic-bezier(.2,.7,.3,1), box-shadow .22s;
+}
+.uc-post:hover{
+  transform:translateY(-5px);
+  box-shadow:0 26px 48px -14px rgba(0,12,40,0.60), 0 4px 10px rgba(0,12,40,0.24);
+}
+/* Desynced drift — in unison it reads as an animated table, not floating cards */
+.uc-post:nth-child(3n+1){ animation-delay:0s;    }
+.uc-post:nth-child(3n+2){ animation-delay:-2.7s; margin-top:14px; }
+.uc-post:nth-child(3n+3){ animation-delay:-5.3s; margin-top:6px;  }
+@keyframes ucFloat{
+  0%,100% { transform:translateY(0); }
+  50%     { transform:translateY(-6px); }
+}
+@media (prefers-reduced-motion: reduce){
+  .uc-post{ animation:none; margin-top:0 !important; }
+}
+
+/* ── card internals: mirrors gopher-go.html ── */
+.uc-post .jc-top{ display:flex; gap:6px; align-items:center; }
+.uc-post .jc-cat{
+  display:inline-flex; align-items:center; gap:5px;
+  background:#f2f5fa; border-radius:7px; padding:4px 9px;
+}
+.uc-post .jc-cat svg{ width:15px; height:15px; color:var(--green-dark); flex-shrink:0; }
+.uc-post .jc-stat svg{ width:12px; height:12px; color:var(--green-dark); flex-shrink:0; }
+.uc-post .jc-cat span{
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
+  color:var(--navy); white-space:nowrap;
+}
+/* ── corner rail (ported from the updated Go card, commits df70b8c / f7bfb28 /
+      f182547 / e01d44e).
+
+      An in-flow flex COLUMN, not stacked absolutes. TOP PAY and the source mark
+      used to be separately `position:absolute; top:0; right:0`, so any two of
+      them collided and the "posted" timestamp landed underneath. As a column,
+      adding a badge shifts its neighbours — overlap isn't expressible. Keep
+      that property; don't "simplify" it back to absolute positioning.
+
+      Connect renders its own requests with the SOURCE MARK ONLY and no tier
+      lock: `connect:true` labels where the request came from, `lock:'connect'`
+      gates it behind a tier. Those are separate concerns as of e01d44e. On this
+      page the audience IS the eligible cohort, so there is no lock to remove —
+      we simply never opt into one. ── */
+.uc-post .jc-corner{
+  margin-left:auto; display:inline-flex; flex-direction:column;
+  align-items:flex-end; gap:7px; flex:0 0 auto;
+}
+.uc-post .jc-badge{ display:inline-flex; align-items:center; gap:5px; border-radius:9px; }
+.uc-post .jc-badge.mark{
+  background:#fff; border:1px solid #e4e8f0; padding:4px 8px;
+  box-shadow:0 1px 3px rgba(0,36,97,.08);
+}
+.uc-post .jc-badge.mark img{ height:15px; width:auto; display:block; }
+/* the category chip yields rather than pushing the rail off the card */
+.uc-post .jc-top .jc-cat{
+  flex:0 1 auto; min-width:0; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap;
+}
+
+/* ── footer: chips left, "posted" right.
+      `posted` is listing metadata, not a job fact like distance or schedule —
+      and down here it can't crowd the corner marks it used to sit beneath. ── */
+.uc-post .jc-foot{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; margin-top:11px;
+}
+.uc-post .jc-foot .jc-flags{ margin-top:0; padding-top:0; flex:1 1 auto; }
+.uc-post .jc-posted{
+  margin-left:auto; flex:0 0 auto; white-space:nowrap;
+  font-family:'DM Sans',sans-serif; font-weight:600;
+  font-size:10.5px; color:#6b7280;
+}
+.uc-post .jc-pay{ display:flex; align-items:center; gap:8px; min-height:40px; padding:11px 0 5px; }
+.uc-post .jc-pay .amt{
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:30px; line-height:30px;
+  letter-spacing:-1px; color:var(--green-dark);
+}
+.uc-post .jc-pay .per{
+  background:#e2f3e9; border-radius:99px; padding:4px 9px;
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:12px; color:var(--green-dark);
+}
+.uc-post .bid-cta{
+  display:inline-flex; align-items:center; padding:10px 20px; border-radius:12px;
+  background:linear-gradient(135deg,#33d975 0%,#1cb061 100%);
+  box-shadow:0 6px 8px rgba(51,217,117,0.35);
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:16px; color:#fff;
+}
+.uc-post .jc-scope{
+  font-family:'DM Sans',sans-serif; font-weight:500; font-size:13px;
+  color:#424242; line-height:18.2px; padding-bottom:6px;
+}
+.uc-post .jc-stats{
+  display:flex; flex-wrap:wrap; gap:6px 14px;
+  border-top:1px dashed #e7eaf1; padding-top:11px;
+}
+.uc-post .jc-stat{ display:inline-flex; align-items:center; gap:5px; }
+.uc-post .jc-stat b{ font-family:'Nunito',sans-serif; font-weight:700; font-size:11.5px; color:var(--navy); }
+.uc-post .jc-stat small{ font-family:'Nunito',sans-serif; font-weight:600; font-size:9.6px; color:#6b7280; margin-left:-2px; }
+.uc-post .jc-flags{ display:flex; flex-wrap:wrap; gap:6px; padding-top:8px; }
+.uc-post .flag{
+  display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:7px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:10px; white-space:nowrap;
+}
+.uc-post .flag.f-warn{ background:#fff7c2; color:#92580d; }
+.uc-post .flag.f-good{ background:#e2f3e9; color:#1cb061; }
+.uc-post .flag.f-info{ background:#eef1f7; color:#1a3a7a; }
+
+/* Legend under the grid.
+   Uses miniature versions of the ACTUAL card tokens rather than colour
+   swatches — both states are green on the card, so a colour key would have
+   pointed at a distinction that isn't there. */
+.uc-post-key{
+  display:flex; flex-wrap:wrap; gap:12px 26px; margin-top:28px;
+  font-size:13.6px; color:rgba(255,255,255,0.86);
+}
+.uc-post-key > span{ display:inline-flex; align-items:center; gap:9px; }
+.uc-post-key b{ color:#fff; font-weight:800; }
+.uc-post-key i{ font-style:normal; flex:none; }
+.uc-post-key .k-set{
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:15px;
+  color:#33d975; letter-spacing:-0.5px;
+}
+.uc-post-key .k-bid{
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:9.5px; color:#fff;
+  background:linear-gradient(135deg,#33d975 0%,#1cb061 100%);
+  border-radius:6px; padding:4px 8px; white-space:nowrap;
+}
+.uc-photo-note{
+  margin-top:28px; font-size:14px; line-height:1.6;
+  color:rgba(255,255,255,0.86); max-width:60ch;
+  text-shadow:0 1px 3px rgba(0,10,30,0.55);
+}
+.uc-photo-note b{ color:#fff; font-weight:800; }
+
+/* ══ CREDENTIAL PANEL — the Pro-verified explainer ══ */
+.uc-cred{
+  border:1px solid var(--line); border-left:4px solid var(--accent);
+  border-radius:10px; background:#fff; padding:22px 24px; box-shadow:var(--shadow);
+}
+.uc-cred h3{ font-size:18px; font-weight:900; margin-bottom:8px; }
+.uc-cred p{ margin:0 0 14px; font-size:15px; }
+.uc-cred-list{ list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+.uc-cred-list li{ display:flex; gap:11px; align-items:flex-start; font-size:14.8px; }
+.uc-cred-list li::before{
+  content:''; width:8px; height:8px; border-radius:2px; background:var(--accent);
+  flex:none; margin-top:7px;
+}
+.uc-cred-list b{ color:var(--navy); }
+.uc-note{
+  margin-top:16px; padding-top:14px; border-top:1px solid var(--line);
+  font-size:13.4px; color:var(--muted);
+}
+
+/* ══ STEPS — square numbered plates, not circles.
+   Rendered on the DARK slab so the page alternates
+   navy -> white -> photo -> tint -> navy instead of four white sections in a
+   row, which is what made the first draft die after the second scroll. ══ */
+.uc-steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+.uc-step{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:20px 18px; box-shadow:var(--shadow); }
+.uc-step .n{
+  width:30px; height:30px; border-radius:7px; background:var(--navy); color:#fff;
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:14px;
+  display:grid; place-items:center; margin-bottom:12px;
+}
+.uc-step h4{ font-size:15.5px; font-weight:800; margin-bottom:6px; }
+.uc-step p{ margin:0; font-size:14px; color:var(--muted); line-height:1.5; }
+
+/* ── section variants that carry the page rhythm ── */
+.uc-section.tint{ background:var(--navy-light,#eef0f8); border-block:1px solid #e0e5f2; }
+.uc-section.dark{
+  background:var(--navy);
+  background-image:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%);
+}
+body.uc .uc-section.dark h2{ color:#fff; }
+.uc-section.dark .uc-head p{ color:rgba(255,255,255,0.72); }
+.uc-section.dark .uc-step{
+  background:rgba(255,255,255,0.055); border-color:rgba(255,255,255,0.14);
+  box-shadow:none; backdrop-filter:blur(2px);
+}
+body.uc .uc-section.dark .uc-step h4{ color:#fff; }
+.uc-section.dark .uc-step p{ color:rgba(255,255,255,0.68); }
+.uc-section.dark .uc-step .n{ background:var(--accent); color:#08122c; }
+
+/* ══ CLOSING CTA slab ══ */
+.uc-close{ background:var(--navy); background-image:linear-gradient(180deg,var(--navy-2) 0%,var(--navy) 100%); color:#fff; padding:52px 0; }
+body.uc .uc-close h2{ color:#fff; font-size:clamp(23px,3vw,32px); font-weight:900; margin-bottom:12px; }
+.uc-close p{ color:rgba(255,255,255,0.78); font-size:16px; max-width:58ch; margin:0 0 22px; }
+.uc-close .uc-btn-row{ margin-bottom:0; }
+
+/* ══ reveal ══ */
+.reveal{ opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease; }
+.reveal.in{ opacity:1; transform:none; }
+
+/* ══ responsive ══ */
+@media (max-width:900px){
+  .uc-hero-grid{ grid-template-columns:1fr; gap:26px; }
+  .uc-hero-photo{ max-width:460px; }
+  .uc-posts{ grid-template-columns:repeat(2,1fr); }
+  .uc-posts .uc-post{ margin-top:0; }
+  .uc-steps{ grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width:600px){
+  .uc-section{ padding:40px 0; }
+  .uc-row{ grid-template-columns:1fr; gap:6px; padding:15px 17px; }
+  .uc-posts{ grid-template-columns:1fr; gap:16px; }
+  .uc-steps{ grid-template-columns:1fr; }
+  .uc-btn{ width:100%; justify-content:center; }
+}

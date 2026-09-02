@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gopher Request — Inbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Shared messaging guard (G40-35) — this screen calls GopherMessageGuard.guard()
+     on send and FAILS OPEN without this include (that gap shipped once; keep it). -->
+<script src="../../assets/js/gopher-message-guard.js"></script>
+<style>
+:root{ --radius-pill:99px; --radius-card:16px; --radius-md:12px; --radius-sm:8px; --font-heading:'Nunito'; --font-body:'DM Sans'; --font-script:'Caveat';  --z-deals:#F3F5F8; --z-jobs:#EEF7F1; --z-tools:#EDF1F8; --z-acct:#E9F1FC; --z-perks:#FBF1E8;  --navy-bar:#03143A; --line-cool:#E3E7EF; --border:#EDF0F5; --warning:#FFDE00; --warning-text:#92580D; --error:#C44257; --terra:#C8623C; --terracotta:#D97757; --aqua:#87F7BD; --cornflower:#BADBFC; 
+  --green:#1CB061; --green-bright:#33D975; --green-tint:#E8F5EE;
+  --navy:#002461; --ink:#002461; --ink-soft:#3A4D74;
+  --paper:#FBF7EF; --card:#fff; --sand:#FBF3E4; --muted:#8C8675; --muted-cool:#6b7280;
+  --line:#EAE3D5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+/* Form controls do NOT inherit font — the UA stylesheet pins them to Arial 13.3333px.
+   Measured 2026-08-02: every element painting a non-brand font was a form control or a
+   descendant of one. font-weight deliberately NOT reset — buttons that look bold declare
+   their own, and `font:inherit` would flatten them. docs/screen-spec/TYPE-AND-SHAPE-SCALE.md */
+button,input,select,textarea{font-family:inherit;font-size:inherit;}
+
+body{background:#dfe4ec;font-family:'DM Sans',-apple-system,system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;padding:20px;min-height:100vh;}
+#phone{position:relative;width:390px;max-width:100%;height:844px;max-height:calc(100vh - 40px);background:var(--paper);border-radius:42px;overflow:hidden;overflow:clip;display:flex;flex-direction:column;box-shadow:0 30px 60px -20px rgba(0,16,42,.5);}
+.status-bar{flex:0 0 auto;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-family:'Nunito';font-weight:800;font-size:13px;color:var(--navy);background:var(--card);}
+.sb-right{display:flex;align-items:center;gap:6px;}
+.sb-right svg{height:13px;width:auto;}
+#mibody{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--card);}
+
+/* ── list ── */
+.mi-listtop{display:flex;align-items:center;gap:11px;padding:11px 16px;background:var(--card);border-bottom:1px solid var(--line);flex:0 0 auto;}
+.mi-listhd{font-family:'Nunito';font-weight:900;font-size:19px;color:var(--navy);}
+.mi-list{flex:1;overflow-y:auto;}
+.mi-row{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid #f2ede1;}
+.mi-row:active{background:#faf6ee;}
+.mi-rmain{flex:1;min-width:0;}
+.mi-rtop{display:flex;justify-content:space-between;gap:8px;align-items:baseline;}
+.mi-rnm{font-family:'Nunito';font-weight:800;font-size:14.5px;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mi-rtime{font-family:'Nunito';font-weight:700;font-size:11px;color:#a49c88;flex:0 0 auto;}
+.mi-rprev{font-family:'DM Sans';font-size:12.5px;color:var(--muted-cool);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.mi-row.unread .mi-rprev{color:#33414f;font-weight:600;}
+.mi-udot{width:9px;height:9px;border-radius:50%;background:var(--green-bright);flex:0 0 auto;box-shadow:0 0 0 3px rgba(51,217,117,.18);}
+
+/* ── avatar ── */
+.mi-ava{position:relative;width:46px;height:46px;flex:0 0 auto;}
+.mi-photo{width:46px;height:46px;border-radius:50%;overflow:hidden;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,36,97,.18);}
+.mi-photo svg{width:100%;height:100%;display:block;}
+.mi-ava.lock .mi-photo svg{filter:blur(5px);transform:scale(1.18);}
+.mi-lk{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.mi-lk svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
+
+/* ── thread ── */
+.mi-top{display:flex;align-items:center;gap:11px;padding:11px 16px;background:var(--card);border-bottom:1px solid var(--line);flex:0 0 auto;}
+.mi-top .mi-ava,.mi-top .mi-photo{width:40px;height:40px;}
+.mi-bk{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;}
+.mi-bk svg{width:18px;height:18px;fill:none;stroke:var(--ink-soft);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.mi-nm{font-family:'Nunito';font-weight:900;font-size:15px;color:var(--navy);}
+.mi-st{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--muted-cool);font-family:'Nunito';font-weight:700;}
+.mi-st svg{width:12px;height:12px;fill:none;stroke:var(--green);stroke-width:1.8;}
+.mi-ctx{flex:0 0 auto;padding:8px 16px;background:var(--green-tint);color:var(--green);font-family:'Nunito';font-weight:800;font-size:11.5px;}
+.mi-thread{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:9px;}
+.mi-sys{align-self:center;text-align:center;max-width:88%;font-family:'DM Sans';font-size:11px;line-height:1.5;color:var(--muted);background:var(--sand);border-radius:12px;padding:9px 13px;margin-bottom:4px;}
+.mi-b{max-width:78%;padding:9px 13px;border-radius:15px;font-family:'DM Sans';font-size:13px;line-height:1.4;}
+.mi-b.them{align-self:flex-start;background:#f0ece0;color:var(--ink);border-bottom-left-radius:5px;}
+.mi-b.me{align-self:flex-end;background:var(--navy);color:#fff;border-bottom-right-radius:5px;}
+.mi-chips{flex:0 0 auto;display:flex;gap:7px;overflow-x:auto;padding:8px 16px;}
+.mi-chip{white-space:nowrap;font-family:'Nunito';font-weight:700;font-size:11.5px;color:var(--navy);background:var(--card);border:1px solid var(--line);border-radius:99px;padding:7px 12px;cursor:pointer;}
+.mi-comp{flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:10px 14px 16px;border-top:1px solid var(--line);background:var(--card);}
+.mi-in{flex:1;font-family:'DM Sans';font-size:13.5px;color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:11px 15px;background:var(--paper);}
+.mi-send{width:42px;height:42px;flex:0 0 auto;border:none;border-radius:50%;background:var(--green-bright);color:var(--navy);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.mi-send svg{width:20px;height:20px;fill:currentColor;}
+
+html.embedded body{padding:0;min-height:0;}
+html.embedded #phone{position:absolute;inset:0;width:auto;height:auto;max-width:none;max-height:none;border-radius:0;box-shadow:none;}
+/* G40: app footer on the inbox LIST (reuses the folded footer; --navy-bar not defined here -> literal). */.nav{position:absolute;left:0;right:0;bottom:0;background:#03143A;display:flex;align-items:flex-end;justify-content:space-around;padding:11px 8px 18px;z-index:20;}.nv{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#7E8EB0;font-family:'Nunito';font-weight:700;font-size:9.5px;cursor:pointer;background:none;border:none;}.nv.c{color:#fff;font-weight:900;}.cc{width:54px;height:54px;border-radius:18px;background:var(--green-bright);color:var(--navy);display:flex;align-items:center;justify-content:center;margin-top:-26px;box-shadow:0 10px 24px rgba(51,217,117,.45);}.cc svg{width:26px;height:26px;stroke:var(--navy);stroke-width:2.1;}.nav .g40nv{color:#c3cee3;font-family:'Nunito';font-weight:800;font-size:12.5px;gap:2px;}.nav .g40nv.c{color:var(--green-bright);}.nav .g40nv .g40ic{width:21px;height:21px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;margin-bottom:1px;}.nav .g40nv[aria-current=page]{color:#33D975;}.nav .g40nv.c .cc svg{stroke:none;}.nav .g40nv.c .cc svg rect{fill:#002461;stroke:none;}.mi-list{padding-bottom:86px;}</style>
+</head>
+<body>
+<script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
+<div id="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span class="sb-right">
+      <svg viewBox="0 0 24 24" fill="var(--navy)"><path d="M2 17h2v-5H2v5zm4 0h2V9H6v8zm4 0h2V5h-2v12zm4 0h2v-8h-2v8zm4 0h2V7h-2v10z"/></svg>
+      <svg viewBox="0 0 24 24" fill="var(--navy)"><path d="M12 18a2 2 0 100 4 2 2 0 000-4zM4.5 11.5a10 10 0 0115 0l-1.5 1.5a8 8 0 00-12 0l-1.5-1.5zM1.5 8.5a14 14 0 0121 0L20 10a12 12 0 00-16 0L1.5 8.5z"/></svg>
+      <svg viewBox="0 0 28 24" fill="var(--navy)"><rect x="1" y="6" width="22" height="12" rx="3" fill="none" stroke="var(--navy)" stroke-width="1.5"/><rect x="3" y="8" width="17" height="8" rx="1.5"/></svg>
+    </span>
+  </div>
+  <div id="mibody"></div>
+</div>
+
+<script>
+/* G40 inbox (Request) — standard multi-chat messaging, mirrored from the Gopher Go
+   inbox so both apps behave identically (>10% of users are on both). List -> thread
+   -> back. BACKEND SEAM: conversations + unread state are seeded in-memory here;
+   production loads the Requestor's real threads from the messaging service.
+   Navigation between screens uses the simulator's window.__navHook(path). */
+/* Shared multi-request store — identical to home/flow. In the split, live messages ride on
+   GReq records ({from:'req'|'gopher'}), relayed both ways by the harness. */
+window.GReq = window.GReq || (function(){
+// Store is NAMESPACED BY MODE. Previously both modes shared 'gopher_requests', and all()
+// returns a cached array without ever consulting ptEmpty() \u2014 the PT gate only guarded
+// seed(), the fallback. So a standalone visit cached the demo seed, and the split screen
+// loaded in the SAME TAB (sessionStorage is per-tab, and the iframes share the parent's)
+// re-served it: the requester showed Active(2)+Scheduled(1) while Go showed 0/0/0 with
+// 'No local jobs yet'. One shared store, two phones disagreeing \u2014 impossible by design,
+// reachable in two clicks. Separate keys make the contamination unexpressible, both ways.
+var KEY = ptEmpty() ? 'gopher_requests_pt' : 'gopher_requests';
+// PT (split-screen) mode: start with NO pending requests. Sticky via sessionStorage so it
+// survives home↔flow navigation. Standalone default (no ?pt) keeps the demo seed.
+function ptEmpty(){ try{ if(new URLSearchParams(location.search).get('pt')==='1'){ sessionStorage.setItem('gopher_pt','1'); return true; } return sessionStorage.getItem('gopher_pt')==='1'; }catch(_){ return false; } }
+function seed(){ if(ptEmpty()) return []; return [
+ {order:'GR-00127',cat:'delivery',title:'Grocery run — Harris Teeter',amount:'$69.11',hired:'Marcus B.',stage:'active',accepted:3,scheduledForLater:false,cost:35,pay:15,pickup:'Harris Teeter',dropoff:'412 Oakwood Ave',when:'ETA 14 min · Today, 2:30 PM'},
+ {order:'GR-00128',cat:'home',title:'Hardware run — drill bits + anchors',amount:'$76.67',hired:'Priya N.',stage:'active',accepted:2,scheduledForLater:false,cost:52,pay:18,pickup:'Ace Hardware',dropoff:'88 Maple Court',when:'ETA 19 min · Today, 3:05 PM'},
+ {order:'GR-00124',cat:'home',title:'Ceiling fan install — conference room',amount:'$145.00',hired:'Rosa P.',stage:'scheduled',scheduledForLater:true,accepted:0,cost:0,pay:120,pickup:'',dropoff:'88 Maple Court',when:'Tomorrow, 9:00 AM'}
+]; }
+function all(){ try{ var a=JSON.parse(sessionStorage.getItem(KEY)); if(Array.isArray(a)) return a; }catch(_){} var s=seed(); save(s); return s; }
+function save(a){ try{ sessionStorage.setItem(KEY, JSON.stringify(a)); }catch(_){} }
+function nextOrder(){ var mx=127; all().forEach(function(x){ var m=/GR-0*(\d+)/.exec(x.order||''); if(m){ var n=+m[1]; if(n>mx) mx=n; } }); return 'GR-'+('00000'+(mx+1)).slice(-5); }
+return { all:all, save:save,
+ add:function(r){ var a=all(); a.unshift(r); save(a); return r; },
+ get:function(o){ return all().filter(function(x){return x.order===o;})[0]||null; },
+ update:function(o,p){ var a=all(); for(var i=0;i<a.length;i++){ if(a[i].order===o){ for(var k in p) a[i][k]=p[k]; } } save(a); },
+ remove:function(o){ save(all().filter(function(x){return x.order!==o;})); },
+ nextOrder:nextOrder,
+ openOrder:function(o){ try{ sessionStorage.setItem('gopher_open', o); }catch(_){} },
+ currentOpen:function(){ try{ return sessionStorage.getItem('gopher_open'); }catch(_){ return null; } } };
+})();
+(function(){
+  var body=document.getElementById('mibody');
+  var sv=function(p){return '<svg viewBox="0 0 24 24">'+p+'</svg>';};
+  var SH='<path d="M12 3l7 2.5v5.4c0 4.2-2.9 7.4-7 8.9-4.1-1.5-7-4.7-7-8.9V5.5z"/><path d="M9 12l2 2 4-4.4"/>';
+  var LK='<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>';
+  var BK='<path d="M15 5l-7 7 7 7"/>';
+  function ava(v){ return '<div class="mi-ava'+(v?'':' lock')+'"><div class="mi-photo"><svg viewBox="0 0 80 80"><defs><linearGradient id="mig" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e7c9a8"/><stop offset="1" stop-color="#d3ab82"/></linearGradient></defs><rect width="80" height="80" fill="#b9c6df"/><circle cx="40" cy="32" r="15" fill="url(#mig)"/><path d="M40 31c-6 0-9-4-9-8 0 0 3 1 9 1s9-1 9-1c0 4-3 8-9 8z" fill="#5b4636"/><path d="M12 78c3-16 14-24 28-24s25 8 28 24z" fill="url(#mig)"/></svg></div>'+(v?'':'<span class="mi-lk">'+sv(LK)+'</span>')+'</div>'; }
+
+  // PT (split-screen) mode starts EMPTY — no seeded/fake threads in the live demo.
+  // Sticky via sessionStorage so it survives home↔inbox navigation (which drops ?pt).
+  function ptMode(){ try{ if(new URLSearchParams(location.search).get('pt')==='1'){ sessionStorage.setItem('gopher_pt','1'); return true; } return sessionStorage.getItem('gopher_pt')==='1'; }catch(_){ return false; } }
+  // The Requestor's threads are with their assigned Gophers (standalone demo seed).
+  var __convoSeed=[
+    {id:'c1',name:'Marcus B.',ctx:'Grocery run · $69.11',verified:true,time:'2:30 PM',unread:2,
+      msgs:[{s:'them',t:'Heading to Harris Teeter now — anything specific on the produce?'},{s:'me',t:'Just ripe avocados if they have them, thanks!'},{s:'them',t:'On it — ETA about 14 min.'}]},
+    {id:'c2',name:'Priya N.',ctx:'Hardware run · $76.67',verified:true,time:'1:05 PM',unread:0,
+      msgs:[{s:'them',t:'Got the drill bits. Box truck or car okay for the anchors?'},{s:'me',t:'Car is fine, thank you!'}]},
+    {id:'c3',name:'Rosa P.',ctx:'Ceiling fans · $145',verified:true,time:'Yesterday',unread:0,
+      msgs:[{s:'me',t:'See you tomorrow at 9 for the install.'},{s:'them',t:'Confirmed — I’ll bring my own ladder.'}]},
+    {id:'c4',name:'Andre W.',ctx:'Junk haul · $95',verified:false,time:'Sat',unread:0,
+      msgs:[{s:'them',t:'All hauled away. Thanks for the tip!'}]}
+  ];
+  var PT=ptMode();
+  /* PT (split) mode: threads are LIVE — one per request that's hired a Gopher or has
+     messages. Sending writes {from:'req'} to the record (the harness relays it to the Go
+     phone); Gopher replies arrive via GReq.update on this window. No fake auto-replies. */
+  function liveConvos(){
+    if(!window.GReq) return [];
+    var out=[];
+    (GReq.all()||[]).forEach(function(r){
+      if(!((r.messages&&r.messages.length) || r.hired)) return;
+      out.push({ id:r.order, name:(r.hired||r.provider||'Your Gopher'),
+        ctx:(r.title||'Request')+(r.amount?(' \u00b7 '+r.amount):''), verified:true, time:'',
+        unread:(+r.unread||0),
+        msgs:(r.messages||[]).map(function(m){ return {s:(m.from==='req'?'me':'them'), t:m.text, f:(m.flagged?1:0)}; }) });
+    });
+    return out;
+  }
+  var convos = PT ? liveConvos() : __convoSeed;
+  var openId=null;
+  /* Re-render only when the store actually changed; preserve a half-typed reply. */
+  function sigOf(list){ return JSON.stringify(list.map(function(c){ return [c.id,c.unread,c.msgs.length]; })); }
+  var lastSig=sigOf(convos);
+  function syncNow(force){
+    if(!PT) return;
+    var fresh=liveConvos(), s=sigOf(fresh);
+    if(!force && s===lastSig) return;
+    lastSig=s; convos=fresh;
+    if(openId && !convos.some(function(c){return c.id===openId;})) openId=null;
+    var iv=body.querySelector('.js-in'), val=iv?iv.value:null, foc=(iv&&document.activeElement===iv);
+    render();
+    if(val!=null){ var iv2=body.querySelector('.js-in'); if(iv2){ iv2.value=val; if(foc){ try{iv2.focus();}catch(_){}} } }
+  }
+  if(PT){ setInterval(function(){ syncNow(false); }, 700); window.__inboxAlert=function(){ try{ syncNow(true); }catch(_){}}; }
+
+  function renderList(){
+    var rows=convos.map(function(c){ var last=c.msgs[c.msgs.length-1]||{};
+      return '<div class="mi-row'+(c.unread?' unread':'')+'" data-cid="'+c.id+'">'+ava(c.verified)
+        +'<div class="mi-rmain"><div class="mi-rtop"><span class="mi-rnm">'+c.name+'</span><span class="mi-rtime">'+c.time+'</span></div>'
+        +'<div class="mi-rprev">'+(last.s==='me'?'You: ':'')+(last.t||'')+'</div></div>'
+        +(c.unread?'<span class="mi-udot"></span>':'')+'</div>';
+    }).join('');
+    if(!convos.length) rows='<div style="text-align:center;color:#9aa4b5;font-family:\'DM Sans\',sans-serif;font-size:13px;padding:52px 26px;line-height:1.55;">No messages yet<br><span style="font-size:12px;color:#aeb6c4;">Messages from your Gopher show up here.</span></div>';
+    body.innerHTML='<div class="mi-listtop"><button class="mi-bk js-back">'+sv(BK)+'</button><div class="mi-listhd">Inbox</div></div><div class="mi-list">'+rows+'</div>'+'<div class="nav">'+'<button class="nv g40nv" data-gnav="home"><svg class="g40ic" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg>home</button>'+'<button class="nv g40nv" data-gnav="inbox" aria-current="page"><svg class="g40ic" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12 7.6L3 21l1.9-6A8.4 8.4 0 1 1 21 11.5z"/></svg>inbox</button>'+'<button class="nv c g40nv" data-gnav="go"><span class="cc"><svg viewBox="0 0 32 32"><rect x="11.5" y="5" width="9" height="22" rx="3.5"/><rect x="5" y="11.5" width="22" height="9" rx="3.5"/></svg></span>GO</button>'+'<button class="nv g40nv" data-gnav="refer"><svg class="g40ic" viewBox="0 0 24 24"><path d="M12 4.5l2.2 4.6 5 .4-3.8 3.3 1.2 4.9-4.6-2.7-4.6 2.7 1.2-4.9L4.8 9.5l5-.4z"/></svg>refer</button>'+'<button class="nv g40nv" data-gnav="help"><svg class="g40ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.6a2.4 2.4 0 0 1 4.6 1c0 1.6-2.2 2-2.2 3.2"/><circle cx="12" cy="16.6" r=".7"/></svg>help</button>'+'</div>';
+    body.querySelector('.js-back').onclick=function(){ if(window.__navHook){ try{window.__navHook('gopher-request-home.html');}catch(_){ } } else { location.href='gopher-request-home.html'; } };
+    body.querySelectorAll('.mi-row').forEach(function(row){ row.onclick=function(){ var c=convos.filter(function(x){return x.id===row.getAttribute('data-cid');})[0]; if(c){ c.unread=0; if(PT&&window.GReq) GReq.update(c.id,{unread:0}); openId=c.id; render(); } }; });
+  }
+
+  function renderThread(c){ var who=c.name;
+    // Flagged Send-as-is messages carry a terms-violation note to the RECIPIENT (owner 2026-07-16; same format as Go/home).
+    var _flnote='<div class="mi-fl" style="margin:2px 0 5px;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-weight:700;color:#C44257;line-height:1.35;">&#9873; This message was flagged for a possible terms violation.</div>';
+    var bubbles=c.msgs.map(function(m){ return '<div class="mi-b '+(m.s==='me'?'me':'them')+'">'+m.t+'</div>'+((m.f&&m.s!=='me')?_flnote:''); }).join('');
+    body.innerHTML='<div class="mi-top"><button class="mi-bk js-back">'+sv(BK)+'</button>'+ava(c.verified)
+      +'<div><div class="mi-nm">'+who+'</div><div class="mi-st">'+sv(SH)+'Verified · usually replies in ~10 min</div></div></div>'
+      +'<div class="mi-ctx">Re: '+c.ctx+'</div>'
+      +'<div class="mi-thread" id="mi-thread"><div class="mi-sys">This is the start of your conversation with '+who+' — keep messages on-platform.</div>'+bubbles+'</div>'
+      +'<div class="mi-chips" id="mi-chips"></div>'
+      +'<div class="mi-comp"><input class="mi-in js-in" placeholder="Message '+who+'…"><button class="mi-send js-send">'+sv('<path d="M4 12l16-7-7 16-2-7z"/>')+'</button></div>';
+    body.querySelector('.js-back').onclick=function(){ openId=null; render(); };
+    var thread=body.querySelector('#mi-thread'), inp=body.querySelector('.js-in');
+    function add(side,txt){ var b=document.createElement('div'); b.className='mi-b '+side; b.innerHTML=txt; thread.appendChild(b); thread.scrollTop=thread.scrollHeight; c.msgs.push({s:side,t:txt}); c.time='now'; }
+    function reply(q){ var x=(q||'').toLowerCase(); var a;
+      if(/eta|when|time|long/.test(x)) a='About 10–15 minutes out — I’ll text when I’m close.';
+      else if(/park|door|where/.test(x)) a='I’ll pull up out front and call when I arrive.';
+      else if(/sub|swap|out of|replace/.test(x)) a='No problem — I’ll grab the closest match and send a photo first.';
+      else a='Sounds good — thanks for letting me know!';
+      setTimeout(function(){ add('them',a); }, 650);
+    }
+    function send(t){ t=(t||'').trim(); if(!t) return;
+      // res.flagged = the sender chose "Send as-is" on a guard hit — the flag rides
+      // to the recipient (harness relays it; the Go phone shows the terms-violation note).
+      var deliver=function(res){ var _fl=!!(res&&res.flagged);
+        if(PT&&window.GReq){ var rr=GReq.get(c.id); if(rr){ var mm=(rr.messages||[]).slice(); mm.push({from:'req',text:t,flagged:_fl?1:0}); GReq.update(c.id,{messages:mm}); } inp.value=''; syncNow(true); }
+        else { add('me',t); inp.value=''; reply(t); }
+      };
+      // Connected = these threads all belong to requests with a hired/matched Gopher
+      // (live convos require hired or an open thread; seed convos simulate mid-job).
+      if(window.GopherMessageGuard){ window.GopherMessageGuard.guard(t,'request-prototype',{ connected:true, onAllow:deliver, onBlocked:function(){ try{inp.focus();}catch(_){ } } }); } else { deliver(); } }
+    body.querySelector('.js-send').onclick=function(){ send(inp.value); };
+    inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); send(inp.value); } });
+    var chips=['What’s the ETA?','Where should you meet me?','Can you swap an item?','Thank you!'];
+    var cw=body.querySelector('#mi-chips'); cw.innerHTML=chips.map(function(c){return '<button class="mi-chip">'+c+'</button>';}).join('');
+    cw.querySelectorAll('.mi-chip').forEach(function(b){ b.onclick=function(){ send(b.textContent); }; });
+    thread.scrollTop=thread.scrollHeight;
+  }
+
+  function render(){ var c=openId?convos.filter(function(x){return x.id===openId;})[0]:null; if(c) renderThread(c); else renderList(); }
+  render();
+})();
+</script>
+<script>/* G40 footer routing on the inbox (Request: GO -> Categories). */document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-gnav]');if(!t)return;var M={home:'gopher-request-home.html',inbox:'gopher-request-inbox.html',go:'gopher-request-flow.html',refer:'gopher-request-refer.html',help:'gopher-request-help.html'};var g=t.getAttribute('data-gnav');var p=M[g];if(p){if(window.__navHook){try{window.__navHook(p);}catch(_){}}else if(g!=='help'){location.href=p;}}});</script>
+</body>
+</html>

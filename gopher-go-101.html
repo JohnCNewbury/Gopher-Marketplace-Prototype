@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gopher Go 101</title>
+<link rel="stylesheet" href="assets/css/gopher-fonts.css">
+<style>
+/* ============================================================
+   GOPHER GO 101 — TUTORIAL / SUPPORT PAGE  (worker companion)
+   Matched-set sibling of the Gopher Request tutorial.
+   On-brand tokens (per Gopher style guide):
+     Shamrock Green #33d975 · Mountain Meadow #1cb061
+     Midnight Blue #002461 · Tunnel Tan #ebe8e5
+     Caveat handwriting accent #d97757 (brand)
+   Fonts: Nunito (display) / DM Sans (body) / Caveat (accent)
+   ============================================================ */
+:root{
+  --green:#33d975;
+  --green-dark:#1cb061;          /* Mountain Meadow */
+  --green-light:#e0faea;
+  --green-soft:#f2fdf6;
+  --sand:#fbf3e4;
+  --sand-deep:#f4e8d2;
+  --terracotta:#d97757;          /* brand Caveat accent */
+  --terracotta-soft:#fbe9df;
+  --navy:#2a3654;
+  --navy-mid:#253a7e;
+  --navy-light:#eef0f8;
+  --midnight:#002461;            /* Midnight Blue */
+  --aqua:#87f7bd;
+  --cornflower:#badbfc;
+  --gold:#c79a3a;
+  --gold-soft:#f7eed6;
+  --ink:#1c2333;
+  --muted:#6b7280;
+  --line:#e7e2d6;
+  --paper:#ffffff;
+  --card-shadow:0 4px 24px rgba(42,54,84,0.08);
+  --card-shadow-lg:0 18px 50px rgba(42,54,84,0.14);
+  --sidebar-w:288px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  font-family:'DM Sans',sans-serif;
+  color:var(--ink);
+  background:var(--sand);
+  background-image:
+    radial-gradient(900px 500px at 88% -8%, rgba(51,217,117,0.10), transparent 60%),
+    radial-gradient(700px 460px at -5% 14%, rgba(135,247,189,0.16), transparent 55%);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.6;
+}
+h1,h2,h3,h4{font-family:'Nunito',sans-serif;color:var(--navy);line-height:1.18;margin:0;}
+a{color:var(--green-dark);}
+.scribble{font-family:'Caveat',cursive;color:var(--terracotta);}
+
+/* ── Top bar ───────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:60;
+  display:flex;align-items:center;gap:14px;
+  padding:12px 22px;
+  background:rgba(0,36,97,0.97);
+  backdrop-filter:blur(8px);
+  box-shadow:0 2px 18px rgba(0,36,97,0.28);
+}
+.topbar img{height:34px;width:auto;display:block;background:#fff;padding:5px 10px;border-radius:10px;}
+.topbar-title{color:#fff;font-family:'Nunito';font-weight:800;font-size:16.5px;letter-spacing:.2px;}
+.topbar-title small{display:block;font-family:'DM Sans';font-weight:400;font-size:11.5px;color:rgba(255,255,255,.62);letter-spacing:0;}
+.topbar-tag{margin-left:auto;font-family:'Caveat';font-size:22px;color:var(--green);font-weight:700;}
+.menu-toggle{display:none;margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:10px;padding:8px 12px;font-family:'Nunito';font-weight:700;font-size:13px;cursor:pointer;align-items:center;gap:8px;}
+.menu-toggle svg{width:16px;height:16px;}
+
+/* ── Layout shell ──────────────────────────────────── */
+.shell{display:grid;grid-template-columns:var(--sidebar-w) 1fr;align-items:start;max-width:1280px;margin:0 auto;}
+
+/* ── Sidebar (quick reference) ─────────────────────── */
+.sidebar{
+  position:sticky;top:66px;align-self:start;
+  height:calc(100vh - 66px);
+  overflow-y:auto;overscroll-behavior:contain;
+  padding:26px 16px 60px 22px;
+  border-right:1px solid var(--line);
+}
+.sidebar::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(42,54,84,.16);border-radius:8px;}
+.side-lead{font-family:'Nunito';font-weight:900;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--green-dark);margin:0 0 4px 6px;}
+.side-sub{font-size:12px;color:var(--muted);margin:0 0 16px 6px;}
+.side-group{font-family:'Nunito';font-weight:800;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--navy-mid);margin:22px 0 7px 6px;display:flex;align-items:center;gap:7px;}
+.side-group::before{content:"";width:14px;height:2.5px;border-radius:2px;background:var(--green);}
+.side-nav{list-style:none;margin:0;padding:0;}
+.side-nav a{
+  display:flex;align-items:center;gap:10px;
+  text-decoration:none;color:var(--navy);
+  font-size:13.5px;font-weight:600;
+  padding:8px 11px;border-radius:9px;
+  border-left:3px solid transparent;
+  transition:background .15s ease, color .15s ease, border-color .15s;
+}
+.side-nav a .num{
+  flex:none;width:21px;height:21px;border-radius:50%;
+  display:grid;place-items:center;
+  background:var(--navy-light);color:var(--navy-mid);
+  font-family:'Nunito';font-weight:800;font-size:11px;
+}
+.side-nav a:hover{background:var(--green-soft);color:var(--green-dark);}
+.side-nav a.active{
+  background:var(--green-light);color:var(--midnight);
+  border-left-color:var(--green);font-weight:800;
+}
+.side-nav a.active .num{background:var(--green);color:#fff;}
+.side-help{margin:26px 6px 0;padding:14px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:var(--card-shadow);}
+.side-help h4{font-size:13px;margin-bottom:5px;}
+.side-help p{font-size:12px;color:var(--muted);margin:0 0 10px;}
+.side-help a{display:inline-block;font-family:'Nunito';font-weight:800;font-size:12px;color:var(--green-dark);text-decoration:none;}
+
+/* ── Main column ───────────────────────────────────── */
+.main{padding:0 clamp(20px,4vw,64px) 120px;min-width:0;}
+
+/* hero */
+.hero{padding:54px 0 30px;}
+.hero .scribble{font-size:30px;display:block;margin-bottom:2px;transform:rotate(-2deg);}
+.hero h1{font-size:clamp(34px,5vw,52px);font-weight:900;letter-spacing:-.5px;}
+.hero h1 em{font-style:normal;color:var(--green-dark);}
+.hero p.lede{font-size:17.5px;color:var(--navy);max-width:640px;margin:16px 0 0;}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+.chip{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:700;font-family:'Nunito';color:var(--navy);box-shadow:var(--card-shadow);}
+.chip b{color:var(--green-dark);}
+
+/* section blocks */
+.section{scroll-margin-top:84px;padding:42px 0 8px;border-top:1px dashed var(--line);}
+.section:first-of-type{border-top:none;}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:'Nunito';font-weight:800;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--green-dark);margin-bottom:10px;}
+.eyebrow .step-pill{background:var(--midnight);color:#fff;border-radius:999px;padding:3px 11px;font-size:11px;letter-spacing:.06em;}
+.section h2{font-size:clamp(24px,3vw,32px);font-weight:900;letter-spacing:-.3px;}
+.section h2 .scribble{font-size:26px;}
+.section > p{font-size:15.5px;color:var(--navy);max-width:760px;}
+.section h3{font-size:18px;font-weight:800;margin:26px 0 6px;}
+
+/* generic card / grid bits */
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px;box-shadow:var(--card-shadow);margin-top:18px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px;}
+.caption{font-size:12px;color:var(--muted);margin-top:8px;font-style:italic;}
+
+/* category tiles — the job categories a worker can switch on, shown with the
+   same photo + badge card the Request/Connect 101 guides use, for consistency. */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px;}
+.cat{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:0;overflow:hidden;box-shadow:var(--card-shadow);transition:transform .15s, border-color .15s, box-shadow .15s;}
+.cat:hover{transform:translateY(-3px);border-color:var(--green);box-shadow:var(--card-shadow-lg);}
+.cat .thumb{position:relative;aspect-ratio:16/10;background:var(--line);overflow:hidden;}
+.cat .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.cat .badge{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.93);color:var(--navy);font-family:'Nunito';font-weight:800;font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;box-shadow:0 1px 5px rgba(0,20,60,.18);}
+.cat .txt{padding:11px 13px 13px;}
+.cat .nm{font-family:'Nunito';font-weight:800;font-size:14px;color:var(--navy);line-height:1.2;}
+.cat .tg{font-size:11.5px;color:var(--muted);margin-top:3px;}
+
+/* numbered / brand list */
+ul.brand,ol.brand{list-style:none;margin:14px 0 0;padding:0;}
+ul.brand li,ol.brand li{position:relative;padding:7px 0 7px 30px;font-size:15px;color:var(--ink);}
+ul.brand li::before{content:"";position:absolute;left:4px;top:14px;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px var(--green-light);}
+ol.brand{counter-reset:bl;}
+ol.brand li{counter-increment:bl;padding-left:38px;}
+ol.brand li::before{content:counter(bl);position:absolute;left:0;top:6px;width:24px;height:24px;border-radius:50%;background:var(--midnight);color:#fff;font-family:'Nunito';font-weight:800;font-size:12.5px;display:grid;place-items:center;}
+
+/* callouts */
+.note{border-radius:16px;padding:16px 18px;margin-top:18px;font-size:14.5px;display:flex;gap:13px;align-items:flex-start;}
+.note .nico{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:16px;}
+.note.tip{background:var(--green-soft);border:1px solid var(--green);}
+.note.tip .nico{background:var(--green);color:#fff;}
+.note.warn{background:var(--terracotta-soft);border:1px solid var(--terracotta);}
+.note.warn .nico{background:var(--terracotta);color:#fff;}
+.note.info{background:var(--navy-light);border:1px solid #c9d2ee;}
+.note.info .nico{background:var(--navy-mid);color:#fff;}
+.note b{color:var(--navy);}
+.note .h{font-family:'Nunito';font-weight:800;color:var(--navy);display:block;margin-bottom:2px;}
+
+/* mini mock UI */
+.mock{margin-top:18px;background:linear-gradient(180deg,#fff,#fffdf8);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--card-shadow);}
+.mock-label{font-family:'Nunito';font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.radio-row{display:flex;align-items:center;gap:11px;border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:10px;font-weight:700;font-family:'Nunito';color:var(--navy);font-size:14.5px;background:#fff;}
+.radio-row .dot{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid #cfd5e3;}
+.radio-row.sel{border-color:var(--green);background:var(--green-soft);}
+.radio-row.sel .dot{border-color:var(--green);background:var(--green);box-shadow:inset 0 0 0 3px #fff;}
+.radio-row small{font-weight:500;font-family:'DM Sans';color:var(--muted);font-size:12px;}
+
+/* slider mock (radius) */
+.slider{height:8px;border-radius:999px;background:var(--navy-light);position:relative;margin:22px 6px 8px;}
+.slider .fill{position:absolute;left:0;top:0;bottom:0;width:50%;border-radius:999px 0 0 999px;background:var(--green);}
+.slider .fill-pro{position:absolute;left:50%;right:0;top:0;bottom:0;border-radius:0 999px 999px 0;background:repeating-linear-gradient(45deg,var(--green-light),var(--green-light) 6px,#bfe9d2 6px,#bfe9d2 12px);}
+.slider .knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--green);box-shadow:0 2px 6px rgba(0,0,0,.18);z-index:2;}
+.slider-scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:'Nunito';font-weight:700;margin:0 4px;}
+.slider-scale .hl{color:var(--green-dark);}
+.slider-legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:12px;font-family:'Nunito';font-weight:700;color:var(--navy);}
+.slider-legend span{display:inline-flex;align-items:center;gap:7px;}
+.swatch{width:16px;height:10px;border-radius:3px;display:inline-block;}
+.swatch.std{background:var(--green);}
+.swatch.pro{background:repeating-linear-gradient(45deg,var(--green-light),var(--green-light) 4px,#bfe9d2 4px,#bfe9d2 8px);border:1px solid #bfe9d2;}
+
+/* ── JOB FEED CARD (worker view) ── */
+.job{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 18px;box-shadow:var(--card-shadow);margin-top:14px;position:relative;}
+.job-top{display:flex;align-items:flex-start;gap:12px;}
+.job-pay{flex:none;min-width:78px;text-align:center;background:var(--green-soft);border:1.5px solid var(--green);border-radius:14px;padding:9px 8px;}
+.job-pay .amt{font-family:'Nunito';font-weight:900;font-size:21px;color:var(--green-dark);line-height:1;}
+.job-pay .lbl{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+.job-body{flex:1;min-width:0;}
+.job-cat{font-family:'Nunito';font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--navy-mid);}
+.job-title{font-family:'Nunito';font-weight:800;font-size:15.5px;color:var(--navy);margin:2px 0 2px;}
+.job-desc{font-size:13px;color:var(--muted);}
+.job-when{display:inline-block;background:var(--cornflower);color:var(--midnight);font-family:'Nunito';font-weight:800;font-size:10.5px;border-radius:999px;padding:2px 9px;margin-top:7px;}
+.job-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px;}
+.tag{display:inline-flex;align-items:center;gap:5px;font-family:'Nunito';font-weight:800;font-size:11px;border-radius:999px;padding:4px 10px;border:1px solid var(--line);background:#fff;color:var(--navy);}
+.tag.dist{background:var(--navy-light);border-color:#c9d2ee;color:var(--navy-mid);}
+.tag.timer{background:var(--terracotta-soft);border-color:var(--terracotta);color:var(--terracotta);}
+.tag.fav{background:var(--green-light);border-color:var(--green);color:var(--green-dark);}
+.tag.buy{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
+
+/* icon legend grid */
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+.lg{display:flex;gap:13px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px 16px;box-shadow:var(--card-shadow);}
+.lg .lico{flex:none;width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:20px;background:var(--navy-light);}
+.lg .lt{font-family:'Nunito';font-weight:800;font-size:14px;color:var(--navy);}
+.lg .ld{font-size:12.5px;color:var(--muted);margin-top:2px;}
+
+/* vertical stepper (status updates) */
+.stepper{margin-top:18px;position:relative;padding-left:6px;}
+.stp{position:relative;padding:0 0 22px 40px;}
+.stp::before{content:"";position:absolute;left:13px;top:26px;bottom:-2px;width:2px;background:var(--line);}
+.stp:last-child::before{display:none;}
+.stp .sc{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--midnight);color:#fff;display:grid;place-items:center;font-family:'Nunito';font-weight:800;font-size:12px;}
+.stp.done .sc{background:var(--green);}
+.stp .sh{font-family:'Nunito';font-weight:800;font-size:15px;color:var(--navy);}
+.stp .sd{font-size:13.5px;color:var(--muted);margin-top:2px;}
+.stp .gps{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-family:'Nunito';font-weight:800;color:var(--green-dark);background:var(--green-light);border-radius:999px;padding:2px 9px;margin-top:6px;}
+
+/* worker / button mocks */
+.btn-sm{border:none;border-radius:9px;padding:9px 15px;font-family:'Nunito';font-weight:800;font-size:12.5px;cursor:default;}
+.btn-hire{background:var(--green);color:#fff;}
+.btn-out{background:#fff;border:1.5px solid var(--navy-light);color:var(--navy);}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px;}
+
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-top:16px;}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;box-shadow:var(--card-shadow);}
+.kpi .v{font-family:'Nunito';font-weight:900;font-size:22px;color:var(--midnight);}
+.kpi .k{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px;}
+.kpi.good{border-color:var(--green);background:var(--green-soft);}
+.kpi.good .v{color:var(--green-dark);}
+
+/* gopher-it button */
+.gopher-it{display:inline-flex;align-items:center;gap:10px;background:var(--green);color:#fff;font-family:'Nunito';font-weight:900;font-size:17px;padding:14px 30px;border-radius:14px;box-shadow:0 8px 22px rgba(51,217,117,.4);border:none;margin-top:8px;}
+
+/* comparison table — wrapped in .fee-wrap so it scrolls inside its own box on
+   very narrow phones (≤~340px) instead of bleeding the whole page. */
+.fee-wrap{margin-top:18px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px;box-shadow:var(--card-shadow);border:1px solid var(--line);}
+.fee{width:100%;border-collapse:collapse;font-size:13px;line-height:1.3;background:#fff;}
+.fee th,.fee td{padding:6px 12px;text-align:left;border-bottom:1px solid var(--line);}
+.fee th{background:var(--navy-light);font-family:'Nunito';font-weight:800;color:var(--navy);font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding-top:9px;padding-bottom:9px;}
+.fee th.c,.fee td.c{text-align:center;}
+.fee tr:last-child td{border-bottom:none;}
+.fee td.row{font-weight:600;color:var(--ink);}
+.fee .ck{color:var(--green-dark);font-weight:900;font-size:14px;}
+.fee .no{color:#d3d8e0;font-weight:700;}
+.fee tbody tr:hover{background:var(--green-soft);}
+.fee th.tier{color:var(--midnight);}
+.glink{color:var(--green-dark);font-weight:800;text-decoration:none;}
+.glink:hover{text-decoration:underline;}
+
+/* tier logo cards */
+.tier-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px;}
+.tier-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--card-shadow);text-align:center;border-top:4px solid var(--green);}
+.tier-card.plus{border-top-color:var(--navy-mid);}
+.tier-card.pro{border-top-color:var(--gold);}
+.tier-card img{height:26px;width:auto;display:block;margin:2px auto 14px;}
+.tier-card .price{font-family:'Nunito';font-weight:900;font-size:22px;color:var(--midnight);}
+.tier-card .price small{display:block;font-family:'DM Sans';font-weight:600;font-size:11.5px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-top:3px;}
+
+/* receipt */
+.receipt{margin-top:16px;background:#fff;border:1px dashed var(--green);border-radius:16px;padding:18px 20px;max-width:430px;box-shadow:var(--card-shadow);}
+.receipt .rl{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;border-bottom:1px dotted var(--line);}
+.receipt .rl:last-child{border-bottom:none;font-family:'Nunito';font-weight:900;color:var(--midnight);font-size:16px;padding-top:11px;}
+.receipt .rl span:last-child{font-weight:700;font-family:'Nunito';}
+.receipt .rl.sub span{color:var(--muted);font-weight:600;}
+
+/* QR mock */
+.qr{width:120px;height:120px;border-radius:16px;background:#fff;padding:9px;box-sizing:border-box;box-shadow:var(--card-shadow);flex:none;}
+.qr .qr-svg{width:100%;height:100%;display:block;}
+
+/* back to top */
+.totop{position:fixed;right:22px;bottom:calc(22px + env(safe-area-inset-bottom, 0px));z-index:50;width:46px;height:46px;border-radius:50%;background:var(--midnight);color:#fff;border:none;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 24px rgba(0,36,97,.4);opacity:0;pointer-events:none;transition:opacity .25s, transform .2s;}
+.totop.show{opacity:1;pointer-events:auto;}
+.totop:hover{transform:translateY(-3px);}
+
+/* mobile sidebar overlay */
+.scrim{display:none;}
+@media (max-width:980px){
+  :root{--sidebar-w:0px;}
+  .menu-toggle{display:inline-flex;}
+  .shell{grid-template-columns:1fr;}
+  .sidebar{
+    position:fixed;top:0;left:0;z-index:80;height:100vh;width:300px;
+    background:var(--sand);border-right:1px solid var(--line);
+    transform:translateX(-105%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 0 40px rgba(0,0,0,.18);padding-top:80px;
+  }
+  body.nav-open .sidebar{transform:translateX(0);}
+  body.nav-open .scrim{display:block;position:fixed;inset:0;z-index:70;background:rgba(0,36,97,.4);}
+  .cat-grid{grid-template-columns:repeat(2,1fr);}
+  .kpis{grid-template-columns:repeat(2,1fr);}
+  .grid2,.grid3,.legend,.tier-cards{grid-template-columns:1fr;}
+  .fee{font-size:12.5px;}
+  .fee th,.fee td{padding:10px 8px;}
+}
+@media (max-width:520px){
+  .topbar-tag{display:none;}
+  .job-top{flex-wrap:wrap;}
+}
+
+/* mobile quick-reference launcher (replaces old topbar button) */
+.sections-fab{display:none;}
+body.nav-open .sections-fab{opacity:0;pointer-events:none;}
+@media (max-width:980px){
+  .sections-fab{display:inline-flex;align-items:center;gap:8px;position:fixed;left:16px;bottom:calc(22px + env(safe-area-inset-bottom, 0px));z-index:60;
+    background:var(--midnight);color:#fff;border:none;border-radius:999px;padding:11px 16px;
+    font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;box-shadow:0 8px 24px rgba(0,36,97,.4);cursor:pointer;}
+  .sections-fab svg{width:16px;height:16px;}
+}
+</style>
+</head>
+<body>
+
+<div id="gopher-header"></div>
+
+<div class="scrim" id="scrim"></div>
+
+<div class="shell">
+
+  <!-- ░░ LEFT QUICK-REFERENCE MENU ░░ -->
+  <aside class="sidebar" id="sidebar">
+    <p class="side-lead">Quick Reference</p>
+    <p class="side-sub">Jump straight to what you need.</p>
+
+    <div class="side-group">Getting started</div>
+    <ul class="side-nav">
+      <li><a href="#welcome">Welcome</a></li>
+      <li><a href="#signin">Sign in &amp; create account</a></li>
+      <li><a href="#profile">Complete your profile</a></li>
+      <li><a href="#payout">Set up your payout account</a></li>
+      <li><a href="#settings">Work settings &amp; radius</a></li>
+    </ul>
+
+    <div class="side-group">Taking a job</div>
+    <ul class="side-nav">
+      <li><a href="#step1"><span class="num">1</span> Read the job feed</a></li>
+      <li><a href="#step2"><span class="num">2</span> Icons &amp; alerts</a></li>
+      <li><a href="#step3"><span class="num">3</span> Job timing</a></li>
+      <li><a href="#step4"><span class="num">4</span> Offer types</a></li>
+      <li><a href="#step5"><span class="num">5</span> Question, counter &amp; accept</a></li>
+      <li><a href="#step6"><span class="num">6</span> On the job</a></li>
+      <li><a href="#step7"><span class="num">7</span> Update &amp; complete</a></li>
+    </ul>
+
+    <div class="side-group">After the job</div>
+    <ul class="side-nav">
+      <li><a href="#payouts">Payouts &amp; speed</a></li>
+      <li><a href="#costadj">Cost adjustments</a></li>
+      <li><a href="#age">Age-restricted deliveries</a></li>
+      <li><a href="#rate">Rate &amp; become a favorite</a></li>
+      <li><a href="#refer">Refer yourself</a></li>
+    </ul>
+
+    <div class="side-group">Earn more &amp; good to know</div>
+    <ul class="side-nav">
+      <li><a href="#tiers">Elite, Elite+ &amp; Pro</a></li>
+      <li><a href="#offer-deals">Offer a Service-Provider Deal</a></li>
+      <li><a href="#active">Stay active &amp; in good standing</a></li>
+      <li><a href="#rules">Safety &amp; the rules</a></li>
+      <li><a href="#help">Need help?</a></li>
+    </ul>
+
+    <div class="side-help">
+      <h4>Still stuck?</h4>
+      <p>The Help Center lives under <b>More Stuff</b> in the app.</p>
+      <a href="mailto:support@gophergo.io">support@gophergo.io →</a>
+    </div>
+  </aside>
+
+  <!-- ░░ MAIN CONTENT ░░ -->
+  <main class="main">
+
+    <!-- HERO -->
+    <section class="hero" id="welcome">
+      <span class="scribble">welcome to</span>
+      <h1>Gopher Go, <em>made simple.</em></h1>
+      <p class="lede">This is your step-by-step guide to earning on Gopher Go — the worker hub built with every worker in mind. Bring your skillset, set up once, and let the jobs come to you. You decide what to take, the customer pays you directly, and we make sure the money lands fast.</p>
+      <div class="hero-meta">
+        <span class="chip">💸 <b>You keep 100%</b> — we don't take a cut</span>
+        <span class="chip">🧭 Free to <b>sign up, view &amp; accept</b></span>
+        <span class="chip">🙋 <b>You decide</b> — every job is optional</span>
+      </div>
+      <div class="note info" style="margin-top:26px;">
+        <span class="nico">🧭</span>
+        <div><span class="h">How to use this page</span>First you'll set up your account (<b>5 quick sections</b>), then every job follows the same <b>7-step rhythm</b> — read it, take it, do it, get paid. Use the menu on the left to jump to anything, anytime. Everything here also lives in the in-app <b>Help Center</b> under <b>More Stuff</b>.</div>
+      </div>
+    </section>
+
+    <!-- SIGN IN -->
+    <section class="section" id="signin">
+      <span class="eyebrow">Getting started</span>
+      <h2>Sign in or create your account</h2>
+      <p>Gopher Go is an app-only, passwordless experience — nothing to memorize. You sign in with a one-time code sent to your phone.</p>
+      <ol class="brand">
+        <li>Download <b>Gopher Go</b> (free) and tap <b>Sign in with phone</b>.</li>
+        <li>Enter your number and tap <b>Send Code</b>.</li>
+        <li>Type the 6-digit code we text you. That's it — you're in.</li>
+      </ol>
+      <h3>New here?</h3>
+      <p>Tap <b>Create an account</b> and add your name, phone, email, address, and date of birth. We'll verify your phone and email with the same quick code step.</p>
+      <div class="note tip"><span class="nico">↗</span><div><span class="h">Were you referred? Add their code</span>If another Gopher (or a friend already on the app) brought you here, there's an optional <b>"Referral Info"</b> step during sign-up — enter the <b>Gopher ID of whoever referred you</b> and you'll see their name pop up to confirm. It's optional and skippable, but adding it is how they get credit for referring you. Arrived by scanning someone's QR or link? It's filled in for you — just confirm.</div></div>
+      <div class="note tip"><span class="nico">✓</span><div><span class="h">Use your legal first &amp; last name</span>This has to match the name on your bank account or it'll break your payout setup. Your <b>name, birthday, and phone number can't be changed</b> once saved, so double-check before tapping save. Email, address, and bio you can update anytime.</div></div>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="section" id="profile">
+      <span class="eyebrow">Getting started</span>
+      <h2>Complete your profile</h2>
+      <p>A complete profile builds trust and helps customers pick you. From your dashboard, open <b>Account → Personal Info</b>.</p>
+      <h3>Personal info</h3>
+      <ul class="brand">
+        <li>Add a <b>recent, clear profile photo</b> — real faces get hired.</li>
+        <li>Confirm your legal name, birthday, phone, email, and address.</li>
+        <li>Write a short bio that sells your skillset.</li>
+      </ul>
+      <h3>Ride-sharing &amp; business info <span style="font-weight:600;color:var(--muted);font-size:14px;">(optional)</span></h3>
+      <ul class="brand">
+        <li>If your business is <b>licensed, bonded, and/or insured</b>, upload your verified credentials here.</li>
+        <li><b>Upload photos of completed jobs.</b> Trust us on this one — a portfolio is one of the biggest drivers of getting requested by name.</li>
+      </ul>
+      <div class="note info"><span class="nico">🔒</span><div>Everything is stored securely and only used to set up payouts and match you with the right work.</div></div>
+    </section>
+
+    <!-- PAYOUT -->
+    <section class="section" id="payout">
+      <span class="eyebrow">Getting started</span>
+      <h2>Set up your payout account</h2>
+      <p>This is the one that unlocks everything. On your dashboard go to <b>Account → Payout Account</b>. <b>A valid payout account is required to view and accept requests</b> — no payout account, no jobs.</p>
+      <ul class="brand">
+        <li>Payouts run through <b>Stripe</b> using a custom process. <b>There are no fees to get paid.</b></li>
+        <li>Money is deposited directly to your bank the moment a job is confirmed complete (see <a href="#payouts">payout speed</a> below).</li>
+        <li>Add a debit card that's eligible for instant deposits so you're not waiting.</li>
+      </ul>
+      <div class="note warn"><span class="nico">⚠️</span><div><span class="h">Check your card before you accept</span>Never accept a request knowing your payout card needs updating — that's the #1 cause of a delayed payout. You can confirm your debit card supports instant deposits on <a href="https://docs.stripe.com/payouts/instant-payouts-banks" target="_blank" rel="noopener">Stripe's eligible-banks list</a>.</div></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="section" id="settings">
+      <span class="eyebrow">Getting started</span>
+      <h2>Work settings &amp; radius</h2>
+      <p>Tell Gopher Go what you want to do and how far you'll travel. Open <b>More → Work Settings &amp; Radius</b>, pick your job categories, and set your distance.</p>
+      <div class="cat-grid">
+        <div class="cat"><div class="thumb"><span class="badge">Errand</span><img src="assets/img/01-delivery.webp" alt="Delivery / Errand" loading="lazy"></div><div class="txt"><div class="nm">Delivery / Errand</div><div class="tg">Pick-up &amp; drop-off</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Hauling</span><img src="assets/img/go101-junk-removal.webp" alt="Junk Removal" loading="lazy"></div><div class="txt"><div class="nm">Junk Removal</div><div class="tg">Furniture &amp; debris haul-away</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Relocation</span><img src="assets/img/go101-moving.webp" alt="Moving" loading="lazy"></div><div class="txt"><div class="nm">Moving</div><div class="tg">Load, move &amp; unload</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Services</span><img src="assets/img/go101-home-office.webp" alt="Home / Office Services" loading="lazy"></div><div class="txt"><div class="nm">Home / Office Services</div><div class="tg">Cleaning, installs &amp; handyman</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Labor</span><img src="assets/img/go101-hourly-day-labor.webp" alt="Hourly / Day Labor" loading="lazy"></div><div class="txt"><div class="nm">Hourly / Day Labor</div><div class="tg">Crews by the hour</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Outdoor</span><img src="assets/img/go101-yard-outdoor.webp" alt="Yard / Outdoor" loading="lazy"></div><div class="txt"><div class="nm">Yard / Outdoor</div><div class="tg">Mowing, cleanup &amp; tree work</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Ride</span><img src="assets/img/go101-ride-sharing.webp" alt="Ride Sharing" loading="lazy"></div><div class="txt"><div class="nm">Ride Sharing</div><div class="tg">Rides &amp; airport runs</div></div></div>
+        <div class="cat"><div class="thumb"><span class="badge">Custom</span><img src="assets/img/go101-other.webp" alt="Other" loading="lazy"></div><div class="txt"><div class="nm">Other</div><div class="tg">Anything else</div></div></div>
+      </div>
+      <div class="mock">
+        <div class="mock-label">Travel radius — jobs follow you</div>
+        <div class="slider"><div class="fill"></div><div class="fill-pro"></div><div class="knob"></div></div>
+        <div class="slider-scale"><span>1 mi</span><span>25 mi</span><span class="hl">50 mi</span><span>75 mi</span><span>100 mi</span></div>
+        <div class="slider-legend">
+          <span><i class="swatch std"></i> Standard — up to <b>50 mi</b></span>
+          <span><i class="swatch pro"></i> Elite, Elite+ &amp; Pro — up to <b>100 mi</b> (excl. delivery &amp; rides)</span>
+        </div>
+      </div>
+      <div class="note tip"><span class="nico">📍</span><div><span class="h">Your radius moves with you</span>Set 50 miles and you'll see jobs within 50 miles of your <b>exact location</b> — not a fixed home base. The work finds you wherever you are. Standard workers can go up to <b>50 miles</b> on every job; <b>Elite, Elite+, and Pro</b> unlock up to <b>100</b> — except delivery and ride-sharing jobs, which stay capped at 50 miles for every tier.</div></div>
+      <div class="note warn"><span class="nico">🚫</span><div><span class="h">Very important</span>Don't select job types you're not qualified to perform. Choosing the right categories keeps your ratings high and keeps the marketplace moving.</div></div>
+    </section>
+
+    <!-- STEP 1  (PLACEHOLDER: swap for real app UI screenshots when provided) -->
+    <section class="section" id="step1">
+      <span class="eyebrow"><span class="step-pill">Step 1 of 7</span> Read the job feed</span>
+      <h2>Know what you're looking at</h2>
+      <p>Every job in your feed shows the same essentials up front: the pay, the category, a short description, when it's needed, how far away it is, and any special tags. Here's a sample card.</p>
+      <div class="job">
+        <div class="job-top">
+          <div class="job-pay"><div class="amt">$75</div><div class="lbl">Earn</div></div>
+          <div class="job-body">
+            <div class="job-cat">Handyman</div>
+            <div class="job-title">Hang a 65" TV (mount provided)</div>
+            <div class="job-desc">Drywall install, one-story home. I have the mount and hardware ready.</div>
+            <span class="job-when">Need it today</span>
+            <div class="job-tags">
+              <span class="tag dist">📍 3.2 mi</span>
+              <span class="tag timer">⏳ 14 min left</span>
+              <span class="tag">⭐ Select My Gopher</span>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-sm btn-out">Question?</button>
+          <button class="btn-sm btn-out">Counter-offer</button>
+          <button class="btn-sm btn-hire">Accept request</button>
+        </div>
+      </div>
+      <p class="caption">Preview is illustrative — actual in-app screens coming soon.</p>
+      <div class="note info"><span class="nico">💡</span><div>The distance shown is the approximate drive from <b>you</b> to the job (first stop, per Google Maps). For pick-up <i>and</i> drop-off jobs, the details screen lists both legs — add them up before you decide.</div></div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section class="section" id="step2">
+      <span class="eyebrow"><span class="step-pill">Step 2 of 7</span> Icons &amp; alerts</span>
+      <h2>What the badges <span class="scribble">mean</span></h2>
+      <p>Tags and icons tell you what a job involves before you tap in. Learn these and you'll read your feed in seconds.</p>
+      <div class="legend">
+        <div class="lg"><div class="lico">🛒</div><div><div class="lt">Purchase Needed</div><div class="ld">You buy the items for the customer first, out of your own pocket. You're reimbursed in full — plus your Earn $ — the moment the job is confirmed complete, so you never make or lose money on the item cost. Skip these if you can't cover the cost up front.</div></div></div>
+        <div class="lg"><div class="lico">⭐</div><div><div class="lt">Select My Gopher</div><div class="ld">The customer picks who they hire from everyone who accepts, based on ratings and history. You may accept, but they have final say. You'll be notified either way.</div></div></div>
+        <div class="lg"><div class="lico">📍</div><div><div class="lt">Trip Mileage</div><div class="ld">Approximate miles between you and the job's first location. Pick-up + drop-off jobs show both distances in the details.</div></div></div>
+        <div class="lg"><div class="lico">⏳</div><div><div class="lt">Job Expiration</div><div class="ld">How long the job stays in the queue — not when it's due. The due time sits above the title in the light-blue oval.</div></div></div>
+        <div class="lg"><div class="lico">👥</div><div><div class="lt">2+ Needed</div><div class="ld">You'll need at least one more qualified helper. Whoever accepts is paid for the whole job and is responsible for paying their crew.</div></div></div>
+        <div class="lg"><div class="lico">💚</div><div><div class="lt">MY Gopher (Favorite)</div><div class="ld">You were requested by name. It's yours alone (and other Favorites) for the first full minute — one minute before it opens to any other tier. Accept it and the job is yours.</div></div></div>
+        <div class="lg"><div class="lico">🪪</div><div><div class="lt">Age Restricted</div><div class="ld">An age-restricted item is involved. Only between customers and workers 21+. Requires in-person ID verification — never contactless.</div></div></div>
+        <div class="lg"><div class="lico">🏢</div><div><div class="lt">Business / Connect</div><div class="ld">A business-posted job via Gopher Connect. These are exclusive to verified Elite, Elite+, and Pro workers. When the posting business has been verified, you'll see a <b>"Verified Business"</b> chip next to its name — just a trust signal for you; nothing for you to do.</div></div></div>
+      </div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section class="section" id="step3">
+      <span class="eyebrow"><span class="step-pill">Step 3 of 7</span> Job timing</span>
+      <h2>When does it need doing?</h2>
+      <p>Every job carries one of three timing types. This decides what happens after you accept.</p>
+      <div class="mock">
+        <div class="mock-label">Timing on a job</div>
+        <div class="radio-row sel"><span class="dot"></span><div>Need ASAP! <small>Get going right away — text the customer you're on the way, then set status to In-Progress.</small></div></div>
+        <div class="radio-row"><span class="dot"></span><div>Flexible window <small>Due by end of day, within a week, or within two weeks. Sits in your Scheduled queue until you tap Start.</small></div></div>
+        <div class="radio-row"><span class="dot"></span><div>Pick exact time <small>A specific date &amp; time. Stays in Scheduled until you tap Start at that time.</small></div></div>
+      </div>
+      <div class="note warn"><span class="nico">⏰</span><div><span class="h">Don't start too early</span>Unless you're <b>Elite, Elite+, or Pro</b>, you can only hold one active job at a time. Once a job is <b>In-Progress</b> you can't accept others until your scheduled job's date and time — so don't mark it started ahead of schedule.</div></div>
+    </section>
+
+    <!-- STEP 4 -->
+    <section class="section" id="step4">
+      <span class="eyebrow"><span class="step-pill">Step 4 of 7</span> Offer types</span>
+      <h2>Understand exactly what you'll make</h2>
+      <p>Three offer types, three things to know. The number you pocket is always the <b>Earn $</b>.</p>
+
+      <h3>Earn $</h3>
+      <p>The straightforward one. The Earn $ amount is exactly what you make. <b>Earn $20.00</b> means $20.00 lands in your account at completion.</p>
+
+      <h3>Total $ <span style="font-weight:600;color:var(--muted);font-size:14px;">(Earn $ | Spend $)</span></h3>
+      <p>The customer added funds for you to buy items on their behalf. You front the <b>Spend $</b>, you keep the <b>Earn $</b>, and the <b>Total $</b> is what's deposited at completion.</p>
+      <div class="receipt">
+        <div class="rl sub"><span>Earn $ (your pay)</span><span>$10.00</span></div>
+        <div class="rl sub"><span>Spend $ (reimbursed)</span><span>$10.00</span></div>
+        <div class="rl"><span>Total deposited at completion</span><span>$20.00</span></div>
+      </div>
+      <p style="margin-top:14px;">Don't accept a Total $ job unless you're happy to cover the Spend $ up front.</p>
+
+      <h3>Request bids from local workers</h3>
+      <p>The customer didn't set a price — they asked local workers to send bids. You name your own number (your <b>Earn $</b>) and submit it. If they pick your bid, the job is yours at that Earn.</p>
+    </section>
+
+    <!-- STEP 5 -->
+    <section class="section" id="step5">
+      <span class="eyebrow"><span class="step-pill">Step 5 of 7</span> Question, counter &amp; accept</span>
+      <h2>Decide and lock it in</h2>
+      <ul class="brand">
+        <li><b>Question?</b> — Need more info before deciding? Tap <b>Question?</b> to message the customer. This is for clarifying the job, <i>not</i> for negotiating price or swapping personal contact info.</li>
+        <li><b>Counter-Offer</b> — Want the job at a different number? Propose a counter on your <b>Earn $</b> (your pay). If accepted, it's yours at the new amount — and the customer is bound to it. Keep it reasonable: a 3-mile, $5 trip might fairly counter to $10 — not $30.</li>
+        <li><b>Accept Request</b> — All good? Agree to the cancellation terms box and tap <b>Accept Request</b>. You're on.</li>
+      </ul>
+      <div class="note tip"><span class="nico">⚖</span><div><span class="h">How many counter-offers, and how high?</span>On <b>Standard</b> you get <b>5 counter-offers a month</b> (the count resets on the 1st of each calendar month), and a counter can go up to <b>150% of the offer</b> — measured on your Earn $ only; cost of items never counts toward the cap — with a <b>$20 minimum</b>. Go <b>Elite, Elite+, or Pro</b> and counters are <b>unlimited and uncapped</b> — one of the bigger reasons to verify up.</div></div>
+      <div class="note warn"><span class="nico">🚩</span><div><span class="h">Never take it off-platform</span>Asking for payment, or swapping phone numbers / emails to deal off Gopher, is an instant removal. All messaging stays in the app to protect everyone's privacy. And quite honestly, there's no benefit to taking it off the app. Want to make $100? If a job says $100, that's exactly what you make — we don't take a cut.</div></div>
+    </section>
+
+    <!-- STEP 6 -->
+    <section class="section" id="step6">
+      <span class="eyebrow"><span class="step-pill">Step 6 of 7</span> On the job</span>
+      <h2>Tools while the job's active</h2>
+      <p>Once you've accepted, your active-request screen has everything you need.</p>
+      <ul class="brand">
+        <li><b>Text / Call</b> the customer through the app using the buttons under their name. Send a quick text at the start of every job — "On my way!" goes a long way.</li>
+        <li><b>Pick-Up</b> and <b>Destination</b> buttons open turn-by-turn navigation in Google Maps.</li>
+        <li>If the pick-up says <b>"Gopher's Choice,"</b> the item can be bought anywhere — pick whatever's closest or easiest for you.</li>
+      </ul>
+      <div class="note info"><span class="nico">💬</span><div>After a job is accepted, you and the customer can keep chatting in your messaging inbox. Keep it in-app — exchanging personal contact info is prohibited.</div></div>
+    </section>
+
+    <!-- STEP 7 -->
+    <section class="section" id="step7">
+      <span class="eyebrow"><span class="step-pill">Step 7 of 7</span> Update &amp; complete</span>
+      <h2>Update in real time → get paid</h2>
+      <p>The <b>Update Request</b> button at the bottom of your active screen walks you through the finish line. <b>Every update is GPS- and time-stamped</b>, so make each one at the correct location.</p>
+      <div class="stepper">
+        <div class="stp done"><div class="sc">1</div><div class="sh">In-Progress</div><div class="sd">Activates live GPS tracking on the customer's end so they can watch you arrive.</div><span class="gps">📍 GPS + time stamped</span></div>
+        <div class="stp done"><div class="sc">2</div><div class="sh">Items Picked-Up / Purchased</div><div class="sd">Tells the customer you're on the final stretch. Tap this <b>at the correct location</b> — your spot is stamped.</div><span class="gps">📍 GPS + time stamped</span></div>
+        <div class="stp"><div class="sc">3</div><div class="sh">Completed</div><div class="sd">Signals the job is done — one step from your payout. As soon as the customer confirms, you're paid.</div><span class="gps">📍 GPS + time stamped</span></div>
+      </div>
+      <div class="note info"><span class="nico">⏱️</span><div><span class="h">Need ASAP jobs: tap In-Progress within 10 minutes</span>If you accept a <b>Need ASAP</b> request and haven't tapped <b>In-Progress</b> 10 minutes later, we'll send you a text and a push notification. After that it's a push every 10 minutes, for up to an hour. It stops the moment you either update the request <b>or message your customer</b> — so if you're already on your way, a quick message to them counts. Scheduled requests never trigger it.</div></div>
+      <div class="note tip"><span class="nico">✅</span><div><span class="h">First-time customer? Give a friendly nudge.</span>You can see a customer's request count under their profile pic. If it's their first, remind them to confirm in their app at hand-off. If they don't, it <b>auto-confirms within 48 hours</b> — and we text them the moment you tap Completed.</div></div>
+      <div class="note info"><span class="nico">📸</span><div>Adding a completion photo (when relevant) is a great way to verify the job was finished right — and it boosts your profile when customers review your previous jobs.</div></div>
+    </section>
+
+    <!-- PAYOUTS -->
+    <section class="section" id="payouts">
+      <span class="eyebrow">After the job</span>
+      <h2>Payouts &amp; speed</h2>
+      <p>Once the job's confirmed complete, the money's yours — deposited straight to your bank, with <b>no fee</b> and never any cut taken out of your Earn $. How fast it lands depends on where you are in your journey.</p>
+      <h3>Your first 10 jobs — the trust-building phase</h3>
+      <p>For your first 10 completed payouts, deposits arrive at <b>Standard speed (~2 hours)</b> after a confirmed completion. Most people consider 2 hours plenty fast — but it gets faster.</p>
+      <h3>After 10 jobs (or as Elite / Pro) — bullet speed</h3>
+      <p>Once you've completed 10 jobs, your payout speed upgrades to <b>bullet speed (~1–2 minutes)</b>. <b>Elite, Elite+, and Pro</b> workers skip the trust-building phase and get bullet-speed payouts from the start.</p>
+      <div class="kpis">
+        <div class="kpi good"><div class="v">$0</div><div class="k">Payout fees</div></div>
+        <div class="kpi"><div class="v">~2 hrs</div><div class="k">Standard speed · first 10</div></div>
+        <div class="kpi good"><div class="v">~1–2 min</div><div class="k">Bullet · after 10 or Elite/Pro</div></div>
+        <div class="kpi"><div class="v">100%</div><div class="k">Earn $ is yours</div></div>
+      </div>
+      <div class="note tip"><span class="nico">💸</span><div><span class="h">We just handle the money</span>You work for the customer — we make sure they pay you, on time, automatically. Keep your debit card current and eligible for instant deposits so bullet-speed payouts land in minutes.</div></div>
+    </section>
+
+    <!-- COST ADJUSTMENTS -->
+    <section class="section" id="costadj">
+      <span class="eyebrow">After the job</span>
+      <h2>Cost adjustments</h2>
+      <p>Use a <b>Cost Adjustment</b> when the real price of purchased items differs from the customer's estimate. Simply submit the new amount and the customer can approve it immediately.</p>
+      <div class="card">
+        <h3 style="margin-top:0;">Example</h3>
+        <p style="font-size:14px;margin:0;">The customer budgeted <b>$10</b> for an item that rings up at <b>$10.91</b>. Submit a Cost Adjustment for the new cost of items — <b>$10.91</b> — and upload the receipt. Done.</p>
+      </div>
+      <h3>Best practices</h3>
+      <ul class="brand">
+        <li><b>Item costs are never earnings.</b> If the estimate is off by more than $1 — over or under — adjust to the exact amount and attach the receipt. Put yourself in the customer's shoes; it's a no-brainer.</li>
+        <li><b>Big jumps? Adjust before you buy.</b> If the new cost would raise the total request by more than 20%, submit the Cost Adjustment <i>first</i> so the customer's payment can cover it.</li>
+        <li>If a large adjustment can't be approved, let the customer know purchases must stay within their original budget.</li>
+      </ul>
+      <div class="note warn"><span class="nico">🧾</span><div><span class="h">Heads up</span>A request <b>can't be completed</b> while a Cost Adjustment is still pending approval — so submit it promptly.</div></div>
+    </section>
+
+    <!-- AGE RESTRICTED -->
+    <section class="section" id="age">
+      <span class="eyebrow">After the job</span>
+      <h2>Age-restricted deliveries</h2>
+      <p>For age-restricted items, the law and our policy are strict — and the customer already agreed to these terms when they ordered.</p>
+      <ul class="brand">
+        <li>When you set the job to <b>Completed</b>, you must <b>photograph the front of the customer's ID in the app before handing over the items.</b></li>
+        <li>Contactless delivery is <b>never</b> allowed for these orders.</li>
+        <li>Missing the ID step can mean a delayed payout or disqualification.</li>
+      </ul>
+      <h3>Customer not there?</h3>
+      <p>You must be at the drop-off location. Tap <b>"Tap here if customer is not present at drop off location…"</b> to start a <b>10-minute timer</b>. That tap also texts the customer and GPS-stamps where you are, so the wait is on the record. If they're still not there when it expires, select <b>"Recipient No Show,"</b> leave with the items, and you're <b>paid in full</b> — the cost of goods, the offer and all fees.</p>
+      <p>That outcome is called a <b>No-Show Completion</b>, and the customer is told at submission that it isn't refundable — so you're covered. Don't hand the items to a neighbor, a roommate or anyone whose ID doesn't match, and don't leave them at the door: age-restricted items can never be left unattended. Wait the full 10 minutes even if you're sure nobody's home; the timer is what protects your pay if the charge is ever disputed. See <a href="gopher-terms-of-service.html#age">Terms of Service §9</a>.</p>
+    </section>
+
+    <!-- RATE / FAVORITE -->
+    <section class="section" id="rate">
+      <span class="eyebrow">After the job</span>
+      <h2>Rate your customer &amp; become a favorite</h2>
+      <p>Don't forget to rate your customer after each job — ratings keep the marketplace trustworthy both ways.</p>
+      <h3>Becoming a favorite</h3>
+      <p>After <b>every</b> job, the customer can add you as a preferred provider. Once you're a Favorite, they can:</p>
+      <ul class="brand">
+        <li><b>Request you by name</b> — jobs land in your feed first (yours alone for the first full minute, one minute ahead of every other tier).</li>
+        <li><b>Recommend you to their contacts</b>, sending you more work without lifting a finger.</li>
+      </ul>
+      <div class="note tip"><span class="nico">💚</span><div>Favorites are optional on your end too — a Favorite request is just another chance to earn, never an obligation.</div></div>
+    </section>
+
+    <!-- REFER YOURSELF -->
+    <section class="section" id="refer">
+      <span class="eyebrow">After the job</span>
+      <h2>Refer yourself &amp; grow your own book</h2>
+      <p>Every worker has a unique <b>self-referral code and QR</b>. Share it with anyone — when they sign up through it and make their first request, it can come <b>straight to you</b>, and they're prompted to add you as a Favorite instantly.</p>
+      <div class="card" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
+        <div class="qr" role="img" aria-label="Example Gopher refer-yourself QR code"><svg class="qr-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges"><path stroke="#002461" d="M2 2.5h7m4 0h1m1 0h1m2 0h1m3 0h1m1 0h7m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h1m1 0h2m1 0h3m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m2 0h1m2 0h1m4 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h2m1 0h2m2 0h1m1 0h3m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m3 0h2m1 0h2m1 0h1m3 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h1m1 0h1m2 0h7m2 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-18 1h1m1 0h1m3 0h4m-20 1h1m2 0h1m1 0h1m1 0h2m1 0h1m2 0h3m1 0h1m2 0h1m1 0h2m1 0h1m-27 1h1m4 0h1m1 0h2m4 0h2m1 0h3m1 0h3m1 0h2m1 0h2m-27 1h1m2 0h2m4 0h2m2 0h1m1 0h1m3 0h1m2 0h2m2 0h1m-25 1h1m2 0h1m2 0h4m1 0h1m1 0h1m3 0h1m2 0h2m1 0h2m-28 1h1m1 0h2m1 0h2m1 0h1m2 0h3m1 0h2m1 0h2m2 0h1m1 0h1m2 0h1m-28 1h3m3 0h1m1 0h1m2 0h1m2 0h2m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m-29 1h1m2 0h5m1 0h1m2 0h3m1 0h2m2 0h2m2 0h1m3 0h1m-27 1h2m1 0h1m2 0h6m3 0h1m1 0h5m1 0h1m1 0h1m-28 1h4m1 0h2m1 0h2m2 0h2m4 0h2m7 0h2m-29 1h3m1 0h2m3 0h3m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1m3 0h1m-26 1h2m1 0h1m3 0h2m4 0h3m4 0h4m1 0h1m-26 1h1m1 0h1m2 0h1m2 0h1m2 0h1m2 0h2m4 0h1m3 0h2m-29 1h3m1 0h1m1 0h2m1 0h1m1 0h1m1 0h3m1 0h1m1 0h7m1 0h2m-21 1h3m1 0h1m2 0h3m1 0h2m3 0h1m1 0h1m1 0h1m-29 1h7m3 0h3m2 0h1m2 0h3m1 0h1m1 0h1m2 0h2m-29 1h1m5 0h1m3 0h2m1 0h1m5 0h2m3 0h2m-26 1h1m1 0h3m1 0h1m1 0h3m5 0h1m2 0h6m2 0h2m-29 1h1m1 0h3m1 0h1m3 0h2m1 0h1m4 0h1m4 0h1m3 0h1m-28 1h1m1 0h3m1 0h1m2 0h2m1 0h4m3 0h3m3 0h4m-29 1h1m5 0h1m1 0h1m3 0h2m1 0h3m1 0h5m1 0h1m1 0h2m-29 1h7m4 0h3m3 0h1m1 0h2m1 0h1m1 0h1m2 0h1"/></svg></div>
+        <div style="flex:1;min-width:200px;">
+          <h3 style="margin-top:0;">Your shortcut to new customers</h3>
+          <p style="font-size:14px;margin:0;">Use the <b>"Refer yourself"</b> link or post your QR code anywhere — work van, business cards, social, the neighborhood board. Each person you refer gets an instant inbox prompt to favorite you. From there, we handle the safe, instant payout once the job's done. Share away!</p>
+        </div>
+      </div>
+      <div class="note tip"><span class="nico">🔀</span><div><span class="h">Two ways to refer — pick in Refer &amp; Earn</span>Your Refer screen has a toggle. <b>Refer a customer</b> sends someone to <b>Gopher Request</b> to start hiring. <b>Refer a Gopher</b> invites a new worker to join you here on <b>Gopher Go</b> (they'll go through the same vetting you did). Same QR, same share tools — just choose who you're inviting.</div></div>
+      <div class="note tip"><span class="nico">📣</span><div><span class="h">Pro tip</span>Post your QR code <b>everywhere</b>. It's the fastest way to turn your existing network into repeat Gopher Go income.</div></div>
+    </section>
+
+    <!-- TIERS -->
+    <section class="section" id="tiers">
+      <span class="eyebrow">Earn more</span>
+      <h2>Elite, Elite+ &amp; Pro</h2>
+      <p>Gopher is the first gig marketplace to provide assurance for <b>workers</b> too — not just customers. Verify once and you carry a badge across every job, so the customer requesting you has real assurance, and so do you.</p>
+
+      <div class="tier-cards">
+        <div class="tier-card">
+          <img src="assets/img/shared-ts-right.svg" alt="Gopher Elite">
+          <div class="price">$35<small>one-time fee</small></div>
+        </div>
+        <div class="tier-card plus">
+          <img src="assets/img/shared-gopher-elite.svg" alt="Gopher Elite+">
+          <div class="price">$50<small>one-time fee</small></div>
+        </div>
+        <div class="tier-card pro">
+          <img src="assets/img/shared-gopher-pro.svg" alt="Gopher Pro">
+          <div class="price">Verified<small>Any verifiable credential</small></div>
+        </div>
+      </div>
+
+      <div class="fee-wrap">
+      <table class="fee">
+        <thead>
+          <tr>
+            <th>What you get</th>
+            <th class="c tier">Standard</th>
+            <th class="c tier">Elite</th>
+            <th class="c tier">Elite+</th>
+            <th class="c tier">Pro</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="row">Free access to Gopher requests</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">Offer free bids on jobs</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">Ability to counter-offer</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">A verified badge shown on your profile</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">Priority access to <a class="glink" href="gopher-customer-deals.html">Gopher Deals</a> (for Customers) requests</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">Eligible to offer your own unique service on <a class="glink" href="gopher-deals.html">Gopher Deals</a> (for Service Providers)</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">Exclusive jobs from <a class="glink" href="gopher-connect.html">Gopher Connect</a> business customers</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">Accept more than one active job at a time</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">Instant payout from day 1</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">Verify a professional credential (any verifiable licence, bond, insurance, or certification)</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c ck">✓</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="caption"><b>Ride Sharing isn't a tier unlock</b> — any active Gopher can accept ride-sharing jobs once it's selected in Work Settings &amp; Radius and all required vehicle and licence details are on file. <b>Service-Provider Deals eligibility</b> is automatic once you're a verified tier (Elite, Elite+, or Pro) with <b>20+ completed service jobs</b> and a <b>4.75★ average over your last 20 service jobs</b> (Delivery, Ride Sharing, and Other don't count toward either).</p>
+      <div class="note info"><span class="nico">🚀</span><div>All three verified tiers also unlock a <b>100-mile work radius</b> (delivery and ride-sharing jobs stay at 50 miles) and <b>bullet-speed payouts</b> from your very first job — no trust-building phase.</div></div>
+
+      <div class="note tip"><span class="nico">🛡️</span><div><span class="h">Free to apply, always optional</span>Verification is free and entirely up to you. Higher tiers involve a background check. The exact requirements and perks for each tier are shown in-app — check that your area is active first, then apply. In active areas, it's a no-brainer.</div></div>
+      <p style="margin-top:14px;">Learn more on the <a href="gopher-go.html">Gopher Go page</a>.</p>
+    </section>
+
+    <!-- OFFER A SERVICE-PROVIDER DEAL -->
+    <section class="section" id="offer-deals">
+      <span class="eyebrow">Earn more</span>
+      <h2>Offer a Service-Provider <span class="scribble">Deal</span></h2>
+      <p>Once you've built a track record, you can offer your <b>own</b> service at your <b>own</b> price to nearby neighbors on <a class="glink" href="gopher-deals.html">Gopher Deals</a> — no paying for leads. You set exactly what you want to earn, and the customer books you directly. It's the same idea as a bid, but it's your standing offer instead of a one-off.</p>
+
+      <h3>Are you eligible?</h3>
+      <p>Service-Provider eligibility is <b>automatic</b> — there's nothing to buy and no application. You're in the moment you meet <b>all three</b>:</p>
+      <div class="fee-wrap">
+      <table class="fee">
+        <thead>
+          <tr><th>The bar</th><th class="c tier">What it means</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="row">A verified tier</td><td class="c">Elite, Elite+, or Pro</td></tr>
+          <tr><td class="row">20+ completed <b>service</b> jobs</td><td class="c">All-time, on Gopher Go — <b>Delivery, Ride Sharing, and Other jobs don't count</b> toward the 20</td></tr>
+          <tr><td class="row">4.75★ over your last 20 <b>service</b> jobs</td><td class="c">Average rating across your last 20 completed <b>service</b> jobs — the same categories that count toward the 20</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="note info"><span class="nico">✓</span><div><span class="h">Eligible, not approved</span>Meeting the bar makes you <b>eligible</b> to submit — each deal you post is then <b>reviewed manually</b> before it goes live (just a quick sanity check so nothing crazy ships), and we'll message your Gopher Go inbox the moment it's live. An admin can also grant eligibility to any worker case-by-case.</div></div>
+
+      <h3>How it works when you're eligible</h3>
+      <p>The moment you qualify, it's automatic: you'll get a congratulations email from <b>deals@gophergo.io</b> explaining how to offer your first deal, and the green <b>"+ Service Provider Deal"</b> button at the top of your Gopher Go dashboard sidebar activates on its own. Tap it and your personal details are already filled in — you just add the deal and your price. In the <b>Gopher Go app</b>, the same entry lives in the <b>Perks</b> section of your Home screen.</p>
+      <div class="note tip"><span class="nico">💵</span><div><span class="h">You keep your full amount</span>You set exactly what you want to <b>earn</b> — that's what lands in your payout account. The customer pays a small <b>10% Deal Boost</b> on top to promote your deal to ready-to-book neighbors; it doesn't come out of your take-home.</div></div>
+      <div class="note tip"><span class="nico">🏷️</span><div><span class="h">Your &ldquo;normally&rdquo; price is what makes it a deal</span>You'll also enter <b>what you'd normally charge</b>. It's required, it shows on your card <b>struck through exactly as you type it</b>, and the gap between the two is the saving your neighbors see. It has to be <b>more than what the customer pays</b> &mdash; your earn plus the 10% boost &mdash; or there's no saving to show. Example: earn <b>$150</b> &rarr; customer pays <b>$165</b> &rarr; so your normal price needs to be above $165 (say <b>$225</b>, for a $60 saving on the card).</div></div>
+      <div class="note tip"><span class="nico">📍</span><div><span class="h">Reach travels up to 50 miles</span>Your deal reaches neighbors within the radius you set — up to <b>50 miles</b> — separate from your general work radius. You decide how far your deal travels.</div></div>
+      <div class="note warn"><span class="nico">🔒</span><div><span class="h">Not there yet?</span>If the <b>+ Service Provider Deal</b> button is deactivated, you haven't hit the bar above yet — tap <b>Learn more</b> beneath it to see these terms anytime. Keep completing jobs and keeping your rating high — eligibility flips on automatically the moment you qualify.</div></div>
+    </section>
+
+    <!-- STAY ACTIVE -->
+    <section class="section" id="active">
+      <span class="eyebrow">Good to know</span>
+      <h2>Stay active &amp; in good standing</h2>
+      <p>A few habits keep your account healthy and your earnings flowing.</p>
+      <h3>Avoid these cancellation reasons</h3>
+      <ul class="brand">
+        <li><b>"Too far"</b> — distance is posted before you accept. Check it.</li>
+        <li><b>"Not enough money"</b> — earnings are clear from the start.</li>
+        <li><b>"Didn't mean to accept"</b> — that'd be a <i>lot</i> of checkboxes to click through by accident.</li>
+        <li><b>"Wasn't clear what to do"</b> — DM the customer with <b>Question?</b> <i>before</i> committing.</li>
+      </ul>
+      <h3>Do this every time</h3>
+      <ul class="brand">
+        <li>Update your job status in real time, at the right location.</li>
+        <li>Complete jobs promptly and professionally.</li>
+        <li>Communicate respectfully — always.</li>
+      </ul>
+    </section>
+
+    <!-- RULES -->
+    <section class="section" id="rules">
+      <span class="eyebrow">Good to know</span>
+      <h2>Safety &amp; the rules</h2>
+      <ul class="brand">
+        <li><b>Truly independent.</b> You're not a Gopher employee and you're not on a leash — you work for the customer. We just make sure they pay you on time.</li>
+        <li><b>All communication stays in-app.</b> Sharing phone numbers, emails, or other personal contact info on the platform is strictly prohibited.</li>
+        <li><b>Only take what you can do well.</b> Don't accept jobs outside your qualifications or your ID/age eligibility.</li>
+      </ul>
+      <div class="note warn"><span class="nico">🚫</span><div><span class="h">Never ask for money off the platform</span>This is an instant bye-bye. Every payout runs through the app — that's how we keep it safe for everyone and pay you fast, with no cut taken.</div></div>
+    </section>
+
+    <!-- HELP -->
+    <section class="section" id="help">
+      <span class="eyebrow">Good to know</span>
+      <h2>Need help?</h2>
+      <p>You're ready to earn! For anything else:</p>
+      <ul class="brand">
+        <li><b>Ask Gopher iQ</b> — the assistant in the Help screen answers your questions instantly (how do I…, what does X mean, where is Y). Type it, or tap the <b>mic</b> and just say it — speaking gets the same answer as typing.</li>
+        <li>Tap <b>More Stuff → Help Center</b> in the app — if anything ever feels wonky, send a message so we can fix it fast.</li>
+        <li>Browse the <a href="gopher-faqs.html">Gopher Go FAQs</a> — updated as the platform evolves.</li>
+        <li>Email us at <a href="mailto:support@gophergo.io">support@gophergo.io</a>.</li>
+      </ul>
+      <div class="note info"><span class="nico">🌱</span><div><span class="h">Not seeing jobs yet? Hang tight.</span>Keep notifications on, refer the app, and follow us on social. The marketplace grows daily — and once it's buzzing near you, you'll be earning more per job than any other marketplace out there.</div></div>
+      <p style="margin-top:24px;font-family:'Caveat';font-size:30px;color:var(--terracotta);transform:rotate(-1.5deg);">Now get in the game — go Gopher it!</p>
+    </section>
+
+  </main>
+</div>
+
+<link rel="stylesheet" href="assets/css/gopher-footer.css">
+<footer class="gopher-footer">
+
+  <div class="gf-inner">
+
+    <!-- Brand block (left) -->
+    <div class="gf-brand">
+      <a href="index.html" class="gf-logo-wrap" aria-label="Gopher home">
+        <img src="assets/img/gopher-logo.svg" alt="Gopher">
+      </a>
+      <p class="gf-tagline">
+        Connecting customers, businesses, merchants, and local workers with fair-priced services.
+      </p>
+
+      <!-- Social row -->
+      <div class="gf-social" aria-label="Gopher on social media">
+        <a href="https://www.facebook.com/GopherMobileApp" aria-label="Facebook" title="Facebook">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.52 1.49-3.91 3.78-3.91 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/gopherinc/" aria-label="Instagram" title="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.2" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="https://www.tiktok.com/@gopherinc" aria-label="TikTok" title="TikTok">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.07-2.82h-3.1v12.6a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12V9.96a5.7 5.7 0 0 0-.78-.05 5.69 5.69 0 1 0 5.69 5.69V9.01a7.35 7.35 0 0 0 4.29 1.37V7.28a4.28 4.28 0 0 1-3.22-1.46z"/></svg>
+        </a>
+        <a href="https://www.youtube.com/@gopherinc" aria-label="YouTube" title="YouTube">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.51a3.02 3.02 0 0 0-2.12-2.14C19.5 3.86 12 3.86 12 3.86s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.51 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.49 3.02 3.02 0 0 0 2.12 2.14C4.5 20.14 12 20.14 12 20.14s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.49zM9.6 15.57V8.43L15.82 12 9.6 15.57z"/></svg>
+        </a>
+        <a href="https://nextdoor.com/page/gopher-llc-holly-springs-nc" aria-label="Nextdoor" title="Nextdoor">
+          <!-- House silhouette — universally readable as "neighborhood/home"
+               which is Nextdoor's identity. The hover tooltip reinforces it. -->
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5 1.6 11.2l1.3 1.6 1.6-1.3v9h6v-6h3v6h6v-9l1.6 1.3 1.3-1.6L12 2.5z"/></svg>
+        </a>
+        <a href="https://www.reddit.com/r/GopherMobileApp/" aria-label="Reddit" title="Reddit">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 11.82a2.2 2.2 0 0 0-3.73-1.57 10.84 10.84 0 0 0-5.5-1.7l.94-4.4 3.07.66a1.56 1.56 0 1 0 .2-1.05l-3.43-.73a.52.52 0 0 0-.62.4l-1.05 4.94a10.9 10.9 0 0 0-5.6 1.7 2.2 2.2 0 1 0-2.42 3.62 4.3 4.3 0 0 0-.05.66c0 3.35 3.9 6.07 8.71 6.07s8.71-2.72 8.71-6.07a4.3 4.3 0 0 0-.05-.65A2.2 2.2 0 0 0 22 11.82zM7 13.4a1.56 1.56 0 1 1 3.12 0 1.56 1.56 0 0 1-3.12 0zm8.73 4.12a5.7 5.7 0 0 1-3.73 1.16 5.7 5.7 0 0 1-3.73-1.16.42.42 0 1 1 .56-.62A4.9 4.9 0 0 0 12 17.85a4.9 4.9 0 0 0 3.17-.95.42.42 0 0 1 .56.62zm-.29-2.56a1.56 1.56 0 1 1 0-3.12 1.56 1.56 0 0 1 0 3.12z"/></svg>
+        </a>
+        <a href="https://x.com/GopherMobileApp" aria-label="X" title="X">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.22-6.82-5.97 6.82H1.66l7.73-8.84L1.23 2.25h6.83l4.71 6.23 5.47-6.23zm-1.16 17.52h1.83L7.01 4.13H5.04l12.04 15.64z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/company/gopher-mobile-app/" aria-label="LinkedIn" title="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Marketplace column -->
+    <div class="gf-col">
+      <h4>Marketplace</h4>
+      <ul>
+        <li><a href="gopher-request.html">Gopher Request</a></li>
+        <li><a href="gopher-connect.html">Gopher Connect</a></li>
+        <li><a href="gopher-go.html">Gopher Go</a></li>
+        <li><a href="gopher-deals.html">Deals</a></li>
+      </ul>
+    </div>
+
+    <!-- Company column — Tutorials is an expandable submenu (uses
+         <details>/<summary> so it works without JS and stays accessible) -->
+    <div class="gf-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="gopher-our-story.html">Our Story</a></li>
+        <li><a href="gopher-blog.html">Gopher Blog</a></li>
+        <li class="gf-expandable">
+          <details>
+            <summary>
+              <span>Tutorials</span>
+              <svg class="gf-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="4 6 8 10 12 6"/>
+              </svg>
+            </summary>
+            <ul class="gf-submenu">
+              <li><a href="gopher-request-101.html">Gopher Request 101</a></li>
+              <li><a href="gopher-connect-101.html">Gopher Connect 101</a></li>
+              <li><a href="gopher-go-101.html">Gopher Go 101</a></li>
+              <li><a href="gopher-deals-101.html">Gopher Deals 101</a></li>
+            </ul>
+          </details>
+        </li>
+        <li><a href="gopher-contact-us.html">Contact Us</a></li>
+        <li><a href="gopher-faqs.html">FAQs</a></li>
+      </ul>
+    </div>
+
+    <!-- Legal column -->
+    <div class="gf-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="gopher-privacy.html">Privacy Policy</a></li>
+        <li><a href="gopher-terms-of-service.html">Terms of Service</a></li>
+        <li><a href="gopher-merchant-agreement.html">Merchant Agreement</a></li>
+        <li><a href="gopher-prohibited-list.html">Prohibited List</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Bottom strip -->
+  <div class="gf-bottom">
+    <div class="gf-copyright">&copy; 2026 Gopher, Inc. All rights reserved.</div>
+    <div class="gf-signoff">Need it now? Gopher it!</div>
+  </div>
+
+</footer>
+
+<button class="sections-fab" id="menuToggle" aria-label="Open quick reference menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Sections</button>
+
+<button class="totop" id="toTop" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<script>
+/* ── Scroll-spy: highlight the active section in the left menu ── */
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.side-nav a'));
+  var map = {};
+  links.forEach(function(a){
+    var id = a.getAttribute('href').slice(1);
+    var sec = document.getElementById(id);
+    if(sec) map[id] = a;
+  });
+  var sections = Object.keys(map).map(function(id){ return document.getElementById(id); });
+
+  function setActive(id){
+    links.forEach(function(a){ a.classList.remove('active'); });
+    if(map[id]){
+      map[id].classList.add('active');
+      var sb = document.getElementById('sidebar');
+      var a = map[id];
+      var top = a.offsetTop, bottom = top + a.offsetHeight;
+      if(top < sb.scrollTop + 60 || bottom > sb.scrollTop + sb.clientHeight - 20){
+        sb.scrollTo({ top: top - sb.clientHeight/2, behavior:'smooth' });
+      }
+    }
+  }
+
+  var obs = new IntersectionObserver(function(entries){
+    var visible = entries.filter(function(e){ return e.isIntersecting; });
+    if(visible.length){
+      visible.sort(function(a,b){ return a.boundingClientRect.top - b.boundingClientRect.top; });
+      setActive(visible[0].target.id);
+    }
+  }, { rootMargin:'-72px 0px -62% 0px', threshold:0 });
+
+  sections.forEach(function(s){ obs.observe(s); });
+
+  links.forEach(function(a){
+    a.addEventListener('click', function(){ document.body.classList.remove('nav-open'); });
+  });
+})();
+
+/* ── Mobile menu toggle ── */
+(function(){
+  var t = document.getElementById('menuToggle');
+  var scrim = document.getElementById('scrim');
+  t.addEventListener('click', function(){ document.body.classList.toggle('nav-open'); });
+  scrim.addEventListener('click', function(){ document.body.classList.remove('nav-open'); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') document.body.classList.remove('nav-open'); });
+})();
+
+/* ── Back to top ── */
+(function(){
+  var btn = document.getElementById('toTop');
+  window.addEventListener('scroll', function(){
+    if(window.scrollY > 600) btn.classList.add('show'); else btn.classList.remove('show');
+  }, { passive:true });
+  btn.addEventListener('click', function(){ window.scrollTo({ top:0, behavior:'smooth' }); });
+})();
+</script>
+
+<!-- ░░ SHARED GOPHER HEADER (connect logo variant) ░░ -->
+<script>window.GopherHeader = { logo: 'go' };</script>
+<script src="assets/js/gopher-header.js" defer></script>
+</body>
+</html>
