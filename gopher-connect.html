@@ -49,6 +49,26 @@
      feeds Gopher iQ ride pricing. Same referrer-locked browser key as gopher-deals; needs the
      Distance Matrix API enabled and this domain on the key’s HTTP referrers. Until then the
      page falls back to a default mileage estimate (nothing breaks). -->
+<script>
+/* == Maps callback shim - MUST stay ABOVE the async loader on the next line ==
+   The real onGopherMapsReady is defined thousands of lines further down. With
+   `async` on the tag AND `loading=async` in the URL, the Maps script routinely
+   calls back BEFORE that line has run, which threw
+       InvalidValueError: onGopherMapsReady is not a function
+   on every single page load.
+
+   The console noise was not the damage. The real handler is the ONLY thing that
+   sets _gmReady, so _gmReady stayed false forever, refreshTripDistance()
+   early-returned on its first line, _tripCache never filled, and
+   getRideTripEstimate() kept handing back its 8-mile / 18-minute DEFAULT - which
+   is exactly what rideMileageCost() prices a ride from. A 25-mile ride was
+   priced as an 8-mile ride.
+
+   So: record the callback rather than lose it. The real handler checks this flag
+   and catches up. */
+window.__gopherMapsFired = false;
+window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
+</script>
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnc2wRsy54nvUgrFKAPcJ5hnMhjfUVJAU&libraries=places&callback=onGopherMapsReady&loading=async"></script>
 <script src="assets/js/gopher-address-autocomplete.js"></script>
 <link rel="stylesheet" href="assets/css/gopher-fonts.css">
@@ -14402,6 +14422,16 @@ const PAY_BADGES = {
   // Driving distance for pickup[0] → dropoff[0]. (Multi-stop legs are a future refinement.)
   let _tripCache = null, _tripPending = '', _gmReady = false;
   window.onGopherMapsReady = function(){ _gmReady = true; bindAddressAutocomplete(); refreshTripDistance(); };
+  /* Maps may already have fired against the shim near the top of the page. If it
+     did, the callback would otherwise be lost, so run it now.
+
+     DEFERRED, NOT CALLED DIRECTLY, and that is load-bearing: this line sits
+     ABOVE `const state = makeInitialState()`, and refreshTripDistance() reads
+     `state` - so a synchronous call here dies in the temporal dead zone with
+     "Cannot access 'state' before initialization". setTimeout(0) lets the rest
+     of this script finish first. Nothing is lost by waiting: Maps has already
+     loaded by definition, or this branch is not taken. */
+  if (window.__gopherMapsFired) setTimeout(window.onGopherMapsReady, 0);
 
   function refreshTripDistance(){
     if(!_gmReady || !window.google || !google.maps || !google.maps.DistanceMatrixService) return;
