@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+/* Prototype twin: the root URL is the harness, not the marketing home.
+   Frame-aware -- see scripts/deploy.sh. A bare redirect would nest the
+   harness inside its own left pane when the user clicks Home. */
+if (window.top === window.self) {
+  location.replace('_prototypes/web-split-screen.html' + location.search);
+}
+</script>
+<noscript><p style="font:14px/1.5 system-ui;padding:20px">
+<a href="_prototypes/web-split-screen.html">Open the Web &#8596; Go harness &rarr;</a></p></noscript>
 <meta name="robots" content="noindex,nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
