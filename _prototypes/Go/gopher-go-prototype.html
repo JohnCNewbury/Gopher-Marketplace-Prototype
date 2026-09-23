@@ -1378,6 +1378,28 @@ window.G40_GO = {
   idNotConfirmed: function(){ return showModal('<h3>ID &amp; identity not confirmed?</h3><p>You’re marking that you could <b>not</b> confirm the requester’s ID and identity. Please add the details that led to this — it’s logged for Trust &amp; Safety.</p><textarea placeholder="What happened at hand-off?" style="width:100%;min-height:70px;border:1.5px solid #d4d8e3;border-radius:10px;padding:9px;font-family:inherit;font-size:12.5px;box-sizing:border-box;"></textarea><button class="mclose">Submit</button>'+__g40btn2('Back')); },
   caOver20: function(){ return showModal('<h3>This exceeds the pre-authorized amount</h3><p>The requester is pre-authorized for a set amount. Anything higher needs a new temporary authorization on their end. <b>Don’t purchase additional items</b> until the adjustment is approved and funded — if it fails, the order reverts to the original amount.</p><button class="mclose">Got it</button>'); },
   acceptedAgeRestricted: function(){ return showModal('<h3>Age-restricted — verify ID at hand-off</h3><p>Before handing off the items, <b>take a photo of the requester’s ID and verify their identity</b> in the app. Message them to introduce yourself and update each checkpoint as you go.</p><button class="mclose">Got it</button>'); },
+  /* CONTRACT NOTE 2026-09-10 (G40-459) — this prototype models ONE of the payout
+     refusals; production now distinguishes five, and this screen is not built for
+     them yet. Recorded here rather than left silent, because silence reads as
+     "nothing changed" to whoever builds it. See payment-flow.md §7.12.
+
+     `verify_user_restriction` (the ACCEPT-time gate — claim, bid accept, counter
+     offer accept, Select My Gopher) refuses with 400 + `meta.error_type`:
+       payout_account_missing       — no account at all. THIS modal is that one.
+       payout_account_requirements  — payouts disabled.
+       payout_transfers_inactive    — transfers capability not active.
+       payout_account_restricted    — Stripe restricted the account.
+       payout_account_paused        — Stripe PAUSED it for dormancy. The worker
+                                      can do NOTHING about this one, so "Set up
+                                      payout account" is the wrong screen for it:
+                                      there is no button that helps.
+     `order_view` (the VIEW-time gate) separately sends `payout_account_pending`
+     for a Stripe account still finishing setup — G40-458.
+
+     ⚠️ Three of the four call sites are the REQUESTER, not the worker, and get a
+     single neutral message (`gopher_payout_unavailable`) that names none of the
+     above — a requester must never be shown another user's payout state. Any
+     Request-side screen built for this must use that message, not these. */
   payoutRequired: function(){ return showModal('<h3>Set up your payout account</h3><p>You’ll need a valid payout account before you can view request details and get paid. It only takes a minute.</p><button class="mclose">Set up payout account</button>'); },
   requesterPaymentHold: function(){ return showModal('<h3>Requester is fixing their payment</h3><p>We’ve given the requester under 5 minutes to correct a payment issue. Once it’s cleared and funds are guaranteed, this request is yours. Want to hold it?</p><button class="mclose">Continue — hold it</button>'+__g40btn2('Do not accept')); },
   multiWorker: function(){ return showModal('<h3>You’re accepting a multi-worker job</h3><p>You’re responsible for the full worker headcount on this job, and the total pay reflects all of them. Only accept if you can provide every worker needed and perform the job.</p><button class="mclose">Continue</button>'+__g40btn2('Do not accept')); },
@@ -3241,7 +3263,18 @@ business:{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
           ? '<button class="rq-cta js-update" data-next="'+next.key+'" style="margin-top:11px;">Update request &#8594;</button>'
           : ((j.confirmed
               ? '<div class="rq-prio" style="margin-top:11px;background:#e7f7ec;border-color:#bfe6cd;"><span class="rq-ri">'+sv(I.check)+'</span><b>Confirmed by '+who+'</b> &mdash; '+(j.amt||'your payout')+' paid out.</div>'
-              : '<div class="rq-prio" style="margin-top:11px;background:#FDECE6;border-color:#e3a5ae;color:#C44257;"><span class="rq-ri">'+sv(I.clock)+'</span><b>Pending confirmation</b> &mdash; your part is done, but '+who+' controls the payout until they confirm. Message '+String(who||'them').split(' ')[0]+' anytime to ask them to confirm. You’ll rate them once they do.</div>')
+              // G40-452: a no-show ends here too, and on that ending this note was
+              // false in three ways at once - it named the person who did NOT turn up,
+              // said they "control the payout" when they have no release authority at
+              // all (live: confirm_order_payout throws 409 while the dispute is open),
+              // and read as pending when the payout is BLOCKED. Live returns
+              // status:"pending_review" + disputed + payout_blocked on this path; the
+              // Go app now branches on it (gopher-mobile-gopher-capacitorjs!293) and so
+              // does this. No rating line either: nothing rates before the payout is real,
+              // and on this ending the confirm may never come.
+              : (j.noShow
+                ? '<div class="rq-prio" style="margin-top:11px;background:#FFF4E5;border-color:#e8cfa3;color:#8a5a12;"><span class="rq-ri">'+sv(I.clock)+'</span><b>Payout on hold</b> &mdash; because '+who+' wasn’t there to confirm it, Gopher HQ reviews this request before your payout is released. It’s held until that review is done, and we’ll email you the decision.</div>'
+                : '<div class="rq-prio" style="margin-top:11px;background:#FDECE6;border-color:#e3a5ae;color:#C44257;"><span class="rq-ri">'+sv(I.clock)+'</span><b>Pending confirmation</b> &mdash; your part is done, but '+who+' controls the payout until they confirm. Message '+String(who||'them').split(' ')[0]+' anytime to ask them to confirm. You’ll rate them once they do.</div>'))
             // Two-way ratings stay (canonical) — the Gopher still rates the requester; the score is
             // recorded for the system but not shown back to either side. The rating GATES on the
             // requester's confirm: confirm is what releases the payout, so a rating taken before it
@@ -3597,9 +3630,8 @@ business:{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
            customer can still be absent or fail to match, and before this the TrustShield
            path offered only "Confirmed", which meant a TrustShield no-show could never
            start the 10-minute timer. Images are CSS placeholders — real ID media is a
-           backend seam (iDenfy), never bundled into the prototype. */
-        /* Real TrustShield media for the demo holder (user 1), owner-authorised. Sourced from
-           iDenfy, converted to WebP q82 per G40-314: 1.48 MB of PNG -> 102 KB. Paths use the
+           backend seam, never bundled into the prototype. */
+        /* Real TrustShield media for the demo holder (user 1), owner-authorised. Converted to WebP q82 per G40-314: 1.48 MB of PNG -> 102 KB. Paths use the
            ../../Final/ form the rest of this file uses; scripts/deploy.sh rewrites that to
            ../../ when it flattens Final/ to the site root.
            Only FRONT and FACE exist here on purpose — production reads data?.FRONT and
@@ -3620,7 +3652,7 @@ business:{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
              visible-but-quiet. This keeps only what the selfie row doesn't say: who, and
              that there is nothing to upload. */
           +'<p style="margin:0 0 2px;"><b>'+who+'</b> is pre-verified — nothing to submit.</p>'
-          /* Box shapes are the REAL iDenfy asset ratios, so live media drops in without
+          /* Box shapes are the REAL ID-capture asset ratios, so live media drops in without
              reflowing the screen: selfie 768x1080 = 0.71:1, licence 784x546 = 1.44:1.
              Production consumes exactly TWO of the vendor's images — ordercard.js and
              RequestDetailPullOver.js both read data?.FACE -> trustShieldFaceURL and
@@ -3809,7 +3841,7 @@ business:{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
         '<h3>Requester not present</h3>'
         +'<p>You&#8217;re at the drop-off but <b>'+who+'</b> isn&#8217;t here to verify ID. They have <b>10 minutes</b> to arrive — stay in range.</p>'
         +'<div class="js-nscount" style="text-align:center;font-family:Nunito;font-weight:900;font-size:40px;color:#C44257;margin:8px 0 4px;letter-spacing:1px;">10:00</div>'
-        +'<div class="js-nshint" style="text-align:center;font-family:\'DM Sans\',sans-serif;font-size:11.5px;color:#8a94a3;margin-bottom:14px;line-height:1.5;">If they don&#8217;t arrive, <b>Report as No Show</b> unlocks at 0:00 — you&#8217;re paid in full and items are not released.</div>'
+        +'<div class="js-nshint" style="text-align:center;font-family:\'DM Sans\',sans-serif;font-size:11.5px;color:#8a94a3;margin-bottom:14px;line-height:1.5;">If they don&#8217;t arrive, <b>Report as No Show</b> unlocks at 0:00 &mdash; items are not released, and the request is submitted for the full amount. The payout goes to review first, not straight to your bank.</div>'
         +'<button class="js-nsarrived" style="width:100%;border:0;background:#1CB061;color:#fff;border-radius:12px;padding:14px;font-family:Nunito;font-weight:900;font-size:14px;cursor:pointer;">Requester arrived</button>'
         +'<button class="js-nsreport" disabled style="width:100%;margin-top:9px;border:1.5px solid #e0dccb;background:#faf8f2;color:#b9b2a1;border-radius:12px;padding:12px;font-family:Nunito;font-weight:800;font-size:13px;cursor:not-allowed;">Report as No Show &middot; unlocks at 0:00</button>');
       const cd=ov.querySelector('.js-nscount'), rp=ov.querySelector('.js-nsreport'), hint=ov.querySelector('.js-nshint');
@@ -3823,9 +3855,9 @@ business:{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
       function unlockReport(){ if(cd) cd.textContent='0:00';
         rp.disabled=false; rp.textContent='Report as No Show';
         rp.style.border='1.5px solid #C44257'; rp.style.background='#fff'; rp.style.color='#C44257'; rp.style.cursor='pointer';
-        if(hint) hint.innerHTML='Window expired — report the no-show (you&#8217;re paid in full, items not released) or keep waiting.'; }
+        if(hint) hint.innerHTML='Window expired &mdash; report the no-show (items not released; the payout is reviewed before it is released) or keep waiting.'; }
       function finishNoShow(){ clearInterval(tick); j.noShowDeadline=null; j.noShow=1; j.noShowActive=0; j.substage='completed'; if(!j.doneAt) j.doneAt=Date.now();  j.navigating=null; if(ov&&ov.remove) ov.remove(); draw();
-        toast('Reported as no-show — you&#8217;re paid in full; items not released.'); }
+        toast('Reported as no-show &mdash; items not released. Payout goes to review.'); }
       ov.querySelector('.js-nsarrived').onclick=()=>{ clearInterval(tick); j.noShowDeadline=null; j.noShowActive=0; ov.remove(); openAgeIdConfirm(); };
       rp.onclick=()=>{ if(rp.disabled) return; finishNoShow(); };   // pay-affecting — unreachable before 0:00
     }
@@ -4072,6 +4104,44 @@ business:{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
     render();
   } },
 
+/* G40-10 — ⛔ THREE DELIBERATE DIVERGENCES FROM THE SHIPPED APP. DO NOT "FIX" THEM.
+   Pinned 2026-09-08 by owner ruling. This screen depicts the NEW GOPHER MARKETPLACE
+   era; the Go app shipping today is deliberately different on exactly three points, and
+   every one of them is correct in both places.
+
+   1. THE TUTORIAL NAME. Here it is "Gopher Go 101" — the Marketplace guide, which
+      lands at launch. The shipped app says "How To Use Gopher Go" and links to
+      https://gophergo.io/become-a-gopher/gopher-go-support/, because that is the
+      tutorial that exists TODAY. Owner: "that is for launch... this will get revised
+      when the New Gopher Marketplace launches." So on this one line the prototype is
+      AHEAD of the app and is NOT the reference. Everywhere else on this screen it is
+      (item 3's "Requester", for instance).
+
+   2. THE 101 GATE. Here the CTA needs `viewed && all nine` — and that is honest here,
+      because open101() renders the guide from DOC101, embedded in this file, so the
+      prototype genuinely observes that it was opened. The app cannot: pointed at a
+      live gophergo.io URL it observes a TAP and nothing more, so the same gate would
+      assert something it cannot see. Dropped there; nine ticks enable the CTA, per
+      G40-10's AC. Revisit when the guide is in-app again and opening is observable.
+
+   3. THE URGENT-REQUEST NAME. Here it is "Need ASAP"; the shipped app says "Need it Now".
+      Added 2026-09-08, and this one runs the OPPOSITE WAY to #1 and #2 — here the
+      prototype is ahead and the APP is the laggard. The 2026-07-03 rename to "Need ASAP"
+      was applied to Jira, to this prototype and to the web surfaces, and was NEVER swept
+      into the apps. Measured on origin/production that day: Go says "Need it Now" 14
+      times, Request says "Need It Now" 57 times, and "Need ASAP" appeared exactly ONCE
+      across both — in v2 of the checklist component, which had copied this prototype.
+      That made the last screen of sign-up the only place in the app using a term the
+      worker never meets again, and the owner caught it. The client is now on app
+      language (v3, !279).
+
+      ⚠️ THIS ONE IS TEMPORARY, unlike #1 and #2. When the app-wide "Need ASAP" sweep
+      lands, the client flips to match this prototype and this entry gets deleted. Until
+      then: do NOT change this file to "Need it Now", and do NOT change the app back to
+      "Need ASAP" — either edit re-creates the mismatch pointing the other way.
+
+   Client: src/component/bestPracticesChecklist.js in gopher-mobile-gopher (!247, !279).
+   Keep the two in step on everything EXCEPT the three points above. */
 "best-practices":{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
   <div class="pad"><div class="top"><div class="back js-back">&#8249;</div></div>
    <h1>Best practices</h1>
@@ -4550,12 +4620,24 @@ if(PT){
   window.__ptSendMsg=function(id,text,flagged){ var job=window.__ptJobs[id]; if(!job) return; job.msgs=job.msgs||[]; job.msgs.push({text:text, flagged:flagged?1:0}); };
   window.__ptInboxDeliver=function(id,text,flagged){
     try{ var convos=state.inboxConvos||[]; var c=convos.filter(function(x){return x.__order===id;})[0];
-      if(!c){ return; }
+      if(!c){
+        /* NO CONVERSATION YET. This used to `return` — silently — and the
+           harness marked the message delivered anyway, so a requester who
+           wrote before the Gopher had ever opened the chat lost the message
+           permanently. That is the normal order of events: you are hired,
+           the requester messages you, your phone should light up. Build the
+           thread the same way opening the sheet does. */
+        var j=(window.__ptJobs||{})[id];
+        if(!j) return false;
+        c=goConvoForJob(j);
+        if(!c) return false;
+      }
       if(c.__appendIncoming){ c.__appendIncoming(text, flagged); }   // message sheet is open → drop it straight in
       else { c.msgs.push({s:'them',t:text,f:flagged?1:0}); c.unread=(c.unread||0)+1; if(current==='inbox') load('inbox'); }
       toast('💬 '+(c.name||'The requester')+': '+String(text).slice(0,40));
       if(window.GopherBanner) GopherBanner.show({app:'go',title:'New Message Available',sub:'Click here to view',onTap:function(){ openGoMsgSheet(c); }});
-    }catch(_){}
+      return true;
+    }catch(_){ return false; }
   };
   // (h) requester confirms completion — their star rating rides along, relayed by the harness.
   //     Policy: the received rating is NEVER shown to the worker (retaliation risk when the parties

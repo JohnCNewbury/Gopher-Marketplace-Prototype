@@ -555,10 +555,21 @@
         var reqMsgs=g.messagesFrom(id, GOPHER);
         var rseen=reqMsgSeen[id]||0;
         if(rseen < reqMsgs.length && w.__ptInboxDeliver){
-          for(var j=rseen;j<reqMsgs.length;j++){
-            try{ w.__ptInboxDeliver(id, reqMsgs[j].text, reqMsgs[j].flagged); }catch(_){}
+          /* Advance the seen-marker ONLY over messages that actually landed.
+             It used to jump straight to reqMsgs.length regardless, so a
+             delivery that failed — the Gopher had not opened the chat, so
+             there was no conversation to put it in — was recorded as
+             delivered and never retried. Stop at the first failure and let
+             the next tick try again. */
+          var j=rseen;
+          for(; j<reqMsgs.length; j++){
+            var landed=false;
+            try{ landed = w.__ptInboxDeliver(id, reqMsgs[j].text, reqMsgs[j].flagged) !== false; }
+            catch(_){ landed=false; }
+            if(!landed) break;
           }
-          reqMsgSeen[id]=reqMsgs.length;
+          if(j>rseen) status('Message delivered to the Gopher on '+id+'. 💬');
+          reqMsgSeen[id]=j;
         }
       }
     }catch(_){}

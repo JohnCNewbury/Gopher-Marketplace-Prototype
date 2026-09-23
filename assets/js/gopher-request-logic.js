@@ -146,6 +146,51 @@
     return String(s).replace(SMART_PUNCT, "'").replace(SMART_DASH, '-');
   }
 
+  /* ---- normalized second pass (owner request 2026-09-04) ------------------
+     The exact matcher below is literal: a trailing plural, a moved space or a
+     dropped hyphen defeats it even when the keyword IS in the corpus. Measured
+     against all 64,071 production order titles, these were live misses:
+       "Other - Black and milds"  (corpus has "black and mild")
+       "Other - American spirits" (corpus has "american spirit")
+       "White Claws" / "whiteclaw" (corpus has "white claw")
+       "Airbar", "geekbars", "puff bars", "long horn", "abc. store", "beefeaters"
+     Each is an untracked 21+ handoff with no age gate — the compliance failure,
+     not a cosmetic one. So this pass strips everything except letters/digits on
+     BOTH sides and matches there, keeping an index map so the caller still gets
+     the customer's own characters back.
+
+     ⚠️ TWO RULES BELOW ARE LOAD-BEARING. Measured, not guessed — without them
+     this pass adds 66 FALSE positives to the 27 true ones:
+       1. SKIP keywords ending in punctuation. Normalisation collapses "on!" to
+          "on" and "bread &" to "bread" — the punctuation IS the keyword. "on!"
+          alone matched 42 titles ("On-call driver, 9am-5pm"), "bread &" 11.
+          Only 6 keywords are affected: bon & · bread & · moet & · on! · rosé.
+       2. SKIP normalised keywords shorter than 6. Plural tolerance on short
+          words is where the damage is: "weed" would start matching "weeds",
+          and 4-letter wine words like "rose" would match "roses" (flowers).
+     With both, the pass adds 27 titles and every one is a true positive.
+     ⚠️ Do NOT relax either rule from intuition — the guards that forbid it are
+     asserted in docs/handoff/request-app-parity/test-age-normalization.js, and
+     the numbers above came from scoring all 64,071 production order titles in
+     Documentation/Dashboard/data/master/Orders.csv. Re-measure, don't re-argue. */
+  var _ageNorm = null;
+  function ageNormList(){
+    if(_ageNorm) return _ageNorm;
+    _ageNorm = [];
+    var lists = [ (window.GopherAgeKeywords || []), (window.GopherAgeSupplement || []) ];
+    for(var li = 0; li < lists.length; li++){
+      for(var i = 0; i < lists[li].length; i++){
+        var k = String(lists[li][i] || '');
+        if(/[^A-Za-z0-9]$/.test(k.trim())) continue;      // rule 1
+        var n = k.toLowerCase().replace(/[^a-z0-9]+/g,'');
+        if(n.length < 6) continue;                        // rule 2
+        _ageNorm.push(n);
+      }
+    }
+    return _ageNorm;
+  }
+  function ageIsAlnum(c){ return !!c && /[A-Za-z0-9]/.test(c); }
+
   function findAgeRestrictedKeyword(text){
     var orig = String(text || '');
     if(!orig.trim()) return null;
@@ -159,6 +204,30 @@
         var m = hay.match(re);
         /* Offsets survive the fold, so report the customer's own characters. */
         if(m) return orig.substr(m.index + m[0].indexOf(m[1]), m[1].length);
+      }
+    }
+    /* Nothing literal. Try again with spacing/punctuation/plurals normalised. */
+    var nHay = '', nMap = [];
+    for(var c = 0; c < orig.length; c++){
+      if(/[A-Za-z0-9]/.test(orig[c])){ nHay += orig[c].toLowerCase(); nMap.push(c); }
+    }
+    if(!nHay) return null;
+    var kws = ageNormList();
+    for(var w = 0; w < kws.length; w++){
+      var kw = kws[w], from = 0, a;
+      while((a = nHay.indexOf(kw, from)) !== -1){
+        from = a + 1;
+        var oa = nMap[a];
+        if(ageIsAlnum(orig[oa - 1])) continue;            // must start a word
+        var ends = [a + kw.length];
+        if(nHay.charAt(a + kw.length) === 's') ends.push(a + kw.length + 1);
+        if(nHay.substr(a + kw.length, 2) === 'es') ends.push(a + kw.length + 2);
+        for(var e = 0; e < ends.length; e++){
+          var ob = nMap[ends[e] - 1];
+          if(ob === undefined) continue;
+          if(ageIsAlnum(orig[ob + 1])) continue;          // must end a word
+          return orig.substring(oa, ob + 1);
+        }
       }
     }
     return null;

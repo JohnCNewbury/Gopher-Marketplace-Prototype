@@ -216,7 +216,7 @@
   var SURFACE_GATES = {
     /* ⛔⛔ 'identity' IS BACK ON THE WEB SURFACES — owner ruling 2026-08-25.
        This SUPERSEDES the 2026-08-23 G40-410 removal quoted below. That removal
-       existed for exactly one reason: iDenfy was being retired, so enrolment would
+       existed for exactly one reason: the third-party ID vendor was being retired, so enrolment would
        stop and under-30 (who then had no one-off path) would be left unable to
        order at all. TrustShield now runs INTERNALLY — enrolment never stops — so
        the reason is gone and the gate returns.
@@ -232,7 +232,7 @@
        ⛔ 'identity' REMOVED from both web surfaces — owner ruling 2026-08-23
        (trustshield-gate-removal-interim.md §8.1, G40-410). This SUPERSEDES the
        2026-08-22 D-038 Part 1 ruling that put it here; that gate was correct under
-       the policy then in force. iDenfy is being retired (~218 credits, ~6.6/day,
+       the policy then in force. The third-party ID vendor is being retired (~218 credits, ~6.6/day,
        cliff ~Sept 22-25) and cannot be topped up at a price the owner will pay, so
        when enrollment stops the badge would permanently block ~28 new requesters a
        week (76.7% of new enrollments are 21-29, who must verify to participate).
@@ -376,7 +376,7 @@
        modelled here — they ship via a store release (G40-410, Matt). */
     /* ⛔ INVERTED AGAIN, 2026-08-25 — third state for this guard, so read the date
        not the shape. It once required the gate, then required its ABSENCE (G40-410,
-       iDenfy retirement), and now requires its PRESENCE on the web surfaces again
+       ID-vendor retirement), and now requires its PRESENCE on the web surfaces again
        because TrustShield runs internally and identity is mandatory for A/R orders.
        The guard follows the ruling instead of being deleted with it, which is why it
        keeps flipping rather than quietly disappearing.

@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<!--
+  THE GOPHER MARKETPLACE  ·  gopher-marketplace.html
+  Explainer for all four constituents (Neighbors · Service Providers · Businesses · Merchants).
+  Source of truth for the copy: Gopher — Intended/Gopher-Marketplace-Community.html (owner Q&A 2026-09-11/12),
+  fee model per Gopher-Fee-Model-Code-Handoff-Spec.md (customer pays the fee; worker keeps the full posted price).
+-->
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Gopher Marketplace — how your neighborhood fits together</title>
+<meta name="description" content="How neighbors, Service Providers, businesses, and merchants fit together on the Gopher Marketplace. One account, four hats, and Gopher in the middle.">
+<link rel="canonical" href="https://gophergo.io/gopher-marketplace.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Gopher">
+<meta property="og:title" content="The Gopher Marketplace — how your neighborhood fits together">
+<meta property="og:description" content="How neighbors, Service Providers, businesses, and merchants fit together on the Gopher Marketplace. One account, four hats, and Gopher in the middle.">
+<meta property="og:url" content="https://gophergo.io/gopher-marketplace.html">
+<meta property="og:image" content="https://gophergo.io/assets/img/refer-app.webp">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Gopher Marketplace — how your neighborhood fits together">
+<meta name="twitter:description" content="How neighbors, Service Providers, businesses, and merchants fit together on the Gopher Marketplace. One account, four hats, and Gopher in the middle.">
+<meta name="twitter:image" content="https://gophergo.io/assets/img/refer-app.webp">
+<link rel="stylesheet" href="assets/css/gopher-fonts.css">
+<style>
+  :root{
+    --sand:#FBF3E4; --sand-soft:#FDF8EF; --paper:#FFFFFF; --navy:#002461; --navy-mid:#253A7E;
+    --green:#33D975; --green-dark:#1CB061; --aqua:#87F7BD; --green-tint:#E8F7EA;
+    --cornflower:#BADBFC; --cornflower-tint:#E7F0FF; --terracotta:#D97757;
+    --body:#424242; --muted:#6B7280; --rule:#E7E2D3;
+    --head:'Nunito',system-ui,sans-serif; --text:'DM Sans',system-ui,sans-serif; --hand:'Caveat',cursive;
+    --r:18px; --shadow:0 1px 2px rgba(0,36,97,.06),0 12px 32px -20px rgba(0,36,97,.28);
+    --gap:20px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--sand);color:var(--navy);font-family:var(--text);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  img{max-width:100%;display:block}
+  h1,h2,h3,h4{font-family:var(--head);margin:0;line-height:1.1;letter-spacing:-.02em;color:var(--navy);text-wrap:balance}
+  h1{font-weight:900;font-size:clamp(42px,7.2vw,84px);line-height:.95;letter-spacing:-.035em}
+  h2{font-weight:800;font-size:clamp(28px,4vw,44px);letter-spacing:-.03em}
+  h3{font-weight:800;font-size:clamp(19px,2vw,22px)}
+  h4{font-weight:800;font-size:17px}
+  p{margin:0 0 1em}
+  a{color:var(--navy)}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+  section{padding:64px 0}
+  section+section{padding-top:0}
+  .sec-head{margin-bottom:28px;max-width:78ch}
+  .kicker{display:inline-block;font-family:var(--head);font-weight:800;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--green-dark);margin-bottom:10px}
+  .lede{font-size:clamp(17px,1.6vw,20px);color:var(--body);max-width:64ch;margin:10px 0 0}
+  .hand{font-family:var(--hand);color:var(--terracotta);font-weight:700}
+  .muted{color:var(--muted)} .body{color:var(--body)}
+  .card{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow);padding:24px}
+  .grid{display:grid;gap:var(--gap)}
+  .g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:960px){.g4{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:1fr}}
+  @media(max-width:640px){.g2,.g4{grid-template-columns:1fr} section{padding:48px 0} .card{padding:20px}}
+  .photo{width:100%;object-fit:cover;border-radius:14px;background:var(--rule)}
+  .credit{font-size:12px;color:var(--muted);margin-top:6px}
+
+  /* nav */
+  .nav{position:sticky;top:66px;z-index:30;background:rgba(251,243,228,.92);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid var(--rule)}
+  .nav .wrap{display:flex;align-items:center;gap:16px;height:48px}
+  .nav-label{font-family:var(--head);font-weight:800;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+  .nav img{height:28px;width:auto;display:block}
+  .nav ul{list-style:none;margin:0;padding:0;display:flex;gap:16px;font-family:var(--head);font-weight:800;font-size:13.5px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .nav ul::-webkit-scrollbar{display:none}
+  .nav a{text-decoration:none;color:var(--navy);opacity:.8} .nav a:hover{opacity:1}
+  @media(max-width:640px){.nav .wrap{height:44px}.nav-label{display:none}.nav ul{width:100%;gap:14px;font-size:13px}}
+
+  /* hero */
+  .hero{padding:56px 0 64px}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center}
+  .hero .scribble{font-size:clamp(26px,3.6vw,44px);margin:-4px 0 18px 4px;line-height:1}
+  .hero-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}
+  .stat{background:var(--paper);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow)}
+  .stat b{display:block;font-family:var(--head);font-weight:900;font-size:30px;line-height:1;letter-spacing:-.03em}
+  .stat span{font-size:13px;color:var(--muted);line-height:1.35;display:block;margin-top:4px}
+  .hero-visual{position:relative;display:flex;flex-direction:column}
+  .hero-visual .photo{aspect-ratio:16/10;border-radius:22px;object-position:60% 30%}
+  .hero-card{position:relative;z-index:2;margin:-36px 18px 0;background:var(--paper);border-radius:var(--r);box-shadow:0 20px 50px -20px rgba(0,36,97,.45);padding:20px 22px}
+  .hero-card h3{font-size:18px;margin-bottom:8px}
+  .hero-card p{font-size:14.5px;color:var(--body);margin:0 0 8px}
+  .hero-card p:last-child{margin:0}
+  @media(max-width:960px){.hero-grid{grid-template-columns:1fr;gap:28px}}
+  @media(max-width:640px){.hero{padding:40px 0 48px}.hero-stat{grid-template-columns:1fr 1fr 1fr;gap:8px}.stat{padding:12px}.stat b{font-size:24px}.stat span{font-size:12px}}
+  @media(max-width:400px){.hero-stat{grid-template-columns:1fr}}
+
+  /* pills */
+  .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;font-family:var(--head);font-weight:800;font-size:12.5px;letter-spacing:.02em}
+  .pill.green{background:var(--green);color:var(--navy)} .pill.blue{background:var(--cornflower);color:var(--navy)} .pill.navy{background:var(--navy);color:#fff}
+
+  /* hats */
+  .hat{display:flex;flex-direction:column;gap:10px;padding:0;overflow:hidden}
+  .hat .photo{aspect-ratio:16/10;border-radius:0}
+  .hat .in{padding:18px 20px 20px;display:flex;flex-direction:column;gap:10px;flex:1}
+  .hat .who{font-size:14px;color:var(--muted);margin:-4px 0 0}
+  .hat .body{font-size:15px;margin:0}
+  .hat .benefit{background:var(--green-tint);border-radius:12px;padding:12px 14px;font-size:14.5px;color:var(--navy)}
+  .hat .benefit b{font-family:var(--head)}
+  .hat .logo{height:32px;width:auto;margin-top:auto;padding-top:6px}
+  .same-person{margin-top:var(--gap);display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;background:var(--navy);color:#fff;border-radius:var(--r);padding:22px 26px}
+  .same-person b{font-family:var(--head);font-size:19px;display:block;margin-bottom:4px}
+  .same-person p{margin:0;color:rgba(255,255,255,.85);font-size:15.5px}
+  .same-person .tag{background:var(--green);color:var(--navy);border-radius:999px;font-family:var(--head);font-weight:900;padding:8px 14px;white-space:nowrap}
+  @media(max-width:640px){.same-person{grid-template-columns:1fr;gap:12px;padding:20px}}
+
+  /* diagram */
+  .diagram-wrap{background:var(--paper);border-radius:24px;box-shadow:var(--shadow);padding:16px;display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:stretch}
+  @media(max-width:960px){.diagram-wrap{grid-template-columns:1fr}}
+  .diagram{width:100%;height:auto;display:block;border-radius:16px;background:var(--sand)}
+  .diagram .node{cursor:pointer;transition:opacity 180ms ease-out}
+  .diagram .node rect.plate{fill:#fff;stroke:var(--rule);stroke-width:1.5;transition:stroke 180ms ease-out,stroke-width 180ms}
+  .diagram .node:hover rect.plate,.diagram .node.active rect.plate{stroke:var(--green);stroke-width:3}
+  .diagram .node:focus{outline:none} .diagram .node:focus-visible rect.plate{stroke:var(--navy);stroke-width:3}
+  .diagram .road{stroke:#fff;stroke-width:24;stroke-linecap:round;transition:opacity 180ms ease-out}
+  .diagram .road-line{stroke:var(--rule);stroke-width:2;stroke-dasharray:10 12;stroke-linecap:round;fill:none}
+  .diagram .dim{opacity:.22}
+  .diagram text{font-family:var(--text)}
+  .diagram .lbl{font-family:var(--head);font-weight:900;font-size:24px;fill:var(--navy);letter-spacing:-.02em}
+  .diagram .lbl-sm{font-size:22px} .diagram .lbl-hub{font-size:17px}
+  .diagram .sub{font-size:13.5px;fill:#6B7280}
+  .diagram .tip{font-size:13.5px;fill:#424242}
+  @media(max-width:640px){
+    .diagram .tip,.diagram .sub,.diagram .plogo,.diagram .hub-sub{display:none}
+    .diagram .lbl{font-size:36px;transform:translate(0,18px)} .diagram .lbl-sm{font-size:27px;transform:translate(0,26px)} .diagram .lbl-hub{font-size:22px}
+    .diagram .node .ico{transform:translate(0,10px)}
+  }
+  .caption{display:flex;flex-direction:column;gap:12px;padding:6px 4px}
+  .caption h3{font-size:22px}
+  .caption .io{display:grid;gap:10px}
+  .caption .io div{background:var(--sand);border-radius:12px;padding:12px 14px;font-size:14.5px;color:var(--body)}
+  .caption .io b{font-family:var(--head);color:var(--navy);display:block;margin-bottom:3px;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:auto;padding-top:6px}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap}
+  .tab{font-family:var(--head);font-weight:800;font-size:13px;background:#fff;border:1.5px solid var(--rule);color:var(--navy);border-radius:999px;padding:7px 13px;cursor:pointer;transition:all 180ms ease-out}
+  .tab:hover{border-color:var(--green)} .tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+  /* family */
+  .timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;position:relative}
+  .timeline:before{content:"";position:absolute;left:3%;right:3%;top:20px;height:4px;background:var(--rule);border-radius:2px}
+  .stop{position:relative;display:flex;flex-direction:column;gap:10px}
+  .stop .time{font-family:var(--head);font-weight:900;font-size:14px;background:var(--green);color:var(--navy);border-radius:999px;padding:6px 12px;align-self:flex-start;box-shadow:0 0 0 6px var(--sand);position:relative;z-index:1}
+  .stop .card{flex:1;padding:0;overflow:hidden;display:flex;flex-direction:column}
+  .stop .photo{aspect-ratio:4/3;border-radius:0}
+  .stop .in{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .stop .who{font-family:var(--head);font-weight:800;font-size:17px}
+  .stop .app{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-family:var(--head);font-weight:800;color:var(--green-dark)}
+  .stop p{font-size:14.5px;color:var(--body);margin:0}
+  .stop img.logo{height:24px;width:auto;margin-top:auto;padding-top:8px}
+  @media(max-width:960px){.timeline{grid-template-columns:repeat(2,1fr)}.timeline:before{display:none}}
+  @media(max-width:640px){
+    .timeline{grid-template-columns:1fr;padding-left:22px}
+    .timeline:before{display:block;left:6px;right:auto;top:0;bottom:0;width:4px;height:auto}
+    .stop .time{margin-left:-22px}
+    .stop .card{display:grid;grid-template-columns:120px 1fr}
+    .stop .photo{aspect-ratio:auto;height:100%;min-height:150px}
+  }
+  .family-note{margin:18px 0 0;font-size:15px;color:var(--body);max-width:72ch}
+
+  /* money */
+  .money-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);align-items:start}
+  .steps{counter-reset:s;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .fee-card{padding:18px 20px;background:var(--green-tint);box-shadow:none}
+  .step{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow);padding:20px}
+  .step:before{counter-increment:s;content:counter(s);font-family:var(--head);font-weight:900;font-size:14px;background:var(--navy);color:#fff;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;margin-bottom:10px}
+  .step h4{margin-bottom:5px} .step p{font-size:14.5px;color:var(--body);margin:0}
+  .money-aside{display:flex;flex-direction:column;gap:14px}
+  .money-aside .photo{aspect-ratio:3/2}
+  .receipt{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow);padding:20px 22px;font-family:var(--text)}
+  .rc-head{display:flex;justify-content:space-between;align-items:center;font-family:var(--head);font-weight:800;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--green-dark);padding-bottom:12px;border-bottom:2px dashed var(--rule);margin-bottom:6px}
+  .rc-head img{height:20px;width:auto}
+  .rc-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0 2px;font-size:16px;color:var(--navy)}
+  .rc-row b{font-family:var(--head);font-weight:900;font-size:20px;letter-spacing:-.02em;white-space:nowrap}
+  .rc-row.fee{background:var(--green-tint);border-radius:10px;padding:10px 12px 8px;margin-top:8px}
+  .rc-row.fee b{color:var(--green-dark)}
+  .rc-row.total{border-top:2px dashed var(--rule);margin-top:10px;padding-top:12px}
+  .rc-note{font-size:13px;color:var(--muted);padding:0 0 4px}
+  .rc-row.fee+.rc-note{padding:6px 12px 0}
+  .callout{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:var(--gap)}
+  .callout div{background:var(--green-tint);border-radius:14px;padding:14px 16px;font-size:14.5px;color:var(--navy)}
+  .callout b{font-family:var(--head);display:block}
+  @media(max-width:960px){.money-grid{grid-template-columns:1fr}.money-aside .photo{aspect-ratio:2/1;min-height:0}}
+  @media(max-width:640px){.steps{grid-template-columns:1fr}.callout{grid-template-columns:1fr}}
+
+  /* choose */
+  .choose-grid{display:grid;grid-template-columns:1fr 1fr 1fr 220px;gap:var(--gap);align-items:stretch}
+  .choose .card h4{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .choose .card p{font-size:14.5px;color:var(--body);margin:8px 0 0}
+  .choose .default{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;background:var(--cornflower);color:var(--navy);border-radius:999px;padding:3px 9px;font-family:var(--head);font-weight:800}
+  .phone{background:var(--navy);border-radius:var(--r);padding:16px 16px 0;display:flex;flex-direction:column;align-items:center;gap:10px;overflow:hidden;max-height:250px}
+  .choose .best{margin-top:auto;padding-top:12px;font-size:12.5px;color:var(--green-dark);font-family:var(--head);font-weight:800;letter-spacing:.04em}
+  .choose .card{display:flex;flex-direction:column}
+  .phone span{font-family:var(--head);font-weight:800;font-size:12px;color:var(--aqua);letter-spacing:.08em;text-transform:uppercase;text-align:center}
+  .phone img{width:100%;max-width:170px;object-fit:cover;object-position:top;border-radius:18px 18px 0 0;box-shadow:0 -6px 30px rgba(0,0,0,.35)}
+  @media(max-width:960px){.choose-grid{grid-template-columns:1fr 1fr}.phone{grid-column:span 2;flex-direction:row;padding:16px;align-items:center}.phone img{max-width:150px;border-radius:14px;box-shadow:none}}
+  @media(max-width:640px){.choose-grid{grid-template-columns:1fr}.phone{grid-column:auto}}
+
+  /* trust */
+  .trust-banner{position:relative;border-radius:22px;overflow:hidden;margin-bottom:var(--gap)}
+  .trust-banner .photo{aspect-ratio:21/8;border-radius:0}
+  .trust-banner .say{position:absolute;left:20px;bottom:18px;background:rgba(255,255,255,.94);border-radius:14px;padding:12px 16px;font-family:var(--head);font-weight:800;font-size:15px;color:var(--navy);max-width:min(460px,90%)}
+  @media(max-width:640px){.trust-banner .photo{aspect-ratio:4/3}.trust-banner .say{left:12px;right:12px;bottom:12px;font-size:13.5px}}
+  .trust{display:grid;grid-template-columns:1fr 1.25fr;gap:var(--gap)}
+  @media(max-width:960px){.trust{grid-template-columns:1fr}}
+  .trust .card{display:flex;flex-direction:column;gap:14px}
+  .trust img.shield{height:110px;width:auto;align-self:flex-start}
+  .where{margin-top:auto;background:var(--sand);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--body)}
+  .where b{font-family:var(--head);color:var(--navy);display:block;margin-bottom:6px;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}
+  .where ul{margin:0;padding-left:18px}
+  .where li{margin:2px 0}
+  .ladder{display:grid;gap:10px;margin-top:4px}
+  .rung{display:grid;grid-template-columns:170px minmax(0,1fr);gap:16px;align-items:center;background:var(--sand);border-radius:14px;padding:12px 14px}
+  .rung.step2{margin-left:36px}
+  .rung.base{background:var(--cornflower-tint)}
+  .rung img{max-width:100%;height:auto;max-height:36px;justify-self:start;object-fit:contain}
+  .rung .mark{font-family:var(--head);font-weight:900;font-size:18px}
+  .rung p{margin:0;font-size:14.5px;color:var(--body)}
+  .rung.pro{background:var(--green-tint);border:2px dashed var(--green)}
+  @media(max-width:640px){.rung{grid-template-columns:1fr;gap:8px}.rung.step2{margin-left:0}}
+
+  /* deals */
+  .deals{display:grid;grid-template-columns:1.1fr .9fr;gap:var(--gap);align-items:stretch}
+  .margin{height:100%}
+  @media(max-width:960px){.deals{grid-template-columns:1fr}}
+  .flow{display:grid;gap:12px}
+  .flow>div{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start;background:var(--paper);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow)}
+  .flow b{font-family:var(--head);display:block}
+  .flow p{margin:0;font-size:14.5px;color:var(--body)}
+  .flow .n{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--sand);font-family:var(--head);font-weight:900;color:var(--navy)}
+  .deals-side{display:grid;gap:var(--gap)}
+  .margin{background:var(--navy);color:#fff;border-radius:var(--r);padding:24px;display:grid;grid-template-columns:1fr 150px;gap:16px;align-items:end}
+  .margin h3{color:#fff} .margin p{color:rgba(255,255,255,.85);font-size:14.5px}
+  .margin .big{font-family:var(--head);font-weight:900;font-size:60px;line-height:1;letter-spacing:-.04em;color:var(--green);margin:6px 0 10px}
+  .margin img.shot{width:150px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  .margin img.lg{height:30px;width:auto;background:#fff;border-radius:10px;padding:6px 10px;margin-top:4px}
+  @media(max-width:640px){.margin{grid-template-columns:1fr}.margin img.shot{width:60%;max-width:200px;justify-self:center}}
+  .deal-banner{position:relative;margin-top:var(--gap);border-radius:22px;overflow:hidden}
+  .deal-banner .photo{aspect-ratio:21/8;border-radius:0;object-position:50% 40%}
+  .deal-banner .say{position:absolute;left:20px;bottom:18px;background:rgba(255,255,255,.94);border-radius:14px;padding:12px 16px;font-family:var(--head);font-weight:800;font-size:15px;color:var(--navy);max-width:min(520px,90%)}
+  @media(max-width:640px){.deal-banner .photo{aspect-ratio:4/3}.deal-banner .say{left:12px;right:12px;bottom:12px;font-size:13.5px}}
+
+  /* doors */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0 6px}
+  .tile{position:relative;border-radius:14px;overflow:hidden;background:var(--navy);aspect-ratio:3/2}
+  .tile .photo{position:absolute;inset:0;width:100%;height:100%;border-radius:0;opacity:.92;transition:transform 240ms cubic-bezier(.2,.8,.2,1)}
+  .tile:hover .photo{transform:scale(1.04)}
+  .tile span{position:absolute;left:10px;bottom:10px;background:rgba(255,255,255,.94);color:var(--navy);font-family:var(--head);font-weight:800;font-size:13.5px;border-radius:999px;padding:6px 11px}
+  .tile.other span{background:var(--green)}
+  @media(max-width:960px){.tiles{grid-template-columns:repeat(3,1fr)}} @media(max-width:640px){.tiles{grid-template-columns:repeat(2,1fr);gap:10px}.tile span{font-size:12px;padding:5px 9px}}
+  .facts{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-top:22px}
+  @media(max-width:800px){.facts{grid-template-columns:1fr}}
+  .fact{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow);padding:22px}
+  .fact b{font-family:var(--head);font-weight:900;font-size:38px;letter-spacing:-.04em;line-height:1;display:block;margin-bottom:8px}
+  .fact p{margin:0;font-size:14.5px;color:var(--body)}
+
+  /* footer */
+  .mission-band{background:var(--navy);color:#fff;padding:56px 0}
+  .mission-band .mission{font-family:var(--head);font-weight:800;font-size:clamp(21px,3vw,32px);letter-spacing:-.02em;line-height:1.25;max-width:26ch}
+  .mission-band .mission em{font-style:normal;color:var(--green)}
+  .mission-band .tag{margin-top:16px;color:rgba(255,255,255,.75)} .mission-band .tag a{color:var(--green)}
+
+
+  @media print{.nav{position:static}section{padding:28px 0;break-inside:avoid}body{font-size:14px}.diagram-wrap{break-inside:avoid}}
+  @media(prefers-reduced-motion:reduce){.diagram .car{display:none}.tile .photo{transition:none}}
+</style>
+</head>
+<body>
+
+<!-- canonical header mounts here -->
+<div id="gopher-header"></div>
+
+<nav class="nav" aria-label="On this page">
+  <div class="wrap">
+    <span class="nav-label">On this page</span>
+    <ul>
+      <li><a href="#hats">The four</a></li>
+      <li><a href="#map">The map</a></li>
+      <li><a href="#family">One family</a></li>
+      <li><a href="#money">Money</a></li>
+      <li><a href="#choose">Who shows up</a></li>
+      <li><a href="#trust">Trust</a></li>
+      <li><a href="#deals">Deals</a></li>
+      <li><a href="#doors">Every door</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="kicker">Read it in five minutes. Explain it to anyone.</span>
+        <h1>The Gopher Marketplace.</h1>
+        <div class="scribble hand">— how your neighborhood fits together.</div>
+        <p class="lede">Four kinds of people. One Gopher in the middle. Neighbors get help, Service Providers get paid, businesses fill the gaps in their crew, and merchants bring the block through their door. Same account. Same neighborhood. Same day.</p>
+        <div class="hero-stat">
+          <div class="stat"><b>4</b><span>hats. One person can wear all of them.</span></div>
+          <div class="stat"><b>1</b><span>account opens every door you qualify for.</span></div>
+          <div class="stat"><b>16+</b><span>to ask for help, and to earn by giving it.</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <img class="photo" src="assets/img/refer-app.webp" alt="A Gopher hands a package to a neighbor at her front door while she checks the app.">
+        <div class="hero-card">
+          <h3>The whole idea in three lines</h3>
+          <p>You name what you need and what you'll pay. A trusted local Gopher says yes. Gopher holds the money until you confirm the job's done.</p>
+          <p>Businesses hire the same way for shifts, crews, and Pros. Merchants post Deals for free and let a Gopher bring them to your door.</p>
+          <p><b>Gopher is always in the middle.</b> That's why the ratings are real, the prices are up front, and nobody chases a payment.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="hats">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">The four</span>
+      <h2>Four hats, not four kinds of people.</h2>
+      <p class="lede">Each hat has its own app. Any neighbor can wear more than one.</p>
+    </div>
+    <div class="grid g4">
+      <div class="card hat">
+        <img class="photo" src="assets/img/01-delivery.webp" alt="A Gopher hands groceries to a neighbor at her door.">
+        <div class="in">
+          <h3>Neighbors</h3>
+          <p class="who">People who need something done today.</p>
+          <p class="body">A delivery, a move, a haul, a ride, a hand around the house. Describe it, name your price, and a local Gopher comes to you.</p>
+          <div class="benefit"><b>What they get:</b> real ratings from people who actually paid, a price that's set before anyone shows up, and zero haggling.</div>
+          <img class="logo" src="assets/img/gopher-request-logo.svg" alt="Gopher Request">
+        </div>
+      </div>
+      <div class="card hat">
+        <img class="photo" src="assets/img/hero-junk-removal.webp" alt="A Gopher loads a junk haul into the back of his pickup.">
+        <div class="in">
+          <h3>Service Providers</h3>
+          <p class="who">The neighbors who do the work. We call them Gophers.</p>
+          <p class="body">Set up once, pick the jobs you want, and get paid by Gopher the moment the customer confirms. No invoices to chase.</p>
+          <div class="benefit"><b>What they get:</b> every interested job on one screen, the right to counter, and 100% of the posted price. The fee is the customer's, not theirs.</div>
+          <img class="logo" src="assets/img/gopher-go-logo.svg" alt="Gopher Go">
+        </div>
+      </div>
+      <div class="card hat">
+        <img class="photo" src="assets/img/connect-hero-img-3.webp" alt="Warehouse workers move pallets down an aisle.">
+        <div class="in">
+          <h3>Businesses</h3>
+          <p class="who">Companies with a gap in the crew.</p>
+          <p class="body">Couriers, cleaners, trades, event staff, warehouse hands. Describe the work, name the pay, and qualified local Gophers fill the shift.</p>
+          <div class="benefit"><b>What they get:</b> the same Gophers neighbors trust, with Pro credentials on file and the paperwork a business needs.</div>
+          <img class="logo" src="assets/img/gopher-connect-logo.svg" alt="Gopher Connect">
+        </div>
+      </div>
+      <div class="card hat">
+        <img class="photo" src="assets/img/blog-restaurant-pickup.webp" alt="A restaurant worker hands a takeout bag across the counter.">
+        <div class="in">
+          <h3>Merchants</h3>
+          <p class="who">Local shops, restaurants, and eligible Service Providers.</p>
+          <p class="body">Post a Deal for free. Everyone on Gopher sees it, and so does anyone on the web. Customers buy from you directly.</p>
+          <div class="benefit"><b>What they get:</b> local reach with no fee to post, and a Gopher who'll deliver the order without taking a slice of it.</div>
+          <img class="logo" src="assets/img/gopher-deals-logo.svg" alt="Gopher Deals">
+        </div>
+      </div>
+    </div>
+    <div class="same-person">
+      <div class="tag">Same person</div>
+      <div>
+        <b>Merchant and Business aren't two kinds of company. They're two things one shop does.</b>
+        <p>A pizza place posts a Deal as a merchant, hires a driver for Friday night as a business, and the owner picks up a $50 delivery on the way home as a Gopher. One account. Three hats. Same day.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="map">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">The map</span>
+      <h2>Every road runs through Gopher.</h2>
+      <p class="lede">Tap a corner to see what it sends and what it gets back. Watch the dots: they never skip the middle.</p>
+    </div>
+    <div class="diagram-wrap">
+      <svg class="diagram" viewBox="0 0 900 600" role="img" aria-label="Map of the Gopher Marketplace: Neighbors, Merchants, Businesses, and Service Providers at four corners, Gopher in the middle, every road passing through Gopher.">
+        <defs>
+          <clipPath id="hubclip"><circle cx="450" cy="292" r="66"/></clipPath>
+          <path id="p-n" d="M330,222 L450,292"/><path id="p-m" d="M570,222 L450,292"/><path id="p-b" d="M330,378 L450,292"/><path id="p-s" d="M570,378 L450,292"/>
+          <path id="mp-ns" d="M330,222 L450,292 L570,378"/><path id="mp-sn" d="M570,378 L450,292 L330,222"/><path id="mp-bs" d="M330,378 L450,292 L570,378"/>
+          <path id="mp-mn" d="M570,222 L450,292 L330,222"/><path id="mp-nm" d="M330,222 L450,292 L570,222"/><path id="mp-ms" d="M570,222 L450,292 L570,378"/>
+        </defs>
+        <g id="roads">
+          <line class="road" data-node="n" x1="330" y1="222" x2="450" y2="292"/><line class="road" data-node="m" x1="570" y1="222" x2="450" y2="292"/>
+          <line class="road" data-node="b" x1="330" y1="378" x2="450" y2="292"/><line class="road" data-node="s" x1="570" y1="378" x2="450" y2="292"/>
+          <use class="road-line" href="#p-n"/><use class="road-line" href="#p-m"/><use class="road-line" href="#p-b"/><use class="road-line" href="#p-s"/>
+        </g>
+        <g id="cars">
+          <circle class="car" cx="-30" cy="-30" r="6" fill="#33D975"><animateMotion dur="7s" repeatCount="indefinite" begin="0s"><mpath href="#mp-sn"/></animateMotion></circle>
+          <circle class="car" cx="-30" cy="-30" r="6" fill="#002461"><animateMotion dur="7s" repeatCount="indefinite" begin="3.5s"><mpath href="#mp-ns"/></animateMotion></circle>
+          <circle class="car" cx="-30" cy="-30" r="6" fill="#33D975"><animateMotion dur="8s" repeatCount="indefinite" begin="1.5s"><mpath href="#mp-bs"/></animateMotion></circle>
+          <circle class="car" cx="-30" cy="-30" r="6" fill="#BADBFC" stroke="#002461" stroke-width="1.5"><animateMotion dur="9s" repeatCount="indefinite" begin="2s"><mpath href="#mp-mn"/></animateMotion></circle>
+          <circle class="car" cx="-30" cy="-30" r="6" fill="#002461"><animateMotion dur="9s" repeatCount="indefinite" begin="6s"><mpath href="#mp-nm"/></animateMotion></circle>
+          <circle class="car" cx="-30" cy="-30" r="6" fill="#33D975"><animateMotion dur="8s" repeatCount="indefinite" begin="5s"><mpath href="#mp-ms"/></animateMotion></circle>
+        </g>
+        <g id="hub" tabindex="0" role="button" aria-label="Gopher, in the middle">
+          <circle cx="450" cy="292" r="76" fill="#33D975"/><circle cx="450" cy="292" r="66" fill="#fff"/>
+          <image href="assets/img/gopher-character-full.svg" x="416" y="238" width="68" height="84" clip-path="url(#hubclip)"/>
+          <text x="450" y="346" text-anchor="middle" class="lbl lbl-hub">Gopher</text>
+          <rect class="hub-sub" x="340" y="388" width="220" height="32" rx="16" fill="#fff" stroke="#E7E2D3"/>
+          <text x="450" y="409" text-anchor="middle" class="sub hub-sub" style="font-size:12.5px">holds the money · verifies both sides</text>
+        </g>
+        <g class="node" data-node="n" tabindex="0" role="button" aria-label="Neighbors">
+          <rect class="plate" x="30" y="48" width="300" height="176" rx="20"/>
+          <g class="ico" transform="translate(50,68)"><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><path d="M6 24 24 8l18 16" fill="none" stroke="#002461" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 21v19h26V21" fill="#fff" stroke="#002461" stroke-width="3" stroke-linejoin="round"/><rect x="20" y="27" width="8" height="13" fill="#33D975"/></svg></g>
+          <text x="112" y="94" class="lbl">Neighbors</text>
+          <text x="112" y="116" class="sub">need something done</text>
+          <text x="50" y="156" class="tip">Name the job. Name the price.</text>
+          <text x="50" y="176" class="tip">First available, or pick your Gopher.</text>
+          <image class="plogo" href="assets/img/gopher-request-logo.svg" x="50" y="190" height="24" width="83"/>
+        </g>
+        <g class="node" data-node="m" tabindex="0" role="button" aria-label="Merchants">
+          <rect class="plate" x="570" y="48" width="300" height="176" rx="20"/>
+          <g class="ico" transform="translate(590,68)"><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><path d="M6 18 10 8h28l4 10" fill="none" stroke="#002461" stroke-width="3" stroke-linejoin="round"/><path d="M6 18h36v6H6z" fill="#33D975" stroke="#002461" stroke-width="3" stroke-linejoin="round"/><path d="M10 24v16h28V24" fill="#fff" stroke="#002461" stroke-width="3" stroke-linejoin="round"/><rect x="26" y="29" width="8" height="11" fill="#002461"/></svg></g>
+          <text x="652" y="94" class="lbl">Merchants</text>
+          <text x="652" y="116" class="sub">bring the block through the door</text>
+          <text x="590" y="156" class="tip">Post a Deal free. Everyone sees it.</text>
+          <text x="590" y="176" class="tip">Customers buy direct. A Gopher delivers.</text>
+          <image class="plogo" href="assets/img/gopher-deals-logo.svg" x="590" y="190" height="24" width="65"/>
+        </g>
+        <g class="node" data-node="b" tabindex="0" role="button" aria-label="Businesses">
+          <rect class="plate" x="30" y="376" width="300" height="176" rx="20"/>
+          <g class="ico" transform="translate(50,396)"><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><rect x="8" y="8" width="22" height="32" fill="#fff" stroke="#002461" stroke-width="3" stroke-linejoin="round"/><rect x="30" y="18" width="10" height="22" fill="#33D975" stroke="#002461" stroke-width="3" stroke-linejoin="round"/><g fill="#002461"><rect x="13" y="13" width="4" height="4"/><rect x="21" y="13" width="4" height="4"/><rect x="13" y="21" width="4" height="4"/><rect x="21" y="21" width="4" height="4"/><rect x="13" y="29" width="4" height="4"/><rect x="21" y="29" width="4" height="4"/></g></svg></g>
+          <text x="112" y="422" class="lbl">Businesses</text>
+          <text x="112" y="444" class="sub">fill the gap in the crew</text>
+          <text x="50" y="484" class="tip">Shifts, crews, and Pros on demand.</text>
+          <text x="50" y="504" class="tip" textLength="260" lengthAdjust="spacing">Same trusted Gophers, business paperwork.</text>
+          <image class="plogo" href="assets/img/gopher-connect-logo.svg" x="50" y="518" height="24" width="88"/>
+        </g>
+        <g class="node" data-node="s" tabindex="0" role="button" aria-label="Service Providers">
+          <rect class="plate" x="570" y="376" width="300" height="176" rx="20"/>
+          <g class="ico" transform="translate(590,396)"><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><rect x="6" y="18" width="36" height="20" rx="3" fill="#fff" stroke="#002461" stroke-width="3"/><path d="M18 18v-6h12v6" fill="none" stroke="#002461" stroke-width="3" stroke-linejoin="round"/><rect x="6" y="24" width="36" height="5" fill="#33D975"/><rect x="21" y="22" width="6" height="9" rx="1" fill="#002461"/></svg></g>
+          <text x="652" y="422" class="lbl lbl-sm">Service Providers</text>
+          <text x="652" y="444" class="sub">the neighbors we call Gophers</text>
+          <text x="590" y="484" class="tip" textLength="260" lengthAdjust="spacing">Pick the jobs you want. Counter if you need to.</text>
+          <text x="590" y="504" class="tip">Paid instantly once confirmed.</text>
+          <image class="plogo" href="assets/img/gopher-go-logo.svg" x="590" y="518" height="20" width="100"/>
+        </g>
+      </svg>
+      <div class="caption" id="caption">
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-node="hub">Gopher</button><button class="tab" data-node="n">Neighbors</button><button class="tab" data-node="s">Service Providers</button><button class="tab" data-node="b">Businesses</button><button class="tab" data-node="m">Merchants</button>
+        </div>
+        <h3 id="cap-title">Gopher, in the middle</h3>
+        <p class="body" id="cap-lede" style="font-size:14.5px;margin:0">Nobody on the marketplace deals with a stranger directly. Gopher verifies both sides, holds the money, and only lets a rating count once someone has actually been paid.</p>
+        <div class="io">
+          <div><b id="cap-in-h">What comes in</b><span id="cap-in">Requests, shifts, Deals, and payments from every corner.</span></div>
+          <div><b id="cap-out-h">What goes out</b><span id="cap-out">A trusted local match, a guaranteed payment, and a rating that means something.</span></div>
+        </div>
+        <div class="legend"><span><i style="background:#33D975"></i>help on the way</span><span><i style="background:#002461"></i>money, held then paid</span><span><i style="background:#BADBFC;border:1px solid #002461"></i>a Deal</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="family">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">One family, one day</span>
+      <h2>Meet the Riveras. They wear all four hats before dinner.</h2>
+      <p class="lede">Dad runs a fencing company. Mom owns the coffee shop on Main. Their son is 18, their daughter is 16. One account each. Here's a Tuesday.</p>
+    </div>
+    <div class="timeline">
+      <div class="stop">
+        <span class="time">7:10 am</span>
+        <div class="card">
+          <img class="photo" src="assets/img/originals/uc-skilled-lighting-source.jpg" alt="An electrician on a ladder wires a ceiling fixture.">
+          <div class="in"><span class="app">Business · Connect</span><span class="who">Dad</span><p>Two crew members called in sick. He posts a day-labor shift and a Pro electrician for the Henderson fence. Both filled before he finishes his coffee.</p><img class="logo" src="assets/img/gopher-connect-logo.svg" alt="Gopher Connect"></div>
+        </div>
+      </div>
+      <div class="stop">
+        <span class="time">8:30 am</span>
+        <div class="card">
+          <img class="photo" src="assets/img/px-13456097-900.webp" alt="A shop owner hands a package to a Gopher at her storefront door.">
+          <div class="in"><span class="app">Merchant · Deals</span><span class="who">Mom</span><p>Posts "two lattes for the price of one, today only." Free to post. The whole block sees it, including people who've never opened the app.</p><img class="logo" src="assets/img/gopher-deals-logo.svg" alt="Gopher Deals"></div>
+        </div>
+      </div>
+      <div class="stop">
+        <span class="time">12:15 pm</span>
+        <div class="card">
+          <img class="photo" src="assets/img/px-13431759-900.webp" alt="A paper lunch bag with the order receipt stapled to it.">
+          <div class="in"><span class="app">Neighbor · Request</span><span class="who">Daughter, 16</span><p>Forgot her lunch and her chem textbook. Grabs Mom's latte Deal and taps for a Gopher to bring it, with the book, to the school office.</p><img class="logo" src="assets/img/gopher-request-logo.svg" alt="Gopher Request"></div>
+        </div>
+      </div>
+      <div class="stop">
+        <span class="time">3:40 pm</span>
+        <div class="card">
+          <img class="photo" src="assets/img/05-junk.webp" alt="A box truck loaded with junk on a suburban street.">
+          <div class="in"><span class="app">Service Provider · Go</span><span class="who">Son, 18</span><p>Out of class. Sees a $45 junk haul two streets over, counters at $60 for the couch on the porch. The neighbor says yes. Paid before he's home.</p><img class="logo" src="assets/img/gopher-go-logo.svg" alt="Gopher Go"></div>
+        </div>
+      </div>
+      <div class="stop">
+        <span class="time">5:45 pm</span>
+        <div class="card">
+          <img class="photo" src="assets/img/hero-delivery.webp" alt="A Gopher hands a box to a neighbor on her porch at the end of the day.">
+          <div class="in"><span class="app">Service Provider · Go</span><span class="who">Dad, again</span><p>Driving home past the hardware store. A $50 delivery is going his way, so he takes it. Yes, business owners can be Gophers too.</p><img class="logo" src="assets/img/gopher-go-logo.svg" alt="Gopher Go"></div>
+        </div>
+      </div>
+    </div>
+    <p class="family-note">Every one of those jobs went through Gopher: identity checked on both sides, price set up front, money held until the work was confirmed. Nobody in this story swapped a phone number with a stranger or waited on an invoice.</p>
+  </div>
+</section>
+
+<section id="money">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">The money</span>
+      <h2>Nobody haggles. Nobody chases a payment.</h2>
+      <p class="lede">The same four steps whether it's a neighbor hiring a Gopher or a business staffing a shift.</p>
+    </div>
+    <div class="money-grid">
+      <div class="steps">
+        <div class="step"><h4>You name the price</h4><p>Up front, before anyone shows up. No quotes, no back and forth.</p></div>
+        <div class="step"><h4>A Gopher says yes, or counters</h4><p>Every interested Gopher lands on one screen. Accepting a counter is always your call.</p></div>
+        <div class="step"><h4>Gopher holds the money</h4><p>Your payment is authorized and held while the work happens. The Gopher knows they'll be paid.</p></div>
+        <div class="step"><h4>You confirm, they're paid</h4><p>The job's done, you confirm it, and Gopher sends the money to your Gopher. Then you rate them.</p></div>
+      </div>
+      <div class="money-aside">
+        <div class="receipt" aria-label="What you see before you commit">
+          <div class="rc-head"><span>What you see before you tap</span><img src="assets/img/gopher-logo.svg" alt="Gopher"></div>
+          <div class="rc-row"><span>Couch to the curb</span><b>$45.00</b></div>
+          <div class="rc-note">Your price. You set it.</div>
+          <div class="rc-row fee"><span>Gopher fee</span><b>pocket change</b></div>
+          <div class="rc-note">Small, transparent, and printed right here before you commit. It sits on top of the price, so your Gopher still gets all $45.</div>
+          <div class="rc-row total"><span>Held by Gopher</span><b>until you confirm</b></div>
+          <div class="rc-note">Then your Gopher is paid, and you rate them.</div>
+        </div>
+        <div class="card fee-card"><h4>A small, transparent fee</h4><p class="body" style="font-size:14.5px;margin:6px 0 0">Gopher charges a small fee on each transaction, shown before you commit. That's the whole business model. No subscriptions, no surprise markups on either side.</p></div>
+      </div>
+    </div>
+    <div class="callout">
+      <div><b>Ratings you can trust</b>Only a customer who actually paid can rate a Gopher. No bought reviews, no drive-bys.</div>
+      <div><b>Counters keep good jobs alive</b>Other apps make workers declare a wage and price themselves out. Here a Gopher can counter and still earn their minimum.</div>
+      <div><b>Gophers keep 100% of the posted price</b>The fee is the customer's line on the receipt, not a cut of the Gopher's pay. No chasing invoices, no skim off the top.</div>
+    </div>
+  </div>
+</section>
+
+<section id="choose" class="choose">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Who shows up</span>
+      <h2>Three ways to find your Gopher.</h2>
+    </div>
+    <div class="choose-grid">
+      <div class="card"><h4>First available <span class="default">default</span></h4><p>Post it and the first qualified Gopher to say yes gets it. Fastest option, and the one most neighbors use.</p><span class="best">Best for: getting it done today</span></div>
+      <div class="card"><h4>MY Gophers</h4><p>Your favorites from past jobs see the request a full minute before anyone else. If one accepts, it's theirs. Anyone else who's interested needs your approval.</p><span class="best">Best for: the same trusted face, again</span></div>
+      <div class="card"><h4>Pick your tier</h4><p>Want an Elite Gopher in your home, or a Pro on the job site? Choose the tier you want and select your worker instead of first available.</p><span class="best">Best for: inside your home, or licensed work</span></div>
+      <div class="phone"><span>What a Gopher sees</span><img src="assets/img/go-gopher-go-app-home-screen.webp" alt="The Gopher Go app showing available jobs with their prices."></div>
+    </div>
+  </div>
+</section>
+
+<section id="trust">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Trust, both directions</span>
+      <h2>Neighbors are verified for Gophers. Gophers are vetted for neighbors.</h2>
+      <p class="lede">That's why a stranger from an app isn't a stranger.</p>
+    </div>
+    <div class="trust-banner">
+      <img class="photo" src="assets/img/community.webp" alt="A Gopher and an older neighbor shake hands in her kitchen after a repair.">
+      <div class="say">Both people in this kitchen know exactly who the other one is. That's the whole point.</div>
+    </div>
+    <div class="trust">
+      <div class="card">
+        <img class="shield" src="assets/img/trustshield-logo.svg" alt="TrustShield">
+        <h3>TrustShield™ · for neighbors</h3>
+        <p class="body" style="margin:0;font-size:15px">A neighbor earns the TrustShield when their identity is verified: name, photo, address, and contact info. It sits next to their name on every request, so a Gopher knows the person they're about to help is exactly who they say they are.</p>
+        <p class="muted" style="margin:0;font-size:14px">One badge. You have it or you don't.</p>
+        <div class="where"><b>Where Gophers see it</b><ul><li>Next to your name on every request you post</li><li>On your profile in the Gopher Go app</li><li>On confirmation emails and receipts</li></ul></div>
+      </div>
+      <div class="card">
+        <h3>The worker ladder · for Gophers</h3>
+        <p class="body" style="margin:0;font-size:15px"><b>Every Gopher</b>, including standard, has their identity verified through Stripe with a government ID and Social Security number. Badges stack on top of that.</p>
+        <div class="ladder">
+          <div class="rung base"><span class="mark">Standard</span><p>Identity verified. Government ID and SSN on file.</p></div>
+          <div class="rung"><img src="assets/img/tier-elite.svg" alt="Elite"><p><b>Elite</b> adds a clean criminal background check.</p></div>
+          <div class="rung step2"><img src="assets/img/tier-elite-plus.webp" alt="Elite+"><p><b>Elite+</b> is Elite plus a clean DMV record. If you're Elite+, you're also Elite.</p></div>
+          <div class="rung pro"><img src="assets/img/tier-pro.svg" alt="Gopher Pro"><p><b>Pro</b> is separate: licensed, bonded, and/or insured. A Gopher can be Pro without being Elite, or Pro and Elite+ at once.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="deals">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">The merchant's edge</span>
+      <h2>Deals: the free last mile.</h2>
+      <p class="lede">Delivery apps take up to 30% of a merchant's order. Gopher Deals takes nothing to post, and a Gopher brings it to the customer for a price the customer already agreed to.</p>
+    </div>
+    <div class="deals">
+      <div class="flow">
+        <div><span class="n">1</span><div><b>The merchant posts a Deal. Free.</b><p>No fee to post, no fee on the order. Any local shop, restaurant, or eligible Service Provider can offer one.</p></div></div>
+        <div><span class="n">2</span><div><b>Everyone sees it.</b><p>Every neighbor, Gopher, and business on the marketplace, plus anyone browsing the web. You need an account to redeem it, not to see it.</p></div></div>
+        <div><span class="n">3</span><div><b>The customer buys direct from the merchant.</b><p>Right in Gopher's web view. The merchant keeps the customer, the pricing, and the profit.</p></div></div>
+        <div><span class="n">4</span><div><b>Tap for a Gopher to bring it.</b><p>Same flow, one more tap. A local Gopher picks it up and delivers it. That's the last mile, handled, without the merchant paying for it.</p></div></div>
+      </div>
+      <div class="deals-side">
+        <div class="margin">
+          <div>
+            <h3>What a merchant keeps</h3>
+            <div class="big">30%</div>
+            <p>is what a merchant can hand to a delivery app on every order. On Gopher Deals the merchant pays nothing to post and nothing on the sale. The customer pays the Gopher's trip price plus Gopher's small fee. The merchant's margin is never touched.</p>
+            <img class="lg" src="assets/img/gopher-deals-logo.svg" alt="Gopher Deals">
+          </div>
+          <img class="shot" src="assets/img/marketplace-redeem.webp" alt="The Deals redeem screen on a phone: a merchant's offer with a Bring me my deal button.">
+        </div>
+      </div>
+    </div>
+    <div class="deal-banner"><img class="photo" src="assets/img/blog-restaurant-pickup.webp" alt="A Gopher picks up a bagged order at a restaurant counter."><div class="say">Neighbors → Merchants → Gophers. The one arrow on the map that touches all three, and every step still runs through Gopher.</div></div>
+  </div>
+</section>
+
+<section id="doors">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Every door</span>
+      <h2>One account. Every door you qualify for.</h2>
+      <p class="lede">Sign up once. If you have a business, Connect and Deals open too. If you don't, you'll never need them. Here's what a neighbor can ask for today.</p>
+    </div>
+    <div class="tiles">
+      <div class="tile"><img class="photo" src="assets/img/go101-delivery.webp" alt=""><span>Delivery</span></div>
+      <div class="tile"><img class="photo" src="assets/img/go101-home-office.webp" alt=""><span>Home services</span></div>
+      <div class="tile"><img class="photo" src="assets/img/go101-hourly-day-labor.webp" alt=""><span>Hourly / day labor</span></div>
+      <div class="tile"><img class="photo" src="assets/img/go101-junk-removal.webp" alt=""><span>Junk removal</span></div>
+      <div class="tile"><img class="photo" src="assets/img/go101-moving.webp" alt=""><span>Moving</span></div>
+      <div class="tile"><img class="photo" src="assets/img/go101-ride-sharing.webp" alt=""><span>Ride sharing</span></div>
+      <div class="tile"><img class="photo" src="assets/img/go101-yard-outdoor.webp" alt=""><span>Yard work &amp; outdoor</span></div>
+      <div class="tile other"><img class="photo" src="assets/img/go101-other.webp" alt=""><span>Other: if you can describe it</span></div>
+    </div>
+    <p class="muted" style="font-size:14px;max-width:72ch;margin-top:10px">Errands, pet and plant care, tech setup, senior assistance, a pickup from the hardware store, a ride to the airport. Things that used to take a dozen different apps, each with its own rules, now take one, with one set of rules that's fair to both sides.</p>
+    <div class="facts">
+      <div class="fact"><b>16+</b><p>is the minimum age to request help and to earn as a Gopher. Old enough for a first job, on either side.</p></div>
+      <div class="fact"><b>4,300+</b><p>cities where neighbors have asked for help so far. Gopher works anywhere a neighbor and a Gopher are in the same place.</p></div>
+      <div class="fact"><b>1</b><p>account. Neighbor, Service Provider, business, merchant. Add a hat whenever you're eligible for it.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="mission-band">
+  <div class="wrap">
+    <div class="mission">Perfectly connecting customers, businesses, merchants, and workers to <em>fair-priced human services.</em></div>
+    <p class="tag">Your Community Marketplace For Any Service. Read the guides for each door: <a href="gopher-request-101.html">Request 101</a> · <a href="gopher-go-101.html">Go 101</a> · <a href="gopher-connect-101.html">Connect 101</a> · <a href="gopher-deals-101.html">Deals 101</a>.</p>
+  </div>
+</section>
+
+
+<script>
+(function(){
+  var data={
+    hub:{t:'Gopher, in the middle',l:'Nobody on the marketplace deals with a stranger directly. Gopher verifies both sides, holds the money, and only lets a rating count once someone has actually been paid.',ih:'What comes in',i:'Requests, shifts, Deals, and payments from every corner.',oh:'What goes out',o:'A trusted local match, a guaranteed payment, and a rating that means something.'},
+    n:{t:'Neighbors',l:'People who need something done today and would rather hire a trusted local than chase quotes.',ih:'What they send',i:'A request with the price named up front, and the payment, which Gopher holds until they confirm the job. Plus their TrustShield, so Gophers know who they\'re helping.',oh:'What they get back',o:'A verified Gopher at the door, the tier they chose, real ratings from people who paid, and Deals from the shops on their block, delivered.'},
+    s:{t:'Service Providers (Gophers)',l:'The neighbors who do the work. Identity verified, badges earned, paid by Gopher.',ih:'What they send',i:'A yes, or a counter offer, on the jobs they want. From neighbors, from businesses, and from Deals that need delivering.',oh:'What they get back',o:'Every interested job on one screen, a guaranteed payment the moment the customer confirms, and a rating that builds their reputation on the block.'},
+    b:{t:'Businesses',l:'Companies with a gap in the crew: couriers, cleaners, trades, event staff, warehouse hands.',ih:'What they send',i:'A shift or a job with the pay named up front, and the payment, held by Gopher until the work is confirmed.',oh:'What they get back',o:'The same Gophers neighbors trust, with Pro credentials on file, plus the paperwork and accountability a business needs.'},
+    m:{t:'Merchants',l:'Local shops, restaurants, and eligible Service Providers who want the block through their door.',ih:'What they send',i:'A Deal. Free to post. Seen by everyone on Gopher and anyone on the web.',oh:'What they get back',o:'Customers who buy direct, keep coming back, and can tap for a Gopher to deliver, with the merchant paying nothing for the last mile.'}
+  };
+  var svg=document.querySelector('.diagram'),nodes=svg.querySelectorAll('.node'),roads=svg.querySelectorAll('.road'),hub=svg.querySelector('#hub'),tabs=document.querySelectorAll('#tabs .tab');
+  function set(k){
+    var d=data[k];
+    document.getElementById('cap-title').textContent=d.t; document.getElementById('cap-lede').textContent=d.l;
+    document.getElementById('cap-in-h').textContent=d.ih; document.getElementById('cap-in').textContent=d.i;
+    document.getElementById('cap-out-h').textContent=d.oh; document.getElementById('cap-out').textContent=d.o;
+    nodes.forEach(function(n){n.classList.toggle('active',n.dataset.node===k);n.classList.toggle('dim',k!=='hub'&&n.dataset.node!==k);});
+    roads.forEach(function(r){r.classList.toggle('dim',k!=='hub'&&r.dataset.node!==k);});
+    tabs.forEach(function(t){t.classList.toggle('active',t.dataset.node===k);});
+  }
+  function bind(el,k){el.addEventListener('click',function(){set(k);});el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();set(k);}});}
+  nodes.forEach(function(n){bind(n,n.dataset.node);}); bind(hub,'hub'); hub.style.cursor='pointer';
+  tabs.forEach(function(t){t.addEventListener('click',function(){set(t.dataset.node);});});
+})();
+</script>
+
+<link rel="stylesheet" href="assets/css/gopher-footer.css">
+
+<footer class="gopher-footer">
+
+  <div class="gf-inner">
+
+    <!-- Brand block (left) -->
+    <div class="gf-brand">
+      <a href="index.html" class="gf-logo-wrap" aria-label="Gopher home">
+        <img src="assets/img/gopher-logo.svg" alt="Gopher">
+      </a>
+      <p class="gf-tagline">
+        Connecting customers, businesses, merchants, and local workers with fair-priced services.
+      </p>
+
+      <!-- Social row -->
+      <div class="gf-social" aria-label="Gopher on social media">
+        <a href="https://www.facebook.com/GopherMobileApp" aria-label="Facebook" title="Facebook">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.52 1.49-3.91 3.78-3.91 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/gopherinc/" aria-label="Instagram" title="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.2" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="https://www.tiktok.com/@gopherinc" aria-label="TikTok" title="TikTok">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.07-2.82h-3.1v12.6a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12V9.96a5.7 5.7 0 0 0-.78-.05 5.69 5.69 0 1 0 5.69 5.69V9.01a7.35 7.35 0 0 0 4.29 1.37V7.28a4.28 4.28 0 0 1-3.22-1.46z"/></svg>
+        </a>
+        <a href="https://www.youtube.com/@gopherinc" aria-label="YouTube" title="YouTube">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.51a3.02 3.02 0 0 0-2.12-2.14C19.5 3.86 12 3.86 12 3.86s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.51 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.49 3.02 3.02 0 0 0 2.12 2.14C4.5 20.14 12 20.14 12 20.14s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.49zM9.6 15.57V8.43L15.82 12 9.6 15.57z"/></svg>
+        </a>
+        <a href="https://nextdoor.com/page/gopher-llc-holly-springs-nc" aria-label="Nextdoor" title="Nextdoor">
+          <!-- House silhouette — universally readable as "neighborhood/home"
+               which is Nextdoor's identity. The hover tooltip reinforces it. -->
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5 1.6 11.2l1.3 1.6 1.6-1.3v9h6v-6h3v6h6v-9l1.6 1.3 1.3-1.6L12 2.5z"/></svg>
+        </a>
+        <a href="https://www.reddit.com/r/GopherMobileApp/" aria-label="Reddit" title="Reddit">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 11.82a2.2 2.2 0 0 0-3.73-1.57 10.84 10.84 0 0 0-5.5-1.7l.94-4.4 3.07.66a1.56 1.56 0 1 0 .2-1.05l-3.43-.73a.52.52 0 0 0-.62.4l-1.05 4.94a10.9 10.9 0 0 0-5.6 1.7 2.2 2.2 0 1 0-2.42 3.62 4.3 4.3 0 0 0-.05.66c0 3.35 3.9 6.07 8.71 6.07s8.71-2.72 8.71-6.07a4.3 4.3 0 0 0-.05-.65A2.2 2.2 0 0 0 22 11.82zM7 13.4a1.56 1.56 0 1 1 3.12 0 1.56 1.56 0 0 1-3.12 0zm8.73 4.12a5.7 5.7 0 0 1-3.73 1.16 5.7 5.7 0 0 1-3.73-1.16.42.42 0 1 1 .56-.62A4.9 4.9 0 0 0 12 17.85a4.9 4.9 0 0 0 3.17-.95.42.42 0 0 1 .56.62zm-.29-2.56a1.56 1.56 0 1 1 0-3.12 1.56 1.56 0 0 1 0 3.12z"/></svg>
+        </a>
+        <a href="https://x.com/GopherMobileApp" aria-label="X" title="X">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.22-6.82-5.97 6.82H1.66l7.73-8.84L1.23 2.25h6.83l4.71 6.23 5.47-6.23zm-1.16 17.52h1.83L7.01 4.13H5.04l12.04 15.64z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/company/gopher-mobile-app/" aria-label="LinkedIn" title="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Marketplace column -->
+    <div class="gf-col">
+      <h4>Marketplace</h4>
+      <ul>
+        <li><a href="gopher-request.html">Gopher Request</a></li>
+        <li><a href="gopher-connect.html">Gopher Connect</a></li>
+        <li><a href="gopher-go.html">Gopher Go</a></li>
+        <li><a href="gopher-deals.html">Deals</a></li>
+      </ul>
+    </div>
+
+    <!-- Company column — Tutorials is an expandable submenu (uses
+         <details>/<summary> so it works without JS and stays accessible) -->
+    <div class="gf-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="gopher-our-story.html">Our Story</a></li>
+        <li><a href="gopher-blog.html">Gopher Blog</a></li>
+        <li class="gf-expandable">
+          <details>
+            <summary>
+              <span>Tutorials</span>
+              <svg class="gf-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="4 6 8 10 12 6"/>
+              </svg>
+            </summary>
+            <ul class="gf-submenu">
+              <li><a href="gopher-request-101.html">Gopher Request 101</a></li>
+              <li><a href="gopher-connect-101.html">Gopher Connect 101</a></li>
+              <li><a href="gopher-go-101.html">Gopher Go 101</a></li>
+              <li><a href="gopher-deals-101.html">Gopher Deals 101</a></li>
+            </ul>
+          </details>
+        </li>
+        <li><a href="gopher-contact-us.html">Contact Us</a></li>
+        <li><a href="gopher-faqs.html">FAQs</a></li>
+      </ul>
+    </div>
+
+    <!-- Legal column -->
+    <div class="gf-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="gopher-privacy.html">Privacy Policy</a></li>
+        <li><a href="gopher-terms-of-service.html">Terms of Service</a></li>
+        <li><a href="gopher-merchant-agreement.html">Merchant Agreement</a></li>
+        <li><a href="gopher-prohibited-list.html">Prohibited List</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Bottom strip -->
+  <div class="gf-bottom">
+    <div class="gf-copyright">&copy; 2026 Gopher, Inc. All rights reserved.</div>
+    <div class="gf-signoff">Need it now? Gopher it!</div>
+  </div>
+
+</footer>
+
+<!-- =====================================================================
+     COMPONENT ENGINE  (lift verbatim into shared gopher-header.js)
+     ===================================================================== -->
+<script src="assets/js/gopher-header.js" defer></script>
+<script>
+  /* staggered entrance */
+  (function(){
+    var els=[].slice.call(document.querySelectorAll('.reveal'));
+    if(!('IntersectionObserver' in window)){ els.forEach(function(e){e.classList.add('in');}); return; }
+    var io=new IntersectionObserver(function(en){ en.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} }); },{threshold:.1, rootMargin:'0px 0px -40px 0px'});
+    els.forEach(function(e){ io.observe(e); });
+  })();
+
+  /* category filter chips */
+  (function(){
+    var chips=[].slice.call(document.querySelectorAll('.chip'));
+    var cards=[].slice.call(document.querySelectorAll('.post-card'));
+    var empty=document.querySelector('.feed-empty');
+    chips.forEach(function(chip){
+      chip.addEventListener('click', function(){
+        chips.forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        var f=chip.getAttribute('data-filter'), shown=0;
+        cards.forEach(function(card){
+          var match = (f==='all') || card.getAttribute('data-cat')===f;
+          card.classList.toggle('is-hidden', !match);
+          if(!match) card.removeAttribute('open');
+          if(match) shown++;
+        });
+        if(empty) empty.style.display = shown? 'none':'block';
+      });
+    });
+  })();
+
+  /* ease an opened story into view */
+  (function(){
+    [].slice.call(document.querySelectorAll('.post-card')).forEach(function(card){
+      card.addEventListener('toggle', function(){
+        if(card.open){
+          var top=card.getBoundingClientRect().top;
+          if(top<70 || top>window.innerHeight*0.5){ window.scrollTo({top:window.scrollY+top-86, behavior:'smooth'}); }
+        }
+      });
+    });
+  })();
+</script>
+</body>
+</html>

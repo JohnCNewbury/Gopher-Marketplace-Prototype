@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Gopher Blog</title>
+    <link>https://gophergo.io/gopher-blog.html</link>
+    <atom:link href="https://gophergo.io/feed.xml" rel="self" type="application/rss+xml" />
+    <description>Stories, plain-English guides, and the local way to get things done. Real problems, straight answers, and how neighbors get them handled with Gopher.</description>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 12 Sep 2026 09:00:00 +0000</lastBuildDate>
+    <item>
+      <title>The Gopher Marketplace, on one page</title>
+      <link>https://gophergo.io/blog-gopher-marketplace-on-one-page.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-gopher-marketplace-on-one-page.html</guid>
+      <pubDate>Sat, 12 Sep 2026 09:00:00 +0000</pubDate>
+      <category>The marketplace</category>
+      <description>Four hats, not four kinds of people. Neighbors, Service Providers, businesses, and merchants — and one Gopher in the middle holding the money, verifying everyone, and keeping score. Read it in five minutes, explain it to anyone.</description>
+    </item>
+    <item>
+      <title>Post a Deal, keep the sale, skip the delivery-app cut</title>
+      <link>https://gophergo.io/blog-merchant-deals-skip-the-delivery-app-cut.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-merchant-deals-skip-the-delivery-app-cut.html</guid>
+      <pubDate>Sat, 12 Sep 2026 09:00:00 +0000</pubDate>
+      <category>For merchants</category>
+      <description>Gopher Deals is free to list, the customer buys from you directly, and a local Gopher brings the order to their door without taking a slice of it. Here's how it works and how to get listed.</description>
+    </item>
+    <item>
+      <title>Your own Deal, in front of the whole neighborhood. Free.</title>
+      <link>https://gophergo.io/blog-service-provider-deals.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-service-provider-deals.html</guid>
+      <pubDate>Sun, 13 Sep 2026 09:00:00 +0000</pubDate>
+      <category>For Service Providers</category>
+      <description>Once you've earned it, you can post a service offer that every neighbor, business, and merchant on Gopher can see and book directly. No lead fees, no business page, no ad budget. We can't find anyone else who does this.</description>
+    </item>
+    <item>
+      <title>The marketplace your community runs on</title>
+      <link>https://gophergo.io/blog-the-marketplace-your-community-runs-on.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-the-marketplace-your-community-runs-on.html</guid>
+      <pubDate>Mon, 01 Jun 2026 09:00:00 +0000</pubDate>
+      <category>The marketplace</category>
+      <description>One app. Real local neighbors. Just about any task you can name — handled at a fair price you set. This is what a community marketplace was always supposed to be.</description>
+    </item>
+    <item>
+      <title>Real help for busy realtors</title>
+      <link>https://gophergo.io/blog-help-for-busy-realtors.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-help-for-busy-realtors.html</guid>
+      <pubDate>Wed, 22 Apr 2026 09:00:00 +0000</pubDate>
+      <category>For businesses</category>
+      <description>Showings and contracts are the easy part. It's the staging, the awkward furniture moves, and the "can you just handle this real quick?" jobs that eat your day — and don't fit any app's tidy little category.</description>
+    </item>
+    <item>
+      <title>No Gopher nearby yet? You can change that!</title>
+      <link>https://gophergo.io/blog-no-gopher-nearby-yet.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-no-gopher-nearby-yet.html</guid>
+      <pubDate>Wed, 15 Apr 2026 09:00:00 +0000</pubDate>
+      <category>For neighbors</category>
+      <description>Found us in a search but saw "no Gophers in your area"? Here's the five-minute fix: recruit a driver you already trust onto Gopher, and your next request goes straight to them.</description>
+    </item>
+    <item>
+      <title>Your on-demand local workforce</title>
+      <link>https://gophergo.io/blog-on-demand-local-workforce.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-on-demand-local-workforce.html</guid>
+      <pubDate>Mon, 30 Mar 2026 09:00:00 +0000</pubDate>
+      <category>For businesses</category>
+      <description>Slammed one week, quiet the next? Gopher Connect gives your business a vetted, on-demand crew — couriers, movers, skilled pros, and extra hands — without the cost and commitment of permanent hires. Hit the Gopher “Too Easy” Button!</description>
+    </item>
+    <item>
+      <title>Age-restricted deliveries, done right</title>
+      <link>https://gophergo.io/blog-age-restricted-deliveries.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-age-restricted-deliveries.html</guid>
+      <pubDate>Wed, 18 Mar 2026 09:00:00 +0000</pubDate>
+      <category>For neighbors</category>
+      <description>Wine for the party, a carton of cigarettes, a bottle for a gift — getting it to the right person matters as much as getting it there fast. Here's how Gopher fixed the markups, the waiting, and the limits.</description>
+    </item>
+    <item>
+      <title>Junk removal, the easy way</title>
+      <link>https://gophergo.io/blog-junk-removal-the-easy-way.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-junk-removal-the-easy-way.html</guid>
+      <pubDate>Wed, 04 Feb 2026 09:00:00 +0000</pubDate>
+      <category>For neighbors</category>
+      <description>The couch that won't fit the door. The dead fridge in the garage. The wall of moving boxes that multiplied overnight. Hauling it off shouldn't cost a fortune or a weekend.</description>
+    </item>
+    <item>
+      <title>A marketplace seniors can actually trust</title>
+      <link>https://gophergo.io/blog-a-marketplace-seniors-can-trust.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-a-marketplace-seniors-can-trust.html</guid>
+      <pubDate>Fri, 09 Jan 2026 09:00:00 +0000</pubDate>
+      <category>For neighbors</category>
+      <description>"Senior-friendly" shouldn't be a marketing line. It should mean the help is easy to ask for, shows up when it says it will, and treats you like a capable neighbor — every time.</description>
+    </item>
+    <item>
+      <title>The most worker-centric way to earn</title>
+      <link>https://gophergo.io/blog-worker-centric-way-to-earn.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-worker-centric-way-to-earn.html</guid>
+      <pubDate>Tue, 02 Dec 2025 09:00:00 +0000</pubDate>
+      <category>For Service Providers</category>
+      <description>Do all the work while someone else sets the price, takes a cut, and decides when you get paid? Gopher Go flips that. You set the rate, you pick the jobs, and the posted price is exactly what you take home.</description>
+    </item>
+    <item>
+      <title>Restaurant delivery without the 30% bite</title>
+      <link>https://gophergo.io/blog-restaurant-delivery-without-the-30-percent-bite.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-restaurant-delivery-without-the-30-percent-bite.html</guid>
+      <pubDate>Wed, 12 Nov 2025 09:00:00 +0000</pubDate>
+      <category>For merchants</category>
+      <description>Third-party apps can eat a third of every ticket. Gopher does restaurant and food-truck delivery a different way — at no cost to you, with drivers who know their pay up front.</description>
+    </item>
+    <item>
+      <title>Refer yourself and get the request</title>
+      <link>https://gophergo.io/blog-refer-yourself.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-refer-yourself.html</guid>
+      <pubDate>Tue, 28 Oct 2025 09:00:00 +0000</pubDate>
+      <category>For Service Providers</category>
+      <description>Referring an app usually pads the company's numbers, not your pocket. Gopher's Refer Yourself feature flips that — share your link and new requests come straight to you.</description>
+    </item>
+    <item>
+      <title>A job you'll actually dig</title>
+      <link>https://gophergo.io/blog-a-job-you-ll-actually-dig.html</link>
+      <guid isPermaLink="true">https://gophergo.io/blog-a-job-you-ll-actually-dig.html</guid>
+      <pubDate>Tue, 16 Sep 2025 09:00:00 +0000</pubDate>
+      <category>For Service Providers</category>
+      <description>Want a side hustle on your own time and your own terms — that isn't just dropping off food? Gopher lets you fill your day with the work you're good at, and get paid fast.</description>
+    </item>
+  </channel>
+</rss>

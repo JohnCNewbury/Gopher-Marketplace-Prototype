@@ -429,6 +429,9 @@ ol.brand li::before{content:counter(bl);position:absolute;left:0;top:6px;width:2
       <p>From your dashboard, open <b>Account → Personal Info</b> to review everything on file: your name, email, phone, address, date of birth, and how you found Gopher.</p>
       <h3>Payment method</h3>
       <p>You won't need this until your first request. When you're ready, your card is added securely through <b>Stripe</b>, our trusted payment partner — you can pick it (and apply a promo code) right on the Review step.</p>
+      <h3>Adding a card</h3>
+      <p>Enter the card number, expiry and security code, the <b>name on the card</b>, and the <b>billing address on your card statement</b> (street, city, state, ZIP). Your bank checks that address against the card. Then we text a <b>6-digit code</b> to the phone on your account — enter it and the card is saved. The code expires in 5 minutes and can be resent once. <b>The card is not saved until the code is confirmed.</b></p>
+      <div class="note tip"><span class="nico">🛡️</span><div><span class="h">Why the extra step?</span>It protects you and the Gophers you hire: a card can only be added by the person who holds the phone on the account, and the address check stops stolen card numbers before a request is ever placed. We keep a record of each verification to resolve payment disputes.</div></div>
       <div class="note info"><span class="nico">🔒</span><div>A photo, your contact details, and a payment method are all you need before making a request. Everything is stored securely and only used to fulfill your requests.</div></div>
     </section>
 
@@ -622,12 +625,14 @@ ol.brand li::before{content:counter(bl);position:absolute;left:0;top:6px;width:2
     <section class="section" id="confirm">
       <span class="eyebrow">After you submit</span>
       <h2>Confirm &amp; rate</h2>
-      <p>When your Gopher marks the job complete, you'll get an app notification and a text. Tap through to the confirmation screen.</p>
+      <p>When your Gopher marks the job complete and has added their photos (or chosen to skip them), you'll get an app notification and a text. Tap through to the confirmation screen.</p>
       <ol class="brand">
+        <li><b>Check the photos, if your Gopher left any.</b> On most jobs your Gopher is asked for a photo of the finished work, and it appears under <b>View pic(s) of completed request</b> right above the Confirm button. Tap any thumbnail to see it full size.</li>
         <li>Tap <b>Confirm</b> once you've verified the job was done right.</li>
         <li>Rate your Gopher on accuracy, communication, quality, and timeliness — this shapes the jobs they see next, so a job well done deserves 5 stars.</li>
         <li>Optionally add them as <b>MY Gopher</b> for next time.</li>
       </ol>
+      <div class="note info"><span class="nico">📸</span><div><span class="h">No photos there?</span>Photos are optional for your Gopher, and some jobs don't suit one — so a request with no photo isn't a red flag on its own. You're only asked to confirm once your Gopher has finished adding photos or chosen to skip them, so what you see is what there is. Judge the work, not the photo count; if something's genuinely wrong, use <b>Dispute</b> rather than withholding confirmation.</div></div>
       <div class="note warn"><span class="nico">⏳</span><div><span class="h">Confirm promptly</span>Confirming releases your Gopher's payout, so please do it as soon as the job's done — especially if they paid for items out of pocket. If you don't confirm within <b>48 hours</b>, a non-refundable auto-confirmation kicks in. Only confirm if the task was truly completed.</div></div>
       <p style="margin-top:16px;">Something wrong? Use <b>Dispute</b> instead, add a comment, and give your Gopher a chance to make it right before escalating.</p>
     </section>
@@ -637,6 +642,7 @@ ol.brand li::before{content:counter(bl);position:absolute;left:0;top:6px;width:2
       <span class="eyebrow">After you submit</span>
       <h2>History &amp; request again</h2>
       <p>Every request you've made lives under <b>Previous requests</b> in the sidebar, filtered by the pills across the top — <b>All</b> (the default), <b><span class="goto-word"><img class="go-mark" src="assets/img/go-mark.svg" alt="GO">-To&rsquo;s</span></b>, <b>Completed</b>, <b>Expired</b>, and <b>Cancelled</b>. Open any one to see the full details.</p>
+      <p>Completed requests keep their <b>photos of the finished work</b> too — open one and they're on the card, same as on the confirmation screen.</p>
 
       <h3>Two ways to run a request again</h3>
       <ul class="brand">
@@ -765,6 +771,7 @@ ol.brand li::before{content:counter(bl);position:absolute;left:0;top:6px;width:2
         <li><b>No worker, no charge.</b> If we can't connect you with a Gopher, your request simply expires — with no charge and no authorization.</li>
         <li><b>Gopher isn't auto-fulfillment.</b> It's an open marketplace; a worker decides whether your offer is worth it. A fair offer in an active area is usually accepted fast.</li>
         <li><b>Cancelling.</b> Before your Gopher starts you can cancel or repost for free; once a Gopher marks a job in-progress and/or purchases items, cancelling is subject to a flat $5 fee, and if items were already purchased you are also responsible for their cost. See the Terms for full details.</li>
+        <li><b>If your Gopher cancels.</b> If your Gopher can't finish the job after accepting it, they can release it with a reason instead of just disappearing. You'll get a notification with two options: <b>Assign New Gopher</b> reposts your request with the same offer and terms — your funds stay held, nothing is re-charged — or <b>Cancel Request</b> to release your funds and start over. Details can't be changed while you decide — to change anything, cancel and submit a new request. No action within 15 minutes and the request cancels automatically. Can't get to it in time? Support can repost it for you — the same reposting, done on your behalf, with your funds still held.</li>
       </ul>
       <div class="note warn"><span class="nico">🚩</span><div><span class="h">Never pay outside the app</span>If a Gopher ever asks for money outside Gopher, that's a terms violation — don't do it, and report it to us right away.</div></div>
     </section>
@@ -775,7 +782,7 @@ ol.brand li::before{content:counter(bl);position:absolute;left:0;top:6px;width:2
       <h2>Need help?</h2>
       <p>You're ready to go! For anything else:</p>
       <ul class="brand">
-        <li>Tap <b>More → Help Center</b> in the app, then <b>“Send us a message.”</b></li>
+        <li>Tap <b>More → Help Center → Message Support</b> in the app — it opens a chat with us right there.</li>
         <li>Browse the full <a href="gopher-faqs.html">FAQs</a> — updated weekly.</li>
         <li>Email us at <a href="mailto:support@gophergo.io">support@gophergo.io</a>.</li>
       </ul>

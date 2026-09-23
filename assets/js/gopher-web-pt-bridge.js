@@ -719,20 +719,50 @@
       return true;
     }
 
-    /* Messaging both ways. r.threads is keyed by worker name — the same store
-       the dashboard Inbox renders from, so a relayed message is a real
-       message, not a harness overlay. */
+    /* ── Messaging both ways ──────────────────────────────────────────────
+       THE APP KEEPS TWO THREAD STORES and picks between them by whether the
+       thread id carries a "::workerName" suffix — sendInboxMessage() in BOTH
+       gopher-request.html and gopher-connect.html:
+
+           crew member    ->  rec.threads[workerName]
+           single worker  ->  rec.thread          <-- every PT record
+
+       This file used to know only the crew map. A PT record has no crew, and
+       the requester's own Message button calls openInboxThread(r.id) with NO
+       "::", so the app wrote to rec.thread while this read rec.threads[name].
+       The requester typed, saw their message render, and the Gopher's phone
+       stayed silent — which is the exact symptom the comment further down
+       already describes. That earlier fix corrected the `from` VALUE and left
+       the STORE wrong, so the bug survived underneath its own post-mortem.
+
+       An existing crew thread still wins, so a genuine multi-worker
+       conversation is untouched. */
+    function threadFor(rec, workerName, create) {
+      if (rec.threads && rec.threads[workerName]) return rec.threads[workerName];
+      if (create && !rec.thread) rec.thread = [];
+      return rec.thread || null;
+    }
+
+    /* The Inbox renders ${m.time} RAW, so a message without one prints the
+       string "undefined" in the bubble. Same format the app formats with. */
+    function msgTime(at) {
+      return (at ? new Date(at) : new Date())
+        .toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    }
+
     function message(id, workerName, text, opts) {
       var rec = raw(id);
       if (!rec) return false;
-      rec.threads = rec.threads || {};
-      if (!rec.threads[workerName]) rec.threads[workerName] = [];
-      rec.threads[workerName].push({
+      var thread = threadFor(rec, workerName, true);
+      var m = {
         from: (opts && opts.from) || 'worker',
         text: String(text || ''),
-        flagged: !!(opts && opts.flagged),
-        at: (opts && opts.at) || null
-      });
+        time: msgTime(opts && opts.at)
+      };
+      /* `f`, not `flagged` — the Inbox tests (m.f && m.from !== 'me') to draw
+         the terms-violation note. `flagged` is a word this file invented. */
+      if (opts && opts.flagged) m.f = 1;
+      thread.push(m);
       rec.needsAttention = true;
       host.render();
       return true;
@@ -746,8 +776,17 @@
        sit in the thread. Read the app's vocabulary, not an invented one. */
     function messagesFrom(id, workerName) {
       var rec = raw(id);
-      if (!rec || !rec.threads || !rec.threads[workerName]) return [];
-      return rec.threads[workerName].filter(function (m) { return m.from === 'me'; });
+      if (!rec) return [];
+      var thread = threadFor(rec, workerName, false);
+      if (!thread) return [];
+      /* Normalised on the way out: the app stores the flag as `f`, the harness
+         reads `.flagged`. Translating here is this file's job — it is the
+         adapter. Returning raw app messages made every relayed requester
+         message arrive on the phone unflagged. */
+      return thread.filter(function (m) { return m.from === 'me'; })
+                   .map(function (m) {
+                     return { text: m.text, flagged: !!m.f, time: m.time };
+                   });
     }
 
     function gopherCancelled(id, reason) {

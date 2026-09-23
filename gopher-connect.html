@@ -2799,7 +2799,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .ts-promo-icon img.ts-promo-logo { height:42px; width:auto; display:block; }
   /* v75 — real TrustShield mark inside the modal header */
   .ts-modal-shield img.ts-modal-logo { height:72px; width:auto; display:block; }
-  /* v75 — "app-only + iDenfy live selfie" callout in the TrustShield modal */
+  /* v75 — "app-only + live selfie" callout in the TrustShield modal */
   .ts-modal-note {
     text-align:left;
     background:#f3f6fc;
@@ -3669,6 +3669,22 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .addpay-scan-btn.scanned { border-color:var(--green); color:var(--green-dark); background:var(--green-light); }
   .addpay-mini-row { display:flex; gap:8px; }
   .addpay-mini-row .deal-field { flex:1; }
+  /* G40-11: billing address + SMS-code step on every card add. Flex children
+     beat the UA's [hidden] rule — pin it inside this modal. */
+  .addpay-modal [hidden] { display:none !important; }
+  .addpay-sec { font-family:'Nunito',sans-serif; font-weight:800; font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin:6px 0 4px; }
+  .addpay-note { font-family:'DM Sans',sans-serif; font-size:11.5px; color:#6b7280; line-height:1.5; margin:0 0 8px; }
+  .addpay-modal .gc-modal-btn:disabled { background:#c9ccd6; cursor:not-allowed; }
+  .addpay-otp { display:flex; flex-direction:column; align-items:center; gap:12px; text-align:center; }
+  .addpay-otp h5 { margin:0; font-family:'Nunito',sans-serif; font-weight:800; font-size:16px; color:#002461; }
+  .addpay-otp p { margin:0; font-family:'DM Sans',sans-serif; font-size:13px; color:#6b7280; line-height:1.5; }
+  .addpay-otp-boxes { display:flex; gap:8px; }
+  .addpay-otp-boxes input { width:40px; height:48px; text-align:center; font-size:22px; font-weight:700; border:1.5px solid #d8dee6; border-radius:10px; }
+  .addpay-otp-meta { font-family:'DM Sans',sans-serif; font-size:12px; color:#6b7280; }
+  .addpay-otp-meta.expired { color:#c2410c; font-weight:600; }
+  .addpay-otp-link { background:none; border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:12.5px; color:#1CB061; text-decoration:underline; }
+  .addpay-otp-link:disabled { color:#6b7280; cursor:default; text-decoration:none; }
+  .addpay-otp-cancel { background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; color:#6b7280; }
   .addpay-divider { display:flex; align-items:center; gap:10px; margin:16px 0 10px; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:11px; }
   .addpay-divider::before, .addpay-divider::after { content:''; height:1px; background:#eef0f5; flex:1; }
   .addpay-opt { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:#fff; border:1.5px solid #eef0f5; border-radius:12px; padding:10px 12px; margin-bottom:8px; cursor:pointer; font-family:inherit; transition:border-color .15s; }
@@ -10139,12 +10155,12 @@ const PAY_BADGES = {
       return out.join(' ');
     }
 
+    // G40-38 owner rulings 2026-09-06: PayPal/Venmo excluded (not available through Stripe for
+    // a US account); no wallet carries a fee different from a card, so no fee tag.
     const wallets = [
       { key:'applepay',  note:'One-tap with Face ID / Touch ID' },
       { key:'googlepay', note:'One-tap on Android & Chrome' },
-      { key:'paypal',    note:'Includes Venmo for linked accounts', fee:true },
-      { key:'cashapp',   note:'Pay from your Cash App balance', fee:true },
-      { key:'venmo',     note:'US only \u00b7 opens the Venmo app', fee:true },
+      { key:'cashapp',   note:'Pay from your Cash App balance \u00b7 cover the cost of items in full: a Cash App request can\'t be adjusted upward' },
     ];
     const walletRows = wallets.map(function(w){
       var m = PAY_METHODS[w.key]; var badge = PAY_BADGES[w.key] || m.shortLabel;
@@ -10173,9 +10189,24 @@ const PAY_BADGES = {
       +   '<div class="deal-field"><label for="addpayName">Name on card</label><input type="text" id="addpayName" autocomplete="cc-name" placeholder="Marcus Hale"></div>'
       +   '<div class="deal-field"><div class="addpay-lbl-row"><label for="addpayCardNum">Card number</label><button type="button" class="addpay-scan-link" id="addpayScan">\uD83D\uDCF7 Scan</button></div><input type="text" id="addpayCardNum" inputmode="numeric" autocomplete="cc-number" placeholder="1234 5678 9012 3456"></div>'
       +   '<div class="addpay-mini-row"><div class="deal-field"><label for="addpayExp">Exp date</label><input type="text" id="addpayExp" inputmode="numeric" placeholder="MM / YY" maxlength="7"></div><div class="deal-field"><label for="addpayCvc">Security code</label><input type="text" id="addpayCvc" inputmode="numeric" placeholder="000" maxlength="3"></div></div>'
+      // G40-11: billing address is required — the issuer checks it against the card (AVS)
+      +   '<div class="addpay-sec">Billing address (as on the card statement)</div>'
+      +   '<div class="deal-field"><label for="addpayAddr1">Street address</label><input type="text" id="addpayAddr1" autocomplete="billing address-line1" placeholder="Street address"></div>'
+      +   '<div class="addpay-mini-row"><div class="deal-field" style="flex:2"><label for="addpayCity">City</label><input type="text" id="addpayCity" autocomplete="billing address-level2" placeholder="City"></div><div class="deal-field"><label for="addpayState">State</label><input type="text" id="addpayState" autocomplete="billing address-level1" placeholder="NC" maxlength="2"></div><div class="deal-field"><label for="addpayZip">ZIP</label><input type="text" id="addpayZip" inputmode="numeric" autocomplete="billing postal-code" placeholder="27601" maxlength="10"></div></div>'
+      +   '<p class="addpay-note">Your bank checks this address against the card. After you add the card, we text a 6-digit code to the phone on your account to confirm it\'s you before the card is saved.</p>'
       +   '<div class="deal-field"><label for="addpayNick">Name your card (optional)</label><input type="text" id="addpayNick" placeholder="e.g. BofA debit"></div>'
       +   '<div class="addpay-toggle-row"><span>Set as default payment method</span><button type="button" class="toggle-switch on" id="addpayDefault" aria-label="Set as default payment method"></button></div>'
-      +   '<button type="button" class="gc-modal-btn" id="addpayAddCard">Add card</button>'
+      +   '<button type="button" class="gc-modal-btn" id="addpayAddCard" disabled>Add card</button>'
+      // G40-11: the SMS-code step — shown after the card details, before the card is saved
+      +   '<div class="addpay-otp" id="addpayOtp" hidden>'
+      +     '<h5>Confirm it\'s you</h5>'
+      +     '<p>We sent a 6-digit code to the phone on your account (<b>***-***-1234</b>). Enter it to save this card. The card is not saved until the code is confirmed. <em>(Demo: any 6 digits work.)</em></p>'
+      +     '<div class="addpay-otp-boxes" id="addpayOtpBoxes">' + '<input type="tel" inputmode="numeric" maxlength="1" aria-label="Digit">'.repeat(6) + '</div>'
+      +     '<div class="addpay-otp-meta" id="addpayOtpMeta">Code expires in 5:00</div>'
+      +     '<button type="button" class="gc-modal-btn" id="addpayOtpVerify" disabled>Verify and save card</button>'
+      +     '<button type="button" class="addpay-otp-link" id="addpayOtpResend">Resend code</button>'
+      +     '<button type="button" class="addpay-otp-cancel" id="addpayOtpCancel">Cancel \u2014 don\'t save this card</button>'
+      +   '</div>'
       +   '<div class="addpay-divider"><span>or use an e-wallet</span></div>'
       +   walletRows
       +   '<p class="addpay-note">Apple Pay appears on Apple devices, Google Pay on Android &amp; Chrome. Any wallet fee is shown before you confirm payment.</p>'
@@ -10207,6 +10238,60 @@ const PAY_BADGES = {
     var numEl = document.getElementById('addpayCardNum');
     numEl.addEventListener('input', function(){ numEl.value = group(numEl.value, detectBrand(numEl.value)); refresh(); });
     document.getElementById('addpayName').addEventListener('input', refresh);
+    // G40-11: Add card stays disabled until all five fields are valid
+    var G = function(id){ return document.getElementById(id); };
+    function billingValid(){ return !!(G('addpayAddr1').value.trim() && G('addpayCity').value.trim() && G('addpayState').value.trim().length === 2 && /^\d{5}(-\d{4})?$/.test(G('addpayZip').value.trim())); }
+    function formValid(){
+      if(editKey) return !!G('addpayName').value.trim();
+      var d = G('addpayCardNum').value.replace(/\D/g,''); var b = detectBrand(d);
+      var cvcNeed = (BRAND_META[b] && BRAND_META[b].cvc) || 3;
+      return !!G('addpayName').value.trim() && !!b && d.length >= 15 && /^\d{2}\s?\/\s?\d{2}$/.test(G('addpayExp').value) && G('addpayCvc').value.length === cvcNeed && billingValid();
+    }
+    function refreshAdd(){ G('addpayAddCard').disabled = !formValid(); }
+    ['addpayName','addpayCardNum','addpayExp','addpayCvc','addpayAddr1','addpayCity','addpayState','addpayZip'].forEach(function(id){ G(id).addEventListener('input', refreshAdd); });
+    G('addpayState').addEventListener('input', function(){ this.value = this.value.replace(/[^a-z]/gi,'').toUpperCase().slice(0,2); });
+    G('addpayZip').addEventListener('input', function(){ this.value = this.value.replace(/[^\d-]/g,'').slice(0,10); });
+    // ---- G40-11: SMS-code step (demo). Production texts the ACCOUNT phone and attaches the card
+    //      only after POST /users/payment_methods/verify/confirm succeeds.
+    var otpPending = null, otpTimer = null, otpSecs = 300, otpResent = false;
+    var otpBoxes = function(){ return Array.prototype.slice.call(G('addpayOtpBoxes').querySelectorAll('input')); };
+    var otpCode = function(){ return otpBoxes().map(function(b){ return b.value; }).join(''); };
+    var formEls = function(){ return Array.prototype.slice.call(ov.querySelectorAll('.addpay-cardprev, .deal-field, .addpay-mini-row, .addpay-sec, .addpay-note, .addpay-toggle-row, #addpayAddCard, .addpay-divider, [data-addpay], .addpay-note')); };
+    function otpTick(){
+      otpSecs = Math.max(0, otpSecs - 1); var m = Math.floor(otpSecs/60), s = otpSecs%60;
+      G('addpayOtpMeta').textContent = otpSecs ? ('Code expires in ' + m + ':' + (s<10?'0':'') + s) : ('That code has expired.' + (otpResent ? ' Add the card again to get a new code.' : ' Send a new one.'));
+      G('addpayOtpMeta').classList.toggle('expired', !otpSecs);
+      if(!otpSecs){ clearInterval(otpTimer); G('addpayOtpVerify').disabled = true; }
+    }
+    function otpStart(){
+      otpSecs = 300; clearInterval(otpTimer); otpTimer = setInterval(otpTick, 1000);
+      otpBoxes().forEach(function(b){ b.value=''; }); G('addpayOtpVerify').disabled = true;
+      G('addpayOtpResend').disabled = otpResent; G('addpayOtpResend').textContent = otpResent ? 'Code already resent once' : 'Resend code';
+      G('addpayOtpMeta').classList.remove('expired'); G('addpayOtpMeta').textContent = 'Code expires in 5:00';
+      formEls().forEach(function(el){ el.hidden = true; }); G('addpayOtp').hidden = false;
+      otpBoxes()[0].focus();
+    }
+    function otpEnd(){
+      clearInterval(otpTimer); otpPending = null; otpResent = false;
+      formEls().forEach(function(el){ el.hidden = false; }); G('addpayOtp').hidden = true;
+    }
+    otpBoxes().forEach(function(b, i, all){
+      b.addEventListener('input', function(){
+        var v = b.value.replace(/\D/g,'');
+        if(v.length > 1){ v.slice(0,6).split('').forEach(function(c,j){ if(all[j]) all[j].value = c; }); all[Math.min(v.length,6)-1].focus(); }
+        else { b.value = v; if(v && all[i+1]) all[i+1].focus(); }
+        G('addpayOtpVerify').disabled = !(otpCode().length === 6 && otpSecs > 0);
+      });
+      b.addEventListener('keydown', function(e){ if(e.key === 'Backspace' && !b.value && all[i-1]) all[i-1].focus(); });
+    });
+    G('addpayOtpVerify').addEventListener('click', function(){
+      if(otpCode().length !== 6 || !otpPending) return;
+      var p = otpPending; otpEnd();                     // demo: any 6 digits verify
+      if(window.__addPayMethod) window.__addPayMethod(p.entry, p.isDefault);
+      state.paymentMethod = p.entry.key; state.paymentPickerOpen = false; close(); render();
+    });
+    G('addpayOtpResend').addEventListener('click', function(){ if(otpResent) return; otpResent = true; otpStart(); });
+    G('addpayOtpCancel').addEventListener('click', function(){ otpEnd(); });
     var expEl = document.getElementById('addpayExp');
     expEl.addEventListener('input', function(){ var d = expEl.value.replace(/\D/g,'').slice(0,4); expEl.value = d.length>2 ? d.slice(0,2)+' / '+d.slice(2) : d; refresh(); });
     document.getElementById('addpayCvc').addEventListener('input', function(){ this.value = this.value.replace(/\D/g,''); });
@@ -10248,9 +10333,11 @@ const PAY_BADGES = {
       var last4 = rawNum.slice(-4);
       var key = 'card_' + last4 + '_' + Math.random().toString(36).slice(2,6);
       var bn = (b === 'amex' ? 'American Express' : b === 'mastercard' ? 'Mastercard' : b === 'discover' ? 'Discover' : 'Visa');
-      var entry = { key:key, brand:b, shortLabel:(BRAND_META[b] ? BRAND_META[b].label : 'CARD'), name:(nick || bn), cardholder:nm, nick:nick, sub:'Ending in ' + last4 + (ex ? ' \u00b7 Exp ' + ex : '') };
-      if(window.__addPayMethod) window.__addPayMethod(entry, isDefault);
-      state.paymentMethod = key; state.paymentPickerOpen = false; close(); render();
+      var billing = { line1:G('addpayAddr1').value.trim(), city:G('addpayCity').value.trim(), state:G('addpayState').value.trim().toUpperCase(), zip:G('addpayZip').value.trim() };
+      var entry = { key:key, brand:b, shortLabel:(BRAND_META[b] ? BRAND_META[b].label : 'CARD'), name:(nick || bn), cardholder:nm, nick:nick, billing:billing, sub:'Ending in ' + last4 + (ex ? ' \u00b7 Exp ' + ex : '') };
+      // G40-11: a NEW card is not saved until the SMS code is confirmed
+      otpPending = { entry:entry, isDefault:isDefault };
+      otpStart();
     });
     ov.querySelectorAll('[data-addpay]').forEach(function(b){ b.addEventListener('click', function(){ choose(b.dataset.addpay); }); });
 
@@ -10266,7 +10353,7 @@ const PAY_BADGES = {
         document.getElementById('addpayDefault').classList.toggle('on', isDefault);
       }
     }
-    refresh();
+    refresh(); refreshAdd();
     ov.hidden = false;
   }
   window.__openAddPaymentModal = openAddPaymentModal;
@@ -14792,7 +14879,7 @@ const PAY_BADGES = {
     const updateHint = (v) => {
       hint.classList.remove('warn','over');
       if(v > model.generous){ hint.classList.add('over'); hint.textContent = 'Above suggested — faster acceptance likely'; }
-      else if(v < model.low){ hint.classList.add('warn'); hint.textContent = 'Below suggested — may take longer to match'; }
+      else if(v < model.low){ hint.classList.add('warn'); hint.textContent = 'Below suggested — may take longer to match. Gophers choose which requests to take, and the offer is the biggest factor.'; }
       else if(v === model.suggested){ hint.textContent = '$' + v + ' suggested (fair)'; }
       else { hint.textContent = 'Within the suggested range'; }
     };
@@ -15283,8 +15370,6 @@ const PAY_BADGES = {
       { key:'visa',  shortLabel:'VISA',  name:'Visa', cardholder:'Marcus Hale', sub:'Ending in 4242 · Exp 09/27', isDefault:true },
       { key:'amex',  shortLabel:'AMEX',  name:'American Express', cardholder:'Marcus Hale', sub:'Ending in 1004 · Exp 03/28' },
       { key:'ach',   shortLabel:'ACH',   name:'Bank ACH · Wells Fargo', cardholder:'Marcus Hale', sub:'Checking •••• 6781' },
-      { key:'paypal',    shortLabel:'PP',  name:'PayPal', sub:'business@acmelogistics.com' },
-      { key:'venmo',     shortLabel:'VEN', name:'Venmo', sub:'@acme-logistics' },
       { key:'applepay',  shortLabel:'AP',  name:'Apple Pay', sub:'Visa •••• 4242' },
       { key:'googlepay', shortLabel:'GP',  name:'Google Pay', sub:'Mastercard •••• 8830' },
       { key:'cashapp',   shortLabel:'CA',  name:'Cash App', sub:'$AcmeLogistics' },
@@ -21848,7 +21933,7 @@ const PAY_BADGES = {
     { match:['worker','matched','match','rating','rated','elite','pros','my gophers','select worker'],
       answer:`<b>How workers are matched:</b> we match based on proximity, category specialty, ratings, and your preferences. You can restrict each request to <b>MY Gophers</b>, <b>Gopher Elite + Pros</b>, or open it to the full workforce. After each completed request, you'll rate your Gopher and can add them to MY Gophers from the request detail screen.` },
     { match:['payment method','add card','credit card','ach','paypal','venmo','apple pay','google pay','cash app'],
-      answer:`<b>Payment methods:</b> add or change methods from the <b>Payment info</b> section in the sidebar. We support Visa, Mastercard, AmEx, ACH, PayPal, Venmo, Apple Pay, Google Pay, and Cash App. Set any method as default; you can also override per-request at the review screen.` },
+      answer:`<b>Payment methods:</b> add or change methods from the <b>Payment info</b> section in the sidebar. We support Visa, Mastercard, AmEx, ACH, Apple Pay, Google Pay, and Cash App. Every method costs you the same — there are no processing surcharges. Set any method as default; you can also override per-request at the review screen. <b>Paying with Cash App?</b> Make sure the cost of items covers the total in full: a Cash App request can't be cost-adjusted upward, so your Gopher enters the actual amount spent and the total only comes down.` },
     { match:['my gopher','preferred worker','favorite worker'],
       answer:`<b>MY Gophers</b> is your list of preferred workers. When you mark a completed request's worker as MY Gopher, future requests can be sent to your MY Gophers first before opening to the wider network — giving the people you trust first chance at the job.` },
     { match:['account','user','admin','users & access','invite'],
