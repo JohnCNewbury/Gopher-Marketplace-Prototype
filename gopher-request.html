@@ -12454,7 +12454,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       dupKey: computeRequestDupKey(),
       perWorkerCost: perWorker,
       workersNeeded,
-      amountLabel: perWorker ? `$${(perWorker * workersNeeded).toFixed(2)} total` : '',
+      /* SAY 'total' ONLY IF IT IS ONE. This printed the labour figure and called
+         it the total, ignoring costOfItems computed six lines up - so a purchase
+         job read "$21.00 total" while the Gopher fronted $100 and was owed $121,
+         and this app's OWN detail sheet already itemised Total $121.00. Three
+         surfaces, two answers. */
+      amountLabel: (function(){
+        var cog = state.itemsPurchased ? (parseFloat(String(state.costOfItems).replace(/[^0-9.]/g,'')) || 0) : 0;
+        var tot = perWorker * workersNeeded + cog;
+        return tot ? `$${tot.toFixed(2)} total` : '';
+      })(),
       when: whenForDash,
       scheduledForLater: state.scheduleType !== 'now',
       ageRestricted: state.ageRestricted,
@@ -21928,7 +21937,15 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     // workers they'd hired. Now in-progress/scheduled/active requests still
     // show their hired workers with Review profile + Message (Hire/Consider/
     // Deny don't apply once the job is running, so those buttons are hidden).
-    const isLive = r.status === 'in-progress' || r.status === 'active' || r.status === 'scheduled';
+    /* "Has the job started?" - NOT "is it running right now?". 'completed' was
+       missing, and because every branch below asks `!isLive` to decide whether
+       HIRING-time controls belong on screen, a finished job fell all the way back
+       to the hiring view: the worker row grew its "Remove" button again and the
+       start-job bar reappeared with the pre-start labour figure, directly under a
+       banner reading "Request Completed by ...". All six readers of this flag want
+       post-start to include post-completion. */
+    const isLive = r.status === 'in-progress' || r.status === 'active'
+                || r.status === 'scheduled'   || r.status === 'completed';
 
     // If the open profile belongs to a different request (user navigated away
     // and into another), drop it so we never show the wrong worker.
@@ -24598,6 +24615,12 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     opts = opts || {};
     _sessionUserProfile = opts;   // captured for Gopher Deals eligibility / city / age gate
     const name = (opts.name || 'John Newbury').trim();
+    /* The signed-in name lived only in the DOM and a closure, so DASH_DATA.profile
+       had no `name` at all - and the PT bridge reads exactly that to tell the
+       Gopher who hired them. It fell back to the literal 'A requester', which the
+       Go app then used AS a name: "Message A", "A requester controls the payout".
+       Owner ruling 2026-09-23: once accepted, both parties see real names. */
+    try { if(DASH_DATA && DASH_DATA.profile) DASH_DATA.profile.name = name; } catch(_){}
     const first = name.split(/\s+/)[0] || 'there';
     // Populate identity fields
     const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };

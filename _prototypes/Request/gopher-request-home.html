@@ -1056,6 +1056,14 @@ function statusText(r){
  }
  if(r.stage==='scheduled') return 'Scheduled · '+(r.timingLabel||r.when||'booked for later');
  if(r.stage==='accepted'){ var n=r.accepted||0; return '<b>'+n+' Gopher'+(n!==1?'s':'')+'</b> accepted — ready to review'; }
+ /* COMPLETED. There was no branch for it, so a finished job fell through to the
+    broadcasting copy at the bottom of this function and told the requester we
+    were still "Finding Gophers near you..." - while the web pane showed it
+    complete and the Gopher's phone showed it awaiting confirmation. The most
+    misleading default that fallback could have had. */
+ if(r.stage==='completed') return r.confirmed
+   ? '<b>Completed</b> · confirmed'
+   : '<b>Completed</b> · confirm to release payment';
  // Submitted (broadcasting) — Need ASAP requests carry the 1-hour expiry ON the card so the
  // window is evident without opening details.
  if((r.stage==='searching'||r.stage==='pending') && r.asap && r.submittedAt){
@@ -2207,7 +2215,8 @@ function openDetails(order){
   var money=function(v){ return '$'+Number(v||0).toFixed(2); };
   var cat=(typeof CATLABEL!=='undefined'&&CATLABEL[r.cat])?CATLABEL[r.cat]:(r.cat||'Request');
   var bids=!!r.bids, hasPickup=!!(r.hasPickup&&r.pickup);
-  var stat=r.stage==='active'?'In progress':(r.stage==='scheduled'?'Scheduled':(r.stage==='accepted'?'Gopher accepted':'Finding Gophers near you'));
+  // Same completed gap as the subtitle above - see the note there.
+  var stat=r.stage==='active'?'In progress':(r.stage==='scheduled'?'Scheduled':(r.stage==='completed'?(r.confirmed?'Completed':'Completed · confirm to release payment'):(r.stage==='accepted'?'Gopher accepted':'Finding Gophers near you')));
   var row=function(l,v){ return (v!=null&&v!=='')?'<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #f0eef2;font-family:\'DM Sans\',sans-serif;font-size:13px;"><span style="color:#8a94a3;font-weight:600;flex:0 0 auto;">'+l+'</span><span style="color:#002461;font-weight:700;text-align:right;max-width:62%;">'+v+'</span></div>':''; };
   var wc=+r.workers||1;
   var html='<div style="margin-top:4px;">'

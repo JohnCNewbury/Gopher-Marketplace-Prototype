@@ -492,7 +492,14 @@
           descriptionFull: (g.description || g.scope || '').trim(),
           perWorkerCost: pay,
           workersNeeded: workers,
-          amountLabel: pay ? ('$' + (pay * workers).toFixed(2) + ' total') : '',
+          /* SAY 'total' ONLY IF IT IS ONE. This printed the labour figure and
+             called it the total, so a purchase job read "$21.00 total" on the web
+             while the Gopher's phone showed $21 profit + $100 fronted = $121 and
+             the request app's own sheet showed Total $121.00. The requester owes
+             both halves; the app already had it right. */
+          amountLabel: (pay || cost)
+            ? ('$' + (pay * workers + cost).toFixed(2) + ' total')
+            : '',
           when: g.when || g.timingLabel || '',
           scheduledForLater: !!g.scheduledForLater,
           ageRestricted: !!g.ageRestricted,
