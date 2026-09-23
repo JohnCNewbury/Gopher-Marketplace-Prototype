@@ -256,12 +256,12 @@
   var injected, offered, hired, countered, counterDecided, statusSeen,
       goMsgSeen, reqMsgSeen, goCancelSeen, reqCancelSeen, adjustSeen, counterPending,
       startNarrated, adjustPending, adjustDecided, disputeSeen, navSeen,
-      noShowSeen, noShowDone;
+      noShowSeen, noShowDone, confirmSeen, ratedSeen;
   function clearRelays(){
     injected={}; offered={}; hired={}; countered={}; counterDecided={}; statusSeen={};
     startNarrated={}; orderSurface={}; offSurfaceWarned={}; mirrored={};
     adjustPending={}; adjustDecided={}; disputeSeen={}; navSeen={};
-    noShowSeen={}; noShowDone={};
+    noShowSeen={}; noShowDone={}; confirmSeen={}; ratedSeen={};
     goMsgSeen={}; reqMsgSeen={}; goCancelSeen={}; reqCancelSeen={}; adjustSeen={};
     counterPending={};
   }
@@ -570,6 +570,44 @@
           }
           if(j>rseen) status('Message delivered to the Gopher on '+id+'. 💬');
           reqMsgSeen[id]=j;
+        }
+      }
+    }catch(_){}
+  }
+
+  /* ═══ Web → Go : the requester confirms completion (and maybe rates) ════
+     __ptConfirmed and __ptRated were implemented on the Go phone and NEVER
+     CALLED FROM HERE — two dead entry points. So the requester confirmed, the
+     web pane and the Request app both moved to "Completed", and the Gopher's
+     phone sat on "Pending confirmation — John Newbury controls the payout"
+     forever. Reported from the deck walkthrough.
+
+     Worth naming how it hid: my earlier sync audit checked that every symbol
+     the harness CALLS exists on the Go side (8/8) and never the reverse. An
+     orphaned handler is invisible to a one-directional check.
+
+     Confirm and rating are DELIBERATELY SEPARATE, matching the app: confirm
+     releases the payout on its own, a rating never does (INV-RATING, ruled
+     2026-07-12). So they get their own seen-markers and fire independently. */
+  function watchConfirm(){
+    try{
+      var w=R(), g=W(); if(!(w && w.__ptJobs && g)) return;
+      var list=g.all()||[];
+      for(var i=0;i<list.length;i++){
+        var r=list[i]; if(!r || !r.order) continue;
+        if(!w.__ptJobs[r.order]) continue;                     // Go not ready — retry next tick
+
+        if(r.confirmed && !confirmSeen[r.order] && w.__ptConfirmed){
+          try{ w.__ptConfirmed(r.order); }catch(_){ continue; }
+          confirmSeen[r.order]=true;
+          status('You <b>confirmed</b> '+r.order+' → the Gopher\'s phone flips to '
+            +'<b>Confirmed · paid out</b>. Payment is released; the rating is separate '
+            +'and optional.');
+        }
+
+        if(r.rating != null && !ratedSeen[r.order] && w.__ptRated){
+          try{ w.__ptRated(r.order, r.rating, !!r.favorited); }catch(_){ continue; }
+          ratedSeen[r.order]=true;
         }
       }
     }catch(_){}
@@ -1280,7 +1318,7 @@
        navigating away would lose them. */
     try{ var _g=W(); if(_g) _g.persist(); }catch(_){}
     watchCounter(); watchCounterDecision();
-    watchStatus(); watchNoShow(); watchNavigate(); watchAdjust(); watchAdjustDecision(); watchDispute(); watchMessages();
+    watchStatus(); watchNoShow(); watchNavigate(); watchAdjust(); watchAdjustDecision(); watchDispute(); watchMessages(); watchConfirm();
     watchGoCancel(); watchReqCancel();
     /* LAST, deliberately. Every relay above can move an order, and the app pane
        should show the state AFTER this tick's work rather than the state before

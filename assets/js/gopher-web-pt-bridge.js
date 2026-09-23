@@ -351,7 +351,13 @@
         gCancelled: !!rec.__ptGopherCancelled,
         cancelReason: rec.__ptCancelReason || null,
         confirmed: !!rec.confirmed,
-        rating: rec.__ptRating || null,
+        /* `__ptRating` is a field NOTHING writes. resolveCompletion() stores the
+           stars on `ratingValue` and the favourite on `favoritedByRequestor`,
+           so this projected null forever and the worker's phone never learned
+           the requester had rated them. Read the app's own vocabulary; keep
+           __ptRating as a fallback in case an older record carries it. */
+        rating: (rec.ratingValue != null ? rec.ratingValue : (rec.__ptRating || null)),
+        favorited: !!rec.favoritedByRequestor,
         /* The web owns this state machine: 'entry' (reason box open) →
            'disputed' (submitted). `disputeReason` is the requester's own words,
            read straight from #disputeReason — do not paraphrase it onward. */
