@@ -367,7 +367,21 @@
         /* money + crew */
         bids: !!rec.bidsMode,
         pay: +rec.perWorkerCost || 0,
-        cost: +rec.costOfItems || 0,
+        /* THE AGREED COST, NOT THE POSTED ONE. Accepting a counter-offer or a
+           cost adjustment writes the new figure to `reviewSnapshot.costOfItems`
+           and leaves `rec.costOfItems` at the original (gopher-request.html
+           ~22974 and ~23081 set snap.costOfItems and r.perWorkerCost, never
+           r.costOfItems). The web DETAIL renders from the snapshot, so it was
+           right; this projection read the record, so the Request app showed
+           'Cost of items $95.00 / Total $116.00' beside a Gopher phone reading
+           '+$125 / $146' for the same order. Same number, two sources, and the
+           one nobody was reading was the stale one.
+           The snapshot always exists — ensureSnapshot() below guarantees it —
+           and starts life equal to the posted cost, so preferring it is never
+           worse and is right the moment anything is renegotiated. */
+        cost: +((rec.reviewSnapshot && rec.reviewSnapshot.costOfItems != null)
+                 ? rec.reviewSnapshot.costOfItems
+                 : rec.costOfItems) || 0,
         workers: +rec.workersNeeded || 1,
         offerBand: rec.offerBand || null,
         workerSelection: (function (v) {
