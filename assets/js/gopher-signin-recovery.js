@@ -64,14 +64,28 @@
 
   var overlay = null;
 
+  /* ⛔ INJECTED AT LOAD, NOT ON open(). This stylesheet carries `.gr-lost-link`,
+     and that class is on a button sitting in the PAGE from first paint — not on
+     anything inside the modal. While the CSS was injected lazily by open(), the
+     "Lost access to this number?" button rendered as a raw browser button: grey
+     UA chrome, border and all. Tapping it fixed the look, because tapping is what
+     injected the rule — which is exactly what made it read as a highlight state
+     rather than as missing CSS.
+
+     gopher-go.html already hit this and restated the rule in its own <style>
+     (see the comment beside `.gr-lost-link` there) because it deliberately does
+     not load this module. The three demo portals had no such cover. */
+  function ensureCss() {
+    if (document.getElementById('grCss')) return;
+    var st = el('style'); st.id = 'grCss'; st.textContent = CSS;
+    document.head.appendChild(st);
+  }
+
   function open(cfg) {
     // cfg: { portal, email, emailVerified, dob (any format, digits compared), phone,
     //        onRecovered(newDigits) }  — demo account values, nothing persists.
     if (overlay) overlay.remove();
-    if (!document.getElementById('grCss')) {
-      var st = el('style'); st.id = 'grCss'; st.textContent = CSS;
-      document.head.appendChild(st);
-    }
+    ensureCss();
     overlay = el('div', 'gr-overlay');
     var card = el('div', 'gr-card');
     overlay.appendChild(card);
@@ -208,6 +222,10 @@
     document.body.appendChild(overlay);
     show('email');
   }
+
+  /* The script is `defer`red on all three portals, so the document is parsed
+     and document.head exists by the time this runs. */
+  ensureCss();
 
   window.GopherRecovery = { open: open };
 })();
