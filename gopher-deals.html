@@ -3048,6 +3048,7 @@
         <li><span class="stat-dot stat-navy"></span><span class="stat-body"><span class="stat-kicker">Workers near by</span><span class="stat-txt"><strong id="worker-count">272</strong> Workers ready to help</span></span></li>
         <li class="stat-total"><span class="stat-eyes">👀💸</span><span class="stat-body"><span class="stat-kicker">Eyeballs on your deal!</span><span class="stat-txt"><strong id="audience-total">1,812</strong> Total Eyeballs</span></span></li>
       </ul>
+      <p class="radius-hint" style="margin:-14px 0 18px">Live from the Gopher marketplace. Each dot stands in a group of 3 or more, placed to within 1&ndash;10&nbsp;km.</p>
       <button class="panel-cta" onclick="closeAudience();openModal('merchant');">Add my business →</button>
     </aside>
     <div id="audience-map"><div class="map-loading" id="map-loading">Loading your audience…</div></div>
@@ -3738,19 +3739,36 @@
 
 </footer>
 
-<script src="assets/js/gopher-deals-audience.js"></script>
 <script>
-  // ── Audience map — data lives in assets/js/gopher-deals-audience.js ──
+  // ── Audience map — LIVE counts from the production API (2026-09-23) ──
   var MEDIAN_CENTER=[35.69331, -78.84201];
+  /* Owner, 2026-09-23: "It needs to read all real live data now."
+     The map used to read a baked file (assets/js/gopher-deals-audience.js):
+     26,133 points, North Carolina only, frozen in July, with ~1 m coordinates
+     served publicly — an address in Sherman Oaks showed zero. It now asks
+       GET https://api.gophergo.io/api/v1/deals/audience?lat=..&lng=..
+     (gopher-backend-api, helpers/deals_audience.js — MRs !638, !640), which
+     returns COUNTS ONLY:
+       rings.customers / rings.workers — people within 1..25 mi, exact, so the
+                                         slider never refetches;
+       cells [[lat,lng,customers,workers,size]] — groups of 3 or more, never a
+                                         person: ~1 km where dense, rolled up to
+                                         ~5 / ~10 km in thin markets.
+     Who counts (owner ruling): every account that can open an app, whatever
+     its status; deleted accounts do not; someone with both roles counts once,
+     as a Requester. Dots are scattered inside their group's cell from a seed of
+     the cell's own coordinates, so they hold still on redraw. Counts come ONLY
+     from rings — dots are illustration. */
+  var AUD_API='https://api.gophergo.io/api/v1/deals/audience';
+  var _aud=null,_audSeq=0;
 
   /* ===== Gopher Deals — Google Maps + real address + real audience =====
-     Address recognition uses Google Maps (Places + Geocoding). The audience dots
-     come from a privacy-safe, client-side dataset (assets/js/gopher-deals-audience.js:
-     ZIP-centroid + jitter, no real home coordinates, no backend / no network calls).
-     If Maps is briefly unavailable, we fall back to the regional view. */
+     Address recognition uses Google Maps (Places + Geocoding); the audience is
+     live from the API above. If Maps is briefly unavailable, we fall back to
+     the regional view. */
   var MARKER_CAP = 4000;   // max dots drawn (counts stay exact); evenly sampled, keeps it smooth
   var _map=null,_center=null,_ring=null,_pinMarkers=[],_centerMarker=null;
-  var _gmapsReady=false,_audience=[],_mapTries=0,_gcTries=0;
+  var _gmapsReady=false,_mapTries=0,_gcTries=0;
   var GOPHER_MAP_STYLE=[
     {elementType:'geometry',stylers:[{color:'#f6f7f9'}]},
     {elementType:'labels.text.fill',stylers:[{color:'#8a93a3'}]},
@@ -3854,17 +3872,39 @@
     }});
   }
 
-  // Open overlay for a resolved location: fetch real audience, then draw
+  // Open overlay for a resolved location: fetch the live audience, then draw.
+  // _audSeq drops a slow reply that lands after a newer address was picked.
   function viewAudienceAt(lat,lng){
-    _center=[lat,lng]; _mapTries=0;
-    // Load the baked audience dataset once (assets/js/gopher-deals-audience.js).
-    if(!_audience.length) _audience = window.AUDIENCE_POINTS || [];
+    _center=[lat,lng]; _mapTries=0; _aud=null;
     document.getElementById('audience-overlay').classList.add('open');
     document.body.style.overflow='hidden';
     var loaderEl=document.getElementById('map-loading');
     if(loaderEl){ loaderEl.style.display=''; loaderEl.textContent='Finding your audience…'; }
     _clearOverlays();
     setTimeout(initAudienceMap,60);
+    var mySeq=++_audSeq;
+    fetch(AUD_API+'?lat='+encodeURIComponent(lat.toFixed(5))+'&lng='+encodeURIComponent(lng.toFixed(5)),
+          {headers:{Accept:'application/json'}})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(j){
+        if(mySeq!==_audSeq) return;
+        if(!j || !j.success || !j.rings) throw new Error('bad payload');
+        _aud=j;
+        _audReadyDraw();
+      })
+      .catch(function(e){
+        if(mySeq!==_audSeq) return;
+        console.warn('[gopher-deals] live audience unavailable:', e && e.message);
+        if(loaderEl){ loaderEl.style.display=''; loaderEl.textContent='We couldn\u2019t load the live audience \u2014 please try again in a moment.'; }
+      });
+  }
+  // Draw once BOTH the map and the live data are in, whichever lands last.
+  function _audReadyDraw(){
+    if(!_map || !_ring || !_aud) return;
+    drawPins();
+    var loaderEl=document.getElementById('map-loading');
+    if(loaderEl) loaderEl.style.display='none';
+    updateCounts(true);
   }
 
   function _clearOverlays(){
@@ -3910,49 +3950,59 @@
         fillColor:'#002461', fillOpacity:1, strokeColor:'#ffffff', strokeWeight:2,
         scale:1.6, anchor:new google.maps.Point(12,22) } });
 
-    drawPins();
-    if(loaderEl) loaderEl.style.display='none';
-    updateCounts(true);
+    _audReadyDraw();   // draws now if the live data already arrived
     fitView();
     var sl=document.getElementById('radius-slider');
     if(sl){ sl.value=Math.round(RADIUS/1609.34);
       var lab=document.getElementById('radius-mi'); if(lab) lab.textContent=sl.value; }
   }
-  // iterate the FETCHED audience within the current radius (was POINTS)
-  function eachInRadius(cb){
-    var clat=_center[0], clng=_center[1];
-    var degLat=RADIUS/111320, degLng=RADIUS/(111320*Math.cos(clat*Math.PI/180));
-    for(var i=0;i<_audience.length;i++){
-      var p=_audience[i], lat=p[0], lng=p[1], role=p[2];
-      if(Math.abs(lat-clat)>degLat || Math.abs(lng-clng)>degLng) continue;
-      if(metersBetween(lat,lng,clat,clng)>RADIUS) continue;
-      cb(lat,lng,role);
+  /* Seeded scatter: the same cell always yields the same dots, so a redraw (the
+     slider) never reshuffles them. mulberry32 — a tiny, well-known PRNG. */
+  function _audRand(seed){
+    return function(){ seed|=0; seed=seed+0x6D2B79F5|0;
+      var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t;
+      return ((t^t>>>14)>>>0)/4294967296; };
+  }
+  // Dots for the current radius, from the live cells. c[4] is the cell's own
+  // size (~1 / ~5 / ~10 km); a payload without it is all fine cells.
+  function audienceDots(){
+    var out=[]; if(!_aud || !_aud.cells) return out;
+    for(var i=0;i<_aud.cells.length;i++){
+      var c=_aud.cells[i], half=(c[4]||_aud.cell_deg||0.01)/2,
+          rnd=_audRand(Math.round(c[0]*1e4)*100003+Math.round(c[1]*1e4)+Math.round(half*1e5));
+      for(var r=0;r<2;r++){                 // r=0 customers (c[2]), r=1 workers (c[3])
+        for(var k=0;k<c[2+r];k++){
+          var lat=c[0]+(rnd()*2-1)*half, lng=c[1]+(rnd()*2-1)*half;
+          if(metersBetween(lat,lng,_center[0],_center[1])<=RADIUS) out.push([lat,lng,r]);
+        }
+      }
     }
+    return out;
   }
   function drawPins(){
     for(var i=0;i<_pinMarkers.length;i++){ _pinMarkers[i].setMap(null); }
     _pinMarkers=[];
-    // If a radius holds more points than we cap-draw, take an EVEN sample across the whole
-    // set (stride) so the dots stay spread out. Drawing the first N bunched them in one corner.
-    var total=0; eachInRadius(function(){ total++; });
-    var stride = total>MARKER_CAP ? Math.ceil(total/MARKER_CAP) : 1;
-    var idx=0;
-    eachInRadius(function(lat,lng,role){
-      if((idx++ % stride)!==0) return;
-      var color = role===1 ? '#002461' : '#33D975';   // worker navy / customer green
-      _pinMarkers.push(new google.maps.Marker({ map:_map, position:{lat:lat,lng:lng},
+    if(!_map || !_aud) return;
+    // More dots than we cap-draw: take an EVEN sample (stride) so they stay spread out.
+    var dots=audienceDots();
+    var stride = dots.length>MARKER_CAP ? Math.ceil(dots.length/MARKER_CAP) : 1;
+    for(var j=0;j<dots.length;j+=stride){
+      var color = dots[j][2]===1 ? '#002461' : '#33D975';   // worker navy / customer green
+      _pinMarkers.push(new google.maps.Marker({ map:_map, position:{lat:dots[j][0],lng:dots[j][1]},
         clickable:false, optimized:true,
         icon:{ path:google.maps.SymbolPath.CIRCLE, scale:4.5, fillColor:color,
           fillOpacity:1, strokeColor:'#ffffff', strokeWeight:1.4 } }));
-    });
+    }
   }
+  // Exact counts straight off the server's cumulative rings — no dot is counted.
   function computeCounts(){
-    var c=0,w=0,b=0;
-    eachInRadius(function(lat,lng,role){ if(role===0)c++; else if(role===1)w++; else b++; });
-    return {customers:c+b, workers:w+b, total:(c+b)+(w+b)};
+    var mi=Math.max(1,Math.min(25,Math.round(RADIUS/1609.34)));
+    var c=_aud.rings.customers[mi-1]||0, w=_aud.rings.workers[mi-1]||0;
+    return {customers:c, workers:w, total:c+w};
   }
   function setText(id,n){ var el=document.getElementById(id); if(el) el.textContent=Number(n).toLocaleString(); }
   function updateCounts(animate){
+    if(!_aud) return;
     var k=computeCounts();
     if(animate){ animateCount('audience-count',k.customers); animateCount('worker-count',k.workers); animateCount('audience-total',k.total); }
     else { setText('audience-count',k.customers); setText('worker-count',k.workers); setText('audience-total',k.total); }
