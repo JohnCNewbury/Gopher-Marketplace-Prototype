@@ -230,6 +230,56 @@
         }
       }
     }
+    /* Nothing literal and nothing normalised. Last pass: CONTEXT. */
+    return findAgeContextPair(orig);
+  }
+
+  /* ── CONTEXT PASS — a flavour next to a product form ──────────────────────
+     The taxonomy ships 522 "Context Dependent" rows (flavours: wintergreen,
+     menthol, mint…) and the generator holds back the ambiguous product forms
+     (pouch, dip, can, pack…). BOTH lists were inert: nothing ever combined
+     them, so "grizly wintergreen pouches" — a flavour, a form and a misspelt
+     brand — walked through the age gate in silence and the requester was never
+     asked. The taxonomy's own Implementation Guide asked for this pass by name:
+     "Combine it with a tobacco/nicotine product, brand, store, purchase,
+     delivery, or usage signal."
+
+     Requires BOTH, WITHIN 3 TOKENS. Measured, not chosen: scored against all
+     64,668 production order titles in Orders.csv — 12 newly flagged (0.019%),
+     every one a true positive, including two real orders reading "a can of
+     Gizzly wintergreen pouches". A window of 4 adds nothing. A window of 2
+     loses "Pack of crowns menthol 100". UNWINDOWED it false-positives on "Can
+     someone bring me a coffee please" (can + coffee), which is exactly why the
+     window exists. Re-measure before widening — do not re-argue. */
+  var AGE_CTX_WINDOW = 3;
+  var _ageCtx = null;
+  function ageCtxSets(){
+    if(_ageCtx) return _ageCtx;
+    var F = {}, G = {}, i;
+    var flav = window.GopherAgeFlavors || [], forms = window.GopherAgeForms || [];
+    for(i = 0; i < flav.length; i++)  F[String(flav[i]).toLowerCase()] = 1;
+    for(i = 0; i < forms.length; i++) G[String(forms[i]).toLowerCase()] = 1;
+    _ageCtx = { f: F, g: G, ok: flav.length > 0 && forms.length > 0 };
+    return _ageCtx;
+  }
+  function findAgeContextPair(orig){
+    var C = ageCtxSets();
+    if(!C.ok) return null;                                  // lists absent — stay silent
+    var toks = String(orig || '').toLowerCase().match(/[a-z0-9]+/g);
+    if(!toks) return null;
+    var fi = [], gi = [], t;
+    for(t = 0; t < toks.length; t++){
+      if(C.f[toks[t]]) fi.push(t);
+      if(C.g[toks[t]]) gi.push(t);
+    }
+    for(var a = 0; a < fi.length; a++){
+      for(var b = 0; b < gi.length; b++){
+        if(Math.abs(fi[a] - gi[b]) <= AGE_CTX_WINDOW){
+          var lo = Math.min(fi[a], gi[b]), hi = Math.max(fi[a], gi[b]);
+          return toks.slice(lo, hi + 1).join(' ');          // the phrase, for the modal
+        }
+      }
+    }
     return null;
   }
 
