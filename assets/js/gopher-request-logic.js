@@ -234,6 +234,48 @@
     return findAgeContextPair(orig);
   }
 
+  /* ── "Has the hiring stage ended?" — ONE definition for every surface ─────
+     Request web, Connect and the Request App all render a request detail, and
+     all three had their own copy of this test. They disagreed:
+
+       request web   in-progress | active | scheduled              (no completed)
+       connect       in-progress | active                (no scheduled, no completed)
+       connect card  no test at all — "Remove" showed at every stage
+
+     Every reader wants the same thing: once a job has started, the HIRING
+     controls are over. Missing 'completed' is why a finished request grew its
+     "Remove" button back and re-showed the start-job bar under a banner reading
+     "Request Completed by ...". Fixing it in one file and not the other is
+     exactly the drift this module exists to prevent, so the list lives here and
+     the surfaces call in. Add a status here, not in an HTML file. */
+  var JOB_STARTED_STATUSES = ['in-progress', 'active', 'scheduled', 'completed'];
+
+  /* "Is cancelling still on the table?" — a DIFFERENT list, deliberately.
+     A SCHEDULED request can still be cancelled; one that is underway or already
+     finished cannot. Both surfaces carried this as
+       r.status === 'in-progress' || r.status === 'active'
+     which omits 'completed', so a FINISHED request kept offering "Cancel
+     request" in its header — visible in the owner's own screenshot, beside a
+     banner reading "Request Completed by …". Cancelling a delivered order is
+     not a thing; the receipt has already been emailed. */
+  var CANCEL_BLOCKED_STATUSES = ['in-progress', 'active', 'completed'];
+  function jobBlocksCancel(r){
+    if(!r) return false;
+    var st = String(r.status || '');
+    for(var i = 0; i < CANCEL_BLOCKED_STATUSES.length; i++){
+      if(st === CANCEL_BLOCKED_STATUSES[i]) return true;
+    }
+    return false;
+  }
+  function jobHasStarted(r){
+    if(!r) return false;
+    var st = String(r.status || '');
+    for(var i = 0; i < JOB_STARTED_STATUSES.length; i++){
+      if(st === JOB_STARTED_STATUSES[i]) return true;
+    }
+    return false;
+  }
+
   /* ── CONTEXT PASS — a flavour next to a product form ──────────────────────
      The taxonomy ships 522 "Context Dependent" rows (flavours: wintergreen,
      menthol, mint…) and the generator holds back the ambiguous product forms
@@ -673,6 +715,10 @@
   }
 
   window.GopherRequestLogic = {
+    jobHasStarted: jobHasStarted,
+    jobBlocksCancel: jobBlocksCancel,
+    CANCEL_BLOCKED_STATUSES: CANCEL_BLOCKED_STATUSES,
+    JOB_STARTED_STATUSES: JOB_STARTED_STATUSES,
     detectCategoryMismatch: detectCategoryMismatch,
     emitCategoryCheck: emitCategoryCheck,
     uiToSlug: function(key){ return UI_TO_SLUG[key] || key; },

@@ -21074,7 +21074,9 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       //   • pending, no Gopher hired (still broadcasting) → early-cancel.
       //   • anything else → the generic confirm.
       const r = (DASH_DATA.activeRequests || []).find(x => x.id === arg);
-      const started = r && (r.status === 'in-progress' || r.status === 'active');
+      const started = ((window.GopherRequestLogic && window.GopherRequestLogic.jobBlocksCancel)
+        ? window.GopherRequestLogic.jobBlocksCancel(r)
+        : (r.status === 'in-progress' || r.status === 'active' || r.status === 'completed'));
       const hasHired = r && (r.interestedWorkers || []).some(w => w.status === 'hired');
       if(started && typeof window.__openStartedCantCancel === 'function'){
         window.__openStartedCantCancel(arg);
@@ -21909,7 +21911,9 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     // longer an option — hide the header Cancel button and show a short note.
     // Before start (pending, incl. an accepted-but-not-started Gopher) the
     // button stays; __openCancelModal routes it to the right cancel flow.
-    const _started = r.status === 'in-progress' || r.status === 'active';
+    const _started = ((window.GopherRequestLogic && window.GopherRequestLogic.jobBlocksCancel)
+      ? window.GopherRequestLogic.jobBlocksCancel(r)
+      : (r.status === 'in-progress' || r.status === 'active' || r.status === 'completed'));
     const _cancelBtnEl = document.getElementById('reqDetailCancelBtn');
     if(_cancelBtnEl) _cancelBtnEl.style.display = _started ? 'none' : '';
     const startedNote = _started
@@ -21944,8 +21948,10 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
        start-job bar reappeared with the pre-start labour figure, directly under a
        banner reading "Request Completed by ...". All six readers of this flag want
        post-start to include post-completion. */
-    const isLive = r.status === 'in-progress' || r.status === 'active'
-                || r.status === 'scheduled'   || r.status === 'completed';
+    const isLive = (window.GopherRequestLogic && window.GopherRequestLogic.jobHasStarted)
+      ? window.GopherRequestLogic.jobHasStarted(r)
+      : (r.status === 'in-progress' || r.status === 'active'
+         || r.status === 'scheduled' || r.status === 'completed');
 
     // If the open profile belongs to a different request (user navigated away
     // and into another), drop it so we never show the wrong worker.
