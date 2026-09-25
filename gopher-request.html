@@ -4064,6 +4064,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      so they read as actionable buttons. Applies to every flow section.
      Address inputs are capped too. Mirrors gopher-connect.html. NOT pills —
      rounded rectangles at the iQ-button radius, per house style. */
+  /* ⛔ SCOPED with .rg-stack rather than changing the rule below. That rule is shared
+     with the "Set your offer / Request bids" payMode group, which the owner did NOT ask
+     to restack — flipping the shared rule would have silently restacked it too. */
+  .mockup-content .radio-group.rg-stack { flex-direction:column; flex-wrap:nowrap; }
+  .mockup-content .radio-group.rg-stack > .radio-row { width:100%; flex:0 0 auto; }
   .mockup-content .radio-group {
     flex-direction:row; flex-wrap:wrap; align-items:flex-start; gap:10px;
   }
@@ -13722,8 +13727,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <!-- How worker is selected — ONLY for Delivery/Courier, Junk Removal, Ride Sharing -->
       ${isVisible('workerSelectChoice') ? `
       <div class="step-section">
-        <div class="step-section-title"><span class="sst-ico">🎯</span>How is your worker selected?</div>
-        <div class="radio-group">
+        <div class="step-section-title"><span class="sst-ico">🎯</span>How do you want to select your worker? (${myUnlocked ? '3 of 3' : '2 of 3'} options available)</div>
+        <div class="radio-group rg-stack">
           <div class="radio-row ${state.workerSelection==='first'?'selected':''}" data-radio="workerSelection" data-val="first">
             <span class="radio-dot"></span>
             <span class="rr-label">First available worker — fastest match</span>
@@ -15970,6 +15975,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         'border-radius:8px;padding:7px 13px;cursor:pointer;border:1px solid transparent;}' +
         '.rq-draft-go{background:var(--green,#1CB061);color:#fff;}' +
         '.rq-draft-no{background:#fff;border-color:#d5dbe3;color:#4a5568;}' +
+        /* After .rq-draft-a button on purpose — it must override that shared
+           padding/radius so the dismiss reads as an affordance, not a third action. */
+        '.rq-draft-x{background:none;border:none;color:#8a94a6;font-size:19px;line-height:1;' +
+        'padding:3px 4px;font-weight:700;margin-left:2px;}' +
+        '.rq-draft-x:hover{color:var(--ink,#002461);}' +
         '@media(max-width:640px){.rq-draft{flex-direction:column;}.rq-draft-s{white-space:normal;}}';
       document.head.appendChild(el);
     }
@@ -16012,6 +16022,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         '<div class="rq-draft-a">' +
         '<button type="button" class="rq-draft-go">' + (isConflict ? 'Use that one' : 'Pick up where I left off') + '</button>' +
         '<button type="button" class="rq-draft-no">' + (isConflict ? 'Keep this' : 'Start fresh') + '</button>' +
+        '<button type="button" class="rq-draft-x" aria-label="Dismiss" ' +
+        'title="Dismiss \u2014 your saved request stays saved and this one is left alone">\u00d7</button>' +
         '</div>';
       el.querySelector('.rq-draft-t').textContent = title;   // textContent — never inject user text as HTML
       el.querySelector('.rq-draft-s').textContent = sub;
@@ -16047,6 +16059,26 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           if(p) p.parentNode.insertBefore(n, p); else host.insertBefore(n, host.firstChild);
           setTimeout(function(){ n.remove(); }, 12000);
         }
+      });
+
+      /* ⛔ THE THIRD ANSWER: "not now" — and it deliberately does NOT arm.
+         Read the ARMING note above first. Arming starts autosaving the request being
+         typed RIGHT NOW over the single stored draft (one key, `gopher.request.draft`
+         — there is no second slot), which is the exact erasure this button exists to
+         prevent. So it writes nothing, discards nothing, and leaves both the saved
+         draft and the in-progress request untouched. The banner returns on the next
+         load, so the question is deferred, not answered.
+
+         Owner, 2026-09-25: the other two options "lead the user to believe the new
+         request might erase what they already have entered" — and for both of them
+         that belief is CORRECT. "Start fresh" calls store.discard() and deletes the
+         saved draft; "Pick up where I left off" overwrites the current state with it.
+         There was no way to say "leave both alone". Now there is.
+
+         ⚠️ The cost, stated rather than hidden: while dismissed this session is not
+         autosaved either. That is the pre-answer status quo, not a regression. */
+      el.querySelector('.rq-draft-x').addEventListener('click', function(){
+        el.remove();
       });
 
       el.querySelector('.rq-draft-no').addEventListener('click', function(){
