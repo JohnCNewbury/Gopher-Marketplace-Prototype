@@ -1308,7 +1308,19 @@
          block is only reached if the catch block itself completes — which is
          exactly the assumption that failed. This is the line that makes the
          "the tick cannot die" claim true rather than intended. */
-      setTimeout(tick, 600);
+
+      /* BOOT FAST, THEN SETTLE. Until the dashboard is open this loop is doing
+         nothing but asking "is the web frame ready yet?", and it asked on a
+         600ms grid — so the whole boot was quantised to 600ms rounds and the
+         panes sat blank through every one of them. Measured on the deck host:
+         the three iframes finish downloading inside 160ms and GWeb did not
+         appear until 3836ms. That gap was almost entirely this poll.
+
+         80ms while parked, 600ms once live. STILL EXACTLY ONE RESCHEDULE PER
+         PASS — the delay is conditional, the setTimeout is not. Anyone editing
+         this: keep it that way. A second scheduler here is what produced
+         1,369,180 passes in a minute. */
+      setTimeout(tick, signedIn ? 600 : 80);
     }
   }
   function tickBody(){

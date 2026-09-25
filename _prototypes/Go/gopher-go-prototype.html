@@ -4082,7 +4082,12 @@ business:{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
       var shown=(mailTab==='deleted')?trash:inbox;
       var rows=shown.map(function(c){ var last=c.msgs[c.msgs.length-1]||{};
         var left=(mailTab==='deleted' && D) ? ('<div class="mi-rprev" style="color:#8C8675">Deleted · purges in '+D.daysLeft(c.deletedAt)+' days</div>') : '';
-        var inner='<div class="mi-row'+(c.unread?' unread':'')+'" data-cid="'+c.id+'">'+ava(c.verified)
+        // `inbox-row` is NOT decoration — it is the shared stylesheet's CONTRACT class.
+        // gopher-inbox-delete.css slides `.ibx-rowwrap > .inbox-row`, so a row that
+        // carries only .mi-row is never positioned, never opaque and never moves:
+        // the red delete bed then sits EXPOSED and tappable on every row at rest, and
+        // swipe-left does nothing at all. Keep both classes. (G40-100, fixed 2026-09-24.)
+        var inner='<div class="mi-row inbox-row'+(c.unread?' unread':'')+'" data-cid="'+c.id+'">'+ava(c.verified)
           +'<div class="mi-rmain"><div class="mi-rtop"><span class="mi-rnm">'+c.name+'</span><span class="mi-rtime">'+c.time+'</span></div>'
           +'<div class="mi-rprev">'+(last.s==='me'?'You: ':'')+(last.p?'📷 Photo':(last.t||''))+'</div>'+left+'</div>'
           +(c.unread?'<span class="mi-udot"></span>':'')+'</div>';
