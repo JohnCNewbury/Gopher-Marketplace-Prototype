@@ -3669,15 +3669,17 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     padding-top:18px; border-top:1px solid #eef0f5;
   }
   .step-section-title {
-    font-family:'Nunito',sans-serif; font-weight:800; font-size:13px;
+    /* 13 -> 15px, icon 22 -> 26px (owner deck 2026-09-27): section headers were
+       hard to read against the 32px step title above them. */
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:15px;
     color:var(--navy); margin-bottom:12px;
     display:flex; align-items:center; gap:8px;
   }
   .step-section-title .sst-ico {
-    width:22px; height:22px; border-radius:6px;
+    width:26px; height:26px; border-radius:7px;
     background:var(--green-light); color:var(--green-dark);
     display:inline-flex; align-items:center; justify-content:center;
-    font-size:13px; flex-shrink:0;
+    font-size:15px; flex-shrink:0;
   }
 
   /* Textarea (Page 1 dialogue box) */
@@ -7569,6 +7571,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .contact-call:hover { border-color:var(--navy); }
 
   /* ─── Live Activity view (inlined into Request Details) ─── */
+  /* Map beside Status (owner deck, 2026-09-27). One column under 860px, or the
+     map shrinks to a stamp on a phone. */
+  .la-live-row { display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:start; }
+  @media (max-width: 860px) { .la-live-row { grid-template-columns:1fr; gap:0; } }
   .la-section-title { font-family:'Nunito'; font-weight:900; font-size:17px; color:var(--navy); text-align:center; margin:24px 0 12px; padding-top:20px; border-top:1px solid #e7eaf2; }
 
   .live-map-wrap { border-radius:16px; overflow:hidden; border:1px solid #e1e6f0; position:relative; }
@@ -12937,7 +12943,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   function renderStep1(){
     return `
       <h3>Let's get you the help you need today!</h3>
-      <p class="mc-sub">Pick the service category you feel best represents the help you need. Gopher iQ will assist you automatically if needed.</p>
       <div class="cat-grid">
         ${Object.entries(CATEGORIES).map(([key,c]) => `
           <div class="cat-tile ${key===state.category?'selected':''}" data-cat="${key}">
@@ -13526,7 +13531,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     const c = CATEGORIES[state.category];
     return `
       <h3>Tell us about your ${c.name.toLowerCase()} request</h3>
-      <p class="mc-sub">A few quick details so we can match the right Gopher.</p>
 
       <!-- ░ Page 1 — Describe What You Need ░ -->
       <!-- ░ Page 1 — Describe (hidden for Ride Sharing) ░ -->
@@ -13680,7 +13684,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     const myUnlocked = myGCount > 0;   // gate is simply: at least one saved Gopher
     return `
       <h3>How would you like us to find your worker?</h3>
-      <p class="mc-sub">Allows you to pick your involvement in the selection process.</p>
 
       <!-- Number of workers / pay-by-hour (hidden for Delivery, Home Services, Ride Sharing) -->
       ${isVisible('workerSetup') ? `
@@ -13793,7 +13796,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
     return `
       <h3>Where is this going?</h3>
-      <p class="mc-sub">Pickup and destination. Add another stop if you need more than one.</p>
 
       <!-- ░ Page 6 — Pick-Up ░ -->
       ${isVisible('pickupSection') ? `
@@ -13878,15 +13880,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     const showBidsOption = !bidsHiddenByCategory && !bidsHiddenByHourly;
     return `
       <h3>How would you like to pay your worker?</h3>
-      <p class="mc-sub">Set your hiring price or ask for bids with certain requests</p>
 
       <div class="radio-group" style="margin-bottom:14px;">
+        ${showBidsOption ? `
         <div class="radio-row ${state.payMode==='set'?'selected':''}" data-radio="payMode" data-val="set">
           <span class="radio-dot"></span>
           <span class="rr-label">Set your offer
             <button class="info-btn" title="You decide the flat offer up front">?</button>
           </span>
         </div>
+        ` : ''}
         ${state.payMode==='set' ? `
           <div class="sub-field pay-sub-field">
             <div class="sf-label">${state.payByHour ? 'Your offer to the worker (per hour)' : 'Your offer to the worker'}</div>
@@ -14134,7 +14137,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
     return `
       <h3>Let's review your request</h3>
-      <p class="mc-sub">Confirm the details, then submit or schedule for later.</p>
 
       <div class="review-card">
         <div class="review-row"><span class="rl">Category</span><span class="rv">${c.name}</span></div>
@@ -21948,10 +21950,11 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       : (r.status === 'in-progress' || r.status === 'active' || r.status === 'completed'));
     const _cancelBtnEl = document.getElementById('reqDetailCancelBtn');
     if(_cancelBtnEl) _cancelBtnEl.style.display = _started ? 'none' : '';
-    const startedNote = _started
-      ? `<div class="req-detail-started-note">🔒 Your Gopher has started this request — it can no longer be
-           cancelled here. Message your Gopher below, or contact support if there’s a problem.</div>`
-      : '';
+    /* ⛔ REMOVED (owner deck, 2026-09-27). The cancel BUTTON is already hidden
+       just above when _started, so this banner only narrated an absence. The
+       MODAL path (renderStartedNote) still explains it to anyone who reaches
+       cancel another way — that one is deliberately untouched. */
+    const startedNote = '';
 
     const headerHtml = `
       <div class="req-detail-header ${r.needsAttention?'has-attention':''}">
@@ -23571,7 +23574,16 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     //   'entry'    → reason box + Submit
     //   'disputed' → Confirm completion / Unable to resolve (+both disclaimers)
     // Confirm (either) → rating flow. Wiring is via the single delegated body handler.
-    return mapHtml + statusHtml + recapHtml;
+    /* ⛔ MAP BESIDE STATUS (owner deck, 2026-09-27): the map filled the viewport and
+       pushed Status and the recap below the fold. .live-map-svg is width:100% /
+       height:auto, so halving the COLUMN halves the map's height too — that is the
+       "cut it in half" without touching the SVG's viewBox.
+       With no map (scheduled / awaiting confirmation) Status renders exactly as
+       before, unwrapped, rather than as a lone half-width column. */
+    const liveRow = mapHtml
+      ? `<div class="la-live-row"><div>${mapHtml}</div><div>${statusHtml}</div></div>`
+      : statusHtml;
+    return liveRow + recapHtml;
   }
 
   // ── Flow hosting: physically relocate the single .flow-mockup node into the

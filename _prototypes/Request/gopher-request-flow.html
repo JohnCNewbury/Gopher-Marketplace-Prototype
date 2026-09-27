@@ -192,7 +192,7 @@ body{
 
 /* ── Sections / fields ── */
 .step-section{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 15px;margin-top:16px;box-shadow:var(--card-sh);}
-.sst{display:flex;align-items:center;gap:9px;font-family:'Nunito';font-weight:900;font-size:13.5px;color:var(--navy);margin-bottom:13px;letter-spacing:-.2px;}
+.sst{display:flex;align-items:center;gap:9px;font-family:'Nunito';font-weight:900;font-size:15px;color:var(--navy);margin-bottom:13px;letter-spacing:-.2px;}
 .sst .sst-ico{width:30px;height:30px;border-radius:9px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
 .sst .sst-ico svg{width:17px;height:17px;fill:none;stroke:var(--navy);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 
@@ -1418,7 +1418,7 @@ function catContextBar(){
 function renderStep1(){
   return `
     <div class="step-head"><h3>What do you need today?</h3>
-    <p class="mc-sub">Pick a service and we'll match you with a nearby Gopher.</p></div>
+    </div>
     <div class="cat-grid">
       ${CAT_ORDER.map(key=>{ const c=CATEGORIES[key]; const sel=key===state.category;
         const open=state.openCatInfo===key; const ex=CAT_EXAMPLES[key]||[];
@@ -1493,7 +1493,7 @@ function tsPromo(){ return arIdentityControl(); }
 function renderStep2(){
   const c=CATEGORIES[state.category];
   let h=`<div class="step-head"><h3>Tell us about your ${c.name.toLowerCase()} request</h3>
-    <p class="mc-sub">A few quick details so we can match the right Gopher.</p></div>`;
+    </div>`;
 
   // Page 1 — Describe
   if(isVisible('describe')){
@@ -1627,7 +1627,7 @@ function infoTip(id,title,paras,emphasis){
    ============================================================ */
 function renderStep3(){
   let h=`<div class="step-head"><h3>Who should do the work?</h3>
-    <p class="mc-sub">Pick how you want to be matched. Tune crew size for jobs that take more than one set of hands.</p></div>`;
+    </div>`;
   let any=false;
 
   if(isVisible('workerSetup')){
@@ -1693,7 +1693,7 @@ function renderStep3(){
 function renderStep4(){
   const hasPickup = isVisible('pickupSection');
   let h=`<div class="step-head"><h3>Where is this going?</h3>
-    <p class="mc-sub">${hasPickup?'Pickup and destination':'Just the destination'} — so your Gopher knows exactly where to be.</p></div>`;
+    </div>`;
 
   if(isVisible('pickupSection')){
     h+=`<div class="step-section">
@@ -1768,11 +1768,12 @@ function renderStep5(){
      model AND an hourly option — so this is reachable, not theoretical. */
   const lowOffer = !state.payByHour && state.payMode==='set' && oneWorkerPay>0 && lowThresh>0 && oneWorkerPay < lowThresh && !state.lowOfferAck;
   let h=`<div class="step-head"><h3>How would you like to pay your worker?</h3>
-    <p class="mc-sub">Set your hiring price, or ask local workers for bids.</p></div>
+    </div>
     <div class="radio-group">
+      ${showBids ? `
       <div class="radio-row ${state.payMode==='set'?'selected':''}" data-radio="payMode" data-val="set">
         <span class="radio-dot"></span><span class="rr-label">Set your offer
-          <span style="color:var(--muted-cool);font-weight:500;font-size:11px;">(any request)</span></span></div>`;
+          <span style="color:var(--muted-cool);font-weight:500;font-size:11px;">(any request)</span></span></div>` : ''}`;
 
   if(state.payMode==='set'){
     h+=`<div class="sub-field" style="background:#fff;border-color:#e4e8f0;">
@@ -1995,7 +1996,7 @@ function renderStep6(){
   }
 
   let h=`<div class="step-head"><h3>Let's review your request</h3>
-    <p class="mc-sub">Confirm the details, then submit now or schedule for later.</p></div>
+    </div>
     <div class="review-card">${rows}</div>`;
 
   // Second set of eyes

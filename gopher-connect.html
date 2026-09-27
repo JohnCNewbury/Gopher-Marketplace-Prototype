@@ -2482,15 +2482,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     padding-top:18px; border-top:1px solid #eef0f5;
   }
   .step-section-title {
-    font-family:'Nunito',sans-serif; font-weight:800; font-size:13px;
+    /* 13 -> 15px, icon 22 -> 26px (owner deck 2026-09-27) — mirrors Request. */
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:15px;
     color:var(--navy); margin-bottom:12px;
     display:flex; align-items:center; gap:8px;
   }
   .step-section-title .sst-ico {
-    width:22px; height:22px; border-radius:6px;
+    width:26px; height:26px; border-radius:7px;
     background:var(--green-light); color:var(--green-dark);
     display:inline-flex; align-items:center; justify-content:center;
-    font-size:13px; flex-shrink:0;
+    font-size:15px; flex-shrink:0;
   }
 
   /* Textarea (Page 1 dialogue box) */
@@ -5606,6 +5607,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .la-contact { display:flex; justify-content:center; gap:12px; }
   .la-contact .contact-btn { padding:11px 22px; font-size:13.5px; border-radius:99px; }
 
+  .la-live-row { display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:start; }
+  @media (max-width: 860px) { .la-live-row { grid-template-columns:1fr; gap:0; } }
   .la-section-title { font-family:'Nunito'; font-weight:900; font-size:17px; color:var(--navy); text-align:center; margin:24px 0 12px; padding-top:20px; border-top:1px solid #e7eaf2; }
 
   .live-map-wrap { border-radius:16px; overflow:hidden; border:1px solid #e1e6f0; position:relative; }
@@ -11303,7 +11306,6 @@ const PAY_BADGES = {
   function renderStep1(){
     return `
       <h3>Let's get you the help you need today!</h3>
-      <p class="mc-sub">Pick the service category you feel best represents the help you need. Gopher iQ will assist you automatically if needed.</p>
       <div class="cat-grid">
         ${Object.entries(CATEGORIES).map(([key,c]) => `
           <div class="cat-tile ${key===state.category?'selected':''}" data-cat="${key}">
@@ -11381,7 +11383,6 @@ const PAY_BADGES = {
     const c = CATEGORIES[state.category];
     return `
       <h3>Tell us about your ${c.name.toLowerCase()} request</h3>
-      <p class="mc-sub">A few quick details so we can match the right Gopher.</p>
 
       <!-- ░ Page 1 — Describe What You Need ░ -->
       <!-- ░ Page 1 — Describe (hidden for Ride Sharing) ░ -->
@@ -11529,7 +11530,6 @@ const PAY_BADGES = {
   function renderStep3(){
     return `
       <h3>How would you like us to find your worker?</h3>
-      <p class="mc-sub">Allows you to pick your involvement in the selection process.</p>
 
       <!-- Number of workers slider (hidden for Delivery, Home Services, Ride Sharing) -->
       ${isVisible('workerSetup') ? `
@@ -11685,7 +11685,6 @@ const PAY_BADGES = {
 
     return `
       <h3>Where is this going?</h3>
-      <p class="mc-sub">Pickup and destination. Connect lets you add multiple stops.</p>
 
       <!-- ░ Page 6 — Pick-Up ░ -->
       ${isVisible('pickupSection') ? `
@@ -11770,15 +11769,23 @@ const PAY_BADGES = {
     return `
       <div class="pay-redraft">
       <h3>How would you like to pay your worker?</h3>
-      <p class="mc-sub">Set your hiring price or ask for bids with certain requests</p>
 
       <div class="radio-group" style="margin-bottom:14px;">
+        ${/* ⛔ NOT the same condition as Request. Request has a GLOBAL guard
+              (payMode='bids' && !bidsAllowed() -> 'set'), so hiding the sole radio
+              there can never strand anyone. CONNECT HAS NO SUCH GUARD — its only
+              reset is a narrow laborManagement case — so a category or worker-count
+              change can leave payMode on 'bids' while bids are unavailable, and
+              hiding the row then would render NO pay control at all. Hide it only
+              when it is both the sole option AND already selected. */''}
+        ${(showBidsOption || state.payMode !== 'set') ? `
         <div class="radio-row ${state.payMode==='set'?'selected':''}" data-radio="payMode" data-val="set">
           <span class="radio-dot"></span>
           <span class="rr-label">Set your offer
             <button class="info-btn" data-info="You decide the flat offer up front">?</button>
           </span>
         </div>
+        ` : ''}
         ${state.payMode==='set' ? `
           <div class="sub-field pay-sub-field">
             <div class="sf-label">${state.payByHour ? 'Your offer to the worker (per hour)' : 'Your offer to the worker'}</div>
@@ -12141,7 +12148,6 @@ const PAY_BADGES = {
 
     return `
       <h3>Let's review your request</h3>
-      <p class="mc-sub">Confirm the details, then submit or schedule for later.</p>
 
       <div class="review-card">
         <div class="review-row"><span class="rl">Category</span><span class="rv">${c.name}</span></div>
@@ -17643,10 +17649,10 @@ const PAY_BADGES = {
       : (r.status === 'in-progress' || r.status === 'active' || r.status === 'completed'));
     const _cancelBtnEl = document.getElementById('reqDetailCancelBtn');
     if(_cancelBtnEl) _cancelBtnEl.style.display = _started ? 'none' : '';
-    const startedNote = _started
-      ? `<div class="req-detail-started-note">🔒 Your Gopher has started this request — it can no longer be
-           cancelled here. Message your Gopher below, or contact support if there’s a problem.</div>`
-      : '';
+    /* ⛔ REMOVED (owner deck, 2026-09-27) — mirrors Request. The cancel BUTTON
+       is already hidden above when _started, so this only narrated an absence.
+       The MODAL that explains it elsewhere is deliberately untouched. */
+    const startedNote = '';
 
     const headerHtml = `
       <div class="req-detail-header ${r.needsAttention?'has-attention':''}">
@@ -19180,7 +19186,13 @@ const PAY_BADGES = {
     // Confirm from either initial or disputed → the commit-1 rating flow. The Gopher-side
     // reconciliation screens are Gopher Go scope; cost-adjustment-during-dispute interplay
     // is a noted follow-on (Connect's cost-adjustment modal already exists independently).
-    return mapBlock + statusBlock + recap;
+    /* ⛔ MAP BESIDE STATUS (owner deck, 2026-09-27) — mirrors Request. Halving the
+       COLUMN halves the map height too (.live-map-svg is width:100%/height:auto).
+       No map -> status renders unwrapped, exactly as before. */
+    const liveRow = mapBlock
+      ? `<div class="la-live-row"><div>${mapBlock}</div><div>${statusBlock}</div></div>`
+      : statusBlock;
+    return liveRow + recap;
   }
 
   // ═══════════════════════════════════════════════════════════
