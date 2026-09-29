@@ -3443,6 +3443,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
        (top corners) and body (bottom corners) instead of clipping here. */
     overflow:visible; cursor:pointer; position:relative;
     transition:transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    /* Owner 2026-09-29: the tiles are buttons and did not read as buttons — they
+       had NO resting shadow, only hover and selected. This is the same two-layer
+       bubble the Request prototype already uses (--card-sh), so the portal and the
+       prototype now lift the same way. Hover still goes deeper, so the affordance
+       still changes on interaction rather than sitting flat. */
+    box-shadow:0 2px 4px rgba(0,36,97,0.05), 0 9px 20px rgba(0,36,97,0.13);
   }
   .cat-tile:hover {
     transform:translateY(-3px);
@@ -8057,17 +8063,86 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     padding:4px 9px; display:inline-flex; align-items:center; gap:6px;
   }
   /* Bid amount — prominent, sits between the worker info and the action buttons */
+  /* Owner 2026-09-29: BID reads to the LEFT of the number, and the number is
+     tappable — it opens the itemised breakdown. Mirrors gopher-connect.html. */
   .wcard-bid {
-    display:flex; flex-direction:column; align-items:flex-end;
-    flex-shrink:0; padding-right:4px;
+    display:flex; flex-direction:row; align-items:baseline; gap:7px;
+    flex-shrink:0; padding:2px 4px 2px 0; background:none; border:0;
+    cursor:pointer; font:inherit; text-align:right;
+    border-radius:8px; transition:background 0.15s;
   }
+  .wcard-bid:hover, .wcard-bid:focus-visible { background:rgba(51,217,117,0.10); outline:none; }
   .wcard-bid .wb-amount {
     font-family:'Nunito'; font-weight:900; font-size:18px; color:var(--navy);
-    line-height:1;
+    line-height:1; text-decoration:underline; text-decoration-style:dotted;
+    text-underline-offset:3px; text-decoration-thickness:1.5px;
+    text-decoration-color:rgba(26,42,94,0.45);
   }
+  .wcard-bid:hover .wb-amount { text-decoration-color:var(--green); }
   .wcard-bid .wb-label {
     font-family:'Nunito'; font-weight:800; font-size:9px; letter-spacing:0.6px;
-    text-transform:uppercase; color:var(--muted); margin-top:3px;
+    text-transform:uppercase; color:var(--muted); margin:0;
+  }
+  .bidbd-ov {
+    position:fixed; inset:0; background:rgba(12,22,48,0.55); z-index:9000;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .bidbd-card {
+    background:#fff; border-radius:16px; width:min(380px,100%);
+    box-shadow:0 18px 50px rgba(12,22,48,0.3); padding:20px 20px 16px;
+    font-family:'DM Sans'; max-height:88vh; overflow:auto;
+  }
+  .bidbd-head { font-family:'Nunito'; font-weight:900; font-size:17px; color:var(--navy); }
+  .bidbd-sub  { font-size:12px; color:var(--muted); margin:3px 0 14px; }
+  .bidbd-row  { display:flex; justify-content:space-between; gap:12px; font-size:13.5px;
+                padding:7px 0; border-bottom:1px dashed #e6e9f2; color:var(--navy); }
+  .bidbd-row.is-disc .bidbd-v { color:#1f9d52; }
+  .bidbd-row.is-total { border-bottom:0; margin-top:6px; padding-top:11px;
+                        border-top:2px solid #eef0f5; font-weight:800; font-size:15px; }
+  .bidbd-k { color:var(--muted); }
+  .bidbd-row.is-total .bidbd-k { color:var(--navy); }
+  .bidbd-v { font-variant-numeric:tabular-nums; font-weight:700; }
+  .bidbd-note { font-size:11.5px; color:var(--muted); margin-top:12px; line-height:1.45; }
+  .pe-danger {
+    margin-top:22px; padding-top:16px; border-top:1px solid #eef0f5;
+  }
+  .pe-danger-head {
+    font-family:'Nunito'; font-weight:900; font-size:12px; letter-spacing:0.5px;
+    text-transform:uppercase; color:#a3202f;
+  }
+  .pe-danger-copy {
+    font-family:'DM Sans'; font-size:12.5px; color:var(--muted);
+    line-height:1.5; margin:5px 0 10px;
+  }
+  .pe-danger-btn {
+    background:none; border:1.5px solid #e6b3ba; color:#c53030;
+    border-radius:10px; padding:9px 14px; font-family:'Nunito'; font-weight:800;
+    font-size:13px; cursor:pointer;
+  }
+  .pe-danger-btn:hover { background:#fff5f5; border-color:#c53030; }
+  .da-list { margin:10px 0 0; padding-left:18px; font-size:12.5px; color:#7a2230; line-height:1.6; }
+  .da-confirm-label {
+    display:block; font-family:'DM Sans'; font-size:12.5px; color:var(--navy);
+    margin:14px 0 6px;
+  }
+  .da-confirm-input {
+    width:100%; box-sizing:border-box; padding:10px 12px; border:1.5px solid #dfe3ec;
+    border-radius:10px; font-family:'DM Sans'; font-size:14px; letter-spacing:1px;
+  }
+  .da-confirm-input:focus { outline:none; border-color:#c53030; }
+  .bidbd-close.is-disabled { background:#e3e6ee !important; color:#9aa3b5 !important; cursor:not-allowed; }
+  .tscx-warn {
+    background:#fff5f5; border:1px solid #f6d5d5; border-radius:10px;
+    padding:12px 13px; font-size:12.5px; line-height:1.5; color:#7a2230;
+    margin-top:4px;
+  }
+  .tscx-warn strong { display:block; margin-bottom:4px; color:#a3202f; }
+  .tscx-confirm { background:#c53030 !important; }
+  .dash-nav-item.is-ts-verified .dni-label { color:var(--green-dark,#1f9d52); font-weight:700; }
+  .bidbd-close {
+    width:100%; margin-top:14px; padding:11px; border:0; border-radius:10px;
+    background:var(--green); color:#fff; font-family:'Nunito'; font-weight:800;
+    font-size:14px; cursor:pointer;
   }
   @media(max-width:620px){
     .wcard-bid { align-items:flex-start; padding-left:54px; }
@@ -12231,7 +12306,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
 
     other: {
-      icon:'✨', name:'Other', tag:'Custom',
+      icon:'✨', name:'Custom Task', tag:'Custom',
       detailsTitle:'Tell us what you need',
       detailsSub:"Don't see your category? Describe it and we'll route it to the right team.",
       fields:[
@@ -12942,7 +13017,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   // ---- Step content renderers ----
   function renderStep1(){
     return `
-      <h3>Let's get you the help you need today!</h3>
+      <h3>Select the service you need help with below</h3>
       <div class="cat-grid">
         ${Object.entries(CATEGORIES).map(([key,c]) => `
           <div class="cat-tile ${key===state.category?'selected':''}" data-cat="${key}">
@@ -17706,7 +17781,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
         <div class="ts-perk-icon">$</div>
         <div class="ts-perk-body">
           <strong>$1 off Age-Restricted Delivery and Ride-Sharing</strong>
-          <span>Applied automatically once you're verified, reducing the $1.99 age-restricted fee to $0.99 as long as you carry the badge. Savings add up fast.</span>
+          <span>Discount applied to grand total for all age-restricted delivery and ride sharing requests. Savings add up fast.</span>
         </div>
       </div>
       <div class="ts-perk">
@@ -19335,6 +19410,11 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
 
       <button class="dash-nav-item" data-rqsection="personal">
         <span class="dni-ico">👤</span><span class="dni-label">Personal info</span>
+      </button>
+      <!-- Owner 2026-09-29: TrustShield sits directly below Personal info. The
+           label and behaviour both flip on enrolment — see rqRenderTrustShieldNav. -->
+      <button class="dash-nav-item" id="rqNavTrustShield">
+        <span class="dni-ico">🛡️</span><span class="dni-label" id="rqNavTsLabel">Add TrustShield&trade;</span>
       </button>
       <button class="dash-nav-item" id="rqDashSavedAddr">
         <span class="dni-ico">📍</span><span class="dni-label">Saved addresses</span>
@@ -22046,7 +22126,10 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
           : '';
         // Bid amount, shown to the right on every "ask for bids" request.
         const bidHtml = (bidsMode && !isLive && w.bidAmount != null)
-          ? `<div class="wcard-bid"><span class="wb-amount">$${Number(w.bidAmount).toFixed(0)}</span><span class="wb-label">Bid</span></div>`
+          ? `<button type="button" class="wcard-bid" data-wact="bidinfo" data-i="${realIdx}"
+                     title="See what this bid covers" aria-label="See what ${w.name}'s bid covers">
+               <span class="wb-label">Bid</span><span class="wb-amount">$${Number(window.__bidAllIn(r, w)).toFixed(0)}</span>
+             </button>`
           : '';
         return `
           <div class="wcard ${fresh?'wcard-fresh':''}">
@@ -22180,10 +22263,14 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
 
       let startBar = '';
       if(hired.length > 0){
+        const bidsReq   = window.__isBidsRequest(r);
         const perWorker = r.perWorkerCost || 0;
-        const liveTotal = perWorker * hired.length;
+        const liveTotal = window.__agreedTotalFor(r, hired);
         const origTotal = perWorker * needed;
-        const adjusted  = hired.length < needed;
+        /* The "was $X" comparison only means something when there WAS an
+           up-front price. A bids request never had one, so it is suppressed
+           rather than shown as a drop from $0.00. */
+        const adjusted  = !bidsReq && hired.length < needed;
         startBar = `
           <div class="start-job-bar">
             <div class="sjb-cost">
@@ -22488,6 +22575,9 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
             const needed = 1;   // REQUEST HIRE RULE: one lead worker, never workersNeeded
             if(hiredCount >= needed){ showHireCapModal(needed); return; }
           }
+          /* Read-only: shows the itemisation and returns, BEFORE any status change,
+             so tapping the amount can never alter the worker. */
+          if(act === 'bidinfo'){ window.__openBidBreakdown(r, list[i]); return; }
           if(act === 'hire')          { list[i].status = 'hired'; list[i].justAccepted = false; }
           else if(act === 'consider') { list[i].status = 'considered'; list[i].justAccepted = false; }
           else if(act === 'approve')  { list[i].status = 'hired'; }
@@ -22638,13 +22728,127 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
   // (`${reqId}::${workerName}`) resolve to real crew metadata.
   // r.live is built for BOTH in-progress AND scheduled — earlier versions had
   // a !goScheduled guard that broke scheduled messaging; don't replicate it.
+  /* ── The agreed amount for ONE hired worker ──────────────────────────────
+     ⛔ r.perWorkerCost is the price the REQUESTER set UP FRONT. On an
+     "ask for bids" request there is no such price — it stays 0 until a bid is
+     accepted — so reading it produced the $0.00 the owner screenshotted
+     (2026-09-29), sitting directly above a worker card reading "$102 Bid".
+     On a bids request the agreed amount IS that worker's bid, and because each
+     worker bids their own number the crew total is a SUM, not a multiply.
+     Exposed on window so the start-job bar and startJob() share one answer
+     rather than each doing their own arithmetic. */
+  window.__agreedAmountFor = function(r, w){
+    const bidsMode = window.__isBidsRequest(r);
+    if(bidsMode && w && w.bidAmount != null) return Number(w.bidAmount) || 0;
+    return Number(r && r.perWorkerCost) || 0;
+  };
+  window.__agreedTotalFor = function(r, hiredList){
+    return (hiredList || []).reduce((sum, w) => sum + window.__agreedAmountFor(r, w), 0);
+  };
+  /* bidsMode is recorded in BOTH places at creation — on the record (read by the
+     worker-card bid column) and inside reviewSnapshot. Demo/seeded requests set
+     neither, so this accepts either rather than depending on which one a given
+     request happened to be built with. */
+  window.__isBidsRequest = function(r){
+    return !!(r && (r.bidsMode || (r.reviewSnapshot && r.reviewSnapshot.bidsMode)));
+  };
+
+  /* ── A BID'S ITEMISED BREAKDOWN ─────────────────────────────────────────────
+     Owner 2026-09-29: a bid is an ALL-IN number — "fees, offer & COG if
+     applicable" — and tapping it shows the itemisation.
+
+     ⛔ This does NOT call computeConnectFee(). That function reads the live flow
+     `state` (category, promo, plan, age), and in the dashboard `state` belongs to
+     whatever the user last had open in the flow, not to the request being viewed.
+     Calling it here would price one request using another's parameters. Everything
+     below is derived from the request's OWN frozen reviewSnapshot instead.
+
+     w.bidAmount is the worker's OFFER — it is seeded from r.perWorkerCost, which
+     is worker pay. The all-in total is built forward from it using the same shape
+     computeConnectFee uses: flat Gopher + Age fees, then instant transfer as a
+     rate on (COG + offer + those flat fees), then discounts.
+
+     The ITF rate is DERIVED from the snapshot rather than hardcoded at 0.08, so
+     if the canonical rate ever changes this follows it instead of quietly
+     disagreeing with the review screen. */
+  window.__bidBreakdown = function(r, w){
+    const snap = (r && r.reviewSnapshot) || {};
+    const fee  = snap.fee || {};
+    const num  = (v) => { const n = Number(v); return isFinite(n) ? n : 0; };
+
+    const offer = num(w && w.bidAmount);
+    const cog   = num(snap.costOfItems);
+    const flatGopher = num(fee.fullGopherFee);
+    const flatAge    = num(fee.fullAgeFee);
+
+    // Original base the snapshot's ITF was computed on, used only to recover the rate.
+    const origBase = num(snap.costOfItems) + num(snap.workerPay) + flatGopher + flatAge;
+    const itfRate  = (origBase > 0 && num(fee.fullInstantTransfer) > 0)
+      ? num(fee.fullInstantTransfer) / origBase
+      : 0;
+
+    const base = cog + offer + flatGopher + flatAge;
+    const itf  = itfRate * base;
+    const feesPre = flatGopher + flatAge + itf;
+
+    /* Discounts carry across as the snapshot recorded them, capped so they can
+       never exceed the fee side — the same cap computeConnectFee applies. */
+    const promoDisc = Math.min(num(fee.promoDiscount), feesPre);
+    const tsDisc    = Math.min(num(fee.tsDiscount), feesPre - promoDisc);
+
+    const feesPost = feesPre - promoDisc - tsDisc;
+    const total    = cog + offer + feesPost;
+
+    return {
+      offer, cog, gopherFee: flatGopher, ageFee: flatAge, instantTransfer: itf,
+      promoDiscount: promoDisc, tsDiscount: tsDisc,
+      promoLabel: (fee.promo && fee.promo.label) || null,
+      total,
+    };
+  };
+
+  /* The number shown on the card IS the all-in total, per the owner. */
+  window.__bidAllIn = function(r, w){ return window.__bidBreakdown(r, w).total; };
+
+  window.__openBidBreakdown = function(r, w){
+    const b = window.__bidBreakdown(r, w);
+    const money = (n) => '$' + Number(n).toFixed(2);
+    const row = (k, v, cls) => `<div class="bidbd-row ${cls||''}"><span class="bidbd-k">${k}</span><span class="bidbd-v">${v}</span></div>`;
+    const lines = [
+      row("Worker's offer", money(b.offer)),
+      b.cog > 0 ? row('Cost of items', money(b.cog)) : '',
+      b.gopherFee > 0 ? row('Gopher fee', money(b.gopherFee)) : '',
+      b.ageFee > 0 ? row('Age-restricted fee', money(b.ageFee)) : '',
+      b.instantTransfer > 0 ? row('Instant transfer', money(b.instantTransfer)) : '',
+      b.promoDiscount > 0 ? row(b.promoLabel ? ('Promo — ' + b.promoLabel) : 'Promo', '−' + money(b.promoDiscount), 'is-disc') : '',
+      b.tsDiscount > 0 ? row('TrustShield™ discount', '−' + money(b.tsDiscount), 'is-disc') : '',
+      row('Total', money(b.total), 'is-total'),
+    ].join('');
+    const ov = document.createElement('div');
+    ov.className = 'bidbd-ov';
+    ov.innerHTML = `
+      <div class="bidbd-card" role="dialog" aria-modal="true" aria-label="Bid breakdown">
+        <div class="bidbd-head">${(w && w.name) || 'Worker'}'s bid</div>
+        <div class="bidbd-sub">Everything this bid covers — nothing is added later.</div>
+        ${lines}
+        <div class="bidbd-note">This is what you pay if you hire ${(w && w.name) || 'this worker'}. The worker receives their offer in full; the rest is fees.</div>
+        <button class="bidbd-close" type="button">Got it</button>
+      </div>`;
+    const close = () => ov.remove();
+    ov.addEventListener('click', (e) => { if(e.target === ov) close(); });
+    ov.querySelector('.bidbd-close').addEventListener('click', close);
+    document.addEventListener('keydown', function esc(e){
+      if(e.key === 'Escape'){ close(); document.removeEventListener('keydown', esc); }
+    });
+    document.body.appendChild(ov);
+  };
+
   function startJob(r){
     if(!r) return;
     const hiredList = (r.interestedWorkers || []).filter(w => w.status === 'hired');
     const hiredCount = hiredList.length;
     if(hiredCount === 0) return;
-    const perWorker = r.perWorkerCost || 0;
-    const finalTotal = perWorker * hiredCount;
+    const finalTotal = window.__agreedTotalFor(r, hiredList);
 
     const goScheduled = !!r.scheduledForLater;
     r.status         = goScheduled ? 'scheduled' : 'in-progress';
@@ -23670,7 +23874,161 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     pro:   'assets/img/tier-pro.svg'
   };
 
+  /* ── TrustShield nav entry ───────────────────────────────────────────────
+     Owner 2026-09-29: "Below Personal Info, we need to add the Add TrustShield.
+     If the user already has TrustShield, it will change to 'TrustShield verified.'
+     User CAN tap into that if they want to cancel their TrustShield. Have an area
+     you sure as it removes their discounts tied to TS."
+
+     NOT-ENROLLED state carries data-open-trustshield, which is the page's existing
+     canonical enrol path (delegated handler -> __openIdSubmitModal / the
+     __openIdVerifyFlow fallback -> __setTrustShield(true)). Reusing the attribute
+     rather than calling the flow directly means this entry can never drift from
+     the other Add-TrustShield affordances.
+
+     ENROLLED state removes that attribute — otherwise the delegate would fire the
+     ENROL flow for someone who is already enrolled — and confirms before removing. */
+  function rqRenderTrustShieldNav(){
+    const btn = document.getElementById('rqNavTrustShield');
+    const lbl = document.getElementById('rqNavTsLabel');
+    if(!btn || !lbl) return;
+    const verified = !!(DASH_DATA.profile && DASH_DATA.profile.trustShield);
+    lbl.innerHTML = verified ? 'TrustShield&trade; verified' : 'Add TrustShield&trade;';
+    btn.classList.toggle('is-ts-verified', verified);
+    if(verified) btn.removeAttribute('data-open-trustshield');
+    else btn.setAttribute('data-open-trustshield', '');
+  }
+
+  /* ── DELETE ACCOUNT ─────────────────────────────────────────────────────────
+     Owner 2026-09-29: "Users need to be able to delete their account."
+
+     ⛔ FRONT-END ONLY, BY OWNER DECISION (2026-09-29). Nothing here calls a
+     backend and nothing is erased. Account deletion carries data-retention and
+     legal questions — what is erased versus retained, what happens to open
+     requests, payouts and disputes — and the owner's instruction was to build the
+     screens and leave those settled first. So the final step confirms a REQUEST
+     was recorded; it does NOT claim the account is gone, and it deliberately
+     quotes no retention period, because none has been set.
+
+     ⚠️ Whoever wires this: the copy below is the contract the user was shown.
+     If the real policy differs — grace period, what survives deletion, what
+     happens to an in-flight request — change this copy in the same commit. */
+  function rqOpenDeleteAccount(){
+    const ov = document.createElement('div');
+    ov.className = 'bidbd-ov';
+    ov.innerHTML = `
+      <div class="bidbd-card" role="dialog" aria-modal="true" aria-label="Delete account">
+        <div class="bidbd-head">Delete your Gopher account?</div>
+        <div class="bidbd-sub">This cannot be undone.</div>
+        <div class="tscx-warn">
+          <strong>What happens when your account closes</strong>
+          <ul class="da-list">
+            <li>Your profile, saved addresses and payment methods are removed.</li>
+            <li>Any TrustShield&trade; verification and its discounts end.</li>
+            <li>Open requests must finish or be cancelled first, and any money owed either way has to settle.</li>
+            <li>Past receipts we're required to keep are retained.</li>
+          </ul>
+        </div>
+        <label class="da-confirm-label" for="daConfirmInput">Type <strong>DELETE</strong> to confirm</label>
+        <input class="da-confirm-input" id="daConfirmInput" type="text" autocomplete="off" placeholder="DELETE" aria-label="Type DELETE to confirm">
+        <button class="bidbd-close tscx-confirm is-disabled" id="daConfirmBtn" type="button" disabled>Delete my account</button>
+        <button class="hirerev-back" type="button">Keep my account</button>
+      </div>`;
+    const close = () => ov.remove();
+    ov.querySelector('.hirerev-back').addEventListener('click', close);
+    ov.addEventListener('click', (e) => { if(e.target === ov) close(); });
+
+    const input = ov.querySelector('#daConfirmInput');
+    const go    = ov.querySelector('#daConfirmBtn');
+    /* Typing the word is the whole guard — a single misclick must not be able to
+       close an account. Exact match, so "delete " or "Delete" do not arm it. */
+    input.addEventListener('input', () => {
+      const armed = input.value === 'DELETE';
+      go.disabled = !armed;
+      go.classList.toggle('is-disabled', !armed);
+    });
+    go.addEventListener('click', () => {
+      if(input.value !== 'DELETE') return;
+      close();
+      rqShowDeleteAcknowledgement();
+    });
+    document.body.appendChild(ov);
+    setTimeout(() => input.focus(), 50);
+  }
+
+  function rqShowDeleteAcknowledgement(){
+    const ov = document.createElement('div');
+    ov.className = 'bidbd-ov';
+    ov.innerHTML = `
+      <div class="bidbd-card" role="dialog" aria-modal="true" aria-label="Deletion requested">
+        <div class="bidbd-head">Your deletion request is in</div>
+        <div class="bidbd-sub">We'll email you at the address on your account once it's processed.</div>
+        <p class="pe-danger-copy">
+          If you have an open request, it has to finish or be cancelled before the
+          account can close, and anything owed in either direction needs to settle
+          first. Changed your mind? Contact support and we'll stop it.
+        </p>
+        <button class="bidbd-close" type="button">Done</button>
+      </div>`;
+    ov.querySelector('.bidbd-close').addEventListener('click', () => ov.remove());
+    document.body.appendChild(ov);
+  }
+
+  document.addEventListener('click', (e) => {
+    if(e.target.closest('#peDeleteAccount')) rqOpenDeleteAccount();
+  });
+
+  function rqOpenTrustShieldCancel(){
+    const ov = document.createElement('div');
+    ov.className = 'bidbd-ov';
+    ov.innerHTML = `
+      <div class="bidbd-card" role="dialog" aria-modal="true" aria-label="Cancel TrustShield">
+        <div class="bidbd-head">Cancel your TrustShield&trade;?</div>
+        <div class="bidbd-sub">You can add it back any time, but you'll have to verify your ID again.</div>
+        <div class="tscx-warn">
+          <strong>This removes the discounts tied to TrustShield.</strong>
+          Age-restricted delivery and ride-sharing requests lose the TrustShield discount
+          on the grand total, and you'll be asked to show your ID at the door again
+          instead of having it on file.
+        </div>
+        <button class="bidbd-close tscx-confirm" type="button">Yes, cancel my TrustShield</button>
+        <button class="hirerev-back" type="button">Keep TrustShield</button>
+      </div>`;
+    const close = () => ov.remove();
+    ov.querySelector('.hirerev-back').addEventListener('click', close);
+    ov.addEventListener('click', (e) => { if(e.target === ov) close(); });
+    ov.querySelector('.tscx-confirm').addEventListener('click', () => {
+      close();
+      /* Goes through the same setter every other surface uses, so the seal, the
+         age-restricted banner and the fee maths all follow in one step. */
+      if(window.__setTrustShield) window.__setTrustShield(false);
+    });
+    document.body.appendChild(ov);
+  }
+
+  /* rqRenderBadges() only runs when setTrustShield() flips the flag, so it does
+     NOT paint on load — a profile that already has TrustShield would still read
+     "Add TrustShield" until something changed it. Paint once at init too. */
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', rqRenderTrustShieldNav);
+  } else {
+    rqRenderTrustShieldNav();
+  }
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#rqNavTrustShield');
+    if(!btn) return;
+    if(DASH_DATA.profile && DASH_DATA.profile.trustShield){
+      /* Already enrolled — this is the cancel door, not the enrol one. Stop the
+         event so the data-open-trustshield delegate cannot also run. */
+      e.preventDefault();
+      e.stopPropagation();
+      rqOpenTrustShieldCancel();
+    }
+  }, true);
+
   function rqRenderBadges(){
+    rqRenderTrustShieldNav();
     const rail = document.getElementById('rqPhBadges');
     if(!rail) return;
     const p = DASH_DATA.profile || {};
@@ -26865,6 +27223,13 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       <p class="pe-status" id="peStatus">No changes yet.</p>
       <button type="button" class="gr-modal-btn" id="peSave" disabled>Save changes</button>
       <button type="button" class="gr-modal-btn-text" id="peCancel">Cancel</button>
+      <!-- Owner 2026-09-29: "Users need to be able to delete their account."
+           Kept visually separate from Save/Cancel so it cannot be hit by reflex. -->
+      <div class="pe-danger">
+        <div class="pe-danger-head">Close account</div>
+        <p class="pe-danger-copy">Deleting your Gopher account removes your profile, saved addresses and payment methods. This cannot be undone.</p>
+        <button type="button" class="pe-danger-btn" id="peDeleteAccount">Delete my account</button>
+      </div>
     </div>
 
     <div id="peOtpView" hidden>

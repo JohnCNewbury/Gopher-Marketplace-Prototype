@@ -2253,6 +2253,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     background:white; border:2px solid #eef0f5; border-radius:14px;
     overflow:visible; cursor:pointer; position:relative; z-index:1;
     transition:transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    /* Owner 2026-09-29: the tiles are buttons and did not read as buttons — they
+       had NO resting shadow, only hover and selected. This is the same two-layer
+       bubble the Request prototype already uses (--card-sh), so the portal and the
+       prototype now lift the same way. Hover still goes deeper, so the affordance
+       still changes on interaction rather than sitting flat. */
+    box-shadow:0 2px 4px rgba(0,36,97,0.05), 0 9px 20px rgba(0,36,97,0.13);
   }
   .cat-tile:hover {
     transform:translateY(-3px); z-index:30;
@@ -5536,17 +5542,62 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     padding:4px 9px; display:inline-flex; align-items:center; gap:6px;
   }
   /* Bid amount — prominent, sits between the worker info and the action buttons */
+  /* Owner 2026-09-29: BID reads to the LEFT of the number, and the number is
+     tappable — it opens the itemised breakdown. Was a stacked amount-over-label
+     column with no affordance at all. */
   .wcard-bid {
-    display:flex; flex-direction:column; align-items:flex-end;
-    flex-shrink:0; padding-right:4px;
+    display:flex; flex-direction:row; align-items:baseline; gap:7px;
+    flex-shrink:0; padding:2px 4px 2px 0; background:none; border:0;
+    cursor:pointer; font:inherit; text-align:right;
+    border-radius:8px; transition:background 0.15s;
   }
+  .wcard-bid:hover, .wcard-bid:focus-visible { background:rgba(51,217,117,0.10); outline:none; }
   .wcard-bid .wb-amount {
     font-family:'Nunito'; font-weight:900; font-size:18px; color:var(--navy);
-    line-height:1;
+    line-height:1; text-decoration:underline; text-decoration-style:dotted;
+    text-underline-offset:3px; text-decoration-thickness:1.5px;
+    text-decoration-color:rgba(26,42,94,0.45);
   }
+  .wcard-bid:hover .wb-amount { text-decoration-color:var(--green); }
   .wcard-bid .wb-label {
     font-family:'Nunito'; font-weight:800; font-size:9px; letter-spacing:0.6px;
-    text-transform:uppercase; color:var(--muted); margin-top:3px;
+    text-transform:uppercase; color:var(--muted); margin:0;
+  }
+  /* Itemised bid breakdown */
+  .bidbd-ov {
+    position:fixed; inset:0; background:rgba(12,22,48,0.55); z-index:9000;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .bidbd-card {
+    background:#fff; border-radius:16px; width:min(380px,100%);
+    box-shadow:0 18px 50px rgba(12,22,48,0.3); padding:20px 20px 16px;
+    font-family:'DM Sans'; max-height:88vh; overflow:auto;
+  }
+  .bidbd-head { font-family:'Nunito'; font-weight:900; font-size:17px; color:var(--navy); }
+  .bidbd-sub  { font-size:12px; color:var(--muted); margin:3px 0 14px; }
+  .bidbd-row  { display:flex; justify-content:space-between; gap:12px; font-size:13.5px;
+                padding:7px 0; border-bottom:1px dashed #e6e9f2; color:var(--navy); }
+  .bidbd-row.is-disc .bidbd-v { color:var(--green-d,#1f9d52); }
+  .bidbd-row.is-total { border-bottom:0; margin-top:6px; padding-top:11px;
+                        border-top:2px solid #eef0f5; font-weight:800; font-size:15px; }
+  .bidbd-k { color:var(--muted); }
+  .bidbd-row.is-total .bidbd-k { color:var(--navy); }
+  .bidbd-v { font-variant-numeric:tabular-nums; font-weight:700; }
+  .bidbd-note { font-size:11.5px; color:var(--muted); margin-top:12px; line-height:1.45; }
+  .hirerev-card { width:min(460px,100%); }
+  .hirerev-sep {
+    font-family:'Nunito'; font-weight:900; font-size:11px; letter-spacing:0.7px;
+    text-transform:uppercase; color:var(--muted); margin:16px 0 4px;
+  }
+  .hirerev-back {
+    width:100%; margin-top:8px; padding:9px; border:0; background:none;
+    color:var(--muted); font-family:'DM Sans'; font-size:12.5px; cursor:pointer;
+  }
+  .hirerev-back:hover { color:var(--navy); text-decoration:underline; }
+  .bidbd-close {
+    width:100%; margin-top:14px; padding:11px; border:0; border-radius:10px;
+    background:var(--green); color:#fff; font-family:'Nunito'; font-weight:800;
+    font-size:14px; cursor:pointer;
   }
   @media(max-width:620px){
     .wcard-bid { align-items:flex-start; padding-left:54px; }
@@ -8516,11 +8567,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         <div class="ts-perk-icon">$</div>
         <div class="ts-perk-body">
           <strong>$1 off Age-Restricted Delivery and Ride-Sharing</strong>
-          <!-- ⚠️ FEE FIGURE IS PER-SURFACE, and this is the one place "100% identical"
-               cannot be literal: Connect's AGE_FEE is $2.99 (D-031, flat on every
-               plan), Request's is $1.99. Copying Request's sentence verbatim would
-               state a price Connect does not charge. -->
-          <span>Applied automatically once you're verified, reducing the $2.99 age-restricted fee to $1.99 as long as you carry the badge. Savings add up fast.</span>
+          <!-- ⚠️ FEE FIGURE IS PER-SURFACE: Connect's AGE_FEE is $2.99 (D-031, flat on
+               every plan), Request's is $1.99. This copy used to state the figures and
+               so had to differ between the two surfaces. Owner copy change 2026-09-29
+               removed every figure, which is why this sentence is now WORD-FOR-WORD the
+               same as Request's — that is correct, not a copy-paste slip. ⛔ If a figure
+               is ever put back into this sentence, it must be Connect's, not Request's. -->
+          <span>Discount applied to grand total for all age-restricted delivery and ride sharing requests. Savings add up fast.</span>
         </div>
       </div>
       <div class="ts-perk">
@@ -10590,7 +10643,7 @@ const PAY_BADGES = {
     },
 
     other: {
-      icon:'✨', name:'Other / Custom', tag:'Custom',
+      icon:'✨', name:'Custom Task', tag:'Custom',
       detailsTitle:'Tell us what you need',
       detailsSub:"Don't see your category? Describe it and we'll route it to the right team.",
       fields:[
@@ -11305,7 +11358,7 @@ const PAY_BADGES = {
   // ---- Step content renderers ----
   function renderStep1(){
     return `
-      <h3>Let's get you the help you need today!</h3>
+      <h3>Select the service you need help with below</h3>
       <div class="cat-grid">
         ${Object.entries(CATEGORIES).map(([key,c]) => `
           <div class="cat-tile ${key===state.category?'selected':''}" data-cat="${key}">
@@ -17466,6 +17519,170 @@ const PAY_BADGES = {
     }
   }
 
+  /* ── A BID'S ITEMISED BREAKDOWN ─────────────────────────────────────────────
+     Owner 2026-09-29: a bid is an ALL-IN number — "fees, offer & COG if
+     applicable" — and tapping it shows the itemisation.
+
+     ⛔ This does NOT call computeConnectFee(). That function reads the live flow
+     `state` (category, promo, plan, age), and in the dashboard `state` belongs to
+     whatever the user last had open in the flow, not to the request being viewed.
+     Calling it here would price one request using another's parameters. Everything
+     below is derived from the request's OWN frozen reviewSnapshot instead.
+
+     w.bidAmount is the worker's OFFER — it is seeded from r.perWorkerCost, which
+     is worker pay. The all-in total is built forward from it using the same shape
+     computeConnectFee uses: flat Gopher + Age fees, then instant transfer as a
+     rate on (COG + offer + those flat fees), then discounts.
+
+     The ITF rate is DERIVED from the snapshot rather than hardcoded at 0.08, so
+     if the canonical rate ever changes this follows it instead of quietly
+     disagreeing with the review screen. */
+  window.__bidBreakdown = function(r, w){
+    const snap = (r && r.reviewSnapshot) || {};
+    const fee  = snap.fee || {};
+    const num  = (v) => { const n = Number(v); return isFinite(n) ? n : 0; };
+
+    const offer = num(w && w.bidAmount);
+    const cog   = num(snap.costOfItems);
+    const flatGopher = num(fee.fullGopherFee);
+    const flatAge    = num(fee.fullAgeFee);
+
+    // Original base the snapshot's ITF was computed on, used only to recover the rate.
+    const origBase = num(snap.costOfItems) + num(snap.workerPay) + flatGopher + flatAge;
+    const itfRate  = (origBase > 0 && num(fee.fullInstantTransfer) > 0)
+      ? num(fee.fullInstantTransfer) / origBase
+      : 0;
+
+    const base = cog + offer + flatGopher + flatAge;
+    const itf  = itfRate * base;
+    const feesPre = flatGopher + flatAge + itf;
+
+    /* Discounts carry across as the snapshot recorded them, capped so they can
+       never exceed the fee side — the same cap computeConnectFee applies. */
+    const promoDisc = Math.min(num(fee.promoDiscount), feesPre);
+    const tsDisc    = Math.min(num(fee.tsDiscount), feesPre - promoDisc);
+
+    const feesPost = feesPre - promoDisc - tsDisc;
+    const total    = cog + offer + feesPost;
+
+    return {
+      offer, cog, gopherFee: flatGopher, ageFee: flatAge, instantTransfer: itf,
+      promoDiscount: promoDisc, tsDiscount: tsDisc,
+      promoLabel: (fee.promo && fee.promo.label) || null,
+      total,
+    };
+  };
+
+  /* The number shown on the card IS the all-in total, per the owner. */
+  window.__bidAllIn = function(r, w){ return window.__bidBreakdown(r, w).total; };
+
+  window.__isBidsRequest = function(r){
+    return !!(r && (r.bidsMode || (r.reviewSnapshot && r.reviewSnapshot.bidsMode)));
+  };
+
+  /* ── POST-HIRE REVIEW, BIDS ONLY ────────────────────────────────────────────
+     Owner 2026-09-29: hiring a bidder opens the review with the REAL pricing and
+     a Start button, "so the user can agree on the actual terms WITH the actual
+     price and can start the request."
+
+     ⛔ SCOPE IS BIDS ONLY, and that is deliberate. gopher-connect.html carries an
+     owner ruling of 2026-09-01 — "HIRING STARTS THE JOB … the live requester app
+     has NO start step in any mode" — which removed a Start step precisely because
+     requests sat in Pending waiting for it. These do not actually conflict: in
+     every other mode the price was agreed at submit, so hiring is the commitment
+     and nothing new needs agreeing. On a BIDS request the requester has never
+     seen the price — the review screen literally reads "Pending bids" and "TBD
+     after bid" — so the bid is a new term, and this is where it gets agreed.
+     Owner confirmed this narrow scope on 2026-09-29. Do NOT widen it to the
+     other modes without revisiting the 09-01 ruling.
+
+     Built from the request's frozen reviewSnapshot, NOT from the flow's `state`
+     — same reason as __bidBreakdown: in the dashboard `state` belongs to
+     whatever was last open in the flow. */
+  window.__openHireReview = function(r, w, onStart){
+    const snap = (r && r.reviewSnapshot) || {};
+    const b = window.__bidBreakdown(r, w);
+    const money = (n) => '$' + Number(n).toFixed(2);
+    const esc = (v) => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const row = (k, v, cls) => v === '' || v == null ? '' :
+      `<div class="review-row ${cls||''}"><span class="rl">${esc(k)}</span><span class="rv">${esc(v)}</span></div>`;
+    const moneyRow = (k, v, cls) =>
+      `<div class="review-row ${cls||''}"><span class="rl">${esc(k)}</span><span class="rv">${money(v)}</span></div>`;
+
+    const firstOf = (a) => (Array.isArray(a) && a.length) ? a[0] : '';
+    const facts = [
+      row('Category', snap.category || r.category || ''),
+      row('Description', snap.description || r.descriptionFull || ''),
+      row('Worker', (w && w.name) || ''),
+      row('Pick-up', firstOf(snap.pickups)),
+      row('Destination', firstOf(snap.dropoffs)),
+    ].join('');
+
+    const pricing = [
+      moneyRow("Worker's offer (winning bid)", b.offer),
+      b.cog > 0 ? moneyRow('Cost of items', b.cog) : '',
+      b.gopherFee > 0 ? moneyRow('Gopher fee', b.gopherFee) : '',
+      b.ageFee > 0 ? moneyRow('Age-restricted fee', b.ageFee) : '',
+      b.instantTransfer > 0 ? moneyRow('Instant transfer', b.instantTransfer) : '',
+      b.promoDiscount > 0 ? `<div class="review-row"><span class="rl">Promo${b.promoLabel ? ' — ' + esc(b.promoLabel) : ''}</span><span class="rv">&minus;${money(b.promoDiscount)}</span></div>` : '',
+      b.tsDiscount > 0 ? `<div class="review-row"><span class="rl">TrustShield&trade; discount</span><span class="rv">&minus;${money(b.tsDiscount)}</span></div>` : '',
+      moneyRow('Total', b.total, 'total'),
+    ].join('');
+
+    const ov = document.createElement('div');
+    ov.className = 'bidbd-ov hirerev-ov';
+    ov.innerHTML = `
+      <div class="bidbd-card hirerev-card" role="dialog" aria-modal="true" aria-label="Confirm and start">
+        <div class="bidbd-head">Let's review your request</div>
+        <div class="bidbd-sub">${esc((w && w.name) || 'Your worker')}'s bid is now your price. Nothing starts until you press Start.</div>
+        ${facts}
+        <div class="hirerev-sep">Pricing</div>
+        ${pricing}
+        <button class="bidbd-close hirerev-start" type="button">Start &rarr;</button>
+        <button class="hirerev-back" type="button">Not yet &mdash; back to my workers</button>
+      </div>`;
+    const close = () => ov.remove();
+    ov.querySelector('.hirerev-back').addEventListener('click', close);
+    ov.querySelector('.hirerev-start').addEventListener('click', () => {
+      close();
+      if (typeof onStart === 'function') onStart();
+    });
+    document.body.appendChild(ov);
+  };
+
+  window.__openBidBreakdown = function(r, w){
+    const b = window.__bidBreakdown(r, w);
+    const money = (n) => '$' + Number(n).toFixed(2);
+    const row = (k, v, cls) => `<div class="bidbd-row ${cls||''}"><span class="bidbd-k">${k}</span><span class="bidbd-v">${v}</span></div>`;
+    const lines = [
+      row("Worker's offer", money(b.offer)),
+      b.cog > 0 ? row('Cost of items', money(b.cog)) : '',
+      b.gopherFee > 0 ? row('Gopher fee', money(b.gopherFee)) : '',
+      b.ageFee > 0 ? row('Age-restricted fee', money(b.ageFee)) : '',
+      b.instantTransfer > 0 ? row('Instant transfer', money(b.instantTransfer)) : '',
+      b.promoDiscount > 0 ? row(b.promoLabel ? ('Promo — ' + b.promoLabel) : 'Promo', '−' + money(b.promoDiscount), 'is-disc') : '',
+      b.tsDiscount > 0 ? row('TrustShield™ discount', '−' + money(b.tsDiscount), 'is-disc') : '',
+      row('Total', money(b.total), 'is-total'),
+    ].join('');
+    const ov = document.createElement('div');
+    ov.className = 'bidbd-ov';
+    ov.innerHTML = `
+      <div class="bidbd-card" role="dialog" aria-modal="true" aria-label="Bid breakdown">
+        <div class="bidbd-head">${(w && w.name) || 'Worker'}'s bid</div>
+        <div class="bidbd-sub">Everything this bid covers — nothing is added later.</div>
+        ${lines}
+        <div class="bidbd-note">This is what you pay if you hire ${(w && w.name) || 'this worker'}. The worker receives their offer in full; the rest is fees.</div>
+        <button class="bidbd-close" type="button">Got it</button>
+      </div>`;
+    const close = () => ov.remove();
+    ov.addEventListener('click', (e) => { if(e.target === ov) close(); });
+    ov.querySelector('.bidbd-close').addEventListener('click', close);
+    document.addEventListener('keydown', function esc(e){
+      if(e.key === 'Escape'){ close(); document.removeEventListener('keydown', esc); }
+    });
+    document.body.appendChild(ov);
+  };
+
   // Full-profile view for a worker in Request Details. Mirrors the flow's
   // Step-7 profile markup so styling is shared; maps the dashboard worker shape
   // (tier / ratingNum / jobsNum) onto the fields that markup expects.
@@ -17741,8 +17958,14 @@ const PAY_BADGES = {
           ? `<div class="wcard-approval">⚠ ${Math.round(distMi)} mi out — auto-match paused, needs your approval before hiring</div>`
           : '';
         // Bid amount, shown clearly to the right on every "ask for bids" request.
+        /* BID sits to the LEFT of the number, and the number is the ALL-IN total
+           (offer + COG + fees), not the worker's bare offer — owner 2026-09-29.
+           It is a button because tapping it opens the itemisation. */
         const bidHtml = (bidsMode && w.bidAmount != null)
-          ? `<div class="wcard-bid"><span class="wb-amount">$${Number(w.bidAmount).toFixed(0)}</span><span class="wb-label">Bid</span></div>`
+          ? `<button type="button" class="wcard-bid" data-wact="bidinfo" data-i="${realIdx}"
+                     title="See what this bid covers" aria-label="See what ${w.name}'s bid covers">
+               <span class="wb-label">Bid</span><span class="wb-amount">$${Number(window.__bidAllIn(r, w)).toFixed(0)}</span>
+             </button>`
           : '';
         return `
           <div class="wcard ${fresh?'wcard-fresh':''}">
@@ -18212,12 +18435,19 @@ const PAY_BADGES = {
             return;
           }
         }
+        /* Read-only: shows the itemisation and returns. Must come BEFORE any
+           status change so tapping the amount can never alter the worker. */
+        if(act === 'bidinfo'){ window.__openBidBreakdown(r, list[i]); return; }
         if(act === 'hire')      { list[i].status = 'hired'; list[i].justAccepted = false; }
         else if(act === 'consider') { list[i].status = 'considered'; list[i].justAccepted = false; }
         else if(act === 'approve')  { list[i].status = 'hired'; }
         else if(act === 'unhire')   { list[i].status = 'interested'; }
         else if(act === 'deny')     { list.splice(i, 1); }       // remove entirely
-        else if(act === 'message')  { b.classList.add('msg-open'); b.title = 'Conversation opened'; return; }
+        /* Was VISUAL ONLY — it added a class and a tooltip and opened nothing,
+           which is the dead Message button the owner reported (2026-09-29).
+           Request's equivalent already called openInboxThread; Connect never did,
+           despite having the same function. */
+        else if(act === 'message')  { b.classList.add('msg-open'); openInboxThread(workerThreadId(r, list[i])); return; }
         else if(act === 'profile')  {                            // open full profile view
           dashState.profileWorkerIdx = i;
           dashState.profileReqId = r.id;
@@ -18237,14 +18467,29 @@ const PAY_BADGES = {
            that difference is Connect's and is preserved. */
           const needed = r.workersNeeded || 1;
           const hiredNow = list.filter(w => w.status === 'hired').length;
-          if(hiredNow === needed){ startJob(r); }
+          if(hiredNow === needed){
+            /* BIDS ONLY: the requester has never seen this price — the review
+               screen read "Pending bids" / "TBD after bid" — so the winning bid
+               is a NEW term and gets agreed here before anything starts.
+               Owner 2026-09-29, scope confirmed narrow the same day.
+               Every other mode keeps the 2026-09-01 ruling above: the price was
+               agreed at submit, so hiring IS the commitment and the job starts
+               immediately. Widening this would re-create the Pending-limbo that
+               ruling removed. */
+            if(window.__isBidsRequest(r)){
+              const lead = list.filter(w => w.status === 'hired').pop() || list[i];
+              window.__openHireReview(r, lead, () => startJob(r));
+            } else {
+              startJob(r);
+            }
+          }
         }
       });
     });
 
     // Counter-offer action buttons — Accept (faked hire at the counter price) /
     // Details (opens this counter's breakdown modal) / Deny (remove the counter) /
-    // Review profile (reuses renderWorkerProfile) / Message (visual, mirrors interested).
+    // Review profile (reuses renderWorkerProfile) / Message (opens the worker's inbox thread).
     // The modal's own Accept/Deny carry the same data-coact, so they resolve here too.
     document.querySelectorAll('#reqDetailBody [data-coact]').forEach(b => {
       b.addEventListener('click', () => {
@@ -18252,7 +18497,7 @@ const PAY_BADGES = {
         const ci = parseInt(b.dataset.ci, 10);
         const counters = r.counterOffers || [];
         if(isNaN(ci) || !counters[ci]) return;
-        if(act === 'message'){ b.classList.add('msg-open'); b.title = 'Conversation opened'; return; }
+        if(act === 'message'){ b.classList.add('msg-open'); openInboxThread(workerThreadId(r, (counters[ci] || {}).worker)); return; }
         if(act === 'profile'){
           dashState.counterProfileIdx = ci;
           dashState.profileReqId = r.id;
@@ -19233,6 +19478,34 @@ const PAY_BADGES = {
     return out;
   }
 
+  /* The thread id for messaging ONE worker on a request, pre- or post-hire.
+
+     ⛔ Mirrors the assigned-card rule at the top of this file — `isCrew ?
+     `${r.id}::${name}` : r.id` — on purpose. That rule keys per-worker threads
+     only when there is actually a crew, and single-worker requests keep the
+     legacy bare r.id. isCrew is computed from the ASSIGNED crew, which does not
+     exist yet when you message someone from the interested list, so workersNeeded
+     is the pre-hire stand-in for the same question.
+
+     Getting this wrong is not cosmetic: always appending ::name would open
+     "GC-001::Bianca L." before hiring and "GC-001" after, so the conversation
+     would look like it vanished the moment the worker was hired. */
+  function workerThreadId(r, w){
+    const name = (w && w.name) || '';
+    /* Messaging a SPECIFIC person is always keyed by name. The bare r.id form
+       carries no identity, and pre-hire there is no assigned worker to infer it
+       from — the request's own `worker` field reads "1 worker interested", which
+       is what the inbox would otherwise show as the correspondent.
+
+       ⚠️ KNOWN GAP, not introduced here: the assigned-worker card still uses the
+       legacy bare r.id for a SINGLE hired worker (`isCrew ? id::name : id`), so a
+       conversation started before hiring lives at id::name and the post-hire card
+       opens id. The demo thread store is keyed the same two ways (r.threads[name]
+       vs r.thread), so this is a data-model split that predates this change.
+       Raised rather than papered over. */
+    return name ? `${r.id}::${name}` : r.id;
+  }
+
   function openInboxThread(id){
     // Remember where the user came from, so the inbox's Back button can
     // return them there (Request Detail when they tapped Message on an
@@ -19276,19 +19549,45 @@ const PAY_BADGES = {
       const sep = activeId.indexOf('::');
       const baseId = sep > -1 ? activeId.slice(0, sep) : activeId;
       const crewName = sep > -1 ? activeId.slice(sep + 2) : null;
-      const r = DASH_DATA.activeRequests.find(x => x.id === baseId && x.userStarted);
+      /* ⛔ The `userStarted` gate used to live HERE, on the lookup, which meant a
+         thread could not even be RESOLVED for a seeded request — so tapping
+         Message on an interested worker fell through to threads[0] and opened a
+         completely different person's conversation (owner: "message feature not
+         working", 2026-09-29). Addressing a message to the wrong correspondent is
+         worse than the dead button it replaced.
+
+         userStarted governs whether you may TYPE, not whether the conversation can
+         be shown, so it moved to `typeable` below where it belongs. */
+      const r = DASH_DATA.activeRequests.find(x => x.id === baseId);
       if(r){
         // Pick the crew member by name if specified, otherwise the lead.
         const crew = (r.live && Array.isArray(r.live.crew)) ? r.live.crew : null;
+        /* PRE-HIRE correspondents. A thread can now be opened against a worker who
+           is only INTERESTED (or who sent a counter-offer) — the Message buttons in
+           those lists were dead until 2026-09-29 and had no thread to resolve. The
+           old fallback assumed an assigned worker and otherwise used r.worker, which
+           on a pending request is the summary string "N workers interested" — so the
+           conversation would have been addressed to a count rather than a person. */
+        const byName = (list, n) => (Array.isArray(list) ? list : []).find(x => x && x.name === n);
+        const pending = crewName
+          ? (byName(r.interestedWorkers, crewName)
+             || ((r.counterOffers || []).map(c => c && c.worker).find(x => x && x.name === crewName)))
+          : null;
         const worker = (crew && crewName) ? (crew.find(w => w.name === crewName) || crew[0])
-                     : (r.live ? r.live.worker : { name: r.worker, photo:'' });
+                     : (pending ? { name: pending.name, photo: pending.photo || '' }
+                     : (r.live ? r.live.worker : { name: r.worker, photo:'' }));
         // Per-worker thread lives at r.threads[workerName]; single-worker at r.thread.
         const thread = crewName
           ? ((r.threads && r.threads[crewName]) || [])
           : (r.thread || []);
         activeThread = {
           id: activeId, worker,
-          title: r.title, thread, last: thread[thread.length-1] || null, typeable: true,
+          title: r.title, thread, last: thread[thread.length-1] || null,
+          /* Was hardcoded true, which was safe only while the lookup above already
+             required userStarted. Now that the lookup resolves any request, the
+             composer rule has to be stated explicitly or seeded demo threads would
+             silently become typeable. */
+          typeable: !!r.userStarted,
         };
       }
     }
@@ -21189,7 +21488,7 @@ const PAY_BADGES = {
     ['junk','Junk Removal','assets/img/connect-junk-removal.webp'],
     ['yard','Yard / Outdoor','assets/img/connect-img-2.webp'],
     ['ride','Ride Sharing','assets/img/connect-img-3.webp'],
-    ['other','Other / Custom','assets/img/px-3184418-400x300.webp'],
+    ['other','Custom Task','assets/img/px-3184418-400x300.webp'],
   ];
   const hireAgainState = { gopher:null, category:null, extraGophers:[] };
 

@@ -131,8 +131,17 @@
       message: 'Add a drop-off address so your Gopher knows where to go.',
       needs: ['isVisible'],
       when: function (s, h) {
-        if (s.noSpecificPickup || !h.isVisible('pickupSection')) return false;
-        if (firstEmpty(s.pickupStops) > -1) return false;   // pick-up reports first
+        /* ⛔ DO NOT bail on !isVisible('pickupSection') here. That was the bug
+           (owner 2026-09-29): five of the eight categories HIDE the pick-up
+           section — home, labor, junk, yard, other — but still render a
+           Destination, which is unconditional markup on all three surfaces.
+           This gate used to switch itself off alongside the pick-up gate, so
+           those five advanced past step 4 with an empty destination and a live
+           green Continue. Junk Removal is the one the owner screenshotted.
+           noSpecificPickup is the same mistake in miniature: a flexible pick-up
+           does not make the DESTINATION optional. */
+        var pickupShown = !s.noSpecificPickup && h.isVisible('pickupSection');
+        if (pickupShown && firstEmpty(s.pickupStops) > -1) return false;  // pick-up reports first
         return firstEmpty(s.dropoffStops) > -1;
       },
       selectorFor: function (s) {
