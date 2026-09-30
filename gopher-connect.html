@@ -16496,7 +16496,7 @@ const PAY_BADGES = {
     ensureGopherProfileModal();
     const w = tierToWorker(m);
     const r = { title: m.name };
-    document.getElementById('gopherProfBody').innerHTML = renderWorkerProfile(r, w, 0);
+    document.getElementById('gopherProfBody').innerHTML = renderWorkerProfile(r, w, 0, { showJobRatings: true });
     document.getElementById('gopherProfOverlay').hidden = false;
   }
 
@@ -17585,16 +17585,26 @@ const PAY_BADGES = {
      a Start button, "so the user can agree on the actual terms WITH the actual
      price and can start the request."
 
-     ⛔ SCOPE IS BIDS ONLY, and that is deliberate. gopher-connect.html carries an
-     owner ruling of 2026-09-01 — "HIRING STARTS THE JOB … the live requester app
-     has NO start step in any mode" — which removed a Start step precisely because
-     requests sat in Pending waiting for it. These do not actually conflict: in
-     every other mode the price was agreed at submit, so hiring is the commitment
-     and nothing new needs agreeing. On a BIDS request the requester has never
-     seen the price — the review screen literally reads "Pending bids" and "TBD
-     after bid" — so the bid is a new term, and this is where it gets agreed.
-     Owner confirmed this narrow scope on 2026-09-29. Do NOT widen it to the
-     other modes without revisiting the 09-01 ruling.
+     ⛔ SCOPE IS BIDS ONLY, and the button says SUBMIT — not Start.
+
+     Owner 2026-09-30, settling a collision of words: "Start on Slide 11 should
+     actually say 'Submit.' It is when a bid has been accepted and they now can
+     see the review request screen with actual pricing, since the last time they
+     saw it, it said 'pending'." So this is the requester submitting at a price
+     they can finally see — NOT a start step.
+
+     That distinction is load-bearing. This file carries an owner ruling of
+     2026-09-01 — "HIRING STARTS THE JOB … the live requester app has NO start
+     step in any mode" — which removed a Start step because requests sat in
+     Pending waiting for someone to press it. Calling this button "Start" put it
+     back in name and invited exactly that confusion. The separate dashboard
+     "Start job" BAR is a different control with its own rule (owner 2026-09-30,
+     slide 9): Connect only, and only when more workers were requested than have
+     accepted.
+
+     In every non-bid mode the price was agreed at submit, so hiring remains the
+     commitment and nothing new needs agreeing. Do NOT widen this overlay to
+     those modes.
 
      Built from the request's frozen reviewSnapshot, NOT from the flow's `state`
      — same reason as __bidBreakdown: in the dashboard `state` belongs to
@@ -17634,11 +17644,11 @@ const PAY_BADGES = {
     ov.innerHTML = `
       <div class="bidbd-card hirerev-card" role="dialog" aria-modal="true" aria-label="Confirm and start">
         <div class="bidbd-head">Let's review your request</div>
-        <div class="bidbd-sub">${esc((w && w.name) || 'Your worker')}'s bid is now your price. Nothing starts until you press Start.</div>
+        <div class="bidbd-sub">${esc((w && w.name) || 'Your worker')}'s bid is now your price. Last time you saw this it said "Pending bids" — nothing is committed until you submit.</div>
         ${facts}
         <div class="hirerev-sep">Pricing</div>
         ${pricing}
-        <button class="bidbd-close hirerev-start" type="button">Start &rarr;</button>
+        <button class="bidbd-close hirerev-start" type="button">Submit</button>
         <button class="hirerev-back" type="button">Not yet &mdash; back to my workers</button>
       </div>`;
     const close = () => ov.remove();
@@ -17700,7 +17710,13 @@ const PAY_BADGES = {
     return parts[0] + (parts[1] ? ' ' + parts[1].charAt(0) : '');
   }
 
-  function renderWorkerProfile(r, w, idx){
+  function renderWorkerProfile(r, w, idx, opts){
+    /* opts.showJobRatings marks the Deals "Review job history" card, which keeps
+       its own showroom history with per-job stars (owner ruling 2026-08-26).
+       Everything else — Request Details: Interested / Counter Offers — gets the
+       G40-68 All / [Category] filter, each job with its rating (owner rulings
+       2026-09-30), as in gopher-request.html. */
+    const dealsCard = !!(opts && opts.showJobRatings);
     const tier = w.tier || 'standard';
     const tierLabel = tier.replace('+','');
     const reviews = (w.reviews != null) ? w.reviews : (w.jobsNum || 0);
@@ -17728,6 +17744,7 @@ const PAY_BADGES = {
       ? `Rating across ${w.reviews} ${hasJobs ? `rated job${w.reviews === 1 ? '' : 's'}` : `review${w.reviews === 1 ? '' : 's'}`}`
       : '';
     const firstWord = (r.title || 'Previous').split(/[\s·]/)[0];
+    const topCat = window.__ecTopCatOfRequest(r);   // G40-68
     /* A deal that came from the publication feed carries `live`. We hold no job
        history for those providers, so the showroom history below is withheld
        rather than shown under their name. */
@@ -17776,9 +17793,12 @@ const PAY_BADGES = {
           <button class="profile-message-btn" data-wact="message" data-i="${idx}">💬 Message</button>
         </div>
 
-        ${isLive ? '' : `<div class="profile-links">
+        ${isLive ? '' : dealsCard ? `<div class="profile-links">
           <span class="profile-link">View all previous jobs</span>
           <span class="profile-link">View all previous ${firstWord} jobs only</span>
+        </div>` : `<div class="profile-links">
+          <button type="button" class="profile-link on" data-jobfilter="all">View all previous jobs</button>
+          <button type="button" class="profile-link" data-jobfilter="cat">View previous ${topCat} jobs only</button>
         </div>`}
         <!-- The demo filters stay demo-only. A LIVE provider gets the real
              Service jobs / All jobs toggle, rendered by
@@ -17793,6 +17813,13 @@ const PAY_BADGES = {
                this provider's Gopher history.`
             : `No completed jobs to show yet. This provider's history will appear
                here once they have finished work through Gopher.`}
+        </div>` : !dealsCard ? `
+        <!-- G40-68 — Request Details (Interested / Counter Offers). The live app
+             reads gopher.previous_jobs (gopher-backend-api !657 + !662): month +
+             year, category, type and rating (owner rulings 2026-09-30). -->
+        <div class="profile-history" data-topcat="${topCat}">
+          ${window.__ecJobs(w)}
+          <div class="profile-history-empty" style="display:none">No Previous ${topCat} Jobs</div>
         </div>` : `
         <!-- ⛔ MATCHED TO THE LIVE CARD. These rows carried the past customer's
              spend and their written comment — the two fields the live endpoint
@@ -25384,6 +25411,18 @@ const PAY_BADGES = {
 (function(){
   var MAP = { delivery:'Delivery', errand:'Delivery', ride:'Need A Ride', moving:'Service', home:'Service', labor:'Service', junk:'Service', yard:'Service', service:'Service', other:'Other' };
   window.__ecTopCat = function(key){ return MAP[(key||'').toString().toLowerCase()] || 'Service'; };
+  /* G40-68 — the dashboard's Request Details holds a request object, not a
+     flow key. Same four buckets and the same rule as gopher-request.html's
+     __topCategoryOf, so the two sites label one request the same way. */
+  window.__ecTopCatOfRequest = function(r){
+    var key = ((r && (r.topCategory || r.category)) || '').toString().toLowerCase();
+    if (MAP[key]) return MAP[key];
+    var t = ((r && r.title) || '') + '';
+    if (/ride|airport|chauffeur|need a ride/i.test(t)) return 'Need A Ride';
+    if (/deliver|errand|grocery|food|courier|package|pharmacy|retail/i.test(t)) return 'Delivery';
+    if (/\bother\b/i.test(t)) return 'Other';
+    return 'Service';
+  };
   window.__ecJobs = function(pw){
     var name = (pw && pw.name) || 'Gopher';
     var jobs = [
@@ -25395,15 +25434,19 @@ const PAY_BADGES = {
          sentence-cased. The Style Guide's rule governs headlines and labels; it
          does not rename the taxonomy. "Age-restricted" IS prose, so that one is
          lowercased. */
-      { id:'#212121', when:'Mar 2026', type:'Home Services · Handyman',  rating:'5.00', cat:'Service' },
-      { id:'#20245',  when:'Mar 2026', type:'Delivery — Age-restricted', rating:'4.95', cat:'Delivery' },
-      { id:'#20188',  when:'Feb 2026', type:'Junk Removal',              rating:'5.00', cat:'Service' },
-      { id:'#20102',  when:'Feb 2026', type:'Need a Ride',               rating:'',     cat:'Need A Ride' }
+      { when:'Mar 2026', type:'Home Services · Handyman',  cat:'Service',     rating:'5.00' },
+      { when:'Mar 2026', type:'Delivery — Age-restricted', cat:'Delivery',    rating:'4.95' },
+      { when:'Feb 2026', type:'Junk Removal',              cat:'Service',     rating:'5.00' },
+      { when:'Feb 2026', type:'Need a Ride',               cat:'Need A Ride', rating:'' }
     ];
-    /* ⛔ MATCHED TO THE LIVE CARD — the THIRD copy of this renderer, and the
-       reason the live history was extracted into one shared module. These rows
-       carried the past customer's spend and their written comment, which the
-       live endpoint deliberately never returns. Category, month/year, rating.
+    /* ⛔ G40-68 (owner rulings 2026-09-30). These rows are the worker profile a
+       REQUESTER opens from Interested / Bids / Counter Offers, and each past job
+       is another customer's: month + year, category, type and the star rating
+       that job's customer gave ("Not rated" if none) — no order id, spend,
+       comment or photos. The rating came back after the owner used the live app
+       ("need to include rating"; "We're excluding pics and comments"). The live
+       app reads the same shape from gopher.previous_jobs (gopher-backend-api
+       !657 + !662).
        `name` is left unused rather than removed from the signature: the caller
        still passes it and a signature change here is not this fix's business. */
     void name;

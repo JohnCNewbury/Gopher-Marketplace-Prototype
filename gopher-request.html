@@ -8084,7 +8084,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     text-transform:uppercase; color:var(--muted); margin:0;
   }
   .bidbd-ov {
-    position:fixed; inset:0; background:rgba(12,22,48,0.55); z-index:9000;
+    /* ⛔ 9800, NOT 9000. These dialogs are launched FROM other modals — the
+       delete-account one opens from inside the Personal info modal, which is
+       .gr-modal-overlay at z-index:9500 — so at 9000 it rendered BEHIND the very
+       modal that opened it. That is the owner's 2026-09-30 report: "this did not
+       appear right after selecting delete." It had appeared; it was underneath.
+       Sits above .gr-modal-overlay (9500) and the 9600 overlay, and below the
+       12000 toast layer so notifications still surface over it. */
+    position:fixed; inset:0; background:rgba(12,22,48,0.55); z-index:9800;
     display:flex; align-items:center; justify-content:center; padding:20px;
   }
   .bidbd-card {
@@ -8131,6 +8138,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .da-confirm-input:focus { outline:none; border-color:#c53030; }
   .bidbd-close.is-disabled { background:#e3e6ee !important; color:#9aa3b5 !important; cursor:not-allowed; }
+  .dash-avatar-lead {
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
   .tscx-warn {
     background:#fff5f5; border:1px solid #f6d5d5; border-radius:10px;
     padding:12px 13px; font-size:12.5px; line-height:1.5; color:#7a2230;
@@ -19378,7 +19389,13 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
           <!-- JS injects the Gopher Request logo image here on open -->
         </div>
       </div>
-      <div class="dash-business-text">
+      <!-- Owner 2026-09-30 (slide 1): "Remove everything but Request logo and
+           standard white background." The name and status line moved out; the
+           greeting carries the name now, and TrustShield status has its own nav
+           row since 2026-09-29. Kept in the DOM but hidden rather than deleted —
+           renderers still write to #rqDashUserName / #rqDashStatus, and removing
+           the nodes would make those writes throw. -->
+      <div class="dash-business-text" hidden>
         <div class="dash-business-name" id="rqDashUserName">Jamie Lopez</div>
         <div class="dash-business-plan" id="rqDashStatus">Status · Active</div>
       </div>
@@ -19455,16 +19472,18 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
   <!-- Main -->
   <main class="dash-main">
     <div class="dash-topbar">
+      <!-- Owner 2026-09-30 (slide 1): the profile circle LEADS, and the greeting
+           follows it. The avatar used to sit alone on the far right with the
+           greeting stacked over a section title on the left. -->
       <div class="dash-topbar-left">
         <button class="dash-burger" id="rqDashBurger" aria-label="Open menu" aria-expanded="false">&#9776;</button>
+        <div class="dash-avatar dash-avatar-lead" id="rqDashAvatar">JL</div>
         <div>
           <div class="dash-greeting" id="rqDashGreeting">Welcome back, Jamie 👋</div>
           <div class="dash-section-title" id="rqDashSectionTitle">Dashboard overview</div>
         </div>
       </div>
-      <div class="dash-topbar-right">
-        <div class="dash-avatar" id="rqDashAvatar">JL</div>
-      </div>
+      <div class="dash-topbar-right"></div>
     </div>
 
     <div class="dash-content">
@@ -21797,11 +21816,19 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
   function __demoJobsFor(w){
     // Deterministic demo history spanning categories so the filter + empty state
     // are demonstrable. Real per-job top-level category tags come from the backend.
+    /* G40-68 (owner rulings 2026-09-30): a past job is another customer's, so a
+       row is its MONTH + YEAR, category, type and the star RATING that job's
+       customer gave ("Not rated" if none) — no order id, amount, details,
+       comment or photos. The rating was added after the owner used the live
+       app on the A50 ("need to include rating"; "We're excluding pics and
+       comments"). The live app's payload is gopher.previous_jobs { category,
+       all, in_category }, rows { month, year, category, type, rating }:
+       gopher-backend-api !657 + !662. */
     return [
-      { id:'#212121', date:'3/4/26',  type:'Home Services · Handyman',   details:'Install ceiling fan',        amount:'$140.00', rating:'5.00', comment:'Excellent — professional and quick. Highly recommend.', cat:'Service' },
-      { id:'#20245',  date:'3/1/26',  type:'Delivery — Age-Restricted',  details:'1 can of ZYN wintergreen',   amount:'$40.00',  rating:'4.95', comment:'', cat:'Delivery' },
-      { id:'#20188',  date:'2/22/26', type:'Junk Removal',               details:'Garage cleanout — 6 items',  amount:'$210.00', rating:'5.00', comment:'Fast and careful with everything.', cat:'Service' },
-      { id:'#20102',  date:'2/10/26', type:'Need A Ride',                details:'Airport drop-off',           amount:'$55.00',  rating:'4.90', comment:'', cat:'Need A Ride' }
+      { date:'Mar 2026', type:'Home Services · General Handyman', rating:'5.00', cat:'Service' },
+      { date:'Mar 2026', type:'Delivery · Age-Restricted',         rating:'4.95', cat:'Delivery' },
+      { date:'Feb 2026', type:'Junk Removal',                      rating:'5.00', cat:'Service' },
+      { date:'Feb 2026', type:'Need A Ride',                       rating:'4.90', cat:'Need A Ride' }
     ];
   }
   (function initJobFilter(){
@@ -21893,7 +21920,12 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     return parts[0] + (parts[1] ? ' ' + parts[1].charAt(0) : '');
   }
 
-  function renderWorkerProfile(r, w, idx){
+  function renderWorkerProfile(r, w, idx, opts){
+    /* Per-job stars show everywhere this renders: the Request worker profile
+       (G40-68 — the owner restored ratings on 2026-09-30 after testing the
+       live app) and the gopher-profile modal (Deals card, MY Gophers, inbox),
+       which always had them. `opts` is kept for the modal's call site. */
+    void opts;
     /* ⛔ NEVER A DEFAULT TIER FOR A LIVE PROVIDER. This read
        `w.tier || w.badge || 'pro+'`, and __tierName('pro+') returns 'Elite+' —
        so a real provider the backend resolved NO tier for rendered the TOP
@@ -26244,7 +26276,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     ensureGopherProfileModal();
     const w = tierToWorker(m);
     const r = { title: m.name };
-    document.getElementById('gopherProfBody').innerHTML = renderWorkerProfile(r, w, 0);
+    document.getElementById('gopherProfBody').innerHTML = renderWorkerProfile(r, w, 0, { showJobRatings: true });
     document.getElementById('gopherProfOverlay').hidden = false;
   }
 
@@ -27735,6 +27767,11 @@ function initPersonalEdit(){
       <button class="sa-save" id="saSave">Save address</button>
       <div class="sa-note">Addresses are verified with Google so distance &amp; pricing stay accurate.</div>
     </div>
+    <!-- Owner 2026-09-30 (slide 6): "Add a done button so user doesn't have to x
+         out or tap out of screen." Carries data-sa-close, the same hook the ✕ and
+         the backdrop use, so there is one close path rather than a second one
+         that could drift. -->
+    <button class="sa-done" id="saDone" data-sa-close>Done</button>
   </div>
 </div>
 <style id="saved-addr-css">
@@ -27742,6 +27779,10 @@ function initPersonalEdit(){
 .sa-overlay[hidden]{ display:none; }
 .sa-backdrop{ position:absolute; inset:0; background:rgba(13,26,62,.5); }
 .sa-modal{ position:relative; width:min(440px,92vw); max-height:86vh; overflow:auto; background:#fff; border-radius:20px; box-shadow:0 30px 80px rgba(0,0,0,.35); padding:20px 22px; font-family:'DM Sans',sans-serif; }
+.sa-done{ width:100%; margin-top:14px; padding:12px; border:0; border-radius:12px;
+  background:#002461; color:#fff; font-family:'Nunito',sans-serif; font-weight:800;
+  font-size:14.5px; cursor:pointer; }
+.sa-done:hover{ background:#00306f; }
 .sa-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
 .sa-head h3{ font-family:'Nunito',sans-serif; font-weight:900; color:#002461; font-size:19px; margin:0; }
 .sa-x{ border:none; background:none; font-size:18px; color:#8a93a3; cursor:pointer; line-height:1; }
