@@ -1411,7 +1411,7 @@ function catContextBar(){
   const c=CATEGORIES[state.category]||{name:'Pick a service'};
   return `<button class="cat-context" type="button" data-action="edit-service" aria-label="Change service — currently ${esc(c.name)}">
     <span class="cc-thumb"><img src="${CAT_PHOTOS[state.category]||''}" alt=""></span>
-    <span class="cc-text"><span class="cc-eye">What do you need today?</span><span class="cc-name">${esc(c.name)}</span></span>
+    <span class="cc-text"><span class="cc-name">${esc(c.name)}</span></span>
     <span class="cc-change">Change<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
   </button>`;
 }
