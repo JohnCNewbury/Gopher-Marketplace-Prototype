@@ -2250,7 +2250,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
   }
   .cat-tile {
-    background:white; border:2px solid #eef0f5; border-radius:14px;
+    /* ⛔ NO BORDER — owner 2026-10-02, ported from gopher-request.html. He sent a
+       reference image as "the best example of what I'm looking for" and the one
+       thing separating it from what was here is that its cards have no outline,
+       only light. A border is a DRAWN edge, which is what stops a card floating. */
+    background:white; border:0; border-radius:14px;
     overflow:visible; cursor:pointer; position:relative; z-index:1;
     transition:transform 0.2s, box-shadow 0.2s, border-color 0.2s;
     /* Owner 2026-09-29: the tiles are buttons and did not read as buttons — they
@@ -2258,19 +2262,31 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
        bubble the Request prototype already uses (--card-sh), so the portal and the
        prototype now lift the same way. Hover still goes deeper, so the affordance
        still changes on interaction rather than sitting flat. */
-    box-shadow:0 2px 4px rgba(0,36,97,0.05), 0 9px 20px rgba(0,36,97,0.13);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 1px 2px rgba(0,36,97,0.06),
+      0 8px 18px rgba(0,36,97,0.10),
+      0 22px 42px rgba(0,36,97,0.13);
   }
   .cat-tile:hover {
-    transform:translateY(-3px); z-index:30;
-    box-shadow:0 10px 24px rgba(26,42,94,0.14); border-color:#d4d8e3;
+    transform:translateY(-8px); z-index:30;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.95),
+      0 2px 4px rgba(0,36,97,0.07),
+      0 16px 30px rgba(0,36,97,0.12),
+      0 40px 70px rgba(0,36,97,0.18);
   }
+  /* selection reads as a ring rather than a border, so the card keeps floating */
   .cat-tile.selected {
-    border-color:var(--green);
-    box-shadow:0 8px 22px rgba(51,217,117,0.28);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 0 0 2px var(--green),
+      0 10px 24px rgba(51,217,117,0.28),
+      0 26px 50px rgba(0,36,97,0.12);
   }
   .cat-tile .ct-photo {
     position:relative; aspect-ratio:1.55; overflow:hidden; background:#eef2f9;
-    border-radius:12px 12px 0 0;
+    border-radius:14px 14px 0 0;   /* matches the tile now that the border is gone */
   }
   .cat-tile .ct-photo img {
     width:100%; height:100%; object-fit:cover; display:block;
@@ -2281,7 +2297,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .cat-tile .ct-body {
     padding:10px 12px 11px; display:flex; align-items:center;
     justify-content:space-between; gap:8px;
-    background:white; border-radius:0 0 12px 12px;
+    background:white; border-radius:0 0 14px 14px;   /* matches the tile now that the border is gone */
   }
   .cat-tile .ct-name {
     font-family:'Nunito',sans-serif; font-weight:800; font-size:15px;
@@ -5195,6 +5211,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:flex; align-items:center; justify-content:center;
     font-family:'Nunito'; font-weight:800; font-size:13px;
   }
+  /* the header circle can hold a photo too once one is chosen (owner 2026-10-02) */
+  .dash-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
   .dash-content {
     padding:28px 32px;
     max-width:1180px;
@@ -6443,7 +6461,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .dh-featured:hover .dh-feat-go { background:var(--green-dark); transform:translateY(-1px); }
 
   /* Per-category bid-winner cards — PAID placements, so larger & richer than the free browse cards */
-  .dh-cats { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:16px; margin-top:18px; }
+  /* Owner 2026-10-02 (slide 6): "1 main card and 5 category bid winners." auto-fit
+     at minmax(260px,1fr) fitted only four in the content column, so the fifth
+     dropped onto a row of its own. Explicit counts never orphan a single card. */
+  .dh-cats { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:14px; margin-top:18px; }
+  @media(max-width:1320px){ .dh-cats { grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; } }
+  @media(max-width:1040px){ .dh-cats { grid-template-columns:repeat(2, minmax(0,1fr)); } }
+  @media(max-width:640px) { .dh-cats { grid-template-columns:1fr; } }
   .dh-cat { position:relative; display:flex; flex-direction:column; align-items:center; text-align:center;
     background:#fff; border:1px solid #eef0f6; border-radius:20px; padding:22px 18px 20px; cursor:pointer;
     box-shadow:0 12px 26px rgba(0,36,97,.10), 0 3px 8px rgba(0,36,97,.06);
@@ -7159,12 +7183,24 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     padding:24px 28px; margin-bottom:18px;
     display:flex; align-items:center; gap:24px;
   }
+  .personal-hero .ph-avatar-wrap { position:relative; flex-shrink:0; line-height:0; }
   .personal-hero .ph-avatar {
     width:96px; height:96px; border-radius:50%;
     background:linear-gradient(135deg, var(--navy), #3d52a0); color:white;
     display:flex; align-items:center; justify-content:center;
     font-family:'Nunito'; font-weight:900; font-size:32px;
     flex-shrink:0; overflow:hidden; border:3px solid #eef1f7;
+    padding:0; cursor:pointer; transition:filter .18s, box-shadow .18s;
+  }
+  .personal-hero .ph-avatar-wrap:hover .ph-avatar { filter:brightness(.78); }
+  .personal-hero .ph-avatar:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(51,217,117,.55); }
+  .personal-hero .ph-avatar-cam {
+    position:absolute; right:0; bottom:2px;
+    width:30px; height:30px; border-radius:50%;
+    background:var(--green); border:2.5px solid #fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; line-height:1; pointer-events:none;
+    box-shadow:0 2px 6px rgba(0,36,97,.22);
   }
   .personal-hero .ph-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
   /* Initials fallback (used by the session-prefill path when no photo is set) */
@@ -9627,7 +9663,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <div class="dash-topbar-left">
         <button class="dash-burger" id="dashBurger" aria-label="Open menu" aria-expanded="false">&#9776;</button>
       <div>
-        <div class="dash-greeting" id="dash-greeting">Welcome back, John 👋</div>
         <div class="dash-section-title" id="dashSectionTitle">Dashboard overview</div>
       </div>
       </div>
@@ -9637,6 +9672,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     </div>
 
     <div class="dash-content">
+      <!-- Owner 2026-10-02 (slide 2), ported from gopher-request.html: "Move
+           Welcome back… to space between bottom of header bar and" the page
+           heading. Connect's profile circle was already in .dash-topbar-right,
+           so the greeting is the only half of that slide that applied here. -->
+      <div class="dash-greeting" id="dash-greeting">Welcome back, John 👋</div>
 
       <!-- ░░ Section: Home / Active Requests ░░ -->
       <section class="dash-section active" data-section="home">
@@ -9821,7 +9861,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <!-- ░░ Section: Personal Info ░░ -->
       <section class="dash-section" data-section="personal">
         <div class="personal-hero">
-          <div class="ph-avatar" id="ph-avatar"><img src="assets/img/px-2379004-200x200.webp" alt="John Newbury" id="ph-avatar-img"></div>
+          <!-- Owner 2026-10-02 (slide 3), ported from gopher-request.html: tapping
+               the picture changes it. The camera badge is a SIBLING, not a child —
+               renderers set #ph-avatar's innerHTML to paint the photo, so a badge
+               inside it would be wiped on the next repaint. -->
+          <div class="ph-avatar-wrap">
+            <button type="button" class="ph-avatar" id="ph-avatar"
+                    aria-label="Change your profile picture"><img src="assets/img/px-2379004-200x200.webp" alt="John Newbury" id="ph-avatar-img"></button>
+            <span class="ph-avatar-cam" aria-hidden="true">📷</span>
+            <input type="file" id="phPhotoInput" accept="image/png,image/jpeg" hidden>
+          </div>
           <div class="ph-main">
             <div class="ph-name" id="ph-name">John</div>
             <div class="ph-role" id="ph-since-label">User since 2022</div>
@@ -15730,7 +15779,7 @@ const PAY_BADGES = {
   // Add `logo:'data:image/...'` to any record to replace its monogram tile.
   const DEALS_DATA = [
     { key:'localpro', title:'Local Service Provider Deals', merchants:[
-      { id:'lp-power', logo:'assets/img/connect-img-12.webp',  name:'Power Washing',   pro:'John Newbury',       tier:'Gopher Elite+', price:150, normalRate:225, offer:'Full exterior house & driveway wash',
+      { id:'lp-power', featuredSlot:'category', featuredMonth:'2026-09', logo:'assets/img/connect-img-12.webp',  name:'Power Washing',   pro:'John Newbury',       tier:'Gopher Elite+', price:150, normalRate:225, offer:'Full exterior house & driveway wash',
         kind:'service', reqCategory:'home', reviews:312, rating:4.9, verified:true, testimonial:'Driveways and siding like new.',
         dealSpecifics:"I will power wash any residential home under 2000 sq ft for $150 flat rate. My normal rate is $225. I use a special solution that will kill mold for up to 1 year.",
         photo:'assets/img/px-3932291-240x240.webp' },
@@ -15768,9 +15817,9 @@ const PAY_BADGES = {
         photo:'assets/img/px-1212984-240x240.webp' },
     ]},
     { key:'restaurants', title:'Restaurants & Food Trucks', merchants:[
-      { id:'r-myway', logo:'assets/img/connect-img-27.webp',   name:'My Way Tavern',            sub:'American · Burgers · Drinks', offer:'10% off online orders, use promo code GOPHER', distance:'0.5 mi',
+      { id:'r-myway', featuredSlot:'hero', featuredMonth:'2026-09', logo:'assets/img/connect-img-27.webp',   name:'My Way Tavern',            sub:'American · Burgers · Drinks', offer:'10% off online orders, use promo code GOPHER', distance:'0.5 mi',
         kind:'merchant', category:'delivery', address:'105 Avent Ferry Rd, Holly Springs, NC 27540', mobile:false, promo:'GOPHER', pay:12, portalUrl:'mywaytavern.com', portalTag:'The best food (& drinks) around' },
-      { id:'r-frankks', logo:'assets/img/connect-img-9.webp', name:'Frankie Frankks Hot Dogs', sub:'Hot Dog Cart', offer:"Buy 2 dogs, the drink's on us", distance:'2.2 mi',
+      { id:'r-frankks', featuredSlot:'category', featuredMonth:'2026-09', logo:'assets/img/connect-img-9.webp', name:'Frankie Frankks Hot Dogs', sub:'Hot Dog Cart', offer:"Buy 2 dogs, the drink's on us", distance:'2.2 mi',
         kind:'merchant', category:'delivery', address:null, mobile:true, noOrdering:true, pay:9, portalUrl:'https://www.frankks.com', portalTag:"Frankly, we're the best!" },
       { id:'r-freshfork', logo:'assets/img/deal-fresh-fork.webp',   name:'Fresh Fork',                    sub:'Salads · Wraps · Bowls', offer:'Free topping upgrade', distance:'2.5 mi',
         kind:'merchant', category:'delivery', address:'308 Village Walk Dr, Holly Springs, NC 27540', mobile:false, pay:11, portalUrl:'freshforkhs.com', portalTag:'Healthy and fresh' },
@@ -15780,7 +15829,7 @@ const PAY_BADGES = {
         kind:'merchant', category:'delivery', address:'634 Holly Springs Rd, Holly Springs, NC 27540', mobile:false, promo:'GOPHER5', pay:10, portalUrl:'orderonline.granburyrs.com/slice/menu/main', portalTag:'Real NY Thin Crust Pizza' },
     ]},
     { key:'favorites', title:'Local Favorites', merchants:[
-      { id:'f-hatch', logo:'assets/img/connect-img-5.webp',   name:'Hatch Coffee',             sub:'Coffee · Bakery', offer:'Free pastry with any latte', distance:'0.8 mi',
+      { id:'f-hatch', featuredSlot:'category', featuredMonth:'2026-09', logo:'assets/img/connect-img-5.webp',   name:'Hatch Coffee',             sub:'Coffee · Bakery', offer:'Free pastry with any latte', distance:'0.8 mi',
         kind:'merchant', category:'delivery', address:'306 S Main St, Holly Springs, NC 27540', mobile:false, pay:8, portalUrl:'hatchcoffee.com', portalTag:'Small-batch, locally roasted' },
       { id:'f-sugar', logo:'assets/img/connect-img-23.webp',   name:'Sugarbird Sweets & Teas',  sub:'Desserts · Tea', offer:'BOGO macarons', distance:'1.1 mi',
         kind:'merchant', category:'delivery', address:'124 Bowden Way, Holly Springs, NC 27540', mobile:false, pay:9, portalUrl:'sugarbird.com', portalTag:'A little something sweet' },
@@ -15794,7 +15843,7 @@ const PAY_BADGES = {
     { key:'retail', title:'Retail Merchants', merchants:[
       { id:'c-cardinal', logo:'assets/img/connect-img-13.webp',name:'Cardinal Corner Store',    sub:'Convenience · Snacks', offer:'Free coffee with any fill-up', distance:'0.4 mi',
         kind:'merchant', category:'delivery', address:'500 Holly Springs Rd, Holly Springs, NC 27540', mobile:false, pay:8, portalUrl:'cardinalcorner.com', portalTag:'Your corner, stocked' },
-      { id:'c-quik', logo:'assets/img/connect-img-26.webp',    name:'QuikStop Holly Springs',   sub:'Convenience · Fuel', offer:'2-for-1 energy drinks', distance:'1.0 mi',
+      { id:'c-quik', featuredSlot:'category', featuredMonth:'2026-09', logo:'assets/img/connect-img-26.webp',    name:'QuikStop Holly Springs',   sub:'Convenience · Fuel', offer:'2-for-1 energy drinks', distance:'1.0 mi',
         kind:'merchant', category:'delivery', address:'1001 Avent Ferry Rd, Holly Springs, NC 27540', mobile:false, pay:8, portalUrl:'quikstop.com', portalTag:'In and out, fast' },
       { id:'c-pantry', logo:'assets/img/connect-img-18.webp',  name:'GoPantry Express',         sub:'Grocery · Essentials', offer:'$3 off $20', distance:'1.9 mi',
         kind:'merchant', category:'delivery', address:'2840 Village Market Pl, Morrisville, NC 27560', mobile:false, pay:10, portalUrl:'gopantry.com', portalTag:'Essentials, delivered' },
@@ -15804,7 +15853,7 @@ const PAY_BADGES = {
     { key:'age', title:'Age-Restricted Merchants', ageRestricted:true, merchants:[
       { id:'a-bombshell', logo:'assets/img/connect-img-16.webp',name:'Bombshell Beer Co.',      sub:'Brewery · Taproom', offer:'10% off growler fills', distance:'1.3 mi',
         kind:'merchant', category:'delivery', address:'300 N Main St, Holly Springs, NC 27540', mobile:false, pay:11, ageRestricted:true, portalUrl:'bombshellbeer.com', portalTag:'Fresh from the taproom' },
-      { id:'a-cellars', logo:'assets/img/connect-img-22.webp', name:'Carolina Cellars',         sub:'Wine · Spirits', offer:'Free tasting flight', distance:'0.9 mi',
+      { id:'a-cellars', featuredSlot:'category', featuredMonth:'2026-09', logo:'assets/img/connect-img-22.webp', name:'Carolina Cellars',         sub:'Wine · Spirits', offer:'Free tasting flight', distance:'0.9 mi',
         kind:'merchant', category:'delivery', address:'120 Grand Hill Pl, Holly Springs, NC 27540', mobile:false, pay:12, ageRestricted:true, portalUrl:'carolinacellars.com', portalTag:'Curated wine & spirits' },
       { id:'a-vine', logo:'assets/img/connect-img-15.webp',    name:'Triangle Vine Bottle Shop',sub:'Bottle Shop', offer:'Buy 6 bottles, 10% off', distance:'2.4 mi',
         kind:'merchant', category:'delivery', address:'4112 Pleasant Valley Rd, Raleigh, NC 27612', mobile:false, pay:13, ageRestricted:true, portalUrl:'trianglevine.com', portalTag:'Hand-picked bottles' },
@@ -15932,9 +15981,17 @@ const PAY_BADGES = {
     const host = document.getElementById('dashDealsHost');
     if(!host) return;
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-    const age  = dealsUserAge();
     // Age gate: withhold the 21+ category from anyone under 21 (or unknown age).
-    const cats = DEALS_DATA.filter(c => !c.ageRestricted || (age != null && age >= 21));
+    /* ⛔ Owner 2026-10-02: "I need the Age-Restricted card showing for deals."
+       Ported from gopher-request.html. The filter read like an age check but
+       behaved as a DOB check — dealsUserAge() reads a profile field a signed-in
+       user often has not supplied, so "unknown" was the common case and the row
+       showed four cards instead of five, hiding it from plenty of adults.
+
+       ⚠️ BROWSE gate only. An age-restricted deal still sets payload.ageRestricted
+       at submission, which drives ID verification, the 21+ requirement and the
+       age-restricted fee downstream. The category keeps its 21+ badge. */
+    const cats = DEALS_DATA.slice();
 
     // Service-provider card — PROFILE PHOTO, tier, provider, service name,
     // the SET PRICE (green), then a "View Details" button.
@@ -16059,13 +16116,26 @@ const PAY_BADGES = {
     const run = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
     const month = run.getUTCFullYear() + '-' + String(run.getUTCMonth() + 1).padStart(2, '0');
     const picks = { featured: null, winners: {} };
-    (typeof DEALS_DATA !== 'undefined' ? DEALS_DATA : []).forEach(cat => {
-      ((cat && cat.merchants) || []).forEach(m => {
-        if(!m || m.featuredMonth !== month) return;
-        if(m.featuredSlot === 'hero') picks.featured = m.id;
-        else if(m.featuredSlot === 'category' && !picks.winners[cat.key]) picks.winners[cat.key] = m.id;
+    const scan = (matchMonth) => {
+      (typeof DEALS_DATA !== 'undefined' ? DEALS_DATA : []).forEach(cat => {
+        ((cat && cat.merchants) || []).forEach(m => {
+          if(!m || !m.featuredSlot) return;
+          if(matchMonth && m.featuredMonth !== month) return;
+          if(m.featuredSlot === 'hero'){ if(!picks.featured) picks.featured = m.id; }
+          else if(m.featuredSlot === 'category' && !picks.winners[cat.key]) picks.winners[cat.key] = m.id;
+        });
       });
-    });
+    };
+    scan(true);
+    /* ⚠️ PROTOTYPE FALLBACK — ported from gopher-request.html (owner slide 6).
+       The real rule above is unchanged: winners are whoever bought the slot in
+       the auction that closed LAST month. The page rendered with no headliner and
+       every category on the mascot placeholder for one reason — NOT a layout bug
+       — no merchant carried a featuredSlot at all, so this returned empty every
+       run. A fixed featuredMonth also goes stale the moment the calendar turns.
+       ⛔ Delete this fallback when real auction data backs the slots; in
+       production an unsold month SHOULD render without a headliner. */
+    if(!picks.featured && !Object.keys(picks.winners).length) scan(false);
     return picks;
   }
   const DEALS_HOME_SUBS = { localpro:'Vetted local pros', restaurants:'Meals on the road', favorites:'Neighborhood picks', retail:'Quick stops', age:'21+ · ID at door' };
@@ -16098,7 +16168,6 @@ const PAY_BADGES = {
     const host = document.getElementById('dashDealsHost');
     if(!host) return;
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-    const age = dealsUserAge();
 
     const logoHTML = (m, cat) => {
       if(m && m.logo){
@@ -16126,7 +16195,16 @@ const PAY_BADGES = {
     ) : '';
 
     // Per-category bid-winner cards (age card withheld unless verified 21+)
-    const cats = DEALS_DATA.filter(c => !c.ageRestricted || (age != null && age >= 21));
+    /* ⛔ Owner 2026-10-02: "I need the Age-Restricted card showing for deals."
+       Ported from gopher-request.html. The filter read like an age check but
+       behaved as a DOB check — dealsUserAge() reads a profile field a signed-in
+       user often has not supplied, so "unknown" was the common case and the row
+       showed four cards instead of five, hiding it from plenty of adults.
+
+       ⚠️ BROWSE gate only. An age-restricted deal still sets payload.ageRestricted
+       at submission, which drives ID verification, the 21+ requirement and the
+       age-restricted fee downstream. The category keeps its 21+ badge. */
+    const cats = DEALS_DATA.slice();
     const catCardHTML = (c) => {
       const winId = HOME_PICKS.winners[c.key];
       const wm = winId ? findDealMerchant(winId) : null;
@@ -23276,6 +23354,30 @@ const PAY_BADGES = {
       if(typeof renderUsers === 'function') renderUsers();
     }
   };
+
+  /* Owner 2026-10-02 (slide 3), ported from gopher-request.html: tapping the
+     Personal info picture opens the file picker and repaints both avatars — the
+     hero and the circle in the header bar. Session-scoped like everything else
+     on this surface; nothing is uploaded or persisted. */
+  (function(){
+    const av  = document.getElementById('ph-avatar');
+    const inp = document.getElementById('phPhotoInput');
+    if(!av || !inp) return;
+    av.addEventListener('click', function(){ inp.click(); });
+    inp.addEventListener('change', function(){
+      const f = inp.files && inp.files[0];
+      if(!f || !/^image\/(png|jpeg)$/.test(f.type)){ inp.value = ''; return; }
+      const r = new FileReader();
+      r.onload = function(){
+        const hero = document.getElementById('ph-avatar');
+        if(hero) hero.innerHTML = '<img src="' + r.result + '" alt="Profile photo" id="ph-avatar-img">';
+        const top = document.getElementById('dash-avatar-initials');
+        if(top) top.innerHTML = '<img src="' + r.result + '" alt="Profile photo">';
+        inp.value = '';
+      };
+      r.readAsDataURL(f);
+    });
+  })();
 
   // Reset the dashboard to its seeded Acme defaults — fired on sign-out
   // or close. Session-scoped: nothing persists.

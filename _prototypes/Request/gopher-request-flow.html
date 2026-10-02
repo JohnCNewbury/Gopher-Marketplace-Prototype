@@ -149,14 +149,20 @@ body{
 
 /* ── Category grid (Step 1) — Gopher Go card design ── */
 .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:16px;}
-.cat-tile{background:#fff;border:2px solid var(--border);border-radius:18px;padding:0 0 0;
-  cursor:pointer;text-align:left;position:relative;transition:border-color .15s,box-shadow .15s,transform .1s;box-shadow:var(--card-sh);
+/* ⛔ NO BORDER — owner 2026-10-02, ported from Final/gopher-request.html. He sent
+   a reference image as "the best example of what I'm looking for"; the one thing
+   separating it from what was here is that its cards have no outline, only light.
+   A border is a DRAWN edge, which is what stops a card floating. Selection is a
+   ring rather than a border so the card keeps floating while selected. */
+.cat-tile{background:#fff;border:0;border-radius:18px;padding:0 0 0;
+  cursor:pointer;text-align:left;position:relative;transition:border-color .15s,box-shadow .15s,transform .1s;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 1px 2px rgba(0,36,97,.06),0 8px 18px rgba(0,36,97,.10),0 22px 42px rgba(0,36,97,.13);
   display:flex;flex-direction:column;}
-.cat-tile:hover{border-color:#cbd6e6;}
+.cat-tile:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 2px 4px rgba(0,36,97,.07),0 16px 30px rgba(0,36,97,.12),0 40px 70px rgba(0,36,97,.18);}
 .cat-tile:active{transform:scale(.985);}
-.cat-tile.selected{border-color:var(--green-bright);box-shadow:0 0 0 3px rgba(51,217,117,.16),var(--card-sh);}
+.cat-tile.selected{box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 0 0 2px var(--green-bright),0 10px 24px rgba(51,217,117,.28),0 26px 50px rgba(0,36,97,.12);}
 /* photo */
-.cat-photo{position:relative;height:116px;border-radius:15px 15px 0 0;overflow:hidden;background:var(--navy-light);}
+.cat-photo{position:relative;height:116px;border-radius:18px 18px 0 0;overflow:hidden;background:var(--navy-light);}  /* matches the tile now that the 2px border is gone */
 .cat-img{width:100%;height:100%;object-fit:cover;display:block;}
 .cat-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,36,97,.05),rgba(0,36,97,.22));}
 /* Gopher iQ tag (tap → popular requests) */
