@@ -3437,32 +3437,59 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
   }
   .cat-tile {
-    background:white; border:2px solid #eef0f5; border-radius:14px;
+    /* ⛔ NO BORDER. Owner 2026-10-02 sent a reference image as "the best example
+       of what I'm looking for", and the single thing separating it from what was
+       here is that its cards have no outline — only light. A 2px border is a
+       DRAWN edge, and a drawn edge is exactly what stops a card floating; the
+       four stacked shadows underneath were fighting it and reading as grey haze.
+
+       One soft, wide, slightly cool shadow instead, plus a hairline top
+       highlight. Do not put the border back. */
+    background:white; border:0; border-radius:14px;
     /* overflow VISIBLE (was hidden) so the .ct-pop hover tooltip can escape
        the tile. The rounded look is preserved by rounding the inner photo
        (top corners) and body (bottom corners) instead of clipping here. */
     overflow:visible; cursor:pointer; position:relative;
     transition:transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-    /* Owner 2026-09-29: the tiles are buttons and did not read as buttons — they
-       had NO resting shadow, only hover and selected. This is the same two-layer
-       bubble the Request prototype already uses (--card-sh), so the portal and the
-       prototype now lift the same way. Hover still goes deeper, so the affordance
-       still changes on interaction rather than sitting flat. */
-    box-shadow:0 2px 4px rgba(0,36,97,0.05), 0 9px 20px rgba(0,36,97,0.13);
+    /* Owner 2026-09-29, revised 2026-09-30: "still don't look like floating
+       cards ... I want them looking almost 3D."
+
+       A single soft blur reads as a flat card with a shadow. Depth needs the
+       layers the eye actually uses:
+         1  a hairline inner highlight on the top edge — light falling on a lip
+         2  a tight contact shadow, so the card sits ON something
+         3  a mid shadow for the body
+         4  a wide, soft ambient shadow for the drop
+       Together they imply a card standing off the page rather than printed on
+       it. Hover then increases the drop AND the lift, so the thing moves
+       through space instead of just getting darker. */
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 1px 2px rgba(0,36,97,0.06),
+      0 8px 18px rgba(0,36,97,0.10),
+      0 22px 42px rgba(0,36,97,0.13);
   }
   .cat-tile:hover {
-    transform:translateY(-3px);
-    box-shadow:0 10px 24px rgba(26,42,94,0.14); border-color:#d4d8e3;
+    transform:translateY(-8px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.95),
+      0 2px 4px rgba(0,36,97,0.07),
+      0 16px 30px rgba(0,36,97,0.12),
+      0 40px 70px rgba(0,36,97,0.18);
     /* raised so this tile's popup paints above its sibling tiles */
     z-index:20;
   }
+  /* selection reads as a ring rather than a border, so the card keeps floating */
   .cat-tile.selected {
-    border-color:var(--green);
-    box-shadow:0 8px 22px rgba(51,217,117,0.28);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 0 0 2px var(--green),
+      0 10px 24px rgba(51,217,117,0.28),
+      0 26px 50px rgba(0,36,97,0.12);
   }
   .cat-tile .ct-photo {
     position:relative; aspect-ratio:1.55; overflow:hidden; background:#eef2f9;
-    border-radius:12px 12px 0 0;   /* inner top corners (tile is overflow:visible now) */
+    border-radius:14px 14px 0 0;   /* matches the tile now that the border is gone */
   }
   .cat-tile .ct-photo img {
     width:100%; height:100%; object-fit:cover; display:block;
@@ -3472,8 +3499,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   /* (v121) .ct-tag pill removed — redundant with the ct-name footer, per owner. */
   .cat-tile .ct-body {
     padding:10px 12px 11px; display:flex; align-items:center;
-    justify-content:space-between; gap:8px;
-    border-radius:0 0 12px 12px;   /* inner bottom corners (tile is overflow:visible now) */
+    justify-content:space-between; gap:8px; background:#fff;
+    border-radius:0 0 14px 14px;   /* matches the tile now that the border is gone */
   }
   .cat-tile .ct-name {
     font-family:'Nunito',sans-serif; font-weight:800; font-size:15px;
@@ -6937,12 +6964,23 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     position:fixed; inset:0;
     background:#f5f7fb;
     z-index:9000;
-    grid-template-columns:260px 1fr;
+    grid-template-columns:229px 1fr;   /* owner 2026-10-01: ~12% narrower (was 260) */
+    /* Owner 2026-10-01: "the top white bar goes all the way across the top."
+       So the bar is a grid ROW spanning both columns, not a band that starts
+       where the sidebar ends. The Request logo moved onto it — which is what
+       lets the REGULAR branded logo come back (see .dash-topbar-brand). */
+    grid-template-rows:auto minmax(0,1fr);
+    grid-template-areas:"topbar topbar"
+                        "sidebar main";
     font-family:'Nunito',sans-serif;
     color:var(--text);
   }
   .dashboard.open { display:grid; }
   body.dashboard-mode { background:#f5f7fb; }
+
+  .dash-topbar  { grid-area:topbar; }
+  .dash-sidebar { grid-area:sidebar; }
+  .dash-main    { grid-area:main; }
 
   /* ─── Sidebar ─── */
   .dash-sidebar {
@@ -6952,27 +6990,25 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     padding:18px 14px;
     overflow-y:auto;
   }
-  .dash-sidebar-head {
-    /* uniform platform card across all portals (owner, 2026-07-23) */
-    min-height:122px; box-sizing:border-box;
-    display:flex; flex-direction:column; align-items:flex-start; gap:12px;
-    background:#ffffff;
-    border-radius:18px;
-    padding:18px 18px 16px;
-    margin-bottom:18px;
-    box-shadow:0 4px 14px rgba(0,0,0,0.18);
-  }
-  .dash-sidebar-brand {
-    width:100%;
-    padding:4px 0;
-    display:flex; align-items:center; justify-content:flex-start;
+  /* ⛔ The logo is NOT in the sidebar any more (owner 2026-10-01). It sits on the
+     full-width white top bar, so the shipped asset works as shipped and the
+     recoloured white wordmark — which the owner ruled a style-guide violation —
+     is gone. This node only survives because renderers still write to the hidden
+     #rqDashUserName / #rqDashStatus inside it; removing it would make them throw. */
+  .dash-sidebar-head { display:none; }
+
+  /* The logo's home: a fixed zone on the left of the white bar, sized so the
+     avatar beside it starts exactly where the content column does
+     (229px sidebar + 32px content padding = 261px = 20px bar padding + 241px). */
+  .dash-topbar-brand {
+    flex:0 0 241px; display:flex; align-items:center; min-width:0;
   }
   .dash-logo-slot {
     display:flex; align-items:center;
     min-height:36px;
   }
   .dash-logo-slot img {
-    height:38px; width:auto; max-width:220px;
+    height:34px; width:auto; max-width:200px; display:block;
   }
   /* Text-wordmark fallback — shown by default; replaced by image when JS clones it */
   .dash-logo-text {
@@ -7032,7 +7068,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:flex; align-items:center; justify-content:center; gap:8px;
     width:100%;
     margin:0 0 18px;
-    min-height:50px; box-sizing:border-box; /* uniform CTA size (owner, 2026-07-23) */
+    /* ⛔ 52, and .dash-sidebar-deals must carry the SAME number — owner
+       2026-10-02: "These buttons need to both be the same exact size."
+       It was 50 (owner, 2026-07-23, uniform CTA size) but the + glyph's line box
+       pushed the real height to 52, so the deals button pinned at 50 sat 2px
+       shorter. Declaring 52 changes nothing visually here — it is what this
+       button already measured — and gives both one number to share. */
+    min-height:52px; box-sizing:border-box;
     padding:15px 18px;
     background:var(--green); color:#002461; /* navy words on all portal CTAs (owner, 2026-07-23) */
     border:none; border-radius:14px;
@@ -7168,14 +7210,25 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .dash-topbar {
     display:flex; align-items:center; justify-content:space-between;
-    padding:18px 32px;
+    padding:14px 32px 14px 20px;
     background:white;
     border-bottom:1px solid #e7eaf2;
     position:sticky; top:0; z-index:5;
   }
+  /* Out of the bar and into the content column (owner 2026-10-02, slide 2), so
+     it is sized to sit above the page heading rather than beside an avatar. */
   .dash-greeting {
-    font-family:'DM Sans'; font-size:12px; color:var(--muted);
-    font-weight:500;
+    font-family:'DM Sans'; font-size:13.5px; color:var(--muted);
+    font-weight:600; margin:0 0 2px;
+  }
+  .dash-topbar-right .dash-avatar-lead {
+    margin-right:0; padding:0; border:0; cursor:pointer;
+    background:var(--navy); color:#fff;
+    box-shadow:0 0 0 0 rgba(51,217,117,0); transition:box-shadow .18s, transform .18s;
+  }
+  .dash-topbar-right .dash-avatar-lead:hover,
+  .dash-topbar-right .dash-avatar-lead:focus-visible {
+    box-shadow:0 0 0 3px rgba(51,217,117,.45); transform:translateY(-1px); outline:none;
   }
   .dash-section-title {
     font-family:'Nunito'; font-weight:800; font-size:22px;
@@ -8138,17 +8191,335 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .da-confirm-input:focus { outline:none; border-color:#c53030; }
   .bidbd-close.is-disabled { background:#e3e6ee !important; color:#9aa3b5 !important; cursor:not-allowed; }
+  /* Owner 2026-09-30: bigger, and spaced off the greeting so it is not crammed.
+     Was 36px hard against the text. */
   .dash-avatar-lead {
-    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    width:46px; height:46px; border-radius:50%; flex-shrink:0;
+    margin-right:14px;
     display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .dash-avatar-lead img { width:100%; height:100%; object-fit:cover; display:block; }
+  /* ── the two-pathway home screen (owner 2026-09-30, slide 2) ── */
+  .choose-stage { padding:10px 4px 10px; }   /* owner 2026-10-01: heading sits up, was 34px top */
+  .choose-ask {
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:30px; line-height:1.15;
+    margin:0 0 4px; letter-spacing:-.4px; color:var(--navy);
+  }
+  .choose-sub { margin:0 0 18px; font-size:14px; color:var(--muted); }
+  .choose-two { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .choose-card {
+    position:relative; overflow:hidden; text-align:left; cursor:pointer; border:0;
+    /* owner 2026-10-02 (slide 1): "Buttons can't ever be cramped" — extra room
+       below the CTA so it is never hard against the card edge. */
+    border-radius:18px; padding:30px 28px 34px; min-height:296px;
+    display:flex; flex-direction:column; font:inherit;
+    box-shadow:0 2px 4px rgba(0,36,97,.05), 0 9px 20px rgba(0,36,97,.13);
+    transition:transform .22s cubic-bezier(.2,.8,.3,1), box-shadow .22s;
+  }
+  .choose-card:hover, .choose-card:focus-visible {
+    transform:translateY(-5px); box-shadow:0 18px 44px rgba(0,36,97,.18); outline:none;
+  }
+  .choose-card.svc   { background:linear-gradient(150deg,#053a75 0%, #002461 60%); }
+  .choose-card.deals { background:linear-gradient(135deg,#FFFBF3 0%,#FBF3E4 55%,#F6E9D0 100%);
+                       border:1.5px solid #EAD9B6; }
+  /* The decorative corner circle was removed from both cards (owner 2026-10-01).
+     Rules deleted with it so nothing re-adds it by reusing the class. */
+  /* home screen = not yet activated: hide both sidebar CTAs */
+  .dashboard.is-choosing .dash-sidebar-newreq,
+  .dashboard.is-choosing #rqDashNewRequest,
+  .dashboard.is-choosing .dash-sidebar-deals { display:none; }
+
+  /* ════ THE deals button ════════════════════════════════════════════════
+     Owner 2026-10-02 (slide 4): the home card's CTA and the sidebar's entry are
+     the SAME button, so the fill, radius, text colour, pulse and sheen are
+     defined ONCE here and both carry .gopher-deals-btn.
+
+     ⛔ And: "writing with a sand background is not really ever going to work as
+     a standing rule." The old cream/sand fill with navy text is gone. The amber
+     reads at full contrast on BOTH grounds this button has to live on — the navy
+     sidebar and the sand card — which the sand fill never could, and it stays
+     clear of the green the Request CTA owns on the facing card. */
+  /* ⛔ THE deals button — owner-approved 2026-10-02, slide 4: "USE THIS BUTTON!!!"
+     against this exact treatment, with a red X struck through the sidebar's old
+     sand-and-SPONSORED-PICKS pill.
+
+     ⚠️ I had that slide backwards once. The arrow runs FROM this button TO the
+     sidebar: the X marks what to replace, this is the replacement. I read it as
+     "both are wrong" and shipped an amber fill, which he rejected. The "sand
+     background" remark is about the X'd pill, whose label had washed out to
+     near-invisible against it — not about this button, whose navy-on-ivory is
+     the contrast that was missing.
+
+     One definition, both places: the home card CTA and the sidebar entry. */
+  .gopher-deals-btn {
+    position:relative; overflow:hidden; cursor:pointer;
+    background:linear-gradient(135deg,#FFFBF3 0%, #FBF3E4 55%, #F6E9D0 100%);
+    border:1.5px solid #EAD9B6; border-radius:11px;
+    font-family:'Nunito',sans-serif; font-weight:800;
+    /* ⛔ LITERAL, not var(--navy-deep). That custom property is defined NOWHERE
+       in this file, and an undefined var() makes the whole `color` declaration
+       invalid at computed-value time — so colour fell back to INHERITED. On the
+       card that landed on black; in the sidebar it inherited the sidebar's own
+       white and the label all but vanished into the cream.
+
+       That is the real reason the struck-out button looked washed out on slide 4
+       — not the sand. Do not reintroduce the variable without defining it. */
+    color:#002461; line-height:1.15;
+    animation:ccGoldPulse 1.8s ease-out infinite;
+  }
+  .gopher-deals-btn:hover { border-color:var(--terracotta); }
+  .gopher-deals-btn::after {
+    content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.65), transparent);
+    transform:skewX(-18deg); animation:dtSheen 4.5s ease-in-out infinite; pointer-events:none;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .gopher-deals-btn, .gopher-deals-btn::after { animation:none; }
+  }
+
+  /* The sidebar instance differs ONLY in box metrics — it has a narrower column
+     to live in. Fill, border, text colour, glow and sheen all come from the
+     shared rule above, which is the point of the slide. */
+  /* ⛔ Owner 2026-10-02: "These buttons need to both be the same exact size for
+     branding continuity." Every box metric below is copied from
+     .dash-sidebar-newreq above — change one, change both.
+
+     min-height + border-box is what makes them equal DESPITE this one carrying a
+     1.5px border and + New Request carrying none: with border-box the border is
+     inside the 50px, so both measure exactly 50. Do not swap in a bare height,
+     and do not drop box-sizing. */
+  .dash-sidebar-deals {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%;
+    margin:0 0 18px;
+    min-height:52px; box-sizing:border-box;
+    padding:15px 18px;
+    border-radius:14px;
+    font-weight:900; font-size:15.5px; letter-spacing:0.2px;
+    text-align:center;
+  }
+
+  /* Both cards lead with their own mark, centred (owner 2026-10-01). */
+  .choose-card .cc-brand {
+    position:relative; display:flex; align-items:center; justify-content:center;
+    background:#fff; border-radius:10px; padding:7px 14px; margin:0 auto 14px;
+    width:max-content; max-width:100%;
+  }
+  .choose-card.deals .cc-brand { border:1px solid #EAD9B6; }
+  .choose-card .cc-brand-logo { height:26px; width:auto; display:block; }
+
+  .choose-card .cc-media {
+    position:relative; display:grid; gap:4px; width:100%; height:140px;
+    border-radius:12px; overflow:hidden; margin-bottom:4px;
+  }
+  /* ⛔ minmax(0,1fr), NOT 1fr. `1fr` is minmax(AUTO,1fr), so a track floors at the
+     intrinsic size of its content — images computed 201px rows inside a 140px box
+     and the second row overflowed out of view. */
+  .choose-card .cc-quads { grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(0,1fr); }
+  .choose-card .cc-quad { position:relative; overflow:hidden; background:rgba(255,255,255,.07); }
+  .choose-card .cc-quad video { width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* ── merchant marquee ── two rows, opposite directions ── */
+  .choose-card .cc-marquee {
+    display:grid; grid-template-rows:minmax(0,1fr) minmax(0,1fr); gap:8px;
+    background:transparent; border-radius:12px;
+  }
+  .cc-mq-row {
+    position:relative; overflow:hidden; border-radius:9px;
+    background:linear-gradient(90deg,#1fb85f 0%, #33d975 50%, #1fb85f 100%);
+    display:flex; align-items:center;
+    /* edges fade instead of cutting a logo in half — same as the reference */
+    -webkit-mask-image:linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+            mask-image:linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  }
+  .cc-mq-track { display:flex; align-items:center; gap:26px; padding:0 14px; will-change:transform; }
+  /* ⛔ Owner 2026-10-02 (slide 5): "There should have never been a white
+     background to each logo." The marks sit DIRECTLY on the green, exactly like
+     .logo-item on gopher-customer-deals.html — no chip, no radius, no padding.
+     Do not reintroduce a background here. */
+  .cc-mq-track img {
+    /* The reference fills ~80% of its strip's height (68px logo in an 84px row);
+       34px in a 66px row read as half-size and muddy. */
+    height:auto; width:auto; max-height:46px; max-width:112px;
+    object-fit:contain; display:block; flex:0 0 auto; opacity:.95;
+  }
+  /* The track holds the logo run TWICE, so translating by exactly -50% lands on an
+     identical frame and the loop has no visible jump.
+
+     ⛔ Direction is the opposite of what the transform reads like. Animating
+     translateX toward -50% moves the content LEFT (items travel ←). The owner
+     asked for TOP → and BOTTOM ←, so the top row runs ccMqRight and the bottom
+     runs ccMqLeft. I had these swapped first time; measure m41 over time rather
+     than reasoning from the keyframe names. */
+  .cc-mq-ltr .cc-mq-track { animation:ccMqRight 30s linear infinite; }  /* top: → */
+  .cc-mq-rtl .cc-mq-track { animation:ccMqLeft  26s linear infinite; }  /* bottom: ← */
+  @keyframes ccMqLeft  { from{ transform:translateX(0); }    to{ transform:translateX(-50%); } }
+  @keyframes ccMqRight { from{ transform:translateX(-50%); } to{ transform:translateX(0); } }
+  @media (prefers-reduced-motion: reduce){
+    .cc-mq-rtl .cc-mq-track, .cc-mq-ltr .cc-mq-track { animation:none; }
+  }
+
+  /* CTAs are SYMMETRICAL (owner 2026-10-01): identical box — same padding, radius,
+     font and min-width — so the two cards' buttons line up. Only the fill differs.
+     The gold one is the old .rq-pathtab.deals-tab treatment, sheen included, with
+     the SPONSORED PICKS sub-line dropped so it is a single line like its partner. */
+  /* Owner 2026-10-02 (slide 1): the CTA is CENTRED in the card, and carries a
+     guaranteed gap above it. margin-top:auto still absorbs the slack so both
+     cards' buttons sit on the same baseline; the sub-copy's margin-bottom is
+     what makes the minimum — flex margins do not collapse. */
+  .choose-card .cc-btn {
+    position:relative; overflow:hidden; margin-top:auto; align-self:center;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:14.5px; line-height:1.15;
+    padding:13px 24px; border-radius:11px; min-width:186px; box-sizing:border-box;
+  }
+  .choose-card .cc-btn-green {
+    background:var(--green); color:#04240f;
+    /* transparent border matching the gold button's 1.5px, so the two boxes are
+       the same HEIGHT as well as width — without it they measured 43 vs 45. */
+    border:1.5px solid transparent;
+    box-shadow:0 6px 16px rgba(28,176,90,.34);
+  }
+  /* .cc-btn-gold carries .gopher-deals-btn for its fill, border, text colour,
+     pulse and sheen (owner 2026-10-02, slide 4 — it is the SAME button as the
+     sidebar's). Only the halo below is card-specific. */
+  /* The owner asked for "the flashing pulsing glow as before" on this button and
+     then for the SPONSORED PICKS line to go. On the original pill the pulse WAS
+     that line's green dot — so dropping the line took the pulse with it, and the
+     button read flat. The pulse moves onto the button's own halo instead, using
+     the same dtPulse timing. overflow:hidden on .cc-btn clips children, not the
+     element's own box-shadow, so this coexists with the sheen. */
+  @keyframes ccGoldPulse {
+    0%   { box-shadow:0 6px 18px rgba(217,119,87,.18), 0 2px 6px rgba(0,36,97,.06), 0 0 0 0 rgba(51,217,117,.55); }
+    70%  { box-shadow:0 6px 18px rgba(217,119,87,.18), 0 2px 6px rgba(0,36,97,.06), 0 0 0 9px rgba(51,217,117,0); }
+    100% { box-shadow:0 6px 18px rgba(217,119,87,.18), 0 2px 6px rgba(0,36,97,.06), 0 0 0 0 rgba(51,217,117,0); }
+  }
+  .choose-card:hover .cc-btn-green { background:var(--green-dark); }
+
+  .choose-card .cc-h {
+    position:relative; font-family:'Nunito',sans-serif; font-weight:900;
+    font-size:23px; margin:14px 0 7px; color:#fff;
+  }
+  .choose-card.deals .cc-h { color:#002461; }
+  /* Owner 2026-10-01: the copy runs END TO END against the media above it, so no
+     max-width cap — it was wrapping short and leaving a ragged right edge beside
+     a full-width image strip. */
+  .choose-card .cc-s {
+    position:relative; font-size:13.5px; line-height:1.5; max-width:none;
+    margin-bottom:22px;   /* the minimum breathing room under the sub-copy */
+    color:rgba(255,255,255,.78);
+  }
+  .choose-card.deals .cc-s { color:#6b5a38; }
+  .choose-card .cc-tag {
+    position:absolute; top:22px; right:22px; z-index:1;
+    font-size:9px; font-weight:800; letter-spacing:.7px; color:#8a6a2f;
+    background:#fff; border:1px solid #EAD9B6; border-radius:20px; padding:4px 10px;
+  }
+  @media(max-width:860px){
+    .choose-two { grid-template-columns:1fr; }
+    .choose-ask { font-size:24px; }
+    .choose-stage { padding:22px 2px 6px; }
   }
   .tscx-warn {
     background:#fff5f5; border:1px solid #f6d5d5; border-radius:10px;
     padding:12px 13px; font-size:12.5px; line-height:1.5; color:#7a2230;
     margin-top:4px;
   }
+
+  /* ── TrustShield panel (owner 2026-10-02, slide 9) ───────────────────────── */
+  .tsp-card { width:min(420px,100%); text-align:left; }
+  .tsp-hero { text-align:center; padding:2px 0 14px; }
+  .tsp-seal img { height:62px; width:auto; display:block; margin:0 auto 10px; }
+  .tsp-head {
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:20px;
+    color:var(--navy); line-height:1.2;
+  }
+  .tsp-sub {
+    font-family:'DM Sans',sans-serif; font-size:12.5px; color:var(--muted);
+    margin-top:5px; line-height:1.45;
+  }
+  .tsp-perks {
+    background:#f1fbf5; border:1px solid #cdecd9; border-radius:12px;
+    padding:12px 13px; display:grid; gap:9px;
+  }
+  .tsp-perk { display:flex; gap:9px; align-items:flex-start; font-size:12.5px; line-height:1.45; color:#1f4733; }
+  .tsp-tick {
+    flex:0 0 auto; width:17px; height:17px; border-radius:50%;
+    background:var(--green); color:#04240f;
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:900; margin-top:1px;
+  }
+  .tsp-manage-title {
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:12px;
+    letter-spacing:.4px; text-transform:uppercase; color:var(--muted);
+    margin:16px 0 7px;
+  }
+  .tsp-manage { display:grid; gap:8px; }
+  .tsp-item {
+    display:flex; align-items:center; gap:11px; width:100%;
+    padding:9px 11px; cursor:pointer; text-align:left;
+    background:#fff; border:1.5px solid #e2e7f0; border-radius:11px;
+    font-family:inherit; transition:border-color .15s, background .15s;
+  }
+  .tsp-item:hover { border-color:var(--green); background:#f7fbf8; }
+  .tsp-item:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(51,217,117,.4); }
+  .tsp-item-thumb {
+    flex:0 0 auto; width:46px; height:32px; border-radius:6px;
+    object-fit:cover; display:block; background:#eef1f7;
+  }
+  .tsp-item-body { flex:1; min-width:0; display:block; }
+  .tsp-item-body strong {
+    display:block; font-family:'Nunito',sans-serif; font-weight:800;
+    font-size:13.5px; color:var(--navy);
+  }
+  .tsp-item-body small {
+    display:block; font-family:'DM Sans',sans-serif; font-size:11.5px;
+    color:var(--muted); margin-top:1px;
+  }
+  .tsp-item-go { flex:0 0 auto; color:#9fb0c9; font-size:20px; line-height:1; }
+
+  /* Removal stays available but is NOT the thing the panel is about, so it is
+     one disclosure down. The copy states the consequence once and stops —
+     no red, no bold warning block, no second-guessing the user. */
+  .tsp-remove { margin-top:14px; border-top:1px solid #eef1f7; padding-top:10px; }
+  .tsp-remove summary {
+    cursor:pointer; list-style:none; font-family:'DM Sans',sans-serif;
+    font-size:12px; color:var(--muted); text-align:center;
+  }
+  .tsp-remove summary::-webkit-details-marker { display:none; }
+  .tsp-remove summary:hover { color:var(--navy); text-decoration:underline; }
+  .tsp-remove-copy {
+    font-family:'DM Sans',sans-serif; font-size:12px; line-height:1.5;
+    color:var(--muted); margin:9px 0 10px;
+  }
+  .tsp-remove-btn {
+    width:100%; padding:10px; cursor:pointer;
+    background:#fff; color:#8a5560; border:1.5px solid #e4cdd2; border-radius:10px;
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:13px;
+  }
+  .tsp-remove-btn:hover { border-color:#c98b97; color:#7a2230; background:#fffafb; }
   .tscx-warn strong { display:block; margin-bottom:4px; color:#a3202f; }
   .tscx-confirm { background:#c53030 !important; }
+  /* ⛔ Owner 2026-10-02 (slide 10): "Fix the 'Keep my account' UI. Looks like it
+     doesn't even belong as is with the gray cramped under the delete button."
+
+     It looked that way because `.hirerev-back` was never DEFINED in this file —
+     the class was borrowed from the hire-review dialog and carried no rule here,
+     so the button rendered at browser defaults: system font, grey chrome, hard
+     up against the destructive button above it.
+
+     This is also the SAFE choice in a destructive dialog, so it is given equal
+     visual weight to the thing it protects you from — not less. */
+  .dlg-keep {
+    display:block; width:100%; margin-top:10px; padding:11px;
+    border:1.5px solid #ccd3e0; border-radius:10px;
+    background:#fff; color:var(--navy);
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:14px;
+    line-height:1.15; cursor:pointer; transition:background .15s, border-color .15s;
+  }
+  .dlg-keep:hover { background:#f3f6fb; border-color:#9fb0c9; }
+  .dlg-keep:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(51,217,117,.45); }
   .dash-nav-item.is-ts-verified .dni-label { color:var(--green-dark,#1f9d52); font-weight:700; }
   .bidbd-close {
     width:100%; margin-top:14px; padding:11px; border:0; border-radius:10px;
@@ -8398,7 +8769,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .dh-featured:hover .dh-feat-go { background:var(--green-dark); transform:translateY(-1px); }
 
   /* Per-category bid-winner cards — PAID placements, larger & richer than free browse cards */
-  .dh-cats { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:16px; margin-top:18px; }
+  /* Owner 2026-10-02 (slide 6): "1 main card and 5 category bid winners." With
+     auto-fit at minmax(260px,1fr) only four fitted the dashboard's content
+     column, so the fifth — the age-restricted category, which only appears for a
+     21+ user — dropped onto a row of its own and read as an afterthought rather
+     than one of five equal slots. Explicit counts instead, so the row never
+     orphans a single card at any width. */
+  .dh-cats { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:14px; margin-top:18px; }
+  @media(max-width:1320px){ .dh-cats { grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; } }
+  @media(max-width:1040px){ .dh-cats { grid-template-columns:repeat(2, minmax(0,1fr)); } }
+  @media(max-width:640px) { .dh-cats { grid-template-columns:1fr; } }
   .dh-cat { position:relative; display:flex; flex-direction:column; align-items:center; text-align:center;
     background:#fff; border:1px solid #eef0f6; border-radius:20px; padding:22px 18px 20px; cursor:pointer;
     box-shadow:0 12px 26px rgba(0,36,97,.10), 0 3px 8px rgba(0,36,97,.06);
@@ -9077,6 +9457,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     margin-bottom:18px;
     display:flex; align-items:center; gap:24px;
   }
+  .personal-hero .ph-avatar-wrap { position:relative; flex-shrink:0; line-height:0; }
   .personal-hero .ph-avatar {
     width:96px; height:96px; border-radius:50%;
     background:linear-gradient(135deg, var(--navy), #3d52a0);
@@ -9084,8 +9465,19 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:flex; align-items:center; justify-content:center;
     font-family:'Nunito'; font-weight:900; font-size:32px;
     flex-shrink:0;
-    overflow:hidden;
+    overflow:hidden; padding:0;
     border:3px solid #eef1f7;
+    cursor:pointer; transition:filter .18s, box-shadow .18s;
+  }
+  .personal-hero .ph-avatar-wrap:hover .ph-avatar { filter:brightness(.78); }
+  .personal-hero .ph-avatar:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(51,217,117,.55); }
+  .personal-hero .ph-avatar-cam {
+    position:absolute; right:0; bottom:2px;
+    width:30px; height:30px; border-radius:50%;
+    background:var(--green); border:2.5px solid #fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; line-height:1; pointer-events:none;
+    box-shadow:0 2px 6px rgba(0,36,97,.22);
   }
   .personal-hero .ph-avatar img {
     width:100%; height:100%; object-fit:cover; display:block;
@@ -9533,8 +9925,9 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
   /* ─── Mobile/narrow viewport — collapse sidebar to top bar ─── */
   @media (max-width:900px){
-    .dashboard { grid-template-columns:1fr; }
-    .dash-sidebar{ position:fixed; top:0; left:0; bottom:0; width:84%; max-width:300px; transform:translateX(-100%); transition:transform .28s ease; z-index:9300; box-shadow:0 0 50px rgba(0,0,0,0.35); overflow-y:auto; }
+    .dashboard { grid-template-columns:1fr; grid-template-areas:"topbar" "main"; }
+    /* out of flow, so it claims no grid row; the named area no longer exists */
+    .dash-sidebar{ grid-area:auto; position:fixed; top:0; left:0; bottom:0; width:84%; max-width:300px; transform:translateX(-100%); transition:transform .28s ease; z-index:9300; box-shadow:0 0 50px rgba(0,0,0,0.35); overflow-y:auto; }
     .dashboard.sidebar-open .dash-sidebar{ transform:translateX(0); }
     .dash-backdrop{ display:block; position:fixed; inset:0; background:rgba(0,18,49,0.5); opacity:0; visibility:hidden; transition:opacity .28s ease; z-index:9200; }
     .dashboard.sidebar-open .dash-backdrop{ opacity:1; visibility:visible; }
@@ -9544,6 +9937,18 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     .gophers-grid { grid-template-columns:1fr; }
     .dash-content { padding:18px; }
     .dash-topbar { padding:14px 18px; }
+    /* no sidebar to line up with on a phone — the logo just takes its own width */
+    .dash-topbar-brand { flex:0 0 auto; margin-right:14px; }
+    .dash-logo-slot img { height:30px; max-width:150px; }
+  }
+  /* Putting the logo in the bar cost the greeting its room on a narrow phone and
+     it wrapped to two lines. Shrink the mark rather than truncate the name. */
+  @media (max-width:560px){
+    .dash-topbar { padding:10px 14px; }
+    .dash-topbar-brand { margin-right:10px; }
+    .dash-logo-slot img { height:24px; max-width:110px; }
+    .dash-burger { width:34px; height:34px; margin-right:8px; }
+    .dash-avatar-lead { width:38px; height:38px; margin-right:10px; }
     .info-row { grid-template-columns:1fr; gap:4px; }
   }
 
@@ -19381,14 +19786,42 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
      - Refer Gopher kept
      ============================================================ -->
 <div id="rqDashboard" class="dashboard" role="application" aria-label="Gopher Request dashboard">
-  <!-- Sidebar -->
-  <aside class="dash-sidebar">
-    <div class="dash-sidebar-head">
-      <div class="dash-sidebar-brand">
+  <!-- Owner 2026-10-01: "the top white bar goes all the way across the top. The
+       Request logo is the regular branded request logo." So the bar is a direct
+       child of .dashboard spanning both grid columns, and it carries the logo —
+       on white, which is the whole reason the standard asset can be used again.
+       The recoloured white wordmark that sat on the navy sidebar is GONE. -->
+  <div class="dash-topbar">
+    <div class="dash-topbar-left">
+      <button class="dash-burger" id="rqDashBurger" aria-label="Open menu" aria-expanded="false">&#9776;</button>
+      <div class="dash-topbar-brand">
         <div class="dash-logo-slot" id="rqDashLogoSlot">
           <!-- JS injects the Gopher Request logo image here on open -->
         </div>
       </div>
+      <!-- Owner 2026-09-30 (slide 1): the profile circle LEADS, and the greeting
+           follows it. The avatar used to sit alone on the far right with the
+           greeting stacked over a section title on the left. -->
+      <!-- Owner 2026-09-30, slide 1: "Remove Submit new request." The section
+           title is GONE from the topbar. Slide 2 of the 09-30 deck is why it can
+           go — the home screen's two pathways carry the orientation, and each
+           destination already has its own heading. Kept in the DOM, hidden,
+           because renderers still write to it. -->
+      <div class="dash-section-title" id="rqDashSectionTitle" hidden>Dashboard overview</div>
+    </div>
+    <!-- Owner 2026-10-02 (slide 2): the profile circle moves to the TOP RIGHT
+         CORNER, and tapping it opens Personal Info. It is a real <button> so it
+         is keyboard-reachable and announces itself — it used to be a plain div
+         that only ever toggled the mobile drawer. -->
+    <div class="dash-topbar-right">
+      <button type="button" class="dash-avatar dash-avatar-lead" id="rqDashAvatar"
+              aria-label="Open your personal info">JL</button>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="dash-sidebar">
+    <div class="dash-sidebar-head">
       <!-- Owner 2026-09-30 (slide 1): "Remove everything but Request logo and
            standard white background." The name and status line moved out; the
            greeting carries the name now, and TrustShield status has its own nav
@@ -19406,6 +19839,16 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     <button class="dash-sidebar-newreq" id="rqDashNewRequest">
       <span class="dsn-plus">+</span> New Request
     </button>
+      <!-- Owner 2026-10-01: Deals gets its own sidebar entry under + New Request,
+           carrying the same gold SPONSORED PICKS treatment as the home card. It
+           routes through the same handler, so the eligibility gate still runs. -->
+      <button type="button" class="dash-sidebar-deals gopher-deals-btn" id="rqSidebarDeals" data-choose="deals">
+        <!-- Owner 2026-10-02 (slide 4): one label, matching the card's exactly.
+             The SPONSORED PICKS sub-line went with the pill he struck out — it is
+             what made this button two cramped lines of washed-out type, and the
+             card CTA he approved has never carried it. -->
+        <span class="dsd-main">View Local Deals</span>
+      </button>
     <nav class="dash-nav">
       <button class="dash-nav-item active" data-rqsection="home">
         <span class="dni-ico">🏠</span><span class="dni-label">Dashboard</span>
@@ -19471,25 +19914,59 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
 
   <!-- Main -->
   <main class="dash-main">
-    <div class="dash-topbar">
-      <!-- Owner 2026-09-30 (slide 1): the profile circle LEADS, and the greeting
-           follows it. The avatar used to sit alone on the far right with the
-           greeting stacked over a section title on the left. -->
-      <div class="dash-topbar-left">
-        <button class="dash-burger" id="rqDashBurger" aria-label="Open menu" aria-expanded="false">&#9776;</button>
-        <div class="dash-avatar dash-avatar-lead" id="rqDashAvatar">JL</div>
-        <div>
-          <div class="dash-greeting" id="rqDashGreeting">Welcome back, Jamie 👋</div>
-          <div class="dash-section-title" id="rqDashSectionTitle">Dashboard overview</div>
-        </div>
-      </div>
-      <div class="dash-topbar-right"></div>
-    </div>
-
     <div class="dash-content">
+      <!-- Owner 2026-10-02 (slide 2): "Move Welcome back… to space between bottom
+           of header bar and 'So, how can we…'". It sat inside the header bar
+           beside the avatar; both moved in the same pass. -->
+      <div class="dash-greeting" id="rqDashGreeting">Welcome back, Jamie 👋</div>
+
+      <!-- ── CHOOSE: the dashboard's home screen ──────────────────────────────
+           Owner 2026-09-30, slide 2: "I want the initially home screen of the
+           dashboard to share the customers 2 pathways ... Services or Deals."
+
+           Its ONLY job is the choice. Both destinations already exist — Services
+           hands off to the request flow in data-rqsec="new-request", Deals hands
+           off to the deals panel already hosted in that same section behind
+           #pathTabDeals — so this adds a front door, not a third surface. -->
+      <section class="dash-section active" data-rqsec="choose">
+        <div class="choose-stage">
+          <h2 class="choose-ask">So, how can we help you today?</h2>
+          <p class="choose-sub">Two ways to go from here.</p>
+          <div class="choose-two">
+            <button type="button" class="choose-card svc" data-choose="services">
+              <!-- Owner 2026-10-01: the Request logo is CENTRED at the top of the
+                   card, on its white chip — the mark needs a light ground because
+                   its wordmark is navy (see the sidebar note). -->
+              <span class="cc-brand"><img class="cc-brand-logo" src="assets/img/gopher-request-logo.svg" alt="Gopher Request"></span>
+              <span class="cc-media cc-quads" id="chooseSvcQuads" aria-hidden="true">
+                <span class="cc-quad"></span><span class="cc-quad"></span>
+                <span class="cc-quad"></span><span class="cc-quad"></span>
+              </span>
+              <span class="cc-h">Get connected to a great local worker</span>
+              <span class="cc-s">Delivery, moving, junk removal, home services, day labor, rides and more.</span>
+              <span class="cc-btn cc-btn-green">+ Make a request</span>
+            </button>
+            <button type="button" class="choose-card deals" data-choose="deals">
+              <span class="cc-brand"><img class="cc-brand-logo" src="assets/img/gopher-deals-logo.svg" alt="Gopher Deals"></span>
+              <!-- Two marquee rows of real merchant marks, running in OPPOSITE
+                   directions (owner 2026-10-01: "Top scrolling →, bottom
+                   scrolling ←"). Each row's track is duplicated so the loop has
+                   no seam; the copy is aria-hidden to keep it out of the a11y
+                   tree twice. -->
+              <span class="cc-media cc-marquee" aria-hidden="true">
+                <span class="cc-mq-row cc-mq-ltr"><span class="cc-mq-track" data-mq="a"></span></span>
+                <span class="cc-mq-row cc-mq-rtl"><span class="cc-mq-track" data-mq="b"></span></span>
+              </span>
+              <span class="cc-h">View hot local deals near you</span>
+              <span class="cc-s">Buy from the merchant direct &mdash; a Gopher brings it the last mile.</span>
+              <span class="cc-btn cc-btn-gold gopher-deals-btn">View Local Deals</span>
+            </button>
+          </div>
+        </div>
+      </section>
 
       <!-- Home -->
-      <section class="dash-section active" data-rqsec="home">
+      <section class="dash-section" data-rqsec="home">
         <div class="kpi-grid">
           <button class="kpi-filter kpi-amber" data-rqfilter="pending" type="button">
             <div class="kpi-label">Pending</div><div class="kpi-value" id="kpiPending">0</div>
@@ -19625,7 +20102,16 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       <!-- Personal Info -->
       <section class="dash-section" data-rqsec="personal">
         <div class="personal-hero">
-          <div class="ph-avatar" id="rqPhAvatar">JN</div>
+          <!-- Owner 2026-10-02 (slide 3): "tapping the pic allows user to change
+               the profile pic." The camera badge is a SIBLING, not a child —
+               renderers set .ph-avatar's innerHTML to paint the photo, so a badge
+               inside it would be wiped on the next repaint. -->
+          <div class="ph-avatar-wrap">
+            <button type="button" class="ph-avatar" id="rqPhAvatar"
+                    aria-label="Change your profile picture">JN</button>
+            <span class="ph-avatar-cam" aria-hidden="true">📷</span>
+            <input type="file" id="rqPhPhotoInput" accept="image/png,image/jpeg" hidden>
+          </div>
           <div class="ph-main">
             <div class="ph-name" id="rqPhName">John</div>
             <div class="ph-role">User since 2022</div>
@@ -19730,11 +20216,15 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
 
       <!-- New Request (hosts the relocated .flow-mockup inside the dashboard) -->
       <section class="dash-section" data-rqsec="new-request">
-        <div class="rq-pathtabs" role="tablist" aria-label="What would you like to do">
-          <button type="button" class="rq-pathtab is-active" id="pathTabNew"  role="tab" aria-selected="true">+ Choose your service</button>
-          <button type="button" class="rq-pathtab deals-tab" id="pathTabDeals" role="tab" aria-selected="false"><span class="dt-row"><svg class="dt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0l-6.2-6.2A2 2 0 0 1 3.8 13V5.2A1.4 1.4 0 0 1 5.2 3.8H13a2 2 0 0 1 1.4.6l6.2 6.2a2 2 0 0 1 0 2.8z"/><circle cx="8.6" cy="8.6" r="1.4" fill="currentColor" stroke="none"/></svg><span>View Local Deals</span></span><span class="dt-cue"><span class="dt-dot"></span>Sponsored picks</span></button>
-          <span class="deals-cue-note" aria-hidden="true"><span class="dcn-arrow">⟵</span> Check this out!</span>
-        </div>
+        <!-- ⛔ The "+ Choose your service" / "View Local Deals" tab row was HERE
+             and is deliberately gone (owner 2026-09-30): "the top section was to
+             be completely removed. The user gets to those on the home page."
+             The dashboard's home screen (data-rqsec="choose") is now the only
+             place that choice is made, so repeating it above the flow was the
+             same decision asked twice.
+             setRequestPath() null-guards #pathTabNew / #pathTabDeals, and
+             initDealsPathToggle() returns early when they are absent, so nothing
+             downstream breaks — the home screen calls setRequestPath directly. -->
         <div class="dash-flow-host" id="rqDashFlowHost">
           <!-- The .flow-mockup is moved here when +New Request is tapped -->
         </div>
@@ -19766,8 +20256,118 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
   const newReqBtn  = document.getElementById('rqDashNewRequest');
   const logoSlot   = document.getElementById('rqDashLogoSlot');
 
+  /* ── service clips on the "Get something done" card ──────────────────────
+     Owner 2026-09-30: "multiple service videos in the card on loop (similar to
+     the services page on the laptop)."
+
+     Same source and the same cycling shape as gopher-services.html: shuffle the
+     18 clips, deal them across the quads, and advance each quad on 'ended' so
+     the four panes drift out of sync instead of marching together. A quad that
+     ends up with a single clip loops itself.
+
+     muted + playsInline + the muted ATTRIBUTE are all required — without the
+     attribute present in markup, iOS Safari refuses to autoplay. play() is
+     caught because a browser may still refuse, and an unhandled rejection here
+     would be noise, not a failure worth surfacing. */
+  /* ⛔ This used to run immediately and the clips never played — readyState 4,
+     no error, just paused. play() was called while data-rqsec="choose" was still
+     display:none, and a browser will not start a video it cannot show. Calling
+     play() by hand once the screen was visible worked, which is what identified
+     it. So the player is now armed and only starts when the home screen is
+     actually on, and it re-starts each time you come back to it. */
+  function initChooseClips(){
+    const host = document.getElementById('chooseSvcQuads');
+    if(!host || host.dataset.wired) return;
+    host.dataset.wired = '1';
+    const CLIPS = [];
+    for(let i = 1; i <= 18; i++) CLIPS.push('assets/video/services-clip-' + i + '.mp4');
+    const shuffled = CLIPS.slice();
+    for(let i = shuffled.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = t;
+    }
+    const quads = host.querySelectorAll('.cc-quad');
+    const lists = []; for(let i = 0; i < quads.length; i++) lists.push([]);
+    shuffled.forEach((src, i) => lists[i % quads.length].push(src));
+    quads.forEach((q, i) => {
+      const list = lists[i];
+      if(!list.length) return;
+      const v = document.createElement('video');
+      v.muted = true; v.autoplay = true; v.playsInline = true; v.preload = 'auto';
+      v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+      if(list.length === 1) v.loop = true;
+      let idx = 0;
+      const load = () => { v.src = list[idx]; const pr = v.play(); if(pr && pr.catch) pr.catch(() => {}); };
+      v.addEventListener('ended', () => { if(list.length > 1){ idx = (idx + 1) % list.length; load(); } });
+      q.appendChild(v); load();
+    });
+  }
+  /* Re-issue play() whenever the home screen is shown. Videos pause when their
+     container is hidden, so without this the clips freeze the first time the
+     user navigates away and comes back. */
+  function playChooseClips(){
+    const host = document.getElementById('chooseSvcQuads');
+    if(!host) return;
+    initChooseClips();
+    host.querySelectorAll('video').forEach(v => {
+      const pr = v.play(); if(pr && pr.catch) pr.catch(() => {});
+    });
+  }
+
+  /* ── merchant marquee: real marks from the customer-deals page ──────────
+     Owner 2026-10-01: "have multiple logos running on the screen. Top scrolling
+     →, bottom scrolling ←." Reference he gave: gopher-customer-deals.html, which
+     is where these files come from.
+
+     Each row renders its run TWICE. The CSS translates by exactly -50%, so the
+     animation ends on a frame identical to its start and the loop is seamless —
+     with a single run you get a visible snap back every cycle. */
+  (function initDealsMarquee(){
+    const ROWS = {
+      a: ['cust-deals-bass-lake-outfitters.webp', 'cust-deals-bass-lake-quickmart.webp', 'cust-deals-buoy-bowls.webp', 'cust-deals-cardinal.webp', 'cust-deals-carolina-cellars.webp', 'cust-deals-circle-g.webp', 'cust-deals-ember-cigar-lounge.webp', 'cust-deals-frankie-fannkks.webp', 'cust-deals-holly-springs-market.webp', 'cust-deals-hs-market-logo.webp'],
+      b: ['cust-deals-johns-deli.webp', 'cust-deals-la-cocina.webp', 'cust-deals-mini-aussie-bottle-shop.webp', 'cust-deals-my-way-tavern.webp', 'cust-deals-quickstop.webp', 'cust-deals-sand-savvy-rental.webp', 'cust-deals-sugarbird.webp', 'cust-deals-triangle-handyman.webp', 'cust-deals-triangle-vine.webp', 'cust-deals-videri.webp']
+    };
+    Object.keys(ROWS).forEach(key => {
+      const track = document.querySelector('[data-mq="' + key + '"]');
+      if(!track || track.dataset.filled) return;
+      const run = ROWS[key].map(f =>
+        '<img src="assets/img/' + f + '" alt="" loading="lazy">').join('');
+      track.innerHTML = run + run;   // duplicated: see the -50% note above
+      track.dataset.filled = '1';
+    });
+  })();
+
+  /* ── the home screen's two pathways ──────────────────────────────────────
+     Neither branch builds anything new: Services shows the existing request
+     flow, and Deals shows the existing deals panel by clicking the path tab
+     that already lives in that section. Going through #pathTabDeals rather
+     than toggling #dashDealsHost directly means the tab's own active/aria
+     state stays correct and renderDealsPanel() still runs. */
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('[data-choose]');
+    if(!card) return;
+    const which = card.dataset.choose;
+    showSection('new-request');
+    /* Calls the same functions the removed tabs called, rather than synthesising
+       a click on buttons that no longer exist. Deals keeps its eligibility gate:
+       ineligible users get the coming-soon overlay exactly as before. */
+    if(which === 'deals'){
+      const host = document.getElementById('dashDealsHost');
+      const eligible = (typeof isDealsEligible === 'function') ? isDealsEligible() : false;
+      if(eligible && host){
+        if(typeof renderDealsHome === 'function') renderDealsHome();
+        setRequestPath('deals');
+      } else {
+        const ov = document.getElementById('dealsOverlay');
+        if(ov) ov.hidden = false;
+      }
+    } else {
+      setRequestPath('new');
+    }
+  });
+
   const SECTION_TITLES = {
-    home:'Dashboard overview', previous:'Previous requests', inbox:'Inbox',
+    choose:'', home:'Dashboard overview', previous:'Previous requests', inbox:'Inbox',
     gophers:'MY Gophers',
     personal:'Personal info', payment:'Payment info', refer:'Refer Gopher',
     'new-request':'Submit New Request', 'request-detail':'Request Details'
@@ -23856,18 +24456,26 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
   // Inject the Gopher Request logo (reuse the nav logo on the page)
   function initLogo(){
     if(logoSlot.dataset.done) return;
-    // v75 — use the REAL Gopher Request logo (the same art the page header
-    // renders) instead of the text wordmark. grAsset() reads the embedded logo
-    // already on the page, so there's no duplicated base64. Falls back to the
-    // text wordmark only if the art can't be found.
-    const src = (window.grAsset && grAsset('requestLogo')) || '';
-    if(src){
-      const img = document.createElement('img');
-      img.src = src; img.alt = 'Gopher Request';
-      logoSlot.appendChild(img);
-    } else {
-      logoSlot.innerHTML = '<div class="dash-logo-text"><span class="dlt-mark">G</span><span class="dlt-words"><b>GOPHER</b><span class="dlt-connect" style="color:var(--navy)!important;">REQUEST</span></span></div>';
-    }
+    /* Owner 2026-10-01: the logo lives on the full-width WHITE top bar now, so the
+       shipped asset reads correctly exactly as shipped — this is the REGULAR
+       branded Request logo.
+
+       ⛔ Do NOT reintroduce the fetch-and-recolour this replaced. It rewrote the
+       wordmark's fill="#012462" to white so the mark could sit on the navy
+       sidebar; the owner ruled that a style-guide violation. It also required a
+       network fetch, which file:// blocks — that is why a double-clicked local
+       copy used to fall back to a white chip. A plain <img> needs neither. */
+    const img = document.createElement('img');
+    img.src = 'assets/img/gopher-request-logo.svg';
+    img.alt = 'Gopher Request';
+    /* grAsset() reads the logo already embedded on the page, so the fallback
+       costs no extra bytes and works even if the file is missing. */
+    img.addEventListener('error', function(){
+      const src = (window.grAsset && grAsset('requestLogo')) || '';
+      if(src && img.src !== src) img.src = src;
+    }, { once:true });
+    logoSlot.innerHTML = '';
+    logoSlot.appendChild(img);
     logoSlot.dataset.done = '1';
   }
 
@@ -23964,7 +24572,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
         <label class="da-confirm-label" for="daConfirmInput">Type <strong>DELETE</strong> to confirm</label>
         <input class="da-confirm-input" id="daConfirmInput" type="text" autocomplete="off" placeholder="DELETE" aria-label="Type DELETE to confirm">
         <button class="bidbd-close tscx-confirm is-disabled" id="daConfirmBtn" type="button" disabled>Delete my account</button>
-        <button class="hirerev-back" type="button">Keep my account</button>
+        <button class="hirerev-back dlg-keep" type="button">Keep my account</button>
       </div>`;
     const close = () => ov.remove();
     ov.querySelector('.hirerev-back').addEventListener('click', close);
@@ -24010,26 +24618,79 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     if(e.target.closest('#peDeleteAccount')) rqOpenDeleteAccount();
   });
 
-  function rqOpenTrustShieldCancel(){
+  /* ── TRUSTSHIELD PANEL ──────────────────────────────────────────────────────
+     ⛔ Owner 2026-10-02 (slide 9): "This is NOT a pop-up to encourage cancelling
+     TrustShield. Tone the negative WAY down." What shipped opened on "Cancel your
+     TrustShield?" over a red warning block — a scare dialog reached by tapping a
+     nav row that reads "TrustShield verified", i.e. the only door to managing it
+     was a door marked cancel.
+
+     It is now a management panel in his three parts: (1) celebrate that they are
+     verified, (2) let them get at their card and selfie, (3) removal is still
+     there, behind a disclosure, with a disclaimer that states the consequence
+     once and plainly instead of arguing. */
+  function rqOpenTrustShieldPanel(){
     const ov = document.createElement('div');
     ov.className = 'bidbd-ov';
     ov.innerHTML = `
-      <div class="bidbd-card" role="dialog" aria-modal="true" aria-label="Cancel TrustShield">
-        <div class="bidbd-head">Cancel your TrustShield&trade;?</div>
-        <div class="bidbd-sub">You can add it back any time, but you'll have to verify your ID again.</div>
-        <div class="tscx-warn">
-          <strong>This removes the discounts tied to TrustShield.</strong>
-          Age-restricted delivery and ride-sharing requests lose the TrustShield discount
-          on the grand total, and you'll be asked to show your ID at the door again
-          instead of having it on file.
+      <div class="bidbd-card tsp-card" role="dialog" aria-modal="true" aria-label="Your TrustShield">
+        <div class="tsp-hero">
+          <div class="tsp-seal" aria-hidden="true">
+            <img src="assets/img/trustshield-logo.svg" alt="">
+          </div>
+          <div class="tsp-head">You're TrustShield&trade; verified</div>
+          <div class="tsp-sub">Verified once, and the badge follows you everywhere on Gopher.</div>
         </div>
-        <button class="bidbd-close tscx-confirm" type="button">Yes, cancel my TrustShield</button>
-        <button class="hirerev-back" type="button">Keep TrustShield</button>
+
+        <div class="tsp-perks">
+          <div class="tsp-perk"><span class="tsp-tick">&#10003;</span>
+            <span>Discount applied to grand total for all age-restricted delivery and ride sharing requests.</span></div>
+          <div class="tsp-perk"><span class="tsp-tick">&#10003;</span>
+            <span>No re-scanning your ID before each request &mdash; just show it at the door.</span></div>
+          <div class="tsp-perk"><span class="tsp-tick">&#10003;</span>
+            <span>Workers know who they are meeting, the same way you do.</span></div>
+        </div>
+
+        <div class="tsp-manage-title">Your verification</div>
+        <div class="tsp-manage">
+          <button type="button" class="tsp-item" id="tspCard">
+            <img class="tsp-item-thumb" src="assets/img/trustshield-id-front.webp" alt="" aria-hidden="true">
+            <span class="tsp-item-body"><strong>ID card</strong><small>View or replace the ID on file</small></span>
+            <span class="tsp-item-go" aria-hidden="true">&rsaquo;</span>
+          </button>
+          <button type="button" class="tsp-item" id="tspSelfie">
+            <img class="tsp-item-thumb" src="assets/img/trustshield-selfie.webp" alt="" aria-hidden="true">
+            <span class="tsp-item-body"><strong>Selfie</strong><small>Retake the photo matched to your ID</small></span>
+            <span class="tsp-item-go" aria-hidden="true">&rsaquo;</span>
+          </button>
+        </div>
+
+        <button class="bidbd-close" type="button" id="tspDone">Done</button>
+
+        <details class="tsp-remove">
+          <summary>Remove TrustShield</summary>
+          <p class="tsp-remove-copy">
+            Your badge and its discount stop applying, and you'll verify your ID on
+            each age-restricted request again. You can add it back whenever you like.
+          </p>
+          <button type="button" class="tsp-remove-btn" id="tspRemove">Remove TrustShield</button>
+        </details>
       </div>`;
     const close = () => ov.remove();
-    ov.querySelector('.hirerev-back').addEventListener('click', close);
+    ov.querySelector('#tspDone').addEventListener('click', close);
     ov.addEventListener('click', (e) => { if(e.target === ov) close(); });
-    ov.querySelector('.tscx-confirm').addEventListener('click', () => {
+
+    /* ⚠️ The card and selfie managers are not built. These say so rather than
+       doing nothing — a dead row reads as a broken button. Wire them to the real
+       screens when they exist; the ids are the hooks. */
+    const notYet = (what) => {
+      const msg = what + ' management is coming soon.';
+      if(typeof toast === 'function') toast(msg); else alert(msg);
+    };
+    ov.querySelector('#tspCard').addEventListener('click', () => notYet('ID card'));
+    ov.querySelector('#tspSelfie').addEventListener('click', () => notYet('Selfie'));
+
+    ov.querySelector('#tspRemove').addEventListener('click', () => {
       close();
       /* Goes through the same setter every other surface uses, so the seal, the
          age-restricted banner and the fee maths all follow in one step. */
@@ -24037,6 +24698,8 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     });
     document.body.appendChild(ov);
   }
+  /* kept so any older caller still resolves */
+  function rqOpenTrustShieldCancel(){ rqOpenTrustShieldPanel(); }
 
   /* rqRenderBadges() only runs when setTrustShield() flips the flag, so it does
      NOT paint on load — a profile that already has TrustShield would still read
@@ -24055,7 +24718,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
          event so the data-open-trustshield delegate cannot also run. */
       e.preventDefault();
       e.stopPropagation();
-      rqOpenTrustShieldCancel();
+      rqOpenTrustShieldPanel();
     }
   }, true);
 
@@ -24998,6 +25661,16 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     if(sectionTitle) sectionTitle.textContent = SECTION_TITLES[name] || 'Dashboard';
     // Whenever the overview is shown, repaint the live request log + KPI counts so
     // it always reflects the current store (regardless of how we got here).
+    /* ⛔ Deferred a frame. showSection() toggles .active in this tick, but the
+       section is still not painted when the handler runs, and a browser will not
+       start a video it cannot show — play() resolved and the clips stayed paused.
+       requestAnimationFrame puts the call after the style/layout pass. */
+    /* Owner 2026-10-01: the sidebar's + New Request and View Local Deals buttons
+       are NOT shown on the home screen. They appear once a category card has been
+       chosen — the "activated" state — because on the home screen those buttons
+       duplicate the two cards the user is looking at. */
+    dash.classList.toggle('is-choosing', name === 'choose');
+    if(name === 'choose') requestAnimationFrame(() => playChooseClips());
     if(name === 'home') renderActiveRequests();
     // Whenever the Previous section is shown, reset the detail panel back to the
     // list view and repaint — covers nav from sidebar, KPI, or any data mutation.
@@ -25071,7 +25744,11 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     // If the user added a profile photo at signup, show it in both avatars
     // (clipped to the circle); otherwise the initials set above remain. A photo
     // added via the cross-app "Complete your profile" modal also counts.
-    const photo = opts.profilePhoto || sessionProfilePhoto || null;
+    /* Owner 2026-09-30: the greeting avatar shows a real profile picture by
+       default rather than initials. A photo the user actually supplied still
+       wins; this is only the fallback. */
+    const DEFAULT_PROFILE_PHOTO = 'assets/img/px-1043471-240x240.webp';
+    const photo = opts.profilePhoto || sessionProfilePhoto || DEFAULT_PROFILE_PHOTO;
     const setAvatarPhoto = (id) => {
       const el = document.getElementById(id);
       if(!el) return;
@@ -25121,12 +25798,15 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     setTrustShield(DASH_DATA.profile ? DASH_DATA.profile.trustShield : true); // also paints the badges rail
     document.body.classList.add('dashboard-mode');
     dash.classList.add('open');
-    // v76 — "New Request is the screen": land directly on the request flow
-    // (Step 1) every login. The overview/home stays one click away in the
-    // sidebar. (Home was already painted above so it's ready when navigated to.)
+    /* v76 landed straight on the request flow (Step 1) every login — "New
+       Request is the screen". SUPERSEDED by owner 2026-09-30, slide 2: the
+       dashboard now opens on the two-pathway home screen, because landing in
+       the flow presumes the customer came to post a request and gives Deals no
+       visibility at all. The flow is still hosted here and is one click away
+       behind "Get something done"; the overview stays on the Dashboard nav. */
     moveFlowToDash();
     if(typeof window.__resetRequestFlow === 'function') window.__resetRequestFlow();
-    showSection('new-request');
+    showSection('choose');
     window.scrollTo({ top:0, behavior:'instant' });
     // Cross-app requirement: if the resolved profile has no photo (e.g. created
     // in Connect, which doesn't require one), block with a prompt to add one.
@@ -25148,7 +25828,10 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     seedDashboardRequests();
     if(typeof window.__g40ResetRecovery === 'function') window.__g40ResetRecovery(); // clear recovery state on sign-out
     renderActiveRequests();
-    showSection('home');     // next sign-in starts on the overview
+    /* Owner 2026-09-30, slide 2: the dashboard now OPENS on the two-pathway
+       home screen, not the KPI overview. The overview is still there on the
+       Dashboard nav item — this only changes where a fresh sign-in lands. */
+    showSection('choose');   // next sign-in starts on the Services/Deals choice
     sessionProfilePhoto = null;  // next account gets prompted for a photo fresh
     _sessionUserProfile = null;  // clear Gopher Deals eligibility for the next sign-in
     document.body.classList.remove('dashboard-mode');
@@ -25220,6 +25903,34 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       setPhoto(null);
       overlay.hidden = false;
     };
+  })();
+
+  /* Owner 2026-10-02 (slide 3): tapping the Personal info picture changes it.
+     Deliberately NOT routed through __openCompletePhotoModal above — that one is
+     "blocking by design" (no Escape, no backdrop dismissal) because it is the
+     first-run prompt. Changing a photo you already have must be abandonable, so
+     this opens the file picker directly. Lives here so it can reach
+     sessionProfilePhoto, which the IIFE above also writes. */
+  (function(){
+    const av  = document.getElementById('rqPhAvatar');
+    const inp = document.getElementById('rqPhPhotoInput');
+    if(!av || !inp) return;
+    av.addEventListener('click', function(){ inp.click(); });
+    inp.addEventListener('change', function(){
+      const f = inp.files && inp.files[0];
+      if(!f || !/^image\/(png|jpeg)$/.test(f.type)){ inp.value = ''; return; }
+      const r = new FileReader();
+      r.onload = function(){
+        sessionProfilePhoto = r.result;
+        // both avatars repaint — the hero and the one in the header bar
+        ['rqDashAvatar','rqPhAvatar'].forEach(function(id){
+          const el = document.getElementById(id);
+          if(el) el.innerHTML = '<img src="' + r.result + '" alt="Profile photo">';
+        });
+        inp.value = '';
+      };
+      r.readAsDataURL(f);
+    });
   })();
 
   // ── +New Request → host the flow INSIDE the dashboard (not the public demo) ──
@@ -25489,7 +26200,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
   // Add `logo:'data:image/...'` to any record to replace its monogram tile.
   const DEALS_DATA = [
     { key:'localpro', title:'Local Service Provider Deals', merchants:[
-      { id:'lp-power',  name:'Power Washing',   pro:'John Newbury',       tier:'Gopher Elite+', price:150, normalRate:225, offer:'Full exterior house & driveway wash',
+      { id:'lp-power', featuredSlot:'category', featuredMonth:'2026-09',  name:'Power Washing',   pro:'John Newbury',       tier:'Gopher Elite+', price:150, normalRate:225, offer:'Full exterior house & driveway wash',
         kind:'service', reqCategory:'home', reviews:312, rating:4.9, verified:true, testimonial:'Driveways and siding like new.',
         dealSpecifics:"I will power wash any residential home under 2000 sq ft for $150 flat rate. My normal rate is $225. I use a special solution that will kill mold for up to 1 year.",
         photo:'assets/img/px-3932291-240x240.webp' },
@@ -25527,10 +26238,10 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
         photo:'assets/img/px-1212984-240x240.webp' },
     ]},
     { key:'restaurants', title:'Restaurants & Food Trucks', merchants:[
-      { id:'r-myway',   name:'My Way Tavern',            sub:'American · Burgers · Drinks', offer:'10% off online orders, use promo code GOPHER', distance:'0.5 mi',
+      { id:'r-myway', featuredSlot:'hero', featuredMonth:'2026-09',   name:'My Way Tavern',            sub:'American · Burgers · Drinks', offer:'10% off online orders, use promo code GOPHER', distance:'0.5 mi',
         kind:'merchant', category:'delivery', address:'105 Avent Ferry Rd, Holly Springs, NC 27540', mobile:false, promo:'GOPHER', pay:12, portalUrl:'mywaytavern.com', portalTag:'The best food (& drinks) around',
         logoSvg:'<svg viewBox="0 0 220 168" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="My Way Tavern"><rect x="104" y="22" width="10" height="138" rx="3" fill="#3a3a3a"/><rect x="104" y="22" width="4" height="138" rx="2" fill="#606060"/><circle cx="109" cy="20" r="9" fill="#454545"/><circle cx="109" cy="20" r="4" fill="#6f6f6f"/><path d="M150 122 q-12 -10 -22 -6 q14 -10 26 2 z" fill="#2a2a2a"/><path d="M68 122 q12 -10 22 -6 q-14 -10 -26 2 z" fill="#2a2a2a"/><g transform="rotate(8 109 76)"><path d="M104 62 H196 L208 76 L196 90 H104 Z" fill="#1f7a3d" stroke="#ffffff" stroke-width="4"/><text x="150" y="82" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-weight="800" font-size="19" fill="#ffffff" letter-spacing="1">TAVERN</text></g><g transform="rotate(-8 109 76)"><path d="M114 62 H22 L10 76 L22 90 H114 Z" fill="#1f7a3d" stroke="#ffffff" stroke-width="4"/><text x="64" y="82" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-weight="800" font-size="19" fill="#ffffff" letter-spacing="1">MY WAY</text></g></svg>' },
-      { id:'r-frankks', name:'Frankie Frankks Hot Dogs', sub:'Hot Dog Cart', offer:"Buy 2 dogs, the drink's on us", distance:'2.2 mi',
+      { id:'r-frankks', featuredSlot:'category', featuredMonth:'2026-09', name:'Frankie Frankks Hot Dogs', sub:'Hot Dog Cart', offer:"Buy 2 dogs, the drink's on us", distance:'2.2 mi',
         kind:'merchant', category:'delivery', address:null, mobile:true, noOrdering:true, pay:9, portalUrl:'https://www.frankks.com', portalTag:"Frankly, we're the best!" },
       { id:'r-freshfork',   name:'Fresh Fork',                    sub:'Salads · Wraps · Bowls', offer:'Free topping upgrade', distance:'2.5 mi',
         kind:'merchant', category:'delivery', address:'308 Village Walk Dr, Holly Springs, NC 27540', mobile:false, pay:11, portalUrl:'freshforkhs.com', portalTag:'Healthy and fresh' },
@@ -25540,7 +26251,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
         kind:'merchant', category:'delivery', address:'634 Holly Springs Rd, Holly Springs, NC 27540', mobile:false, promo:'GOPHER5', pay:10, portalUrl:'orderonline.granburyrs.com/slice/menu/main', portalTag:'Real NY Thin Crust Pizza' },
     ]},
     { key:'favorites', title:'Local Favorites', merchants:[
-      { id:'f-hatch',   name:'Hatch Coffee',             sub:'Coffee · Bakery', offer:'Free pastry with any latte', distance:'0.8 mi',
+      { id:'f-hatch', featuredSlot:'category', featuredMonth:'2026-09',   name:'Hatch Coffee',             sub:'Coffee · Bakery', offer:'Free pastry with any latte', distance:'0.8 mi',
         kind:'merchant', category:'delivery', address:'306 S Main St, Holly Springs, NC 27540', mobile:false, pay:8, portalUrl:'hatchcoffee.com', portalTag:'Small-batch, locally roasted' },
       { id:'f-sugar',   name:'Sugarbird Sweets & Teas',  sub:'Desserts · Tea', offer:'BOGO macarons', distance:'1.1 mi',
         kind:'merchant', category:'delivery', address:'124 Bowden Way, Holly Springs, NC 27540', mobile:false, pay:9, portalUrl:'sugarbird.com', portalTag:'A little something sweet' },
@@ -25554,7 +26265,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     { key:'retail', title:'Retail Merchants', merchants:[
       { id:'c-cardinal',name:'Cardinal Corner Store',    sub:'Convenience · Snacks', offer:'Free coffee with any fill-up', distance:'0.4 mi',
         kind:'merchant', category:'delivery', address:'500 Holly Springs Rd, Holly Springs, NC 27540', mobile:false, pay:8, portalUrl:'cardinalcorner.com', portalTag:'Your corner, stocked' },
-      { id:'c-quik',    name:'QuikStop Holly Springs',   sub:'Convenience · Fuel', offer:'2-for-1 energy drinks', distance:'1.0 mi',
+      { id:'c-quik', featuredSlot:'category', featuredMonth:'2026-09',    name:'QuikStop Holly Springs',   sub:'Convenience · Fuel', offer:'2-for-1 energy drinks', distance:'1.0 mi',
         kind:'merchant', category:'delivery', address:'1001 Avent Ferry Rd, Holly Springs, NC 27540', mobile:false, pay:8, portalUrl:'quikstop.com', portalTag:'In and out, fast' },
       { id:'c-pantry',  name:'GoPantry Express',         sub:'Grocery · Essentials', offer:'$3 off $20', distance:'1.9 mi',
         kind:'merchant', category:'delivery', address:'2840 Village Market Pl, Morrisville, NC 27560', mobile:false, pay:10, portalUrl:'gopantry.com', portalTag:'Essentials, delivered' },
@@ -25564,7 +26275,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     { key:'age', title:'Age-Restricted Merchants', ageRestricted:true, merchants:[
       { id:'a-bombshell',name:'Bombshell Beer Co.',      sub:'Brewery · Taproom', offer:'10% off growler fills', distance:'1.3 mi',
         kind:'merchant', category:'delivery', address:'300 N Main St, Holly Springs, NC 27540', mobile:false, pay:11, ageRestricted:true, portalUrl:'bombshellbeer.com', portalTag:'Fresh from the taproom' },
-      { id:'a-cellars', name:'Carolina Cellars',         sub:'Wine · Spirits', offer:'Free tasting flight', distance:'0.9 mi',
+      { id:'a-cellars', featuredSlot:'category', featuredMonth:'2026-09', name:'Carolina Cellars',         sub:'Wine · Spirits', offer:'Free tasting flight', distance:'0.9 mi',
         kind:'merchant', category:'delivery', address:'120 Grand Hill Pl, Holly Springs, NC 27540', mobile:false, pay:12, ageRestricted:true, portalUrl:'carolinacellars.com', portalTag:'Curated wine & spirits' },
       { id:'a-vine',    name:'Triangle Vine Bottle Shop',sub:'Bottle Shop', offer:'Buy 6 bottles, 10% off', distance:'2.4 mi',
         kind:'merchant', category:'delivery', address:'4112 Pleasant Valley Rd, Raleigh, NC 27612', mobile:false, pay:13, ageRestricted:true, portalUrl:'trianglevine.com', portalTag:'Hand-picked bottles' },
@@ -25848,13 +26559,33 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     const run = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
     const month = run.getUTCFullYear() + '-' + String(run.getUTCMonth() + 1).padStart(2, '0');
     const picks = { featured: null, winners: {} };
-    (typeof DEALS_DATA !== 'undefined' ? DEALS_DATA : []).forEach(cat => {
-      ((cat && cat.merchants) || []).forEach(m => {
-        if(!m || m.featuredMonth !== month) return;
-        if(m.featuredSlot === 'hero') picks.featured = m.id;
-        else if(m.featuredSlot === 'category' && !picks.winners[cat.key]) picks.winners[cat.key] = m.id;
+    const scan = (matchMonth) => {
+      (typeof DEALS_DATA !== 'undefined' ? DEALS_DATA : []).forEach(cat => {
+        ((cat && cat.merchants) || []).forEach(m => {
+          if(!m || !m.featuredSlot) return;
+          if(matchMonth && m.featuredMonth !== month) return;
+          if(m.featuredSlot === 'hero'){ if(!picks.featured) picks.featured = m.id; }
+          else if(m.featuredSlot === 'category' && !picks.winners[cat.key]) picks.winners[cat.key] = m.id;
+        });
       });
-    });
+    };
+    scan(true);
+    /* ⚠️ PROTOTYPE FALLBACK — owner 2026-10-02, slide 6: "we have a headliner
+       featured deal and this page isn't representing that."
+
+       The real rule is above and is unchanged: winners are whoever bought the
+       slot in the auction that closed LAST month. The page rendered with no
+       headliner and every category showing the mascot placeholder for one
+       reason — NOT a layout bug — no merchant in DEALS_DATA carried a
+       featuredSlot at all, so this returned empty on every run.
+
+       The demo merchants are tagged now, but a fixed featuredMonth goes stale
+       the moment the calendar turns, and a prototype that empties itself
+       mid-demo is worse than one pinned to a month. So: if the live month sold
+       nothing, fall back to the standing demo placement, ignoring the month.
+       ⛔ Delete this fallback when real auction data backs the slots — in
+       production an unsold month SHOULD render without a headliner. */
+    if(!picks.featured && !Object.keys(picks.winners).length) scan(false);
     return picks;
   }
   const DEALS_HOME_SUBS = { localpro:'Vetted local pros', restaurants:'Meals on the road', favorites:'Neighborhood picks', retail:'Quick stops', age:'21+ · ID at door' };
@@ -28514,7 +29245,19 @@ function initPersonalEdit(){
   document.addEventListener("click", function(e){
     var d = document.getElementById("rqDashboard") || document.querySelector(".dashboard");
     if(!d) return;
-    if(e.target.closest("#rqDashBurger") || e.target.closest("#rqDashAvatar")){
+    /* Owner 2026-10-02 (slide 2): "Tapping profile opens users Personal Info
+       page." The avatar used to be the SECOND mobile drawer toggle alongside the
+       burger; that is now the burger's job alone, so the avatar is free to do
+       one thing. Clicking the real nav item rather than calling showSection()
+       reuses its existing wiring — including the rule further down that closes
+       the drawer when a nav item is chosen. */
+    if(e.target.closest("#rqDashAvatar")){
+      var personal = document.querySelector('.dash-sidebar .dash-nav-item[data-rqsection="personal"]');
+      if(personal) personal.click();
+      d.classList.remove("sidebar-open");
+      return;
+    }
+    if(e.target.closest("#rqDashBurger")){
       var open = d.classList.toggle("sidebar-open");
       var b = document.getElementById("rqDashBurger");
       if(b){ b.setAttribute("aria-expanded", open ? "true" : "false"); }
