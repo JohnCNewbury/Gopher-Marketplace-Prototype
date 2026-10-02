@@ -5591,6 +5591,41 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     box-shadow:0 18px 50px rgba(12,22,48,0.3); padding:20px 20px 16px;
     font-family:'DM Sans'; max-height:88vh; overflow:auto;
   }
+  /* ── TrustShield panel (owner 2026-10-02; new surface in Connect) ────────── */
+  .tsp-ov { z-index:9800; }   /* above .gc-modal-overlay (9500) and the drawer (9300) */
+  .tsp-card { width:min(420px,100%); text-align:left; }
+  .tsp-hero { text-align:center; padding:2px 0 14px; }
+  .tsp-seal img { height:62px; width:auto; display:block; margin:0 auto 10px; }
+  .tsp-head { font-family:'Nunito',sans-serif; font-weight:900; font-size:20px; color:var(--navy); line-height:1.2; }
+  .tsp-sub { font-family:'DM Sans',sans-serif; font-size:12.5px; color:var(--muted); margin-top:5px; line-height:1.45; }
+  .tsp-perks { background:#f1fbf5; border:1px solid #cdecd9; border-radius:12px; padding:12px 13px; display:grid; gap:9px; }
+  .tsp-perk { display:flex; gap:9px; align-items:flex-start; font-size:12.5px; line-height:1.45; color:#1f4733; }
+  .tsp-tick { flex:0 0 auto; width:17px; height:17px; border-radius:50%; background:var(--green); color:#04240f;
+              display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; margin-top:1px; }
+  .tsp-manage-title { font-family:'Nunito',sans-serif; font-weight:800; font-size:12px; letter-spacing:.4px;
+                      text-transform:uppercase; color:var(--muted); margin:16px 0 7px; }
+  .tsp-manage { display:grid; gap:8px; }
+  .tsp-item { display:flex; align-items:center; gap:11px; width:100%; padding:9px 11px; cursor:pointer; text-align:left;
+              background:#fff; border:1.5px solid #e2e7f0; border-radius:11px; font-family:inherit;
+              transition:border-color .15s, background .15s; }
+  .tsp-item:hover { border-color:var(--green); background:#f7fbf8; }
+  .tsp-item:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(51,217,117,.4); }
+  .tsp-item-thumb { flex:0 0 auto; width:46px; height:32px; border-radius:6px; object-fit:cover; display:block; background:#eef1f7; }
+  .tsp-item-body { flex:1; min-width:0; display:block; }
+  .tsp-item-body strong { display:block; font-family:'Nunito',sans-serif; font-weight:800; font-size:13.5px; color:var(--navy); }
+  .tsp-item-body small { display:block; font-family:'DM Sans',sans-serif; font-size:11.5px; color:var(--muted); margin-top:1px; }
+  .tsp-item-go { flex:0 0 auto; color:#9fb0c9; font-size:20px; line-height:1; }
+  /* Removal stays available but is NOT what the panel is about, so it is one
+     disclosure down. The copy states the consequence once and stops. */
+  .tsp-remove { margin-top:14px; border-top:1px solid #eef1f7; padding-top:10px; }
+  .tsp-remove summary { cursor:pointer; list-style:none; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--muted); text-align:center; }
+  .tsp-remove summary::-webkit-details-marker { display:none; }
+  .tsp-remove summary:hover { color:var(--navy); text-decoration:underline; }
+  .tsp-remove-copy { font-family:'DM Sans',sans-serif; font-size:12px; line-height:1.5; color:var(--muted); margin:9px 0 10px; }
+  .tsp-remove-btn { width:100%; padding:10px; cursor:pointer; background:#fff; color:#8a5560;
+                    border:1.5px solid #e4cdd2; border-radius:10px; font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; }
+  .tsp-remove-btn:hover { border-color:#c98b97; color:#7a2230; background:#fffafb; }
+
   .bidbd-head { font-family:'Nunito'; font-weight:900; font-size:17px; color:var(--navy); }
   .bidbd-sub  { font-size:12px; color:var(--muted); margin:3px 0 14px; }
   .bidbd-row  { display:flex; justify-content:space-between; gap:12px; font-size:13.5px;
@@ -9619,6 +9654,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <button class="dash-nav-item" data-dash-section="personal">
         <span class="dni-ico">👤</span><span class="dni-label">Personal info</span>
       </button>
+      <!-- Owner 2026-10-02: Connect had NO verified-state entry for TrustShield at
+           all — no row, no way to see or manage it, no removal. Request's slide-9
+           panel replaced a cancel dialog; here the row and the panel are both new.
+           Verified -> opens the management panel. Not verified -> carries
+           data-open-trustshield, the hook Connect already uses to start enrolment,
+           so the existing delegate handles it unchanged. -->
+      <button class="dash-nav-item" id="gcNavTrustShield" data-open-trustshield>
+        <span class="dni-ico">🛡️</span><span class="dni-label" id="gcNavTsLabel">Add TrustShield&trade;</span>
+      </button>
       <button class="dash-nav-item" id="gcDashSavedAddr">
         <span class="dni-ico">📍</span><span class="dni-label">Saved addresses</span>
       </button>
@@ -10081,7 +10125,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
              coming-soon notice rather than a populated deals view. -->
         <div class="rq-pathtabs" role="tablist" aria-label="What would you like to do">
           <button type="button" class="rq-pathtab is-active" id="pathTabNew" role="tab" aria-selected="true">+ Choose your service</button>
-          <button type="button" class="rq-pathtab deals-tab" id="pathTabDeals" role="tab" aria-selected="false"><span class="dt-row"><svg class="dt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0l-6.2-6.2A2 2 0 0 1 3.8 13V5.2A1.4 1.4 0 0 1 5.2 3.8H13a2 2 0 0 1 1.4.6l6.2 6.2a2 2 0 0 1 0 2.8z"/><circle cx="8.6" cy="8.6" r="1.4" fill="currentColor" stroke="none"/></svg><span>View Local Deals</span></span><span class="dt-cue"><span class="dt-dot"></span>Sponsored picks</span></button>
+          <button type="button" class="rq-pathtab deals-tab" id="pathTabDeals" role="tab" aria-selected="false"><span class="dt-row"><svg class="dt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0l-6.2-6.2A2 2 0 0 1 3.8 13V5.2A1.4 1.4 0 0 1 5.2 3.8H13a2 2 0 0 1 1.4.6l6.2 6.2a2 2 0 0 1 0 2.8z"/><circle cx="8.6" cy="8.6" r="1.4" fill="currentColor" stroke="none"/></svg><span>View Local Deals</span></span></button>
           <span class="deals-cue-note" aria-hidden="true"><span class="dcn-arrow">⟵</span> Check this out!</span>
         </div>
         <div class="dash-flow-host" id="dashFlowHost">
@@ -22626,7 +22670,118 @@ const PAY_BADGES = {
   function setTrustShield(verified){
     if(DASH_DATA.profile) DASH_DATA.profile.trustShield = !!verified;
     renderProfileBadges();
+    gcRenderTrustShieldNav();
   }
+
+  /* The nav row is the only door to TrustShield in Connect, so its label and its
+     behaviour both follow the flag. While NOT verified it keeps
+     data-open-trustshield and the existing enrolment delegate owns the click;
+     once verified that attribute comes off and the panel takes over. */
+  function gcRenderTrustShieldNav(){
+    const btn = document.getElementById('gcNavTrustShield');
+    const lbl = document.getElementById('gcNavTsLabel');
+    if(!btn || !lbl) return;
+    const verified = !!(DASH_DATA.profile && DASH_DATA.profile.trustShield);
+    lbl.innerHTML = verified ? 'TrustShield&trade; verified' : 'Add TrustShield&trade;';
+    btn.classList.toggle('is-ts-verified', verified);
+    if(verified) btn.removeAttribute('data-open-trustshield');
+    else btn.setAttribute('data-open-trustshield', '');
+  }
+
+  /* ── TRUSTSHIELD PANEL ─────────────────────────────────────────────────────
+     Ported from gopher-request.html (owner slide 9), with one difference worth
+     recording: in Request this REPLACED a cancel dialog. Connect had no
+     verified-state surface at all — no row, no manage, no removal — so the row
+     above and this panel are both new here, built on the owner's 2026-10-02 call.
+
+     Three parts, his words: celebrate that they are verified, let them get at
+     their card and selfie, and keep removal available behind a disclosure with a
+     disclaimer that states the consequence once instead of arguing. */
+  function gcOpenTrustShieldPanel(){
+    const ov = document.createElement('div');
+    /* ⛔ .tsp-ov carries its own z-index. The shared .bidbd-ov is 9000, which sits
+       UNDER .gc-modal-overlay (9500) and the mobile drawer (9300) — the exact
+       stacking that made Request's delete dialog look like it never opened. Scoped
+       to this overlay rather than raising .bidbd-ov, so Connect's existing bid
+       dialogs keep the stacking they were built against. */
+    ov.className = 'bidbd-ov tsp-ov';
+    ov.innerHTML = `
+      <div class="bidbd-card tsp-card" role="dialog" aria-modal="true" aria-label="Your TrustShield">
+        <div class="tsp-hero">
+          <div class="tsp-seal" aria-hidden="true">
+            <img src="assets/img/trustshield-logo.svg" alt="">
+          </div>
+          <div class="tsp-head">You're TrustShield&trade; verified</div>
+          <div class="tsp-sub">Verified once, and the badge follows you everywhere on Gopher.</div>
+        </div>
+
+        <div class="tsp-perks">
+          <div class="tsp-perk"><span class="tsp-tick">&#10003;</span>
+            <span>Discount applied to grand total for all age-restricted delivery and ride sharing requests.</span></div>
+          <div class="tsp-perk"><span class="tsp-tick">&#10003;</span>
+            <span>No re-scanning your ID before each request &mdash; just show it at the door.</span></div>
+          <div class="tsp-perk"><span class="tsp-tick">&#10003;</span>
+            <span>Workers know who they are meeting, the same way you do.</span></div>
+        </div>
+
+        <div class="tsp-manage-title">Your verification</div>
+        <div class="tsp-manage">
+          <button type="button" class="tsp-item" id="tspCard">
+            <img class="tsp-item-thumb" src="assets/img/trustshield-id-front.webp" alt="" aria-hidden="true">
+            <span class="tsp-item-body"><strong>ID card</strong><small>View or replace the ID on file</small></span>
+            <span class="tsp-item-go" aria-hidden="true">&rsaquo;</span>
+          </button>
+          <button type="button" class="tsp-item" id="tspSelfie">
+            <img class="tsp-item-thumb" src="assets/img/trustshield-selfie.webp" alt="" aria-hidden="true">
+            <span class="tsp-item-body"><strong>Selfie</strong><small>Retake the photo matched to your ID</small></span>
+            <span class="tsp-item-go" aria-hidden="true">&rsaquo;</span>
+          </button>
+        </div>
+
+        <button class="bidbd-close" type="button" id="tspDone">Done</button>
+
+        <details class="tsp-remove">
+          <summary>Remove TrustShield</summary>
+          <p class="tsp-remove-copy">
+            Your badge and its discount stop applying, and you'll verify your ID on
+            each age-restricted request again. You can add it back whenever you like.
+          </p>
+          <button type="button" class="tsp-remove-btn" id="tspRemove">Remove TrustShield</button>
+        </details>
+      </div>`;
+    const close = () => ov.remove();
+    ov.querySelector('#tspDone').addEventListener('click', close);
+    ov.addEventListener('click', (e) => { if(e.target === ov) close(); });
+
+    /* ⚠️ The card and selfie managers are not built. These say so rather than
+       doing nothing — a dead row reads as a broken button. Wire them to the real
+       screens when they exist; the ids are the hooks. */
+    const notYet = (what) => {
+      const msg = what + ' management is coming soon.';
+      if(typeof toast === 'function') toast(msg); else alert(msg);
+    };
+    ov.querySelector('#tspCard').addEventListener('click', () => notYet('ID card'));
+    ov.querySelector('#tspSelfie').addEventListener('click', () => notYet('Selfie'));
+    ov.querySelector('#tspRemove').addEventListener('click', () => {
+      close();
+      /* the same setter every other surface uses, so the badge rail and the nav
+         row's label both follow in one step */
+      if(typeof setTrustShield === 'function') setTrustShield(false);
+    });
+    document.body.appendChild(ov);
+  }
+
+  /* Capture phase, and stop the event, so the enrolment delegate bound to
+     [data-open-trustshield] cannot also fire on a verified row. */
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#gcNavTrustShield');
+    if(!btn) return;
+    if(DASH_DATA.profile && DASH_DATA.profile.trustShield){
+      e.preventDefault();
+      e.stopPropagation();
+      gcOpenTrustShieldPanel();
+    }
+  }, true);
 
   // Exposed for the request flow (separate IIFE). The age-restricted banner shows
   // the TrustShield seal when the signed-in customer is verified. Returns ready-to-drop
@@ -25474,7 +25629,18 @@ const PAY_BADGES = {
 (function(){
   document.addEventListener("click", function(e){
     var d = document.getElementById("dashboard"); if(!d) return;
-    if(e.target.closest("#dashBurger") || e.target.closest(".dash-avatar")){
+    /* Owner (slide 2), ported from gopher-request.html: "Tapping profile opens
+       users Personal Info page." The avatar used to be a SECOND drawer toggle
+       beside the burger; that is the burger's job alone now. Clicking the real
+       nav row rather than calling a section switcher reuses its existing wiring,
+       including the rule below that closes the drawer on a nav choice. */
+    if(e.target.closest(".dash-avatar")){
+      var personal = document.querySelector('.dash-sidebar .dash-nav-item[data-dash-section="personal"]');
+      if(personal) personal.click();
+      d.classList.remove("sidebar-open");
+      return;
+    }
+    if(e.target.closest("#dashBurger")){
       var open = d.classList.toggle("sidebar-open");
       var b = document.getElementById("dashBurger");
       if(b){ b.setAttribute("aria-expanded", open ? "true" : "false"); }
@@ -25762,6 +25928,11 @@ const PAY_BADGES = {
       <button class="sa-save" id="saSave">Save address</button>
       <div class="sa-note">Addresses are verified with Google so distance &amp; pricing stay accurate.</div>
     </div>
+    <!-- Owner (slide 8), ported from gopher-request.html: "Add a done button so
+         user doesn't have to x out or tap out of screen." Carries data-sa-close,
+         the same hook the ✕ and the backdrop already use, so there is ONE close
+         path rather than a second that could drift. -->
+    <button class="sa-done" id="saDone" data-sa-close>Done</button>
   </div>
 </div>
 <style id="saved-addr-css">
@@ -25793,6 +25964,9 @@ const PAY_BADGES = {
 .sa-input.sa-need{ border-color:#e2574c; animation:saNeedGlow 2.6s ease-in-out infinite; will-change:box-shadow; }
 @keyframes saNeedGlow{ 0%,100%{ box-shadow:0 2px 8px rgba(196,66,87,0.30); } 50%{ box-shadow:0 4px 22px rgba(196,66,87,0.62); } }
 @media (prefers-reduced-motion:reduce){ .sa-input.sa-need{ animation:none; box-shadow:0 3px 14px rgba(196,66,87,0.45); } }
+.sa-done{ width:100%; margin-top:14px; padding:12px; border:0; border-radius:12px;
+  background:var(--navy,#002461); color:#fff; font-family:'Nunito',sans-serif; font-weight:900; font-size:14px; cursor:pointer; }
+.sa-done:hover{ background:#00306f; }
 .sa-note{ font-size:11px; color:#8a93a3; text-align:center; margin-top:10px; line-height:1.4; }
 .sa-pred{ position:fixed; z-index:100002; background:#fff; border:1px solid #e3e8ef; border-radius:12px; box-shadow:0 12px 30px rgba(13,26,62,.2); padding:5px; max-height:240px; overflow:auto; }
 .sa-pred-row{ display:block; width:100%; text-align:left; border:none; background:none; padding:9px 11px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:12.5px; color:#2b2f36; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
