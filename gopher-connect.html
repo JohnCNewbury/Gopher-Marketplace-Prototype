@@ -4962,7 +4962,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     position:fixed; inset:0;
     background:#f5f7fb;
     z-index:9000;
-    grid-template-columns:260px 1fr;
+    grid-template-columns:229px 1fr;   /* owner 2026-10-02: matches Request (was 260) */
+    /* The white bar runs the full width, so it is a grid ROW above both the
+       sidebar and the main column — not a band inside the main column. */
+    grid-template-rows:auto minmax(0,1fr);
+    grid-template-areas:"topbar topbar"
+                        "sidebar main";
     font-family:'Nunito',sans-serif;
     color:var(--text);
   }
@@ -4970,6 +4975,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   body.dashboard-mode { background:#f5f7fb; }
 
   /* ─── Sidebar ─── */
+  .dash-topbar  { grid-area:topbar; }
+  .dash-sidebar { grid-area:sidebar; }
+  .dash-main    { grid-area:main; }
+
   .dash-sidebar {
     background:linear-gradient(180deg, #002461 0%, #0f1a3d 100%);
     color:white;
@@ -4977,27 +4986,27 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     padding:18px 14px;
     overflow-y:auto;
   }
-  .dash-sidebar-head {
-    /* uniform platform card across all portals (owner, 2026-07-23) */
-    min-height:122px; box-sizing:border-box;
-    display:flex; flex-direction:column; align-items:flex-start; gap:12px;
-    background:#ffffff;
-    border-radius:18px;
-    padding:18px 18px 16px;
-    margin-bottom:18px;
-    box-shadow:0 4px 14px rgba(0,0,0,0.18);
+  /* ⛔ .dash-sidebar-head (the white 122px platform card, owner 2026-07-23) is
+     RETIRED — owner 2026-10-02 moved the logo and the business identity onto the
+     full-width top bar. Do not reinstate a card in the sidebar. */
+
+  /* The bar's three zones. The centre is absolutely positioned so the business
+     block is centred on the SCREEN, not on whatever space the logo and avatar
+     happen to leave — those two are different widths. */
+  .dash-topbar-brand { display:flex; align-items:center; min-width:0; }
+  .dash-topbar-centre {
+    position:absolute; left:50%; transform:translateX(-50%);
+    text-align:center; pointer-events:none; max-width:46%;
   }
-  .dash-sidebar-brand {
-    width:100%;
-    padding:4px 0;
-    display:flex; align-items:center; justify-content:flex-start;
-  }
+  .dash-topbar-centre .dash-business-name { font-size:15px; line-height:1.15; }
+  .dash-topbar-centre .dash-business-plan { font-size:11.5px; margin-top:2px; }
   .dash-logo-slot {
     display:flex; align-items:center;
-    min-height:36px;
+    min-height:34px;
   }
-  .dash-logo-slot img {
-    height:38px; width:auto; max-width:220px;
+  .dash-logo-slot img,
+  .dash-logo-slot svg {
+    height:34px !important; width:auto; max-width:200px; display:block;
   }
   /* Text-wordmark fallback — shown by default; replaced by image when JS clones it */
   .dash-logo-text {
@@ -5050,7 +5059,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .dash-sidebar-newreq {
     display:flex; align-items:center; justify-content:center; gap:9px;
     width:100%; margin:0 0 16px;
-    min-height:50px; box-sizing:border-box; /* uniform CTA size (owner, 2026-07-23) */
+    /* ⛔ 52, shared with .dash-sidebar-deals — owner 2026-10-02: "These buttons
+       need to both be the same exact size." The + glyph's line box pushes the real
+       height past 50, so a deals button pinned at 50 came out short. */
+    min-height:52px; box-sizing:border-box; /* uniform CTA size (owner, 2026-07-23) */
     padding:14px 16px;
     background:var(--green); color:var(--ink-on-green);
     border:none; border-radius:12px;
@@ -5177,10 +5189,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .dash-topbar {
     display:flex; align-items:center; justify-content:space-between;
-    padding:18px 32px;
+    padding:12px 32px 12px 20px;
     background:white;
     border-bottom:1px solid #e7eaf2;
-    position:sticky; top:0; z-index:5;
+    position:relative;   /* the centre zone is absolutely positioned against this */
+    z-index:5;
   }
   .dash-greeting {
     font-family:'DM Sans'; font-size:12px; color:var(--muted);
@@ -5591,6 +5604,265 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     box-shadow:0 18px 50px rgba(12,22,48,0.3); padding:20px 20px 16px;
     font-family:'DM Sans'; max-height:88vh; overflow:auto;
   }
+  /* ⛔ THE deals button — owner-approved 2026-10-02 ("USE THIS BUTTON!!!").
+     One definition for the home card's CTA and the sidebar entry. */
+  .gopher-deals-btn {
+    position:relative; overflow:hidden; cursor:pointer;
+    background:linear-gradient(135deg,#FFFBF3 0%, #FBF3E4 55%, #F6E9D0 100%);
+    border:1.5px solid #EAD9B6; border-radius:11px;
+    font-family:'Nunito',sans-serif; font-weight:800;
+    /* ⛔ LITERAL. In Request this was var(--navy-deep), which is defined nowhere —
+       an undefined var() invalidates `color` entirely and it falls back to
+       INHERITED, i.e. the sidebar's own white on a cream fill. */
+    color:#002461; line-height:1.15;
+    animation:ccGoldPulse 1.8s ease-out infinite;
+  }
+  .gopher-deals-btn:hover { border-color:var(--terracotta,#d97757); }
+  .gopher-deals-btn::after {
+    content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.65), transparent);
+    transform:skewX(-18deg); animation:dtSheen 4.5s ease-in-out infinite; pointer-events:none;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .gopher-deals-btn, .gopher-deals-btn::after { animation:none; }
+  }
+  /* ⛔ Every box metric is copied from .dash-sidebar-newreq — owner 2026-10-02:
+     "These buttons need to both be the same exact size." min-height + border-box
+     is what makes them equal despite this one carrying a 1.5px border. */
+  .dash-sidebar-deals {
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    width:100%; margin:0 0 18px;
+    min-height:52px; box-sizing:border-box;
+    padding:15px 18px; border-radius:14px;
+    font-weight:900; font-size:15.5px; letter-spacing:0.2px; text-align:center;
+  }
+  /* home screen = not yet activated: hide both sidebar CTAs */
+  .dashboard.is-choosing .dash-sidebar-newreq,
+  .dashboard.is-choosing .dash-sidebar-deals { display:none; }
+
+  /* ══ Two-pathway home screen — ported from gopher-request.html, owner 2026-10-02 ══ */
+  /* ── the two-pathway home screen (owner 2026-09-30, slide 2) ── */
+  .choose-stage { padding:10px 4px 10px; }   /* owner 2026-10-01: heading sits up, was 34px top */
+  .choose-ask {
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:30px; line-height:1.15;
+    margin:0 0 4px; letter-spacing:-.4px; color:var(--navy);
+  }
+  .choose-sub { margin:0 0 18px; font-size:14px; color:var(--muted); }
+  .choose-two { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .choose-card {
+    position:relative; overflow:hidden; text-align:left; cursor:pointer; border:0;
+    /* owner 2026-10-02 (slide 1): "Buttons can't ever be cramped" — extra room
+       below the CTA so it is never hard against the card edge. */
+    border-radius:18px; padding:30px 28px 34px; min-height:296px;
+    display:flex; flex-direction:column; font:inherit;
+    box-shadow:0 2px 4px rgba(0,36,97,.05), 0 9px 20px rgba(0,36,97,.13);
+    transition:transform .22s cubic-bezier(.2,.8,.3,1), box-shadow .22s;
+  }
+  .choose-card:hover, .choose-card:focus-visible {
+    transform:translateY(-5px); box-shadow:0 18px 44px rgba(0,36,97,.18); outline:none;
+  }
+  .choose-card.svc   { background:linear-gradient(150deg,#053a75 0%, #002461 60%); }
+  .choose-card.deals { background:linear-gradient(135deg,#FFFBF3 0%,#FBF3E4 55%,#F6E9D0 100%);
+                       border:1.5px solid #EAD9B6; }
+  /* The decorative corner circle was removed from both cards (owner 2026-10-01).
+     Rules deleted with it so nothing re-adds it by reusing the class. */
+  /* home screen = not yet activated: hide both sidebar CTAs */
+  .dashboard.is-choosing .dash-sidebar-newreq,
+  .dashboard.is-choosing #rqDashNewRequest,
+  .dashboard.is-choosing .dash-sidebar-deals { display:none; }
+
+  /* ════ THE deals button ════════════════════════════════════════════════
+     Owner 2026-10-02 (slide 4): the home card's CTA and the sidebar's entry are
+     the SAME button, so the fill, radius, text colour, pulse and sheen are
+     defined ONCE here and both carry .gopher-deals-btn.
+
+     ⛔ And: "writing with a sand background is not really ever going to work as
+     a standing rule." The old cream/sand fill with navy text is gone. The amber
+     reads at full contrast on BOTH grounds this button has to live on — the navy
+     sidebar and the sand card — which the sand fill never could, and it stays
+     clear of the green the Request CTA owns on the facing card. */
+  /* ⛔ THE deals button — owner-approved 2026-10-02, slide 4: "USE THIS BUTTON!!!"
+     against this exact treatment, with a red X struck through the sidebar's old
+     sand-and-SPONSORED-PICKS pill.
+
+     ⚠️ I had that slide backwards once. The arrow runs FROM this button TO the
+     sidebar: the X marks what to replace, this is the replacement. I read it as
+     "both are wrong" and shipped an amber fill, which he rejected. The "sand
+     background" remark is about the X'd pill, whose label had washed out to
+     near-invisible against it — not about this button, whose navy-on-ivory is
+     the contrast that was missing.
+
+     One definition, both places: the home card CTA and the sidebar entry. */
+  .gopher-deals-btn {
+    position:relative; overflow:hidden; cursor:pointer;
+    background:linear-gradient(135deg,#FFFBF3 0%, #FBF3E4 55%, #F6E9D0 100%);
+    border:1.5px solid #EAD9B6; border-radius:11px;
+    font-family:'Nunito',sans-serif; font-weight:800;
+    /* ⛔ LITERAL, not var(--navy-deep). That custom property is defined NOWHERE
+       in this file, and an undefined var() makes the whole `color` declaration
+       invalid at computed-value time — so colour fell back to INHERITED. On the
+       card that landed on black; in the sidebar it inherited the sidebar's own
+       white and the label all but vanished into the cream.
+
+       That is the real reason the struck-out button looked washed out on slide 4
+       — not the sand. Do not reintroduce the variable without defining it. */
+    color:#002461; line-height:1.15;
+    animation:ccGoldPulse 1.8s ease-out infinite;
+  }
+  .gopher-deals-btn:hover { border-color:var(--terracotta); }
+  .gopher-deals-btn::after {
+    content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.65), transparent);
+    transform:skewX(-18deg); animation:dtSheen 4.5s ease-in-out infinite; pointer-events:none;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .gopher-deals-btn, .gopher-deals-btn::after { animation:none; }
+  }
+
+  /* The sidebar instance differs ONLY in box metrics — it has a narrower column
+     to live in. Fill, border, text colour, glow and sheen all come from the
+     shared rule above, which is the point of the slide. */
+  /* ⛔ Owner 2026-10-02: "These buttons need to both be the same exact size for
+     branding continuity." Every box metric below is copied from
+     .dash-sidebar-newreq above — change one, change both.
+
+     min-height + border-box is what makes them equal DESPITE this one carrying a
+     1.5px border and + New Request carrying none: with border-box the border is
+     inside the 50px, so both measure exactly 50. Do not swap in a bare height,
+     and do not drop box-sizing. */
+  .dash-sidebar-deals {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%;
+    margin:0 0 18px;
+    min-height:52px; box-sizing:border-box;
+    padding:15px 18px;
+    border-radius:14px;
+    font-weight:900; font-size:15.5px; letter-spacing:0.2px;
+    text-align:center;
+  }
+
+  /* Both cards lead with their own mark, centred (owner 2026-10-01). */
+  .choose-card .cc-brand {
+    position:relative; display:flex; align-items:center; justify-content:center;
+    background:#fff; border-radius:10px; padding:7px 14px; margin:0 auto 14px;
+    width:max-content; max-width:100%;
+  }
+  .choose-card.deals .cc-brand { border:1px solid #EAD9B6; }
+  .choose-card .cc-brand-logo { height:26px; width:auto; display:block; }
+
+  .choose-card .cc-media {
+    position:relative; display:grid; gap:4px; width:100%; height:140px;
+    border-radius:12px; overflow:hidden; margin-bottom:4px;
+  }
+  /* ⛔ minmax(0,1fr), NOT 1fr. `1fr` is minmax(AUTO,1fr), so a track floors at the
+     intrinsic size of its content — images computed 201px rows inside a 140px box
+     and the second row overflowed out of view. */
+  .choose-card .cc-quads { grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(0,1fr); }
+  .choose-card .cc-quad { position:relative; overflow:hidden; background:rgba(255,255,255,.07); }
+  .choose-card .cc-quad video { width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* ── merchant marquee ── two rows, opposite directions ── */
+  .choose-card .cc-marquee {
+    display:grid; grid-template-rows:minmax(0,1fr) minmax(0,1fr); gap:8px;
+    background:transparent; border-radius:12px;
+  }
+  .cc-mq-row {
+    position:relative; overflow:hidden; border-radius:9px;
+    background:linear-gradient(90deg,#1fb85f 0%, #33d975 50%, #1fb85f 100%);
+    display:flex; align-items:center;
+    /* edges fade instead of cutting a logo in half — same as the reference */
+    -webkit-mask-image:linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+            mask-image:linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  }
+  .cc-mq-track { display:flex; align-items:center; gap:26px; padding:0 14px; will-change:transform; }
+  /* ⛔ Owner 2026-10-02 (slide 5): "There should have never been a white
+     background to each logo." The marks sit DIRECTLY on the green, exactly like
+     .logo-item on gopher-customer-deals.html — no chip, no radius, no padding.
+     Do not reintroduce a background here. */
+  .cc-mq-track img {
+    /* The reference fills ~80% of its strip's height (68px logo in an 84px row);
+       34px in a 66px row read as half-size and muddy. */
+    height:auto; width:auto; max-height:46px; max-width:112px;
+    object-fit:contain; display:block; flex:0 0 auto; opacity:.95;
+  }
+  /* The track holds the logo run TWICE, so translating by exactly -50% lands on an
+     identical frame and the loop has no visible jump.
+
+     ⛔ Direction is the opposite of what the transform reads like. Animating
+     translateX toward -50% moves the content LEFT (items travel ←). The owner
+     asked for TOP → and BOTTOM ←, so the top row runs ccMqRight and the bottom
+     runs ccMqLeft. I had these swapped first time; measure m41 over time rather
+     than reasoning from the keyframe names. */
+  .cc-mq-ltr .cc-mq-track { animation:ccMqRight 30s linear infinite; }  /* top: → */
+  .cc-mq-rtl .cc-mq-track { animation:ccMqLeft  26s linear infinite; }  /* bottom: ← */
+  @keyframes ccMqLeft  { from{ transform:translateX(0); }    to{ transform:translateX(-50%); } }
+  @keyframes ccMqRight { from{ transform:translateX(-50%); } to{ transform:translateX(0); } }
+  @media (prefers-reduced-motion: reduce){
+    .cc-mq-rtl .cc-mq-track, .cc-mq-ltr .cc-mq-track { animation:none; }
+  }
+
+  /* CTAs are SYMMETRICAL (owner 2026-10-01): identical box — same padding, radius,
+     font and min-width — so the two cards' buttons line up. Only the fill differs.
+     The gold one is the old .rq-pathtab.deals-tab treatment, sheen included, with
+     the SPONSORED PICKS sub-line dropped so it is a single line like its partner. */
+  /* Owner 2026-10-02 (slide 1): the CTA is CENTRED in the card, and carries a
+     guaranteed gap above it. margin-top:auto still absorbs the slack so both
+     cards' buttons sit on the same baseline; the sub-copy's margin-bottom is
+     what makes the minimum — flex margins do not collapse. */
+  .choose-card .cc-btn {
+    position:relative; overflow:hidden; margin-top:auto; align-self:center;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:14.5px; line-height:1.15;
+    padding:13px 24px; border-radius:11px; min-width:186px; box-sizing:border-box;
+  }
+  .choose-card .cc-btn-green {
+    background:var(--green); color:#04240f;
+    /* transparent border matching the gold button's 1.5px, so the two boxes are
+       the same HEIGHT as well as width — without it they measured 43 vs 45. */
+    border:1.5px solid transparent;
+    box-shadow:0 6px 16px rgba(28,176,90,.34);
+  }
+  /* .cc-btn-gold carries .gopher-deals-btn for its fill, border, text colour,
+     pulse and sheen (owner 2026-10-02, slide 4 — it is the SAME button as the
+     sidebar's). Only the halo below is card-specific. */
+  /* The owner asked for "the flashing pulsing glow as before" on this button and
+     then for the SPONSORED PICKS line to go. On the original pill the pulse WAS
+     that line's green dot — so dropping the line took the pulse with it, and the
+     button read flat. The pulse moves onto the button's own halo instead, using
+     the same dtPulse timing. overflow:hidden on .cc-btn clips children, not the
+     element's own box-shadow, so this coexists with the sheen. */
+  @keyframes ccGoldPulse {
+    0%   { box-shadow:0 6px 18px rgba(217,119,87,.18), 0 2px 6px rgba(0,36,97,.06), 0 0 0 0 rgba(51,217,117,.55); }
+    70%  { box-shadow:0 6px 18px rgba(217,119,87,.18), 0 2px 6px rgba(0,36,97,.06), 0 0 0 9px rgba(51,217,117,0); }
+    100% { box-shadow:0 6px 18px rgba(217,119,87,.18), 0 2px 6px rgba(0,36,97,.06), 0 0 0 0 rgba(51,217,117,0); }
+  }
+  .choose-card:hover .cc-btn-green { background:var(--green-dark); }
+
+  .choose-card .cc-h {
+    position:relative; font-family:'Nunito',sans-serif; font-weight:900;
+    font-size:23px; margin:14px 0 7px; color:#fff;
+  }
+  .choose-card.deals .cc-h { color:#002461; }
+  /* Owner 2026-10-01: the copy runs END TO END against the media above it, so no
+     max-width cap — it was wrapping short and leaving a ragged right edge beside
+     a full-width image strip. */
+  .choose-card .cc-s {
+    position:relative; font-size:13.5px; line-height:1.5; max-width:none;
+    margin-bottom:22px;   /* the minimum breathing room under the sub-copy */
+    color:rgba(255,255,255,.78);
+  }
+  .choose-card.deals .cc-s { color:#6b5a38; }
+  .choose-card .cc-tag {
+    position:absolute; top:22px; right:22px; z-index:1;
+    font-size:9px; font-weight:800; letter-spacing:.7px; color:#8a6a2f;
+    background:#fff; border:1px solid #EAD9B6; border-radius:20px; padding:4px 10px;
+  }
+  @media(max-width:860px){
+    .choose-two { grid-template-columns:1fr; }
+    .choose-ask { font-size:24px; }
+    .choose-stage { padding:22px 2px 6px; }
+  }
+
   /* ── TrustShield panel (owner 2026-10-02; new surface in Connect) ────────── */
   .tsp-ov { z-index:9800; }   /* above .gc-modal-overlay (9500) and the drawer (9300) */
   .tsp-card { width:min(420px,100%); text-align:left; }
@@ -7497,8 +7769,9 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
   /* ─── Mobile/narrow viewport — collapse sidebar to top bar ─── */
   @media (max-width:900px){
-    .dashboard { grid-template-columns:1fr; }
-    .dash-sidebar{ position:fixed; top:0; left:0; bottom:0; width:84%; max-width:300px; transform:translateX(-100%); transition:transform .28s ease; z-index:9300; box-shadow:0 0 50px rgba(0,0,0,0.35); }
+    .dashboard { grid-template-columns:1fr; grid-template-areas:"topbar" "main"; }
+    /* out of flow, so it claims no grid row; the named area no longer exists */
+    .dash-sidebar{ grid-area:auto; position:fixed; top:0; left:0; bottom:0; width:84%; max-width:300px; transform:translateX(-100%); transition:transform .28s ease; z-index:9300; box-shadow:0 0 50px rgba(0,0,0,0.35); }
      .dashboard.sidebar-open .dash-sidebar{ transform:translateX(0); }
      .dash-backdrop{ display:block; position:fixed; inset:0; background:rgba(0,18,49,0.5); opacity:0; visibility:hidden; transition:opacity .28s ease; z-index:9200; }
      .dashboard.sidebar-open .dash-backdrop{ opacity:1; visibility:visible; }
@@ -9580,9 +9853,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      ═══════════════════════════════════════════════════════════════ -->
 <div id="dashboard" class="dashboard" role="application" aria-label="Gopher Connect dashboard">
   <!-- ░ Sidebar ░ -->
-  <aside class="dash-sidebar">
-    <div class="dash-sidebar-head">
-      <div class="dash-sidebar-brand">
+  <!-- Owner 2026-10-02: the white bar runs the FULL width, carrying the regular
+       branded logo on the left, the business identity CENTRED in two stacked
+       lines (company name over plan + status), and the profile circle on the
+       right. It is a direct child of .dashboard spanning both grid columns, not
+       a band inside the main column. -->
+  <div class="dash-topbar">
+    <div class="dash-topbar-left">
+      <button class="dash-burger" id="dashBurger" aria-label="Open menu" aria-expanded="false">&#9776;</button>
+      <div class="dash-topbar-brand">
         <div class="dash-logo-slot" id="dashLogoSlot">
           <!-- Default text wordmark — JS replaces with image logo when dashboard opens -->
           <svg viewBox="0 0 718 195" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gopher Connect" style="height:38px;width:auto;display:block;">
@@ -9620,15 +9899,33 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 </svg>
         </div>
       </div>
-      <div class="dash-business-text">
-        <div class="dash-business-name" id="dash-business-name">Acme Logistics Co.</div>
-        <div class="dash-business-plan" id="dash-business-plan">Business Plan · Active</div>
-      </div>
     </div>
+    <div class="dash-topbar-centre">
+      <div class="dash-business-name" id="dash-business-name">Acme Logistics Co.</div>
+      <div class="dash-business-plan" id="dash-business-plan">Business Plan &middot; Active</div>
+    </div>
+    <div class="dash-topbar-right">
+      <button type="button" class="dash-avatar" id="dash-avatar-initials" aria-label="Open your personal info">JD</button>
+    </div>
+  </div>
+
+  <aside class="dash-sidebar">
+    <!-- ⛔ The white platform card is GONE from the sidebar (owner 2026-10-02).
+         The logo moved to the full-width white top bar, and the business name and
+         plan moved to the CENTRE of that bar in two stacked lines. The nodes
+         themselves still exist up there — renderers write to #dash-business-name
+         and #dash-business-plan by id. -->
     <!-- Primary CTA: making a request is the point of the portal, so this is the
          most prominent, well-spaced action in the sidebar. -->
     <button class="dash-sidebar-newreq" id="dashNewRequest">
       <span class="dsnr-ico">+</span><span>New request</span>
+    </button>
+    <!-- Owner 2026-10-02: Deals gets its own sidebar entry under + New request,
+         carrying the approved deals button, and both are hidden until a card on
+         the home screen is chosen. Routes through the same handler as the card,
+         so the eligibility gate still runs. -->
+    <button type="button" class="dash-sidebar-deals gopher-deals-btn" id="gcSidebarDeals" data-choose="deals">
+      <span class="dsd-main">View Local Deals</span>
     </button>
     <nav class="dash-nav">
       <button class="dash-nav-item active" data-dash-section="home">
@@ -9703,17 +10000,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   <div class="dash-backdrop" id="dashBackdrop"></div>
 
   <main class="dash-main">
-    <div class="dash-topbar">
-      <div class="dash-topbar-left">
-        <button class="dash-burger" id="dashBurger" aria-label="Open menu" aria-expanded="false">&#9776;</button>
-      <div>
-        <div class="dash-section-title" id="dashSectionTitle">Dashboard overview</div>
-      </div>
-      </div>
-      <div class="dash-topbar-right">
-        <div class="dash-avatar" id="dash-avatar-initials">JD</div>
-      </div>
-    </div>
 
     <div class="dash-content">
       <!-- Owner 2026-10-02 (slide 2), ported from gopher-request.html: "Move
@@ -9721,6 +10007,48 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
            heading. Connect's profile circle was already in .dash-topbar-right,
            so the greeting is the only half of that slide that applied here. -->
       <div class="dash-greeting" id="dash-greeting">Welcome back, John 👋</div>
+      <!-- ⛔ Must exist: showSection() does `$sectionTitle.textContent = …` with no
+           null guard, so deleting this node throws on every section change. It
+           moved OUT of the header bar with the 2026-10-02 rebuild and is the page
+           heading here, under the greeting. -->
+      <div class="dash-section-title" id="dashSectionTitle">Dashboard overview</div>
+
+      <section class="dash-section" data-section="choose">
+        <div class="choose-stage">
+          <h2 class="choose-ask">So, how can we help you today?</h2>
+          <p class="choose-sub">Two ways to go from here.</p>
+          <div class="choose-two">
+            <button type="button" class="choose-card svc" data-choose="services">
+              <!-- Owner 2026-10-01: the Request logo is CENTRED at the top of the
+                   card, on its white chip — the mark needs a light ground because
+                   its wordmark is navy (see the sidebar note). -->
+              <span class="cc-brand"><img class="cc-brand-logo" src="assets/img/gopher-connect-logo.svg" alt="Gopher Connect"></span>
+              <span class="cc-media cc-quads" id="chooseSvcQuads" aria-hidden="true">
+                <span class="cc-quad"></span><span class="cc-quad"></span>
+                <span class="cc-quad"></span><span class="cc-quad"></span>
+              </span>
+              <span class="cc-h">Get connected to a great local worker</span>
+              <span class="cc-s">Delivery, moving, junk removal, home services, day labor, rides and more.</span>
+              <span class="cc-btn cc-btn-green">+ Make a request</span>
+            </button>
+            <button type="button" class="choose-card deals" data-choose="deals">
+              <span class="cc-brand"><img class="cc-brand-logo" src="assets/img/gopher-deals-logo.svg" alt="Gopher Deals"></span>
+              <!-- Two marquee rows of real merchant marks, running in OPPOSITE
+                   directions (owner 2026-10-01: "Top scrolling →, bottom
+                   scrolling ←"). Each row's track is duplicated so the loop has
+                   no seam; the copy is aria-hidden to keep it out of the a11y
+                   tree twice. -->
+              <span class="cc-media cc-marquee" aria-hidden="true">
+                <span class="cc-mq-row cc-mq-ltr"><span class="cc-mq-track" data-mq="a"></span></span>
+                <span class="cc-mq-row cc-mq-rtl"><span class="cc-mq-track" data-mq="b"></span></span>
+              </span>
+              <span class="cc-h">View hot local deals near you</span>
+              <span class="cc-s">Buy from the merchant direct &mdash; a Gopher brings it the last mile.</span>
+              <span class="cc-btn cc-btn-gold gopher-deals-btn">View Local Deals</span>
+            </button>
+          </div>
+        </div>
+      </section>
 
       <!-- ░░ Section: Home / Active Requests ░░ -->
       <section class="dash-section active" data-section="home">
@@ -10120,14 +10448,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
       <!-- ░░ Section: New Request (hosts the moved .flow-mockup) ░░ -->
       <section class="dash-section" data-section="new-request">
-        <!-- Path toggle: New Request (default) vs Local Deals. Deals is rolling out
-             to web (Connect + Request); for now "View Local Deals" surfaces a
-             coming-soon notice rather than a populated deals view. -->
-        <div class="rq-pathtabs" role="tablist" aria-label="What would you like to do">
-          <button type="button" class="rq-pathtab is-active" id="pathTabNew" role="tab" aria-selected="true">+ Choose your service</button>
-          <button type="button" class="rq-pathtab deals-tab" id="pathTabDeals" role="tab" aria-selected="false"><span class="dt-row"><svg class="dt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0l-6.2-6.2A2 2 0 0 1 3.8 13V5.2A1.4 1.4 0 0 1 5.2 3.8H13a2 2 0 0 1 1.4.6l6.2 6.2a2 2 0 0 1 0 2.8z"/><circle cx="8.6" cy="8.6" r="1.4" fill="currentColor" stroke="none"/></svg><span>View Local Deals</span></span></button>
-          <span class="deals-cue-note" aria-hidden="true"><span class="dcn-arrow">⟵</span> Check this out!</span>
-        </div>
+        <!-- ⛔ The "+ Choose your service / View Local Deals" tab row was REMOVED
+             (owner 2026-10-02): the two-pathway home screen is the chooser now, so
+             the tabs said the same thing twice one screen later.
+
+             setRequestPath() still runs and still null-guards #pathTabNew /
+             #pathTabDeals, so it is safe with them gone; initDealsPathToggle()
+             simply returns early since it only wired their clicks. The home
+             screen's cards call the same functions those tabs called. -->
         <div class="dash-flow-host" id="dashFlowHost">
           <!-- The .flow-mockup is moved into this container when entering the section -->
         </div>
@@ -15581,6 +15909,7 @@ const PAY_BADGES = {
   };
 
   const SECTION_TITLES = {
+    choose:         'Dashboard',
     home:           'Dashboard overview',
     previous:       'Previous requests',
     business:       'Business information',
@@ -15616,12 +15945,111 @@ const PAY_BADGES = {
   const $jumpLinks       = $dashboard.querySelectorAll('[data-jump-section]');
   const $cancelFlowBtn   = document.getElementById('dashCancelFlow');
 
+  /* ══ Two-pathway home screen — ported from gopher-request.html ══ */
+  function initChooseClips(){
+    const host = document.getElementById('chooseSvcQuads');
+    if(!host || host.dataset.wired) return;
+    host.dataset.wired = '1';
+    const CLIPS = [];
+    for(let i = 1; i <= 18; i++) CLIPS.push('assets/video/services-clip-' + i + '.mp4');
+    const shuffled = CLIPS.slice();
+    for(let i = shuffled.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = t;
+    }
+    const quads = host.querySelectorAll('.cc-quad');
+    const lists = []; for(let i = 0; i < quads.length; i++) lists.push([]);
+    shuffled.forEach((src, i) => lists[i % quads.length].push(src));
+    quads.forEach((q, i) => {
+      const list = lists[i];
+      if(!list.length) return;
+      const v = document.createElement('video');
+      v.muted = true; v.autoplay = true; v.playsInline = true; v.preload = 'auto';
+      v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+      if(list.length === 1) v.loop = true;
+      let idx = 0;
+      const load = () => { v.src = list[idx]; const pr = v.play(); if(pr && pr.catch) pr.catch(() => {}); };
+      v.addEventListener('ended', () => { if(list.length > 1){ idx = (idx + 1) % list.length; load(); } });
+      q.appendChild(v); load();
+    });
+  }
+  /* Re-issue play() whenever the home screen is shown. Videos pause when their
+     container is hidden, so without this the clips freeze the first time the
+     user navigates away and comes back. */
+  function playChooseClips(){
+    const host = document.getElementById('chooseSvcQuads');
+    if(!host) return;
+    initChooseClips();
+    host.querySelectorAll('video').forEach(v => {
+      const pr = v.play(); if(pr && pr.catch) pr.catch(() => {});
+    });
+  }
+
+  /* ── merchant marquee: real marks from the customer-deals page ──────────
+     Owner 2026-10-01: "have multiple logos running on the screen. Top scrolling
+     →, bottom scrolling ←." Reference he gave: gopher-customer-deals.html, which
+     is where these files come from.
+
+     Each row renders its run TWICE. The CSS translates by exactly -50%, so the
+     animation ends on a frame identical to its start and the loop is seamless —
+     with a single run you get a visible snap back every cycle. */
+  (function initDealsMarquee(){
+    const ROWS = {
+      a: ['cust-deals-bass-lake-outfitters.webp', 'cust-deals-bass-lake-quickmart.webp', 'cust-deals-buoy-bowls.webp', 'cust-deals-cardinal.webp', 'cust-deals-carolina-cellars.webp', 'cust-deals-circle-g.webp', 'cust-deals-ember-cigar-lounge.webp', 'cust-deals-frankie-fannkks.webp', 'cust-deals-holly-springs-market.webp', 'cust-deals-hs-market-logo.webp'],
+      b: ['cust-deals-johns-deli.webp', 'cust-deals-la-cocina.webp', 'cust-deals-mini-aussie-bottle-shop.webp', 'cust-deals-my-way-tavern.webp', 'cust-deals-quickstop.webp', 'cust-deals-sand-savvy-rental.webp', 'cust-deals-sugarbird.webp', 'cust-deals-triangle-handyman.webp', 'cust-deals-triangle-vine.webp', 'cust-deals-videri.webp']
+    };
+    Object.keys(ROWS).forEach(key => {
+      const track = document.querySelector('[data-mq="' + key + '"]');
+      if(!track || track.dataset.filled) return;
+      const run = ROWS[key].map(f =>
+        '<img src="assets/img/' + f + '" alt="" loading="lazy">').join('');
+      track.innerHTML = run + run;   // duplicated: see the -50% note above
+      track.dataset.filled = '1';
+    });
+  })();
+
+  /* ── the home screen's two pathways ──────────────────────────────────────
+     Neither branch builds anything new: Services shows the existing request
+     flow, and Deals shows the existing deals panel by clicking the path tab
+     that already lives in that section. Going through #pathTabDeals rather
+     than toggling #dashDealsHost directly means the tab's own active/aria
+     state stays correct and renderDealsPanel() still runs. */
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('[data-choose]');
+    if(!card) return;
+    const which = card.dataset.choose;
+    showSection('new-request');
+    /* Calls the same functions the removed tabs called, rather than synthesising
+       a click on buttons that no longer exist. Deals keeps its eligibility gate:
+       ineligible users get the coming-soon overlay exactly as before. */
+    if(which === 'deals'){
+      const host = document.getElementById('dashDealsHost');
+      const eligible = (typeof isDealsEligible === 'function') ? isDealsEligible() : false;
+      if(eligible && host){
+        if(typeof renderDealsHome === 'function') renderDealsHome();
+        setRequestPath('deals');
+      } else {
+        const ov = document.getElementById('dealsOverlay');
+        if(ov) ov.hidden = false;
+      }
+    } else {
+      setRequestPath('new');
+    }
+  });
+
   // ─── Section switching ───
   function showSection(name, navHighlight){
     const navTarget = navHighlight || ((name === 'request-detail' || name === 'new-request') ? 'home' : name);
     $navItems.forEach(b => b.classList.toggle('active', b.dataset.dashSection === navTarget));
     $sections.forEach(s => s.classList.toggle('active', s.dataset.section === name));
     $sectionTitle.textContent = SECTION_TITLES[name] || 'Dashboard';
+    /* Owner 2026-10-02: the sidebar's two CTAs are NOT shown on the home screen.
+       They appear once a card is chosen — the "activated" state — because on the
+       home screen they duplicate the two cards the user is looking at. */
+    $dashboard.classList.toggle('is-choosing', name === 'choose');
+    /* Deferred a frame: a browser will not start a video it cannot show, and the
+       section is still unpainted in this tick. */
+    if(name === 'choose') requestAnimationFrame(() => { try { playChooseClips(); } catch(_){} });
     // When entering Previous requests, always start on the list (not a leftover detail view)
     if(name === 'previous'){
       const dp = document.getElementById('prevDetailPanel');
@@ -22937,11 +23365,17 @@ const PAY_BADGES = {
         window.scrollTo({ top:0, behavior:'smooth' });
       });
     }
-    // The default page once logged in IS the New request screen — making a request
-    // is how the portal earns, so land users there instead of the dashboard overview.
+    /* ⛔ The dashboard lands on the two-pathway HOME SCREEN (owner 2026-10-02).
+       This supersedes the v76 rule that said "the default page once logged in IS
+       the New request screen" — the home screen asks the question that screen
+       assumed the answer to. The flow is still reset and staged below, so picking
+       Services shows it immediately; only the landing section changed.
+       ⚠️ This is the LAST section call in openDashboard, so it has the final
+       word — an earlier one gets overwritten. */
     if(window.__resetFlowToStart) window.__resetFlowToStart();
     moveFlowMockupToDashboard();
-    showSection('new-request');
+    showSection('choose', 'home');
+    initChooseClips();
     window.scrollTo({ top:0, behavior:'instant' });
   }
   function closeDashboard(){
