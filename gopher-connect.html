@@ -111,7 +111,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      off-canvas menu / wide logo marquee, which otherwise leak horizontal
      scroll on mobile and shrink full-bleed sections. */
   html { scroll-behavior:smooth; overflow-x:hidden; }
-  body { font-family:'DM Sans',sans-serif; color:var(--text); background:var(--white); overflow-x:hidden; }
+  /* Owner-confirmed 2026-10-02 against `auto` on the navy sidebar: antialiased
+     renders sharper. Much of this dashboard is light-on-dark (navy sidebar, navy
+     buttons, top bar), which is where the default renderer looks heaviest. */
+  body { font-family:'DM Sans',sans-serif; color:var(--text); background:var(--white); overflow-x:hidden; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
   /* Offset anchor scroll targets so section tops aren't hidden under the sticky nav */
   #flow-demo, #pricing { scroll-margin-top:84px; }
 
@@ -5002,11 +5005,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .dash-topbar-centre .dash-business-plan { font-size:11.5px; margin-top:2px; }
   .dash-logo-slot {
     display:flex; align-items:center;
-    min-height:34px;
+    min-height:32px;
   }
   .dash-logo-slot img,
   .dash-logo-slot svg {
-    height:34px !important; width:auto; max-width:200px; display:block;
+    height:30px !important; width:auto; max-width:200px; display:block;
   }
   /* Text-wordmark fallback — shown by default; replaced by image when JS clones it */
   .dash-logo-text {
@@ -5187,9 +5190,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     overflow-y:auto;
     padding:0;
   }
+  /* Owner 2026-10-02: the top bar was trimmed a little, and Request and Connect
+     set to the SAME height so the two dashboards read as one product.
+     ~67px (Request) / ~63px (Connect) -> ~57px. The avatar and the logo set the
+     floor, so both come down with the padding; shrinking the padding alone just
+     tightens the gap around a 38px circle and barely moves the bar. */
   .dash-topbar {
     display:flex; align-items:center; justify-content:space-between;
-    padding:12px 32px 12px 20px;
+    padding:10px 32px 10px 20px;
     background:white;
     border-bottom:1px solid #e7eaf2;
     position:relative;   /* the centre zone is absolutely positioned against this */
@@ -5219,7 +5227,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .dash-new-request:hover { background:var(--green-dark); transform:translateY(-1px); }
   .dash-avatar {
-    width:38px; height:38px; border-radius:50%;
+    width:36px; height:36px; border-radius:50%;
     background:var(--navy); color:white; overflow:hidden;
     display:flex; align-items:center; justify-content:center;
     font-family:'Nunito'; font-weight:800; font-size:13px;
@@ -7046,12 +7054,17 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .mst-tab:hover { background:var(--navy-mid); transform:translateY(-1px); box-shadow:0 7px 16px rgba(26,42,94,0.3); }
   .mst-tab:active { transform:translateY(0); }
+  /* ⛔ The base .mst-tab is white on NAVY (15.6:1, correct). These two swap the
+     ground to Shamrock, so the ink must swap too — white on Shamrock is 1.85:1
+     and fails AA. Navy is 7.95:1 on --green and 5.22:1 on --green-dark, so
+     .done:hover is covered by inheriting .done's colour. */
   .mst-tab.done {
-    background:var(--green); box-shadow:0 4px 12px rgba(51,217,117,0.3);
+    background:var(--green); color:var(--ink-on-green);
+    box-shadow:0 4px 12px rgba(51,217,117,0.3);
   }
   .mst-tab.done:hover { background:var(--green-dark); }
   .mst-tab.active {
-    background:var(--green);
+    background:var(--green); color:var(--ink-on-green);
     box-shadow:0 6px 16px rgba(51,217,117,0.42), 0 0 0 3px rgba(51,217,117,0.18);
   }
   /* Locked = step not yet reached; greyed out, not interactive. */
@@ -7062,7 +7075,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     background:#c9cfdd; transform:none; box-shadow:none;
   }
 
-  /* ─── Previous requests table ─── */
+  /* ─── Request History table ─── */
   .prev-table-wrap {
     background:white;
     border:1px solid #e7eaf2;
@@ -7107,7 +7120,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .prev-table .pt-action:hover { border-color:var(--green); color:var(--green-dark); }
 
-  /* ─── Previous requests: tabs, search, detail view ─── */
+  /* ─── Request History: tabs, search, detail view ─── */
   /* Main filter (Requests | Workers) — segmented, sits above the sub-tabs */
   .prev-main-tabs {
     display:inline-flex; gap:4px; margin-bottom:18px;
@@ -7787,7 +7800,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     .kpi-grid { grid-template-columns:repeat(2, 1fr); }
     .gophers-grid { grid-template-columns:1fr; }
     .dash-content { padding:18px; }
-    .dash-topbar { padding:14px 18px; }
+    .dash-topbar { padding:10px 18px; }
     .info-row { grid-template-columns:1fr; gap:4px; }
   }
 
@@ -8342,7 +8355,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     <button type="button" class="gc-modal-close" id="cancelReqClose" aria-label="Close">×</button>
     <div class="gc-modal-icon">🗑️</div>
     <h4 id="cancelReqTitle">Cancel this request?</h4>
-    <p class="gc-modal-sub">This will cancel the request and notify any interested workers. Don't worry — a cancelled request isn't gone for good. You can always find it later under <b>Previous requests</b>.</p>
+    <p class="gc-modal-sub">This will cancel the request and notify any interested workers. Don't worry — a cancelled request isn't gone for good. You can always find it later under <b>Request History</b>.</p>
     <button type="button" class="gc-modal-btn gc-modal-btn-danger" id="cancelReqConfirm">Yes, cancel request</button>
     <button type="button" class="gc-modal-btn-text" id="cancelReqKeep">Never mind, keep it</button>
   </div>
@@ -9935,12 +9948,21 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <span class="dsd-main">View Local Deals</span>
     </button>
     <nav class="dash-nav">
+      <!-- Owner 2026-10-02: Home returns to the two-pathway choice screen.
+           Before this there was NO route back to it — only a page reload —
+           because Dashboard maps to `home`, the overview. Home keeps the house
+           glyph; Dashboard takes the chart glyph, which suits an overview.
+           No JS change needed: the generic nav handler routes any section key
+           and showSection() toggles .active off the same attribute. -->
+      <button class="dash-nav-item" data-dash-section="choose">
+        <span class="dni-ico">🏠</span><span class="dni-label">Home</span>
+      </button>
       <button class="dash-nav-item active" data-dash-section="home">
-        <span class="dni-ico">🏠</span><span class="dni-label">Dashboard</span>
+        <span class="dni-ico">📊</span><span class="dni-label">Dashboard</span>
         <span class="dni-badge" id="dashNavBadge">4</span>
       </button>
       <button class="dash-nav-item" data-dash-section="previous">
-        <span class="dni-ico">📚</span><span class="dni-label">Previous requests</span>
+        <span class="dni-ico">📚</span><span class="dni-label">Request History</span>
       </button>
       <button class="dash-nav-item" data-dash-section="gophers">
         <span class="dni-ico">⭐</span><span class="dni-label">MY Gophers</span>
@@ -10022,7 +10044,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
       <section class="dash-section" data-section="choose">
         <div class="choose-stage">
-          <h2 class="choose-ask">So, how can we help you today?</h2>
+          <h2 class="choose-ask">So, how can we help your business today?</h2>
           <p class="choose-sub">Two ways to go from here.</p>
           <div class="choose-two">
             <button type="button" class="choose-card svc" data-choose="services">
@@ -10084,7 +10106,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
         <div class="dash-block-head">
           <h3 id="reqListHeading">All requests</h3>
-          <button class="view-all" data-jump-section="previous">View previous requests →</button>
+          <button class="view-all" data-jump-section="previous">View request history →</button>
         </div>
 
         <!-- recovery UX (prototype), ported from gopher-request.html. Demo
@@ -10111,10 +10133,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         </div>
       </section>
 
-      <!-- ░░ Section: Previous Requests ░░ -->
+      <!-- ░░ Section: Request History ░░ -->
       <section class="dash-section" data-section="previous">
         <div class="dash-block-head">
-          <h3 id="prevSecTitle">All previous requests</h3>
+          <h3 id="prevSecTitle">All request history</h3>
           <button class="view-all" data-jump-section="home">← Back to active</button>
         </div>
 
@@ -15916,9 +15938,13 @@ const PAY_BADGES = {
   };
 
   const SECTION_TITLES = {
-    choose:         'Dashboard',
+    /* The home screen carries NO title (owner 2026-10-02). Its own question is
+       the heading; "Dashboard" above it said nothing, and contradicted the
+       sidebar, where Home — not Dashboard — is the active item. Request has
+       never shown one here. '' must HIDE the element, see showSection(). */
+    choose:         '',
     home:           'Dashboard overview',
-    previous:       'Previous requests',
+    previous:       'Request History',
     business:       'Business information',
     personal:       'Personal information',
     payment:        'Payment Methods',
@@ -16049,7 +16075,12 @@ const PAY_BADGES = {
     const navTarget = navHighlight || ((name === 'request-detail' || name === 'new-request') ? 'home' : name);
     $navItems.forEach(b => b.classList.toggle('active', b.dataset.dashSection === navTarget));
     $sections.forEach(s => s.classList.toggle('active', s.dataset.section === name));
-    $sectionTitle.textContent = SECTION_TITLES[name] || 'Dashboard';
+    /* ⛔ An empty title HIDES the element rather than falling back. The old
+       `|| 'Dashboard'` would have printed the very word being removed, because
+       '' is falsy — blanking the map entry alone would have changed nothing. */
+    const _secTitle = SECTION_TITLES[name] || '';
+    $sectionTitle.textContent = _secTitle;
+    $sectionTitle.hidden = !_secTitle;
     /* Owner 2026-10-02: the sidebar's two CTAs are NOT shown on the home screen.
        They appear once a card is chosen — the "activated" state — because on the
        home screen they duplicate the two cards the user is looking at. */
@@ -16057,14 +16088,14 @@ const PAY_BADGES = {
     /* Deferred a frame: a browser will not start a video it cannot show, and the
        section is still unpainted in this tick. */
     if(name === 'choose') requestAnimationFrame(() => { try { playChooseClips(); } catch(_){} });
-    // When entering Previous requests, always start on the list (not a leftover detail view)
+    // When entering Request History, always start on the list (not a leftover detail view)
     if(name === 'previous'){
       const dp = document.getElementById('prevDetailPanel');
       const lp = document.getElementById('prevListPanel');
       const t  = document.getElementById('prevSecTitle');
       if(dp) dp.hidden = true;
       if(lp) lp.hidden = false;
-      if(t)  t.textContent = 'All previous requests';
+      if(t)  t.textContent = 'All request history';
     }
     document.querySelector('.dash-main').scrollTop = 0;
   }
@@ -16828,7 +16859,9 @@ const PAY_BADGES = {
     if(td){ td.classList.toggle('is-active', showDeals);  td.setAttribute('aria-selected', String(showDeals)); }
     // Header reflects the active path.
     const st = document.getElementById('dashSectionTitle');
-    if(st) st.textContent = showDeals ? 'Local Deals' : 'Submit New request';
+    /* Un-hide too: showSection() now hides this node on the home screen, and
+       this writer runs afterwards — setting text alone would leave it invisible. */
+    if(st){ st.textContent = showDeals ? 'Local Deals' : 'Submit New request'; st.hidden = false; }
   }
 
   const DEAL_BACK_SVG  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
@@ -17689,7 +17722,7 @@ const PAY_BADGES = {
     if(confirm) confirm.addEventListener('click', () => {
       // Two cancel contexts:
       //   1. Dashboard detail view — cancel the dashboard request by its id,
-      //      stay in the dashboard, and land on Previous requests · Cancelled.
+      //      stay in the dashboard, and land on Request History · Cancelled.
       //   2. In-flow — fall through to the original behavior (reset flow,
       //      exit to dashboard, file the request as cancelled).
       const dashId = pendingCancelDashId;
@@ -20440,7 +20473,7 @@ const PAY_BADGES = {
   }
 
   // ─── Other render functions (mostly unchanged from v1) ───
-  // ─── Previous requests: tabs, search, list, detail view ───
+  // ─── Request History: tabs, search, list, detail view ───
   // Local currency formatter (the flow IIFE has its own `fmt`, but this scope doesn't).
   const fmt = (n) => '$' + (Number(n) || 0).toFixed(2);
   let prevTab = 'all';
@@ -20891,7 +20924,7 @@ const PAY_BADGES = {
     const title     = document.getElementById('prevSecTitle');
     if(panel)     panel.hidden = true;
     if(listPanel) listPanel.hidden = false;
-    if(title)     title.textContent = 'All previous requests';
+    if(title)     title.textContent = 'All request history';
     renderPrevRequests();
   }
 
@@ -21250,7 +21283,7 @@ const PAY_BADGES = {
     if(panel) panel.hidden = true;
     if(editPanel) editPanel.hidden = true;
     if(listPanel) listPanel.hidden = false;
-    if(title) title.textContent = 'All previous requests';
+    if(title) title.textContent = 'All request history';
     renderPrevRequests(); // refresh in case toggles changed state
   }
 
@@ -22451,7 +22484,7 @@ const PAY_BADGES = {
     updateInboxBadge();
     if(document.querySelector('.dash-section.active')?.dataset.section === 'inbox') renderInbox();
   };
-  // Cancel a request: remove it from active and file it under Previous requests
+  // Cancel a request: remove it from active and file it under Request History
   // (cancelled, retrievable). Used by the flow's "Cancel request" button.
   window.__cancelDashboardRequest = (id) => {
     const i = DASH_DATA.activeRequests.findIndex(r => r.id === id);
@@ -22465,7 +22498,7 @@ const PAY_BADGES = {
       : (r.title || 'Cancelled before completion');
     const today = new Date();
     const dateStr = `${today.getMonth()+1}/${today.getDate()}/${String(today.getFullYear()).slice(2)}`;
-    // Land it in the CANCELLED bucket (shows on Previous requests · Cancelled tab),
+    // Land it in the CANCELLED bucket (shows on Request History · Cancelled tab),
     // matching the cancelled-record shape (no worker/payment/rating; has a reason).
     if(!Array.isArray(DASH_DATA.cancelledRequests)) DASH_DATA.cancelledRequests = [];
     DASH_DATA.cancelledRequests.unshift({
@@ -22845,7 +22878,7 @@ const PAY_BADGES = {
     { match:['billing','bill','charge','pre-auth','authorization','payment process','pre auth'],
       answer:`<b>Billing & pre-authorization:</b> your payment method isn't authorized until a worker is matched to your request. When the worker accepts, we pre-authorize the card for the request total <i>plus 20%</i> as a buffer for cost adjustments. If no adjustments are needed, you're only charged the original total. You'll be prompted to confirm completion before the final charge.` },
     { match:['cancel','change request','modify','edit request'],
-      answer:`<b>Cancel or change a request:</b> open the request from the Dashboard or Previous requests, and use the <b>Cancel request</b> or <b>Edit</b> options. Before a worker accepts, cancelling is free. After acceptance, a small adjustment may apply depending on how far the worker has traveled.` },
+      answer:`<b>Cancel or change a request:</b> open the request from the Dashboard or Request History, and use the <b>Cancel request</b> or <b>Edit</b> options. Before a worker accepts, cancelling is free. After acceptance, a small adjustment may apply depending on how far the worker has traveled.` },
     { match:['worker','matched','match','rating','rated','elite','pros','my gophers','select worker'],
       answer:`<b>How workers are matched:</b> we match based on proximity, category specialty, ratings, and your preferences. You can restrict each request to <b>MY Gophers</b>, <b>Gopher Elite + Pros</b>, or open it to the full workforce. After each completed request, you'll rate your Gopher and can add them to MY Gophers from the request detail screen.` },
     { match:['payment method','add card','credit card','ach','paypal','venmo','apple pay','google pay','cash app'],
@@ -23337,7 +23370,7 @@ const PAY_BADGES = {
     renderBusinessBadge();                            // paints the Verified business rail
     // Cancel request (top-right of the Request Detail view) — opens the same
     // confirmation modal used by the in-flow cancel, but with the dashboard
-    // request id so confirmation files it under Previous requests · Cancelled.
+    // request id so confirmation files it under Request History · Cancelled.
     const reqDetailCancel = document.getElementById('reqDetailCancelBtn');
     if(reqDetailCancel && !reqDetailCancel.__wired){
       reqDetailCancel.__wired = true;
@@ -23381,7 +23414,11 @@ const PAY_BADGES = {
        word — an earlier one gets overwritten. */
     if(window.__resetFlowToStart) window.__resetFlowToStart();
     moveFlowMockupToDashboard();
-    showSection('choose', 'home');
+    /* The 'home' nav-highlight override is GONE (owner 2026-10-02): it existed
+       only because no nav item targeted `choose`, so the highlight had to borrow
+       Dashboard's. The Home item now targets `choose` directly and highlights
+       itself — leaving the override here lit Dashboard on the home screen. */
+    showSection('choose');
     initChooseClips();
     window.scrollTo({ top:0, behavior:'instant' });
   }

@@ -4529,7 +4529,7 @@ window.showNoAccount = function(){
       <button class="dash-offer-learn" id="offerLearnMore" type="button">Learn more</button>
       <button class="dash-demo-toggle" id="offerDemoToggle" type="button" title="Prototype demo only — production reads eligibility from the worker's tier automatically">&#128295; Demo: eligible <b id="offerDemoState">ON</b></button>
       <button class="dash-nav-item active" data-dash-section="profile"><span class="dni-ico">&#128100;</span><span class="dni-label">Profile</span></button>
-      <button class="dash-nav-item" data-dash-section="history"><span class="dni-ico">&#128218;</span><span class="dni-label">Previous requests</span></button>
+      <button class="dash-nav-item" data-dash-section="history"><span class="dni-ico">&#128218;</span><span class="dni-label">Request History</span></button>
       <button class="dash-nav-item" data-dash-section="inbox"><span class="dni-ico">&#128172;</span><span class="dni-label">Inbox</span><span class="dni-badge" id="goInboxBadge" hidden>0</span></button>
       <button class="dash-nav-item" data-dash-section="blocked"><span class="dni-ico">&#128683;</span><span class="dni-label">Block Requesters</span></button>
       <div class="dash-nav-divider">Account</div>
@@ -4919,7 +4919,7 @@ window.showNoAccount = function(){
       <!-- ░░ REQUEST HISTORY ░░ -->
       <section class="dash-section" data-dash-section="history">
         <div class="panel">
-          <div class="panel-head"><h2>Previous requests</h2></div>
+          <div class="panel-head"><h2>Request History</h2></div>
           <p class="panel-desc">Your finished &amp; past jobs — paid out to your account.</p>
           <!-- Order per owner 2026-07-28: Completed – Cancelled, then a gap, then Payout
                issue. The gap is deliberate — payout issue is not another outcome of a
@@ -8304,7 +8304,7 @@ window.showNoAccount = function(){
       renderTrack('pending');
 
       /* Real referrals replace the demo rows on sign-in. Same contract as
-         Previous requests: the seeded rows are what an unauthenticated visitor
+         Request History: the seeded rows are what an unauthenticated visitor
          sees, and a real session must never leave them on screen. A failed or
          empty load leaves the demo rows alone rather than blanking the pane —
          except when the account genuinely HAS referrals, in which case the

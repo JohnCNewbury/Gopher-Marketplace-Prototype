@@ -637,7 +637,7 @@ body{background:#dfe4ec;font-family:'DM Sans',-apple-system,system-ui,sans-serif
         </div>
         <div class="tool-row" data-goto="history">
           <span class="tri"><svg viewBox="0 0 24 24"><path d="M5 4h10l4 4v12H5z"/><path d="M14 4v5h5"/><path d="M8 13h7M8 16h7"/></svg></span>
-          <span class="trt"><div class="h">Previous requests</div><div class="s">12 completed · reorder in one tap</div></span>
+          <span class="trt"><div class="h">Request History</div><div class="s">12 completed · reorder in one tap</div></span>
           <span class="chev">›</span>
         </div>
       </div>
@@ -996,7 +996,7 @@ const CATLABEL={delivery:'Delivery',home:'Home Services',junk:'Junk Removal',mov
 var PEND=null, acceptTimer=null;
 var uiBucket='active', uiIdx=0; var BLABEL={active:'Active',scheduled:'Scheduled',submitted:'Submitted'};
 function statusBucket(r){
-    if(r.cancelled||r.substage==='rated'||r.noShow) return 'done';   // terminal — lives in Previous requests
+    if(r.cancelled||r.substage==='rated'||r.noShow) return 'done';   // terminal — lives in Request History
     /* ACCEPTANCE IS THE GATE (owner ruling 2026-08-21). Active and Scheduled are ONLY
        occupied once a Gopher has ACCEPTED. Until then a request sits in Submitted no
        matter how it was timed — Need-ASAP and exact-time bookings alike.
@@ -1109,13 +1109,13 @@ function cardHTML(r){
   +'</div>';
 }
 function renderPending(){
- try{ updateAccountLabels(); }catch(_){}   // keep MY Gophers / Previous requests counts in sync
+ try{ updateAccountLabels(); }catch(_){}   // keep MY Gophers / Request History counts in sync
  var slot=$('#hubSlot'); if(!slot) return;
  /* FIX: only a total of ZERO requests (across Active+Scheduled+Submitted) hides the whole
     multi-request block — no switcher, no card, no gap. A selected-but-empty bucket keeps the
     switcher (handled below). */
  // Hide the whole multi-request block when nothing is live in the three home buckets — a terminal
- // (rated / no-show) request has moved to Previous requests, so the home clears.
+ // (rated / no-show) request has moved to Request History, so the home clears.
  var _homeLive=bucketList('active').length+bucketList('scheduled').length+bucketList('submitted').length;
  if(!_homeLive){ slot.hidden=true; slot.innerHTML=''; PEND=null; try{window.__PEND=null;}catch(_){} return; }
  slot.hidden=false;
@@ -2470,7 +2470,7 @@ var REQ_FAQS=[
   {g:'Requests',q:'Where is my order?',a:'There are usually only a couple reasons a request isn\u2019t accepted: We may not have enough Gophers in your area yet. Anytime a request is submitted in a new area, we get to work recruiting available Gophers there. The offer may have been deemed too low for the Gophers in your area. Gopher is NOT an auto-fulfillment service \u2014 the offer you make is 100% of what your worker earns. They work for you, not Gopher, Inc. If your offer is below the typical accepted offer, you\u2019ll see a pop-up sharing the average offer for that category. You can still offer whatever amount you want.'},
   {g:'Requests',q:'Can I track my delivery?',a:'Yes. Once your Gopher is on the way, you can track the order throughout the process.'},
   {g:'Requests',q:'Am I able to see when my Gopher will arrive?',a:'Yes. For requests involving a pick-up and drop-off, once your Gopher selects \u201Cin-progress,\u201D your request screen shows a map of the Gopher\u2019s location relative to the destination(s). If you ever see the driver \u201Cstuck,\u201D check in via text or call \u2014 some areas have poor connection, but calls and texts typically get through better than location services.'},
-  {g:'Requests',q:'How can I see my previous orders?',a:'Go to Account \u2192 Previous requests to see your completed and cancelled requests.'},
+  {g:'Requests',q:'How can I see my previous orders?',a:'Go to Account \u2192 Request History to see your completed and cancelled requests.'},
   {g:'Payments',q:'How much does it cost to use the app?',a:'A Gopher Fee ($0.99\u2013$4.99 by service type) plus an 8% instant-transfer fee; age-restricted adds $1.99 (minus $1 with TrustShield\u2122). Your Gopher receives 100% of your offer.'},
       {g:'Payments',q:'Can I pay with cash?',a:'No \u2014 cash isn\u2019t an option. We have to guarantee payment to the worker before a request can be accepted, so all payment runs through the app.'},
   {g:'Payments',q:'How do payments & receipts work?',a:'Your card is authorized when a Gopher accepts and captured on completion. A receipt is emailed the moment you confirm.'},
@@ -2637,7 +2637,7 @@ function openMyGophers(){ var L=myGopherRows();
     ? '<p class="gs-sub">Favorited Gophers \u2014 prioritized on new requests.</p><div class="gs-list" style="margin-top:10px;">'+L.map(g=>'<div class="gph"><span class="gph-pic">'+g[0].split(/\s+/).map(w=>w[0]).join('').slice(0,2)+'</span><div class="gph-tx"><div class="gph-nm">'+g[0]+' '+window.__tierBadge(g[1],g[2])+'</div><div class="gph-tag">'+g[3]+'</div></div><button class="gph-hire" data-goto="flow">Hire again</button></div>').join('')+'</div>'
     : '<div style="text-align:center;color:#8a94a3;font-family:\'DM Sans\',sans-serif;font-size:12.5px;line-height:1.55;padding:24px 12px;">No favorited Gophers yet.<br>After a completed request, add your Gopher here \u2014 they\u2019ll be prioritized on your future requests.</div>';
   gSheet('MY Gophers', body); }
-// Keep the account tool-row sub-labels (MY Gophers / Previous requests) in sync with session state.
+// Keep the account tool-row sub-labels (MY Gophers / Request History) in sync with session state.
 function updateAccountLabels(){
   try{
     var mg=isPTmode()? (SESS_MYGOPHERS||[]).length : 3;   // guard: initPending() may run before SESS_MYGOPHERS is assigned
@@ -2648,10 +2648,10 @@ function updateAccountLabels(){
     });
   }catch(_){}
 }
-// Previous requests (requester perspective) \u2014 the requester's own finished requests: what they PAID, who
+// Request History (requester perspective) \u2014 the requester's own finished requests: what they PAID, who
 // fulfilled it, and the rating THEY gave. Pulls live completed requests from the store first, then a few
 // representative past ones, so a job completed during the demo shows up at the top.
-/* "Request again" from a completed job in Previous requests.
+/* "Request again" from a completed job in Request History.
    NOW  → skip the review page, land on the submitted confirmation.
    edits→ land on the canonical Review (Step 6), everything prefilled.
    Either way the past job's Gopher rides along and gets first dibs. */
@@ -2675,7 +2675,7 @@ function openHistory(){
     return { title:r.title||'Request', order:r.order, cat:(CATLABEL[r.cat]||'Request'), date:'Just now',
       paid:(r.amount||money((+r.pay||0)+(+r.cost||0))), who:(r.hired||'your Gopher'), rating:(+r.rating||0), note:(r.ratingNote||''), noShow:!!r.noShow };
   });
-  // In the split/PT demo, Previous requests starts EMPTY and fills only from this session's completed
+  // In the split/PT demo, Request History starts EMPTY and fills only from this session's completed
   // requests. The standalone app keeps a few representative past requests.
   var demo=isPTmode()? [] : [
     { title:'Grocery + pharmacy run', order:'GR-00187', cat:'Delivery', date:'Mar 4', paid:'$24.91', who:'Devon M.', rating:5, note:'Fast and friendly \u2014 grabbed everything on the list.' },
@@ -2704,7 +2704,7 @@ function openHistory(){
     : '<div style="text-align:center;color:#8a94a3;font-family:\'DM Sans\',sans-serif;font-size:12.5px;padding:22px 10px;">No completed requests yet \u2014 your finished requests will appear here.</div>';
   var cancelledBlock = isPTmode()? ''
     : '<div class="gs-sech">Cancelled</div><div style="border:1px solid #eceaf0;border-radius:14px;padding:12px 13px;background:#fff;"><b style="font-family:Nunito;font-weight:900;font-size:13.5px;color:#002461;">Furniture moving</b><div style="font-family:\'DM Sans\',sans-serif;font-size:11.5px;color:#8a94a3;margin-top:2px;">#GR-00120 &middot; cancelled before a Gopher was matched &middot; no charge</div></div>';
-  gSheet('Previous requests', '<div class="gs-sech">Completed</div>'+completedBlock+cancelledBlock);
+  gSheet('Request History', '<div class="gs-sech">Completed</div>'+completedBlock+cancelledBlock);
 }
 /* ── Canonical Gopher account (single source of truth for the My Profile sheet) ── */
 var PROFILE={firstName:'John',lastName:'Demo',email:'john.demo@gophergo.io',phone:'(919) 555-0124',accountId:'GPH-000001-DEMO',street:'100 Demo Way',city:'Raleigh',state:'NC',zip:'27601',dob:'01-01-1990',source:'Referral',referredBy:'Demo Referrer',memberSince:'2024',lastSignin:'Today · Raleigh, NC',rating:'4.9 (128)'};
@@ -2803,7 +2803,7 @@ function openPayments(){
   gSheet('Payment methods','<div class="gs-list" style="margin-top:6px;"><div class="gs-li"><b>Visa \u2022\u2022\u2022\u2022 4242</b> \u00B7 default</div><div class="gs-li">Mastercard \u2022\u2022\u2022\u2022 8210</div><div class="gs-li">Apple Pay</div></div><div class="gs-hint"><span class="gs-link">+ New payment method</span></div>');
 }
 function openNotifSettings(){ gSheet('Notification settings','<div class="gs-list" style="margin-top:6px;"><div class="gs-li">Request updates \u2014 <b>On</b></div><div class="gs-li">Deals near me \u2014 <b>On</b></div><div class="gs-li">Rewards & referrals \u2014 <b>On</b></div><div class="gs-li">Product news \u2014 Off</div></div>'); }
-function openAccount(){ gSheet('Account','<div class="pts-hero" style="background:var(--navy);"><div class="pts-n" style="font-size:22px;">John Newbury</div><div class="pts-l">Signed in \u00B7 TrustShield pending</div></div><div class="gs-list" style="margin-top:12px;"><div class="gs-li" data-goto="profile"><b>My Profile</b></div><div class="gs-li" data-goto="addresses"><b>Saved addresses</b></div><div class="gs-li" data-goto="payments"><b>Payment methods</b></div><div class="gs-li" data-goto="notifsettings"><b>Notification settings</b></div><div class="gs-li" data-goto="history"><b>Previous requests</b></div><div class="gs-li" data-goto="help"><b>Help Center</b></div><div class="gs-li" data-goto="terms"><b>Terms & Privacy</b></div></div><div class="gs-hint"><span class="gs-link" data-goto="signout">Sign out</span></div>'); }
+function openAccount(){ gSheet('Account','<div class="pts-hero" style="background:var(--navy);"><div class="pts-n" style="font-size:22px;">John Newbury</div><div class="pts-l">Signed in \u00B7 TrustShield pending</div></div><div class="gs-list" style="margin-top:12px;"><div class="gs-li" data-goto="profile"><b>My Profile</b></div><div class="gs-li" data-goto="addresses"><b>Saved addresses</b></div><div class="gs-li" data-goto="payments"><b>Payment methods</b></div><div class="gs-li" data-goto="notifsettings"><b>Notification settings</b></div><div class="gs-li" data-goto="history"><b>Request History</b></div><div class="gs-li" data-goto="help"><b>Help Center</b></div><div class="gs-li" data-goto="terms"><b>Terms & Privacy</b></div></div><div class="gs-hint"><span class="gs-link" data-goto="signout">Sign out</span></div>'); }
 function openActivity(){ var act=''; if(typeof PEND!=='undefined' && PEND){ act='<div class="gs-sech">Active</div><div class="gs-list"><div class="gs-li"><b>'+PEND.title+'</b> \u00B7 '+(PEND.amount||'')+'<br>'+(PEND.stage==='matched'?('Matched with '+PEND.hired):'Finding a Gopher\u2026')+' \u00B7 <span class="gs-link" data-pending-action="track">Track</span></div></div>'; } else { act='<div class="gs-sech">Active</div><p class="gs-sub">No active request right now.</p>'; } gSheet('Activity', act+'<div class="gs-sech">Past requests</div><div class="gs-list"><div class="gs-li"><b>Grocery + pharmacy run</b> \u00B7 $24.91 \u00B7 Completed \u00B7 5\u2605<br><span class="gs-link" data-goto="flow">Request again \u2192</span></div><div class="gs-li"><b>Lawn mowing</b> \u00B7 $45 \u00B7 Completed \u00B7 5\u2605</div><div class="gs-li">Furniture moving \u00B7 Cancelled</div></div>'); }
 document.addEventListener('click',function(e){
   var g=e.target.closest('[data-goto]'); if(g){ var k=g.dataset.goto;
