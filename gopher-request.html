@@ -8722,9 +8722,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      relocated "View all deals" button. Featured/category cards are untouched;
      the featured card is only left-anchored here via a scoped override. ── */
   .dh-hero-row { display:flex; align-items:center; justify-content:center; gap:40px; margin:8px 0 6px; }
-  .dh-hero-row .dh-featured { flex:0 0 clamp(360px, 40%, 448px); max-width:448px; margin:0; }
+  /* Owner 2026-10-02: the main card moves LEFT a little so the copy beside it
+     gains room. 40%/448 -> 36%/410 narrows it ~44px at a 1095px row. */
+  .dh-hero-row .dh-featured { flex:0 0 clamp(340px, 36%, 410px); max-width:410px; margin:0; }
   .dh-hero-copy { flex:0 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:26px; padding:8px 20px; }
-  .dh-hero-head { font-family:'Nunito',sans-serif; font-weight:900; letter-spacing:-.012em; font-size:clamp(27px, 3vw, 40px); line-height:1.16; color:var(--navy); max-width:16ch; }
+  .dh-hero-head { font-family:'Nunito',sans-serif; font-weight:900; letter-spacing:-.012em; font-size:clamp(27px, 3vw, 40px); line-height:1.16; color:var(--navy); max-width:18ch; }
+  /* ⛔ 18ch, and it is THE control on the line count — not the column width.
+     At 1440 the copy column already had 617px free while the heading sat capped
+     at 384px, so widening the row alone changed nothing. Measured across the
+     range: 16ch = 7 lines, 17-18ch = 6, 19ch and up = 5. 18 sits mid-band rather
+     than on the 7->6 edge, so a font or copy nudge will not tip it back. */
   .dh-hero-head .hl { color:var(--green-dark); }
   /* Hero variant: featured-card cream gradient, Gopher-standard 14px radius (no pill),
      sized to match the card's View Details button. */
