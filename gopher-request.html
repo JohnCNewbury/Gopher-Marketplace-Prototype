@@ -26433,9 +26433,20 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     const host = document.getElementById('dashDealsHost');
     if(!host) return;
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-    const age  = dealsUserAge();
-    // Age gate: withhold the 21+ category from anyone under 21 (or unknown age).
-    const cats = DEALS_DATA.filter(c => !c.ageRestricted || (age != null && age >= 21));
+    /* ⛔ Owner 2026-10-02: "I need the Age-Restricted card showing for deals."
+       It used to be withheld from anyone under 21 OR of unknown age — and
+       "unknown" is the common case, because dealsUserAge() reads a dob off the
+       session profile that a signed-in user often has not supplied, which is why
+       the row showed four cards instead of five.
+
+       ⚠️ This removes the BROWSE gate only. It is not the gate that matters:
+       an age-restricted deal still sets payload.ageRestricted at submission,
+       which drives the ID-verification step, the 21+ requirement and the
+       age-restricted fee in the request flow downstream. The category keeps its
+       21+ badge so the restriction is stated on the card itself.
+       Do not re-add a filter here without moving that badge and the downstream
+       gate in the same change. */
+    const cats = DEALS_DATA.slice();
 
     // Service-provider card — PROFILE PHOTO, tier, provider, service name,
     // the SET PRICE (green), then a "View Details" button.
@@ -26613,7 +26624,6 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     const host = document.getElementById('dashDealsHost');
     if(!host) return;
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-    const age = dealsUserAge();
 
     // Unified pic getter: serviceProviderPhoto returns DEAL_LOGOS[id] for merchants, photo for services.
     const logoHTML = (m, cat) => {
@@ -26641,7 +26651,20 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       '</button>'
     ) : '';
 
-    const cats = DEALS_DATA.filter(c => !c.ageRestricted || (age != null && age >= 21));
+    /* ⛔ Owner 2026-10-02: "I need the Age-Restricted card showing for deals."
+       It used to be withheld from anyone under 21 OR of unknown age — and
+       "unknown" is the common case, because dealsUserAge() reads a dob off the
+       session profile that a signed-in user often has not supplied, which is why
+       the row showed four cards instead of five.
+
+       ⚠️ This removes the BROWSE gate only. It is not the gate that matters:
+       an age-restricted deal still sets payload.ageRestricted at submission,
+       which drives the ID-verification step, the 21+ requirement and the
+       age-restricted fee in the request flow downstream. The category keeps its
+       21+ badge so the restriction is stated on the card itself.
+       Do not re-add a filter here without moving that badge and the downstream
+       gate in the same change. */
+    const cats = DEALS_DATA.slice();
     const catCardHTML = (c) => {
       const winId = HOME_PICKS.winners[c.key];
       const wm = winId ? findDealMerchant(winId) : null;
