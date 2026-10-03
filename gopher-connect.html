@@ -22255,7 +22255,12 @@ const PAY_BADGES = {
         </div>
       </div>
     `).join('');
-    document.getElementById('payMethodsList').innerHTML = html;
+    /* An empty list rendered as literally nothing — a blank gap under the
+       heading. Connect's "+ Add payment method" button lives OUTSIDE this
+       container, so unlike Request this was never a dead end, only a missing
+       sentence. */
+    document.getElementById('payMethodsList').innerHTML =
+      html || '<div class="pay-empty">No payment methods yet.</div>';
   }
 
   // -- Payment methods: ONE in-session store shared with the request-flow picker
