@@ -9222,21 +9222,68 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .mst-tab:hover { background:var(--navy-mid); transform:translateY(-1px); box-shadow:0 7px 16px rgba(26,42,94,0.3); }
   .mst-tab:active { transform:translateY(0); }
+  /* ⛔ STEP CHIPS — state-led. Owner picked this on 2026-10-03 from four options
+     shown side by side on the live page: "I like this one."
+
+     COLOUR NOW MEANS SOMETHING. Navy = done, Shamrock = you are here, grey =
+     not yet reached. Before this, the current step and every finished step were
+     the SAME Shamrock, so the row read as decoration rather than progress — you
+     had to read all seven labels to find out where you were.
+
+     It also fixes two contrast failures that were live:
+       done/active : white on Shamrock      1.85:1  ->  7.95:1 and 14.74:1
+       locked      : white on #c9cfdd       1.56:1  ->  4.93:1
+     The locked chips were WORSE than the green ones and nobody had reported them.
+
+     ⚠️ The white here is on NAVY, not on green — the Shamrock rule is intact.
+     Shamrock still carries navy, on the one chip that is Shamrock. */
   .mst-tab.done {
-    background:var(--green); box-shadow:0 4px 12px rgba(51,217,117,0.3);
+    background:var(--navy); color:#fff;
+    box-shadow:0 3px 10px rgba(0,36,97,0.20);
   }
-  .mst-tab.done:hover { background:var(--green-dark); }
+  /* The tick is the only Shamrock on a finished chip — brand present, not loud.
+     It is real text content, so a screen reader announces "check, Job details",
+     which is what the state actually means. */
+  /* Compact on purpose. Measured: at Connect's 860px demo portal each chip gets
+     111px, and the first draft of this tick (13px + nbsp) needed 135px — it
+     truncated "Pick a service" to "Pick a servi...". I caused that; it did not
+     truncate before the tick existed. 11px with a 3px margin plus the container
+     rule below gives real slack instead of an exact fit. */
+  .mst-tab.done::before { content:'\2713'; color:var(--green); font-weight:900; font-size:11px; margin-right:3px; }
+  .mst-tab.done:hover { background:var(--navy-mid); }
   .mst-tab.active {
-    background:var(--green);
-    box-shadow:0 6px 16px rgba(51,217,117,0.42), 0 0 0 3px rgba(51,217,117,0.18);
+    background:var(--green); color:var(--ink-on-green);
+    box-shadow:0 6px 16px rgba(51,217,117,0.45), 0 0 0 3px rgba(0,36,97,0.14);
   }
-  /* Locked = step not yet reached; greyed out, not interactive. */
+  .mst-tab.active:hover { background:var(--green); }
+  /* Locked = step not yet reached. Grey, but READABLE grey: the old pairing was
+     white on #c9cfdd at 1.56:1, and opacity:0.65 was dimming it further. */
   .mst-tab.locked, .mst-tab:disabled {
-    background:#c9cfdd; color:#fff; cursor:not-allowed; box-shadow:none; opacity:0.65;
+    background:#e7eaf1; color:#5a6479; cursor:not-allowed; box-shadow:none; opacity:1;
   }
   .mst-tab.locked:hover, .mst-tab:disabled:hover {
-    background:#c9cfdd; transform:none; box-shadow:none;
+    background:#e7eaf1; transform:none; box-shadow:none;
   }
+
+  /* ⛔ The aligned chip row needs CONTAINER width, not viewport width. The two
+     places this flow renders are very different sizes inside the SAME viewport:
+     the Request dashboard portal is ~1180px, Connect's marketing demo is 860px.
+     A viewport media query cannot tell them apart, which is how the tick came to
+     truncate on one surface while measuring fine on the other.
+     Below 1000px of PORTAL width the row packs instead, where chips are
+     content-width and cannot truncate at all. */
+  .flow-mockup { container-type:inline-size; }
+  @container (max-width:1000px){
+    .mockup-step-tabs,
+    .dash-section[data-rqsec="new-request"] .mockup-step-tabs,
+    .dash-section[data-section="new-request"] .mockup-step-tabs { flex-wrap:wrap; gap:9px; }
+    .mockup-step-tabs .mst-tab,
+    .dash-section[data-rqsec="new-request"] .mst-tab,
+    .dash-section[data-section="new-request"] .mst-tab {
+      flex:0 0 auto; padding-left:16px; padding-right:16px;
+    }
+  }
+
 
   /* ─── Request History table ─── */
   /* ── Request History cards (owner 2026-10-02) ───────────────────────────
@@ -13942,9 +13989,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // ──── Step 3 Worker info gating ────
     workerSetup:  ['delivery','home','ride'],                        // hidden for Delivery, Home, Ride
     laborMgmt:    ['delivery','home','ride'],                        // hidden for Delivery, Home, Ride
-    // "How is the worker selected?" choice — ONLY for Delivery/Courier, Junk Removal, Ride Sharing.
-    // All other categories require the user to select their worker (no "first available" option).
-    workerSelectChoice: ['moving','home','labor','yard','other'],
+    /* "How is the worker selected?" choice.
+       ⛔ MOVING now SHOWS it (owner 2026-10-03, via the 909 desk, spec v3.18
+       INV-8 / MV-03): "Web and PT missing the select my worker and MY Gopher".
+       Moving is the one visible category with NO First Available — live Moving
+       has never had it — so the `first` row is suppressed for Moving in
+       renderStep3() and render() coerces any stale 'first' away. The remaining
+       categories here still force 'select'. */
+    workerSelectChoice: ['home','labor','yard','other'],
     // ──── Step 4 Location-section visibility ────
     pickupSection:    ['home','labor','junk','yard','other'],         // Delivery, Moving, Ride only
     noSpecificPickup: ['home','labor','junk','yard','ride','other'],  // Delivery, Moving only
@@ -14685,12 +14737,21 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <!-- How worker is selected — ONLY for Delivery/Courier, Junk Removal, Ride Sharing -->
       ${isVisible('workerSelectChoice') ? `
       <div class="step-section">
-        <div class="step-section-title"><span class="sst-ico">🎯</span>How do you want to select your worker? (${myUnlocked ? '3 of 3' : '2 of 3'} options available)</div>
+        ${''/* The count must describe what is actually RENDERED. Moving drops
+             First Available, so the hard-coded "3 of 3" claimed an option the
+             user could not see. Derive it instead. */}
+        ${(() => {
+          const total = state.category === 'moving' ? 2 : 3;
+          const avail = (state.category === 'moving' ? 1 : 2) + (myUnlocked ? 1 : 0);
+          return `<div class="step-section-title"><span class="sst-ico">🎯</span>How do you want to select your worker? (${avail} of ${total} options available)</div>`;
+        })()}
         <div class="radio-group rg-stack">
+          ${state.category === 'moving' ? '' : `
           <div class="radio-row ${state.workerSelection==='first'?'selected':''}" data-radio="workerSelection" data-val="first">
             <span class="radio-dot"></span>
             <span class="rr-label">First available worker — fastest match</span>
           </div>
+          `}
           <div class="radio-row ${state.workerSelection==='select'?'selected':''}" data-radio="workerSelection" data-val="select">
             <span class="radio-dot"></span>
             <span class="rr-label">I'll select my worker — review ratings, reviews and job history before selecting</span>
@@ -15708,6 +15769,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // the user must select their worker, so force that selection.
     if(!isVisible('workerSelectChoice')) {
       state.workerSelection = 'select';
+    } else if(state.category === 'moving' && state.workerSelection === 'first'){
+      /* Moving offers no First Available, and 'first' is the app-wide default,
+         so a Moving request would otherwise open on an option it does not show
+         — an empty radio group with nothing selected. Spec default: Prioritize
+         MY Gopher(s) when the requester has any, otherwise I'll select. */
+      const myN = (window.__myGophersCount ? window.__myGophersCount() : 0);
+      state.workerSelection = myN > 0 ? 'my' : 'select';
     }
     // Never sit on an auto-hidden empty detail section — advance past it.
     if(state.step > 1 && state.step < 7 && stepIsEmpty(state.step)){
@@ -20980,6 +21048,15 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
         if(ov) ov.hidden = false;
       }
     } else {
+      /* ⛔ The flow mockup is ONE node that gets MOVED between the marketing
+         page and the dashboard host. Leaving the request flow moves it back
+         out, and this handler never moved it in — only the sidebar button did
+         (openRequestFlow -> moveFlowToDash). So the home card worked the FIRST
+         time, when the node happened to already be in the host, and every time
+         after that it switched to an empty section: a blank canvas with the
+         nav highlighted. Owner reported it 2026-10-03 as "tapping the request
+         card ... wouldn't load the select a service page". */
+      moveFlowToDash();
       setRequestPath('new');
     }
   });
@@ -21126,7 +21203,35 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     updateInboxBadge();
   }
 
-  // Update sidebar badge — count of inbox rows (threads with at least 1 msg).
+  /* ⛔ SINGLE SOURCE OF TRUTH for "what is in the Inbox right now".
+     The list and the sidebar badge both derive from getThreads(), and they used
+     to filter it through DIFFERENT rules: renderInbox() excluded purged AND
+     deleted threads, updateInboxBadge() excluded neither. So deleting every
+     message emptied the list and left the badge reading 1 — owner reported it
+     2026-10-03, reproduced in-browser. The repaint was never missing; the two
+     surfaces simply disagreed about what counts.
+     Any new surface that lists or summarises the Inbox calls THIS, never
+     getThreads() directly. Purge expiry is evaluated here so one pass serves
+     every caller. */
+  function partitionInboxThreads(){
+    dashState.inboxDeleted = dashState.inboxDeleted || {};
+    dashState.inboxPurged  = dashState.inboxPurged  || {};
+    const D = window.GopherInboxDelete;
+    if(D){
+      Object.keys(dashState.inboxDeleted).forEach(id => {
+        if(D.isPurged(dashState.inboxDeleted[id])) delete dashState.inboxDeleted[id];
+      });
+    }
+    const visible = getThreads().filter(x => !dashState.inboxPurged[x.id]);
+    return {
+      visible: visible,
+      live:    visible.filter(x => !dashState.inboxDeleted[x.id]),
+      deleted: visible.filter(x =>  dashState.inboxDeleted[x.id]),
+    };
+  }
+
+  // Update sidebar badge — count of LIVE inbox rows (deleted and purged excluded,
+  // via the same partition the list uses).
   function updateInboxBadge(){
     // NOTE: nav items use data-rqSECTION (the section router); dash sections use
     // data-rqSEC. The badge lookup used the wrong attribute, so it silently
@@ -21134,7 +21239,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     const nav = document.getElementById('rqInboxNavBadge')
              || document.querySelector('.dash-nav-item[data-rqsection="inbox"] .dni-badge');
     if(!nav) return;
-    const n = getThreads().length;
+    const n = partitionInboxThreads().live.length;
     nav.textContent = String(n);
     nav.hidden = n === 0;
   }
@@ -21143,24 +21248,16 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
   function renderInbox(){
     const body = document.getElementById('rqInboxBody');
     if(!body) return;
-    const allThreads = getThreads();
     /* G40-100 — threads here are DERIVED from requests, so a delete cannot splice
        an array; it records the thread id against a deletedAt stamp and the list is
-       filtered on read. Purge (90 days) is evaluated at the same moment. */
+       filtered on read. Purge (90 days) is evaluated at the same moment.
+       The filtering itself now lives in partitionInboxThreads() so the sidebar
+       badge cannot drift from this list again. */
     const D = window.GopherInboxDelete;
-    dashState.inboxDeleted = dashState.inboxDeleted || {};
     dashState.inboxTab = dashState.inboxTab || 'inbox';
-    if(D){
-      Object.keys(dashState.inboxDeleted).forEach(id => {
-        if(D.isPurged(dashState.inboxDeleted[id])) delete dashState.inboxDeleted[id];
-      });
-    }
-    dashState.inboxPurged = dashState.inboxPurged || {};
-    const isDel  = id => !!dashState.inboxDeleted[id];
-    const purged = id => !!dashState.inboxPurged[id];
-    const visible = allThreads.filter(x => !purged(x.id));
-    const liveThreads = visible.filter(x => !isDel(x.id));
-    const delThreads  = visible.filter(x =>  isDel(x.id));
+    const part = partitionInboxThreads();
+    const liveThreads = part.live;
+    const delThreads  = part.deleted;
     const threads = dashState.inboxTab === 'deleted' ? delThreads : liveThreads;
 
     // Determine active thread (defaults to most recent if not set).
@@ -21178,9 +21275,17 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       const r = (DASH_DATA.activeRequests || []).find(x => x.id === baseId && x.userStarted);
       if(r){
         const crew = (r.live && Array.isArray(r.live.crew)) ? r.live.crew : null;
-        const worker = (crew && crewName)
-          ? (crew.find(w => w.name === crewName) || crew[0])
-          : (r.live ? r.live.worker : { name: r.worker, photo:'', tier:'' });
+        /* ⛔ A single-worker live request stores its Gopher in live.CREW, not
+           live.worker — all four seeded live requests do. This used to read
+           r.live.worker whenever the thread id carried no "::crewName" suffix,
+           which is every single-worker thread, so `worker` came back undefined
+           and the render threw on t.worker.phone a few lines down. Tapping
+           "Text" on ANY assigned-worker card killed the Inbox for the rest of
+           the session (owner-adjacent find, 2026-10-03). Fall back to the first
+           crew member whenever there is a crew, named or not. */
+        const worker = crew
+          ? ((crewName && crew.find(w => w.name === crewName)) || crew[0])
+          : ((r.live && r.live.worker) || { name: r.worker, photo:'', tier:'' });
         const thread = crewName
           ? ((r.threads && r.threads[crewName]) || [])
           : (r.thread || []);
@@ -21210,7 +21315,13 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     }
 
     const t = activeThread || threads[0];
-    const phoneDigits = (t.worker.phone || '').replace(/[^0-9+]/g, '');
+    /* Never let one malformed thread take the whole Inbox down. The throw here
+       was unrecoverable: openInboxThread() had already written
+       dashState.inboxThreadId, nothing cleared it, so every later visit to the
+       Inbox re-threw and the Deleted tab — the only place deleted messages
+       still exist — became unreachable until a page reload. */
+    const tw = (t && t.worker) || { name:'Your Gopher', photo:'', tier:'' };
+    const phoneDigits = (tw.phone || '').replace(/[^0-9+]/g, '');
     const fallbackPhone = '+19195550' + (100 + Math.floor(Math.random()*900));
     const telDigits = phoneDigits || fallbackPhone;
 
@@ -21239,7 +21350,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
 
     // Right column — active conversation
     const tierBadge = (() => {
-      const tier = t.worker.tier || '';
+      const tier = tw.tier || '';
       if(!tier) return '';
       const cls = tier === 'pro+' ? 'tier-pro' : '';
       const lbl = tier.replace('+','');
@@ -21317,25 +21428,25 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       <div class="inbox-convo">
         <div class="inbox-convo-head">
           <button class="inbox-convo-back" id="inboxConvoBack" type="button">← Back</button>
-          <div class="inbox-convo-photo">${t.worker.photo ? `<img src="${t.worker.photo}" alt="">` : '💬'}</div>
+          <div class="inbox-convo-photo">${tw.photo ? `<img src="${tw.photo}" alt="">` : '💬'}</div>
           <div class="inbox-convo-meta">
-            <div class="inbox-convo-name">${t.worker.name || 'Gopher'}${tierBadge}</div>
+            <div class="inbox-convo-name">${tw.name || 'Gopher'}${tierBadge}</div>
             <div class="inbox-convo-req">Re: ${t.title || ''} · <button class="inbox-open-req" data-open-req="${t.id}">View request</button></div>
           </div>
           <a class="contact-btn contact-call inbox-convo-call" href="tel:${telDigits}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.86 19.86 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.86 19.86 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
             <span>Call</span>
           </a>
-          <button type="button" id="rqRelFav" title="${((dashState.gopherRels||{})[t.worker.name]==='favorite')?'Remove from MY Gophers':'Add to MY Gophers'}" style="border:1.6px solid ${((dashState.gopherRels||{})[t.worker.name]==='favorite')?'#1CB061':'#d9d2c2'};background:${((dashState.gopherRels||{})[t.worker.name]==='favorite')?'#1CB061':'#fff'};color:${((dashState.gopherRels||{})[t.worker.name]==='favorite')?'#fff':'#8a94a3'};border-radius:10px;width:34px;height:34px;font-size:16px;cursor:pointer;flex:0 0 auto;margin-left:6px;">&#9829;</button>
-          <button type="button" id="rqRelBlock" title="${((dashState.gopherRels||{})[t.worker.name]==='blocked')?'Unblock this Gopher':'Block this Gopher'}" style="border:1.6px solid ${((dashState.gopherRels||{})[t.worker.name]==='blocked')?'#C44257':'#d9d2c2'};background:${((dashState.gopherRels||{})[t.worker.name]==='blocked')?'#C44257':'#fff'};color:${((dashState.gopherRels||{})[t.worker.name]==='blocked')?'#fff':'#8a94a3'};border-radius:10px;width:34px;height:34px;font-size:16px;cursor:pointer;flex:0 0 auto;margin-left:6px;">&#8856;</button>
+          <button type="button" id="rqRelFav" title="${((dashState.gopherRels||{})[tw.name]==='favorite')?'Remove from MY Gophers':'Add to MY Gophers'}" style="border:1.6px solid ${((dashState.gopherRels||{})[tw.name]==='favorite')?'#1CB061':'#d9d2c2'};background:${((dashState.gopherRels||{})[tw.name]==='favorite')?'#1CB061':'#fff'};color:${((dashState.gopherRels||{})[tw.name]==='favorite')?'#fff':'#8a94a3'};border-radius:10px;width:34px;height:34px;font-size:16px;cursor:pointer;flex:0 0 auto;margin-left:6px;">&#9829;</button>
+          <button type="button" id="rqRelBlock" title="${((dashState.gopherRels||{})[tw.name]==='blocked')?'Unblock this Gopher':'Block this Gopher'}" style="border:1.6px solid ${((dashState.gopherRels||{})[tw.name]==='blocked')?'#C44257':'#d9d2c2'};background:${((dashState.gopherRels||{})[tw.name]==='blocked')?'#C44257':'#fff'};color:${((dashState.gopherRels||{})[tw.name]==='blocked')?'#fff':'#8a94a3'};border-radius:10px;width:34px;height:34px;font-size:16px;cursor:pointer;flex:0 0 auto;margin-left:6px;">&#8856;</button>
         </div>
         <div class="inbox-thread" id="rqInboxThread">
           ${t.thread.length ? t.thread.map((m, mi) => renderInboxMsg(m, mi)).join('')
-            : `<div class="inbox-thread-empty">Start the conversation with ${(t.worker.name || 'your Gopher').split(' ')[0]} — send your first message below.</div>`}
+            : `<div class="inbox-thread-empty">Start the conversation with ${(tw.name || 'your Gopher').split(' ')[0]} — send your first message below.</div>`}
         </div>
         ${t.typeable ? `
           <div class="inbox-composer">
-            <input type="text" class="inbox-composer-input" id="rqInboxInput" placeholder="Message ${(t.worker.name || 'your Gopher').split(' ')[0]}…" autocomplete="off">
+            <input type="text" class="inbox-composer-input" id="rqInboxInput" placeholder="Message ${(tw.name || 'your Gopher').split(' ')[0]}…" autocomplete="off">
             <button class="inbox-composer-send" id="rqInboxSend" aria-label="Send message">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
             </button>
@@ -27023,6 +27134,13 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     moveFlowToDash();
     if(typeof window.__resetRequestFlow === 'function') window.__resetRequestFlow();
     showSection('new-request');
+    /* ⛔ The request flow and the Deals panel SHARE the 'new-request' section,
+       and which one shows is decided by setRequestPath(), not by showSection().
+       Without this line, tapping "+ New Request" while Local Deals was open
+       reset the flow invisibly and left DEALS on screen — the button read as
+       dead (owner, 2026-10-03). showSection() alone was already a no-op there,
+       because the section was the active one either way. */
+    setRequestPath('new');
   };
   if(newReqBtn){
     newReqBtn.addEventListener('click', () => window.openRequestFlow());

@@ -7148,22 +7148,68 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      ground to Shamrock, so the ink must swap too — white on Shamrock is 1.85:1
      and fails AA. Navy is 7.95:1 on --green and 5.22:1 on --green-dark, so
      .done:hover is covered by inheriting .done's colour. */
+  /* ⛔ STEP CHIPS — state-led. Owner picked this on 2026-10-03 from four options
+     shown side by side on the live page: "I like this one."
+
+     COLOUR NOW MEANS SOMETHING. Navy = done, Shamrock = you are here, grey =
+     not yet reached. Before this, the current step and every finished step were
+     the SAME Shamrock, so the row read as decoration rather than progress — you
+     had to read all seven labels to find out where you were.
+
+     It also fixes two contrast failures that were live:
+       done/active : white on Shamrock      1.85:1  ->  7.95:1 and 14.74:1
+       locked      : white on #c9cfdd       1.56:1  ->  4.93:1
+     The locked chips were WORSE than the green ones and nobody had reported them.
+
+     ⚠️ The white here is on NAVY, not on green — the Shamrock rule is intact.
+     Shamrock still carries navy, on the one chip that is Shamrock. */
   .mst-tab.done {
-    background:var(--green); color:var(--ink-on-green);
-    box-shadow:0 4px 12px rgba(51,217,117,0.3);
+    background:var(--navy); color:#fff;
+    box-shadow:0 3px 10px rgba(0,36,97,0.20);
   }
-  .mst-tab.done:hover { background:var(--green-dark); }
+  /* The tick is the only Shamrock on a finished chip — brand present, not loud.
+     It is real text content, so a screen reader announces "check, Job details",
+     which is what the state actually means. */
+  /* Compact on purpose. Measured: at Connect's 860px demo portal each chip gets
+     111px, and the first draft of this tick (13px + nbsp) needed 135px — it
+     truncated "Pick a service" to "Pick a servi...". I caused that; it did not
+     truncate before the tick existed. 11px with a 3px margin plus the container
+     rule below gives real slack instead of an exact fit. */
+  .mst-tab.done::before { content:'\2713'; color:var(--green); font-weight:900; font-size:11px; margin-right:3px; }
+  .mst-tab.done:hover { background:var(--navy-mid); }
   .mst-tab.active {
     background:var(--green); color:var(--ink-on-green);
-    box-shadow:0 6px 16px rgba(51,217,117,0.42), 0 0 0 3px rgba(51,217,117,0.18);
+    box-shadow:0 6px 16px rgba(51,217,117,0.45), 0 0 0 3px rgba(0,36,97,0.14);
   }
-  /* Locked = step not yet reached; greyed out, not interactive. */
+  .mst-tab.active:hover { background:var(--green); }
+  /* Locked = step not yet reached. Grey, but READABLE grey: the old pairing was
+     white on #c9cfdd at 1.56:1, and opacity:0.65 was dimming it further. */
   .mst-tab.locked, .mst-tab:disabled {
-    background:#c9cfdd; color:#fff; cursor:not-allowed; box-shadow:none; opacity:0.65;
+    background:#e7eaf1; color:#5a6479; cursor:not-allowed; box-shadow:none; opacity:1;
   }
   .mst-tab.locked:hover, .mst-tab:disabled:hover {
-    background:#c9cfdd; transform:none; box-shadow:none;
+    background:#e7eaf1; transform:none; box-shadow:none;
   }
+
+  /* ⛔ The aligned chip row needs CONTAINER width, not viewport width. The two
+     places this flow renders are very different sizes inside the SAME viewport:
+     the Request dashboard portal is ~1180px, Connect's marketing demo is 860px.
+     A viewport media query cannot tell them apart, which is how the tick came to
+     truncate on one surface while measuring fine on the other.
+     Below 1000px of PORTAL width the row packs instead, where chips are
+     content-width and cannot truncate at all. */
+  .flow-mockup { container-type:inline-size; }
+  @container (max-width:1000px){
+    .mockup-step-tabs,
+    .dash-section[data-rqsec="new-request"] .mockup-step-tabs,
+    .dash-section[data-section="new-request"] .mockup-step-tabs { flex-wrap:wrap; gap:9px; }
+    .mockup-step-tabs .mst-tab,
+    .dash-section[data-rqsec="new-request"] .mst-tab,
+    .dash-section[data-section="new-request"] .mst-tab {
+      flex:0 0 auto; padding-left:16px; padding-right:16px;
+    }
+  }
+
 
   /* ─── Request History table ─── */
   /* ── Request History cards (owner 2026-10-02) ───────────────────────────
@@ -16612,6 +16658,15 @@ const PAY_BADGES = {
         if(ov) ov.hidden = false;
       }
     } else {
+      /* ⛔ The flow mockup is ONE node that gets MOVED between the marketing
+         page and the dashboard host. Leaving the request flow moves it back
+         out, and this handler never moved it in — only the sidebar button did
+         (openRequestFlow -> moveFlowToDash). So the home card worked the FIRST
+         time, when the node happened to already be in the host, and every time
+         after that it switched to an empty section: a blank canvas with the
+         nav highlighted. Owner reported it 2026-10-03 as "tapping the request
+         card ... wouldn't load the select a service page". */
+      moveFlowMockupToDashboard();
       setRequestPath('new');
     }
   });
@@ -20689,19 +20744,15 @@ const PAY_BADGES = {
 
   function renderInbox(){
     const body = document.getElementById('inboxBody');
-    const allThreads = getThreads();
     /* G40-100 — threads are DERIVED from requests, so deletion is recorded against
-       the thread id and filtered on read; the 90-day purge is evaluated here too. */
+       the thread id and filtered on read; the 90-day purge is evaluated here too.
+       The filtering lives in partitionInboxThreads() so the sidebar badge cannot
+       drift from this list again. */
     const D = window.GopherInboxDelete;
-    dashState.inboxDeleted = dashState.inboxDeleted || {};
-    dashState.inboxPurged  = dashState.inboxPurged  || {};
-    dashState.inboxTab     = dashState.inboxTab     || 'inbox';
-    if(D) Object.keys(dashState.inboxDeleted).forEach(id => {
-      if(D.isPurged(dashState.inboxDeleted[id])) delete dashState.inboxDeleted[id];
-    });
-    const visible     = allThreads.filter(x => !dashState.inboxPurged[x.id]);
-    const liveThreads = visible.filter(x => !dashState.inboxDeleted[x.id]);
-    const delThreads  = visible.filter(x =>  dashState.inboxDeleted[x.id]);
+    dashState.inboxTab = dashState.inboxTab || 'inbox';
+    const part        = partitionInboxThreads();
+    const liveThreads = part.live;
+    const delThreads  = part.deleted;
     const threads     = dashState.inboxTab === 'deleted' ? delThreads : liveThreads;
 
     // The active thread may be a user-started request with NO messages yet
@@ -20794,7 +20845,11 @@ const PAY_BADGES = {
     `;
 
     const t = activeThread || threads[0];
-    const phoneDigits = (t.worker.phone || '').replace(/[^0-9+]/g,'');
+    /* Guarded for the same reason as gopher-request.html: a thread without a
+       worker used to throw here and take the whole Inbox down for the session,
+       including the Deleted tab, recoverable only by reloading the page. */
+    const tw = (t && t.worker) || { name:'Your Gopher', photo:'', tier:'' };
+    const phoneDigits = (tw.phone || '').replace(/[^0-9+]/g,'');
     // The back button returns to wherever the user came from to open this
     // thread. If they came from a Request Detail view (Message button on an
     // assigned-worker card), it returns there. Otherwise it returns to the
@@ -20804,9 +20859,9 @@ const PAY_BADGES = {
       <div class="inbox-convo">
         <div class="inbox-convo-head">
           <button class="inbox-convo-back" id="inboxConvoBack" aria-label="Back" type="button">← Back</button>
-          <div class="inbox-convo-photo">${t.worker.photo?`<img src="${t.worker.photo}" alt="">`:'💬'}</div>
+          <div class="inbox-convo-photo">${tw.photo?`<img src="${tw.photo}" alt="">`:'💬'}</div>
           <div class="inbox-convo-meta">
-            <div class="inbox-convo-name">${t.worker.name}</div>
+            <div class="inbox-convo-name">${tw.name}</div>
             <div class="inbox-convo-req">Re: ${t.title} · <button class="inbox-open-req" data-open-req="${t.id}">View request</button></div>
           </div>
           <a class="contact-btn contact-call inbox-convo-call" href="tel:${phoneDigits}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Call</span></a>
@@ -20816,14 +20871,14 @@ const PAY_BADGES = {
             <div class="inbox-msg ${m.from==='me'?'mine':'theirs'}">
               ${m.photo ? `<img class="inbox-photo" src="${m.photo}" alt="Photo attachment">` : `<div class="inbox-bubble">${m.text}</div>`}${(m.f && m.from!=='me') ? `<div class="inbox-msg-flag" style="margin-top:3px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:#C44257;line-height:1.35;">&#9873; This message was flagged for a possible terms violation.</div>` : ''}
               <div class="inbox-msg-time">${m.time}</div>
-            </div>`).join('') : `<div class="inbox-thread-empty">Start the conversation with ${t.worker.name.split(' ')[0]} — send your first message below.</div>`}
+            </div>`).join('') : `<div class="inbox-thread-empty">Start the conversation with ${tw.name.split(' ')[0]} — send your first message below.</div>`}
         </div>
         ${t.typeable ? `
         ${_cxPendingPhoto ? `<div class="inbox-pending"><img src="${_cxPendingPhoto}" alt="Photo ready to send"><span class="inbox-pending-lbl">Photo ready to send</span><button type="button" class="inbox-pending-x" id="inboxPhotoDrop" aria-label="Remove photo">&times;</button></div>` : ''}
         <div class="inbox-composer">
           <button type="button" class="inbox-attach" id="inboxComposerAttach" title="Attach a photo" aria-label="Attach a photo">&#128247;</button>
           <input type="file" accept="image/*" id="inboxComposerFile" hidden>
-          <input type="text" class="inbox-composer-input" id="inboxComposerInput" placeholder="Message ${t.worker.name.split(' ')[0]}…" autocomplete="off">
+          <input type="text" class="inbox-composer-input" id="inboxComposerInput" placeholder="Message ${tw.name.split(' ')[0]}…" autocomplete="off">
           <button class="inbox-composer-send" id="inboxComposerSend" aria-label="Send message">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
@@ -21016,10 +21071,35 @@ const PAY_BADGES = {
   }
 
   // Inbox unread badge = number of conversations (simple demo count).
+  /* ⛔ SINGLE SOURCE OF TRUTH for "what is in the Inbox right now".
+     The list and the sidebar badge both derive from getThreads(), and they used
+     to filter it through DIFFERENT rules: renderInbox() excluded purged AND
+     deleted threads, updateInboxBadge() excluded neither. So deleting every
+     message emptied the list and left the badge showing a count — owner
+     reported it on Request 2026-10-03; Connect carried the identical defect.
+     Any new surface that lists or summarises the Inbox calls THIS, never
+     getThreads() directly. */
+  function partitionInboxThreads(){
+    dashState.inboxDeleted = dashState.inboxDeleted || {};
+    dashState.inboxPurged  = dashState.inboxPurged  || {};
+    const D = window.GopherInboxDelete;
+    if(D) Object.keys(dashState.inboxDeleted).forEach(id => {
+      if(D.isPurged(dashState.inboxDeleted[id])) delete dashState.inboxDeleted[id];
+    });
+    const visible = getThreads().filter(x => !dashState.inboxPurged[x.id]);
+    return {
+      visible: visible,
+      live:    visible.filter(x => !dashState.inboxDeleted[x.id]),
+      deleted: visible.filter(x =>  dashState.inboxDeleted[x.id]),
+    };
+  }
+
+  // Count of LIVE inbox rows — deleted and purged excluded, via the same
+  // partition the list uses.
   function updateInboxBadge(){
     const badge = document.getElementById('inboxBadge');
     if(!badge) return;
-    const n = getThreads().length;
+    const n = partitionInboxThreads().live.length;
     badge.textContent = n;
     badge.style.display = n > 0 ? '' : 'none';
   }
@@ -26361,6 +26441,13 @@ const PAY_BADGES = {
     if(window.__resetFlowToStart) window.__resetFlowToStart();
     moveFlowMockupToDashboard();
     showSection('new-request');
+    /* ⛔ The request flow and the Deals panel SHARE the 'new-request' section,
+       and which one shows is decided by setRequestPath(), not by showSection().
+       Without this line, tapping "+ New Request" while Local Deals was open
+       reset the flow invisibly and left DEALS on screen — the button read as
+       dead (owner, 2026-10-03). showSection() alone was already a no-op there,
+       because the section was the active one either way. */
+    setRequestPath('new');
   });
 
   // ─── Request-limit upsell modal ───
@@ -26368,6 +26455,7 @@ const PAY_BADGES = {
     if(window.__resetFlowToStart) window.__resetFlowToStart();
     moveFlowMockupToDashboard();
     showSection('new-request');
+    setRequestPath('new');   // see the note on the sidebar button above
   }
   function showReqLimitModal(){
     const overlay = document.getElementById('reqLimitOverlay');

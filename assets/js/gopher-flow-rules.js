@@ -64,7 +64,7 @@
     pickupStairs:         ['delivery', 'home', 'junk', 'labor', 'other', 'ride', 'yard'],
     riderInfo:            ['delivery', 'home', 'junk', 'labor', 'moving', 'other', 'yard'],
     serviceElevator:      ['delivery', 'home', 'junk', 'labor', 'other', 'ride', 'yard'],
-    workerSelectChoice:   ['home', 'labor', 'moving', 'other', 'yard'],
+    workerSelectChoice:   ['home', 'labor', 'other', 'yard'],   /* Moving unhidden 2026-10-03 — see gopher-request.html */
     workerSetup:          ['delivery', 'home', 'ride']
   };
 
