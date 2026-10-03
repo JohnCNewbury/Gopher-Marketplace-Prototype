@@ -1876,7 +1876,25 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     --tan: #EBE8E5; /* Tunnel Tan — brand neutral background */
     --terracotta: #d97757;
     --terracotta-soft: #fbe9df;
-    --navy: #2a3654;
+    /* ⛔ GOPHER MIDNIGHT BLUE. Owner 2026-10-03, pointing at the category-tile
+       hover tooltip: "Just noticed this blue is wrong too." It was — and so was
+       everything else this token paints, because the token itself was wrong.
+
+       It read #2a3654, which is not in the palette. Midnight Blue is #002461,
+       the same blue the home card and (since this pass) every dashboard sidebar
+       already land on. This was the third sighting of the same defect: the
+       sidebar, then this tooltip, both symptoms of the token.
+
+       ⭐ The swap is STRICTLY CONTRAST-SAFE, because #002461 is DARKER than what
+       it replaces — every pairing improves, none regress:
+         as text on white   11.97:1 -> 14.74:1
+         as text on Sand    10.86:1 -> 13.36:1
+         white on it (bg)   11.97:1 -> 14.74:1
+         on Shamrock         6.45:1 ->  7.95:1
+
+       ⚠️ --navy-mid stays LIGHTER than this on purpose: it is the hover state
+       for navy fills, so a hover must lighten. Do not "correct" it to match. */
+    --navy: #002461;
     --navy-mid: #253a7e;
     --navy-light: #eef0f8;
     --text: #2c2c3e;
@@ -3447,13 +3465,25 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      text at 2.25 / 1.5 / 1 on a 14px base = 32 / 21 / 14. Applied to every flow
      step here (all use .mockup-content h3 + .mc-sub); button/option base is set
      on .radio-row .rr-label below. Mirrors gopher-connect.html. */
+  /* Owner 2026-10-03: "both need the 'Select the service...' header centered
+     between the stage cards and category cards." Centred, and given room below
+     so it sits BETWEEN the step chips and the tiles rather than hugging the
+     tiles — it had 32px of air above it and 8px below.
+     Applies to every step's heading, not just step 1: they are one component
+     and a centred step 1 over six left-aligned siblings is the same kind of
+     inconsistency the chip row had. */
   .mockup-content h3 {
     font-family:'Nunito',sans-serif; font-weight:900; font-size:32px;
     line-height:1.1; letter-spacing:-0.3px; color:var(--navy); margin-bottom:8px;
+    text-align:center;
   }
   .mockup-content .mc-sub {
     font-size:21px; line-height:1.25; font-weight:600; color:var(--muted); margin-bottom:20px;
+    text-align:center;
   }
+  /* Step 1 is the only step whose heading is followed straight by content with
+     no .mc-sub between, so it is the only one that needs the gap restored. */
+  .mockup-content h3 + .cat-grid { margin-top:24px; }
 
   /* Step 1 — category grid */
   .cat-grid {
@@ -6980,8 +7010,29 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .dash-main    { grid-area:main; }
 
   /* ─── Sidebar ─── */
+  /* ⛔ GOPHER'S BLUE. Owner 2026-10-03, after seeing three options side by side:
+     "I'm still struggling with the 2 different blues with the sidebar and the
+     request card."
+
+     He was right and the cause was measurable. The home card is
+     linear-gradient(150deg,#053a75,#002461) — it LANDS ON MIDNIGHT BLUE
+     #002461, the brand colour. The sidebar was #1a2a5e → #0f1a3d, and NEITHER
+     stop is in the palette. They looked different because they were different,
+     and only one of them was the brand.
+
+     This is now the card's own ramp, so the two biggest surfaces on the screen
+     are the same blue. White on #002461 is 14.74:1.
+
+     ⚠️ The two rejected options are recorded so they are not re-proposed:
+       · Card in Shamrock — the Deals card beside it carries its merchant
+         marquee on green bands, so both cards read green and stop being two
+         things; and the CTA has to invert to navy, spending green on the one
+         card whose whole job is go.
+       · Sidebar in Shamrock — legible (navy on Shamrock is 7.95:1) but the nav
+         badges are Shamrock pills: on a Shamrock sidebar that is 1.00:1. They
+         do not fade, they vanish, leaving a floating numeral. */
   .dash-sidebar {
-    background:linear-gradient(180deg, #1a2a5e 0%, #0f1a3d 100%);
+    background:linear-gradient(180deg, #053a75 0%, #002461 100%);
     color:white;
     display:flex; flex-direction:column;
     padding:18px 14px;
@@ -8234,6 +8285,78 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     margin:0 0 4px; letter-spacing:-.4px; color:var(--navy);
   }
   .choose-sub { margin:0 0 18px; font-size:14px; color:var(--muted); }
+  /* ── The live-request container (owner 2026-10-03) ───────────────────────
+     Settled design: docs/handoff/brand-home-concept4-two-states.html.
+     Rules it has to keep, every one of them an owner ruling:
+       · The two cards LEAD. This sits above them and exists only when
+         something is live. It never becomes a row of tiles.
+       · ONE container, never a stack. A card drawn on top of a card read as a
+         swipeable deck, which is not what is happening.
+       · Page-turn EDGES step through more than one: i>0 draws the left edge,
+         i<n-1 the right. At the realistic ceiling the edges ARE the position
+         indicator — right only = first, both = middle, left only = last — so
+         there are deliberately NO dots.
+       · The one needing attention sorts to index 0. You always land on it.
+       · Messages never appear here. The Inbox badge carries them, in GREEN,
+         because an unread message is not a negative.
+       · Every string is a template. Owner: "I dont have realtime AI for this.
+         You need to be thinking SCALE."
+     ⛔ Realistic ceiling is 2 concurrent requests. An earlier mock built a
+     segmented switcher, carousel and pagination for volume that does not
+     exist and was rejected. Do not rebuild it.
+     --lava / --corn are NOT declared in this file; the literals below match
+     .req-status.status-dispute's own #c44257. */
+  .hlive { margin:0 0 18px; }
+  .hlive-card {
+    display:flex; align-items:stretch; overflow:hidden;
+    background:#fff; border:1px solid #e9e3d4; border-radius:15px;
+    box-shadow:0 2px 10px rgba(0,36,97,.06);
+  }
+  .hlive-card.has-attention {
+    border-color:#C44257;
+    box-shadow:0 0 0 1.4px #C44257, 0 4px 14px -3px rgba(196,66,87,.3);
+  }
+  .hlive-body {
+    flex:1; min-width:0; padding:15px 17px; display:flex; align-items:center; gap:13px;
+    background:none; border:0; text-align:left; cursor:pointer; font:inherit; color:inherit;
+  }
+  .hlive-ico {
+    width:42px; height:42px; border-radius:13px; background:#e8f5ee; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; font-size:18px;
+  }
+  .hlive-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; align-items:flex-start; }
+  .hlive-pill {
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:10px; letter-spacing:.8px;
+    text-transform:uppercase; padding:3px 9px; border-radius:14px;
+    background:var(--green); color:var(--ink-on-green);
+  }
+  .hlive-pill.at  { background:#C44257; color:#fff; }
+  .hlive-pill.sch { background:#BADBFC; color:var(--navy); }
+  .hlive-ttl {
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:15px; line-height:1.2;
+    max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .hlive-sub {
+    font-size:12px; color:var(--muted); line-height:1.35;
+    max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .hlive-sub.hot { color:#C44257; font-weight:700; }
+  .hlive-amt { font-family:'Nunito',sans-serif; font-weight:900; font-size:15px; white-space:nowrap; }
+  .hlive-turn {
+    width:46px; flex:0 0 auto; border:0; background:#f4f0e6; color:var(--navy); cursor:pointer;
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:19px;
+    display:flex; align-items:center; justify-content:center; transition:background .15s;
+  }
+  .hlive-turn:hover { background:#ece6d8; }
+  .hlive-turn:focus-visible { outline:2px solid var(--green); outline-offset:-3px; }
+  .hlive-turn.l { border-right:1px solid #e9e3d4; }
+  .hlive-turn.r { border-left:1px solid #e9e3d4; }
+  /* the attention clause inside the headline */
+  .choose-ask em { font-style:normal; color:#C44257; }
+  @media (max-width:760px){
+    .hlive-amt { display:none; }
+    .hlive-turn { width:38px; }
+  }
   .choose-two { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   .choose-card {
     position:relative; overflow:hidden; text-align:left; cursor:pointer; border:0;
@@ -20310,12 +20433,40 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
            glyph; Dashboard takes the chart glyph, which suits an overview.
            No JS change needed: the generic nav handler routes any section key
            and showSection() toggles .active off the same attribute. -->
+      <!-- Owner 2026-10-03: Home and Dashboard had become ONE destination, so
+           the Dashboard entry is gone and Home is it. Why it went rather than
+           Home: at the realistic ceiling of 2 concurrent requests the KPI tiles
+           are theatre — "All requests: 2" over "Active: 1, Scheduled: 1"
+           describes two cards you can already see, and the home container pages
+           through them. ⛔ This is the CONSUMER ruling only. gopher-connect.html
+           KEEPS its Dashboard: a business has Users & access, so several people
+           request and the ceiling argument does not hold there.
+
+           The `home` SECTION is untouched and still reachable — "View all" and
+           the internal flows route to it. It simply has no sidebar entry. -->
+      <!-- ⛔ Dashboard RESTORED, owner 2026-10-03, reversing its removal earlier
+           the same day: "I think we made a user experience mistake when removing
+           the dashboard... I want it back. We'll move the dashboard under the
+           home page like before. The home page will stay the same and act the
+           same. The dashboard will behave the same and now have a home."
+
+           What removing it actually broke, and the reason the call was right:
+           the Dashboard SECTION stayed reachable — "← Back to Dashboard" on the
+           request-detail page routes to it (data-rqjump="home") — so the product
+           kept sending people to a destination with no sidebar entry to land on.
+           A route with nowhere to sit in the nav is worse than a redundant nav
+           entry. The home screen and its container are UNCHANGED by this.
+           Dashboard UI is a separate conversation, not this one. -->
       <button class="dash-nav-item active" data-rqsection="choose">
         <span class="dni-ico">🏠</span><span class="dni-label">Home</span>
       </button>
       <button class="dash-nav-item" data-rqsection="home">
         <span class="dni-ico">📊</span><span class="dni-label">Dashboard</span>
-        <span class="dni-badge" id="rqDashNavBadge">3</span>
+        <!-- Count stays what it was before the removal: how many requests are
+             live. It now HIDES at zero, which it never did — it was hard-coded
+             to "3" in the markup while every other badge here hides. That part
+             was a real bug and is kept. -->
+        <span class="dni-badge" id="rqDashNavBadge" hidden>0</span>
       </button>
       <button class="dash-nav-item" data-rqsection="previous">
         <span class="dni-ico">📚</span><span class="dni-label">Request History</span>
@@ -20393,8 +20544,14 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
            #pathTabDeals — so this adds a front door, not a third surface. -->
       <section class="dash-section active" data-rqsec="choose">
         <div class="choose-stage">
-          <h2 class="choose-ask">So, how can we help you today?</h2>
-          <p class="choose-sub">Two ways to go from here.</p>
+          <!-- The headline is a TEMPLATE driven by renderHomeLive(): it reads
+               "So, how can we help you today?" with nothing live, and
+               "You have N current requests, M need attention" otherwise. -->
+          <h2 class="choose-ask" id="rqChooseAsk">So, how can we help you today?</h2>
+          <p class="choose-sub" id="rqChooseSub">Two ways to go from here.</p>
+          <!-- Live-request container. Empty and hidden when nothing is live, so
+               the two cards sit exactly where they do today. -->
+          <div class="hlive" id="rqHomeLive" hidden></div>
           <div class="choose-two">
             <button type="button" class="choose-card svc" data-choose="services">
               <!-- Owner 2026-10-01: the Request logo is CENTRED at the top of the
@@ -22748,7 +22905,16 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     set('kpiAll', reqs.length);
     // Keep the sidebar "Dashboard" nav badge in sync with the total request
     // count so it always matches the ALL REQUESTS KPI (never a stale number).
-    set('rqDashNavBadge', reqs.length);
+    /* Back on Dashboard and counting live requests again, matching the ALL
+       REQUESTS KPI, after the owner reversed the removal on 2026-10-03.
+       The one thing kept from that pass: it HIDES at zero. It was the only
+       badge in this sidebar that never did — hard-coded to "3" in the markup
+       — while #rqInboxNavBadge and #rqGophersNavBadge both hide. */
+    const navBadge = document.getElementById('rqDashNavBadge');
+    if(navBadge){ navBadge.textContent = reqs.length; navBadge.hidden = (reqs.length === 0); }
+    // The home container reads the same store, so repaint it from the same
+    // place rather than hunting every mutation site.
+    if(typeof renderHomeLive === 'function') renderHomeLive();
   }
 
   // Re-apply whichever KPI filter is currently active (so new cards obey it).
@@ -22758,6 +22924,110 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     dash.querySelectorAll('#rqActiveRequests .req-card').forEach(card => {
       card.style.display = (f === 'all' || card.dataset.rqstatus === f) ? '' : 'none';
     });
+  }
+
+  /* ══ HOME: the live-request container ═══════════════════════════════════
+     Settled design, owner-approved 2026-10-03. See the .hlive CSS block for
+     the rules; this is the half that has to stay honest about SCALE.
+
+     ⛔ Every string here is a TEMPLATE. Owner: "I dont have realtime AI for
+     this. You need to be thinking SCALE." Nothing is written per-request and
+     nothing assumes a name exists — an earlier draft used "Marcus is on the
+     way" as a headline, which needs a name that may not be there, and "One
+     needs a yes from you", which is false when two do. */
+  var HOME_LIVE_IX = 0;
+
+  // Attention sorts to index 0 so you always land on the one that wants you.
+  // Array.prototype.sort is stable, so the store's own order survives inside
+  // each group — this re-orders, it does not shuffle.
+  function homeLiveList(){
+    var all = (typeof DASH_DATA === 'object' && DASH_DATA && DASH_DATA.activeRequests)
+      ? DASH_DATA.activeRequests.slice() : [];
+    all.sort(function(a,b){ return (b.needsAttention?1:0) - (a.needsAttention?1:0); });
+    return all;
+  }
+
+  /* n = live requests, a = how many of them want something. Both plurals are
+     computed, never hard-coded, and the attention clause disappears entirely
+     at a === 0 rather than reading "0 need attention". */
+  function homeLiveHeadline(n, a){
+    if(!n) return 'So, how can we help you today?';
+    return 'You have ' + n + (n === 1 ? ' current request' : ' current requests')
+      + (a ? ', <em>' + a + (a === 1 ? ' needs' : ' need') + ' attention</em>' : '');
+  }
+
+  function renderHomeLive(){
+    var host = document.getElementById('rqHomeLive');
+    if(!host) return;
+    var list = homeLiveList();
+    var n    = list.length;
+    var attn = list.filter(function(r){ return r.needsAttention; }).length;
+
+    var ask = document.getElementById('rqChooseAsk');
+    var sub = document.getElementById('rqChooseSub');
+    if(ask) ask.innerHTML = homeLiveHeadline(n, attn);
+    // "Two ways to go from here" is the EMPTY state's sub-head. Under
+    // "You have 2 current requests" it reads as a non-sequitur.
+    if(sub) sub.hidden = n > 0;
+
+    if(!n){ host.hidden = true; host.innerHTML = ''; return; }
+    host.hidden = false;
+
+    // The store can shrink under us (a request completes, or is deleted while
+    // the detail page is open), so clamp rather than render undefined.
+    if(HOME_LIVE_IX > n - 1) HOME_LIVE_IX = 0;
+    if(HOME_LIVE_IX < 0)     HOME_LIVE_IX = 0;
+    var r = list[HOME_LIVE_IX];
+
+    var bucket  = (typeof statusBucket === 'function') ? statusBucket(r.status) : '';
+    var pillCls = r.needsAttention ? ' at' : (bucket === 'scheduled' ? ' sch' : '');
+    var pillTxt = r.needsAttention ? 'Needs you' : (r.statusLabel || '');
+    /* ⚠️ Final's request store carries only a needsAttention BOOLEAN — it has no
+       attention TYPE, so there is no honest way to say which of the five
+       moments this is (bid · rate · gcancel · confirm · adjust). Those labels
+       exist in _prototypes/Request/gopher-request-home.html and are reviewed in
+       docs/handoff/attention-labels-2026-10-03.md. When the type reaches this
+       store, THIS is the line that becomes the real sentence. Until then the
+       copy is deliberately generic rather than invented per request. */
+    var subTxt  = r.needsAttention
+      ? 'Open this request \u2014 it needs your response'
+      : [r.worker, r.when].filter(Boolean).join(' \u00b7 ');
+
+    var left  = HOME_LIVE_IX > 0
+      ? '<button type="button" class="hlive-turn l" data-hlive-turn="-1" aria-label="Previous request">\u2039</button>' : '';
+    var right = HOME_LIVE_IX < n - 1
+      ? '<button type="button" class="hlive-turn r" data-hlive-turn="1" aria-label="Next request">\u203a</button>' : '';
+
+    host.innerHTML =
+      '<div class="hlive-card' + (r.needsAttention ? ' has-attention' : '') + '">'
+      +   left
+      +   '<button type="button" class="hlive-body" data-hlive-open="' + r.id + '">'
+      +     '<span class="hlive-ico">' + (r.icon || '\ud83d\udccb') + '</span>'
+      +     '<span class="hlive-tx">'
+      +       (pillTxt ? '<span class="hlive-pill' + pillCls + '">' + pillTxt + '</span>' : '')
+      +       '<span class="hlive-ttl">' + (r.title || ('Request #' + r.id)) + '</span>'
+      +       (subTxt ? '<span class="hlive-sub' + (r.needsAttention ? ' hot' : '') + '">' + subTxt + '</span>' : '')
+      +     '</span>'
+      +     (r.amount ? '<span class="hlive-amt">' + r.amount + '</span>' : '')
+      +   '</button>'
+      +   right
+      + '</div>';
+
+    // Delegated once, because the container is re-rendered on every store
+    // change and per-node listeners would stack up.
+    if(!host.dataset.wired){
+      host.dataset.wired = '1';
+      host.addEventListener('click', function(e){
+        var turn = e.target.closest('[data-hlive-turn]');
+        if(turn){ HOME_LIVE_IX += parseInt(turn.dataset.hliveTurn, 10); renderHomeLive(); return; }
+        var open = e.target.closest('[data-hlive-open]');
+        if(open){
+          dashState.requestDetailId = open.dataset.hliveOpen;
+          renderRequestDetail();
+          showSection('request-detail');
+        }
+      });
+    }
   }
 
   function renderActiveRequests(){
@@ -25649,7 +25919,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     };
     function noPickupLabel(cat){
       const c = String(cat || '').trim().toLowerCase();
-      return NO_PICKUP_LABELS[c] || 'No pick up \u2014 work happens on site';
+      return NO_PICKUP_LABELS[c] || 'No pick up — work happens on site';
     }
     /* ⛔ A ride's pick-up IS its origin, so "no pick-up address" is a
        contradiction there -- switching it on would leave the ride with only a
@@ -26479,7 +26749,12 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
        chosen — the "activated" state — because on the home screen those buttons
        duplicate the two cards the user is looking at. */
     dash.classList.toggle('is-choosing', name === 'choose');
-    if(name === 'choose') requestAnimationFrame(() => playChooseClips());
+    if(name === 'choose'){
+      // Land on the one that wants you, every time you come back to home.
+      HOME_LIVE_IX = 0;
+      renderHomeLive();
+      requestAnimationFrame(() => playChooseClips());
+    }
     if(name === 'home') renderActiveRequests();
     // Whenever the Previous section is shown, reset the detail panel back to the
     // list view and repaint — covers nav from sidebar, KPI, or any data mutation.

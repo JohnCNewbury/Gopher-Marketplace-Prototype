@@ -2245,13 +2245,25 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      text at 2.25 / 1.5 / 1 on a 14px base = 32 / 21 / 14. Applied to every flow
      step here (all use .mockup-content h3 + .mc-sub); button/option base is set
      on .radio-row .rr-label below. Revised down from 3.5/2/1 — that was too big. */
+  /* Owner 2026-10-03: "both need the 'Select the service...' header centered
+     between the stage cards and category cards." Centred, and given room below
+     so it sits BETWEEN the step chips and the tiles rather than hugging the
+     tiles — it had 32px of air above it and 8px below.
+     Applies to every step's heading, not just step 1: they are one component
+     and a centred step 1 over six left-aligned siblings is the same kind of
+     inconsistency the chip row had. */
   .mockup-content h3 {
     font-family:'Nunito',sans-serif; font-weight:900; font-size:32px;
     line-height:1.1; letter-spacing:-0.3px; color:var(--navy); margin-bottom:8px;
+    text-align:center;
   }
   .mockup-content .mc-sub {
     font-size:21px; line-height:1.25; font-weight:600; color:var(--muted); margin-bottom:20px;
+    text-align:center;
   }
+  /* Step 1 is the only step whose heading is followed straight by content with
+     no .mc-sub between, so it is the only one that needs the gap restored. */
+  .mockup-content h3 + .cat-grid { margin-top:24px; }
 
   /* Step 1 — category grid */
   .cat-grid {
@@ -4987,8 +4999,29 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .dash-sidebar { grid-area:sidebar; }
   .dash-main    { grid-area:main; }
 
+  /* ⛔ GOPHER'S BLUE. Owner 2026-10-03, after seeing three options side by side:
+     "I'm still struggling with the 2 different blues with the sidebar and the
+     request card."
+
+     He was right and the cause was measurable. The home card is
+     linear-gradient(150deg,#053a75,#002461) — it LANDS ON MIDNIGHT BLUE
+     #002461, the brand colour. The sidebar was #1a2a5e → #0f1a3d, and NEITHER
+     stop is in the palette. They looked different because they were different,
+     and only one of them was the brand.
+
+     This is now the card's own ramp, so the two biggest surfaces on the screen
+     are the same blue. White on #002461 is 14.74:1.
+
+     ⚠️ The two rejected options are recorded so they are not re-proposed:
+       · Card in Shamrock — the Deals card beside it carries its merchant
+         marquee on green bands, so both cards read green and stop being two
+         things; and the CTA has to invert to navy, spending green on the one
+         card whose whole job is go.
+       · Sidebar in Shamrock — legible (navy on Shamrock is 7.95:1) but the nav
+         badges are Shamrock pills: on a Shamrock sidebar that is 1.00:1. They
+         do not fade, they vanish, leaving a floating numeral. */
   .dash-sidebar {
-    background:linear-gradient(180deg, #002461 0%, #0f1a3d 100%);
+    background:linear-gradient(180deg, #053a75 0%, #002461 100%);
     color:white;
     display:flex; flex-direction:column;
     padding:18px 14px;
@@ -5655,10 +5688,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     padding:15px 18px; border-radius:14px;
     font-weight:900; font-size:16px; letter-spacing:0.2px; text-align:center;
   }
-  /* home screen = not yet activated: hide both sidebar CTAs */
-  .dashboard.is-choosing .dash-sidebar-newreq,
-  .dashboard.is-choosing .dash-sidebar-deals { display:none; }
-
   /* ══ Two-pathway home screen — ported from gopher-request.html, owner 2026-10-02 ══ */
   /* ── the two-pathway home screen (owner 2026-09-30, slide 2) ── */
   .choose-stage { padding:10px 4px 10px; }   /* owner 2026-10-01: heading sits up, was 34px top */
@@ -5685,9 +5714,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
                        border:1.5px solid #EAD9B6; }
   /* The decorative corner circle was removed from both cards (owner 2026-10-01).
      Rules deleted with it so nothing re-adds it by reusing the class. */
-  /* home screen = not yet activated: hide both sidebar CTAs */
+  /* Home screen = not yet activated: hide both sidebar CTAs. Owner ruling
+     2026-10-01 -- on the home screen those two buttons duplicate the two cards
+     the requester is already looking at.
+     This block was declared TWICE (the port from gopher-request.html brought a
+     copy). The copies were identical in effect, not superset and subset: the
+     extra `#rqDashNewRequest` is a REQUEST-side id with no element in this file
+     -- one occurrence in the whole of gopher-connect.html, that selector, and
+     nothing via getElementById. Dropped with the duplicate. */
   .dashboard.is-choosing .dash-sidebar-newreq,
-  .dashboard.is-choosing #rqDashNewRequest,
   .dashboard.is-choosing .dash-sidebar-deals { display:none; }
 
   /* ════ THE deals button ════════════════════════════════════════════════
@@ -16445,7 +16480,14 @@ const PAY_BADGES = {
     refer:          'Refer Gopher',
     'request-detail': 'Request Details',
     inbox:            'Inbox',
-    'new-request':    'Submit New request',
+    /* ⛔ Deliberately EMPTY, owner 2026-10-03: "Connect needs the submit new
+       request removed." showSection() does `hidden = !_secTitle`, so an empty
+       title hides the node rather than printing a blank line. The flow's own
+       "New Request Details" header is the title of that screen; two stacked
+       headings read as a mistake. gopher-request.html has never shown one here
+       — its node carries `hidden` in the markup and is never un-hidden — so
+       this also makes the two dashboards agree. */
+    'new-request':    '',
   };
 
   // Local view state for the dashboard
@@ -17353,7 +17395,13 @@ const PAY_BADGES = {
     const st = document.getElementById('dashSectionTitle');
     /* Un-hide too: showSection() now hides this node on the home screen, and
        this writer runs afterwards — setting text alone would leave it invisible. */
-    if(st){ st.textContent = showDeals ? 'Local Deals' : 'Submit New request'; st.hidden = false; }
+    /* Deals keeps its title; the request flow has none (owner 2026-10-03), so
+       this writer must HIDE rather than un-hide on the request side — it runs
+       after showSection() and would otherwise put the heading straight back. */
+    if(st){
+      st.textContent = showDeals ? 'Local Deals' : '';
+      st.hidden = !showDeals;
+    }
   }
 
   const DEAL_BACK_SVG  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
@@ -21354,7 +21402,7 @@ const PAY_BADGES = {
     };
     function noPickupLabel(cat){
       const c = String(cat || '').trim().toLowerCase();
-      return NO_PICKUP_LABELS[c] || 'No pick up \u2014 work happens on site';
+      return NO_PICKUP_LABELS[c] || 'No pick up — work happens on site';
     }
     /* ⛔ A ride's pick-up IS its origin, so "no pick-up address" is a
        contradiction there -- switching it on would leave the ride with only a
