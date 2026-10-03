@@ -2815,13 +2815,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:inline-block;
     font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
     letter-spacing:1.5px; text-transform:uppercase;
-    color:var(--green-dark); background:var(--green-light);
+    color:var(--green-text); background:var(--green-light);
     padding:5px 10px; border-radius:99px;
     margin-bottom:14px;
   }
   .bite-card:nth-child(2) .bite-tag { color:var(--terracotta); background:var(--terracotta-soft); }
   .bite-card:nth-child(3) .bite-tag { color:var(--navy); background:var(--navy-light); }
-  .bite-card:nth-child(4) .bite-tag { color:var(--green-dark); background:var(--green-light); }
+  .bite-card:nth-child(4) .bite-tag { color:var(--green-text); background:var(--green-light); }
   .bite-card h4 {
     font-family:'Nunito',sans-serif; font-weight:900; font-size:21px;
     color:var(--navy); line-height:1.2; margin-bottom:10px;
@@ -2839,7 +2839,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     padding:0 4px;
   }
   .bite-footer a.bite-link {
-    color:var(--green-dark); font-weight:900; text-decoration:none; white-space:nowrap;
+    color:var(--green-text); font-weight:900; text-decoration:none; white-space:nowrap;
   }
   .bite-footer a.bite-link:hover { text-decoration:underline; }
 
@@ -2914,7 +2914,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     position:absolute; top:12px; left:24px;
     font-family:'Nunito',sans-serif; font-weight:900; font-size:10px;
     letter-spacing:1.6px; text-transform:uppercase;
-    color:#caf6d4;
+    color:var(--ink-on-green);  /* was #CAF6D4 — pale green on a SHAMROCK ground, 1.56:1.
+       Shamrock carries NAVY, never pale or white (brand rule): this is 7.95:1. */
     display:flex; align-items:center; gap:5px;
   }
   .cmp-h-us .cmp-h-pick::before { content:'★'; font-size:11px; color:#ffe27a; }
@@ -2976,7 +2977,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .cmp-us .cmp-win {
     display:block; font-family:'Nunito',sans-serif; font-weight:800;
-    font-size:13px; color:var(--green-dark); margin-top:5px;
+    font-size:13px; color:var(--green-text); margin-top:5px;
   }
   /* The winning card frame: a glowing border drawn around the whole Us column */
   .compare-wrap::after {
@@ -3993,9 +3994,9 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .idsub-thumb[hidden] { display:none; }
   .idsub-thumb img { width:64px; height:44px; object-fit:cover; border-radius:6px; flex:0 0 auto; }
   .idsub-thumb .idsub-thumb-meta { font-family:'DM Sans',sans-serif; font-size:12px; color:var(--text); }
-  .idsub-thumb .idsub-thumb-meta b { color:var(--green-dark); }
+  .idsub-thumb .idsub-thumb-meta b { color:var(--green-text); }
   .idsub-thumb .idsub-retake { margin-left:auto; font-family:'Nunito',sans-serif; font-weight:700;
-    font-size:11px; color:var(--green-dark); background:none; border:none; cursor:pointer; text-decoration:underline; }
+    font-size:11px; color:var(--green-text); background:none; border:none; cursor:pointer; text-decoration:underline; }
   .idsub-actions { display:flex; flex-direction:column; gap:10px; margin-top:18px; }
   .idsub-actions .gr-modal-btn { width:100%; margin:0; }
   .idsub-actions .gr-modal-btn[disabled] { opacity:0.45; cursor:not-allowed; }
@@ -4110,7 +4111,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .deals-modal { text-align:center; }
   .deals-badge {
     display:inline-block; font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
-    letter-spacing:0.6px; text-transform:uppercase; color:var(--green-dark);
+    letter-spacing:0.6px; text-transform:uppercase; color:var(--green-text);
     background:var(--green-light); border-radius:999px; padding:5px 12px; margin-bottom:10px;
   }
   .deals-body { font-family:'DM Sans',sans-serif; font-size:13px; color:var(--text); line-height:1.55; margin:0 0 18px; }
@@ -4615,7 +4616,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .raf-allbtn {
     background:none; border:none; cursor:pointer; padding:4px 2px;
     font-family:'Nunito'; font-weight:800; font-size:12px;
-    color:var(--green-dark); text-decoration:underline;
+    color:var(--green-text); text-decoration:underline;
   }
   .raf-list {
     display:flex; flex-direction:column; gap:8px;
@@ -4760,7 +4761,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     border-radius:8px;
     display:flex; align-items:center; justify-content:center;
     flex-shrink:0;
-    color:var(--green-dark);
+    color:var(--green-text);
     font-size:16px;
   }
   .ts-perk-body strong {
@@ -4949,7 +4950,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .ai-contact-inline-link {
     flex-shrink:0; background:none; border:none; cursor:pointer;
     font-family:'Nunito',sans-serif; font-weight:800; font-size:12px;
-    color:var(--green-dark); padding:6px 10px; border-radius:8px;
+    color:var(--green-text); padding:6px 10px; border-radius:8px;
     align-self:center; margin:0 auto; transition:all 0.15s;
   }
   .ai-contact-inline-link:hover { background:var(--green-light); color:var(--navy); }
@@ -4968,7 +4969,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .ai-contact-back {
     border:none; background:none; cursor:pointer;
     font-family:'Nunito',sans-serif; font-weight:800; font-size:12px;
-    color:var(--green-dark); padding:4px 8px; border-radius:7px;
+    color:var(--green-text); padding:4px 8px; border-radius:7px;
   }
   .ai-contact-back:hover { background:var(--green-light); }
   .ai-contact-row {
@@ -5039,8 +5040,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .os-rail-labels { font-size:12px; font-weight:800; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.03em; }
   .os-lab-low  { color:var(--muted); text-align:left; }
-  .os-lab-fair { color:var(--green-dark); text-align:center; }
-  .os-lab-gen  { color:var(--green-dark); text-align:right; }
+  .os-lab-fair { color:var(--green-text); text-align:center; }
+  .os-lab-gen  { color:var(--green-text); text-align:right; }
   .os-rail-vals { font-size:13px; font-weight:800; color:var(--navy); margin-top:8px; }
   .os-rail-vals span:first-child { text-align:left; }
   .os-rail-vals span:last-child  { text-align:right; grid-column:3; }
@@ -5087,7 +5088,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
        never merged — it sat on an abandoned branch for five weeks while the bug
        stayed live. A missing fix leaves no trace in the file; it was found by
        asking git what had touched these paths outside my branch. */
-    min-height:16px; color:var(--green-dark); padding:0 4px;
+    min-height:16px; color:var(--green-text); padding:0 4px;
   }
   .os-hint.warn { color:#b07400; }
   .os-hint.over { color:var(--green-dark); }
@@ -6315,7 +6316,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     color:#1877F2; font-family:'Nunito',sans-serif; font-weight:800; font-size:14px;
   }
   .review-rec .rec-thumb { flex:0 0 auto; }
-  .review-rec.nd { color:#19975B; }
+  .review-rec.nd { color:var(--green-text); }   /* was #19975B — 16 failing instances */
   .rev-card p { font-size:14px; color:var(--text); line-height:1.7; margin:0; }
 
   @media (max-width:640px) {
@@ -6398,7 +6399,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     color:var(--navy); letter-spacing:0.2px; line-height:1.5;
     max-width:240px; margin:0 auto;
   }
-  .ts-shield-cap span { color:var(--green); }
+  .ts-shield-cap span { color:var(--green-text); }
 
   /* ── Reciprocal trust line beneath the TrustShield card ── */
   .ts-trust-foot {
@@ -6891,7 +6892,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     transition:background 0.2s;
   }
   .rq-signedin-card button:hover { background:var(--green-dark); }
-  .rq-signedin-tour { display:block; margin-top:14px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; color:var(--green-dark); text-decoration:underline; cursor:pointer; }
+  .rq-signedin-tour { display:block; margin-top:14px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; color:var(--green-text); text-decoration:underline; cursor:pointer; }
   .rq-signedin-tour:hover { color:var(--navy); }
 
   @media (max-width:520px){
@@ -6920,7 +6921,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      end), and gating them would trade a working flow for visual sameness. */
   .qr-card-hero { background:linear-gradient(180deg,#FFFFFF 0%,#F7FBF8 100%); border-color:#DCEBE1; }
   .qr-eyebrow { font-family:'Nunito',sans-serif; font-weight:800; font-size:10px; letter-spacing:0.8px;
-                text-transform:uppercase; color:var(--green-dark); margin-bottom:6px; }
+                text-transform:uppercase; color:var(--green-text); margin-bottom:6px; }
   .qr-linklbl { font-family:'Nunito',sans-serif; font-weight:800; font-size:11px; text-transform:uppercase;
                 letter-spacing:0.6px; color:var(--muted); margin-top:16px; }
   .qr-card-hero .qr-box { margin-top:6px; }
@@ -6953,7 +6954,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .refer-card .rc-ico { font-size:26px; line-height:1; }
   .refer-card .rc-title { font-family:'Nunito',sans-serif; font-weight:800; font-size:15px; color:var(--navy); }
   .refer-card .rc-desc { font-family:'DM Sans',sans-serif; font-size:13px; color:var(--muted); line-height:1.5; }
-  .refer-card .rc-cta { font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:var(--green-dark); margin-top:4px; }
+  .refer-card .rc-cta { font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:var(--green-text); margin-top:4px; }
   .refer-track-tabs { display:flex; gap:8px; margin-bottom:14px; }
   .rtt-tab {
     border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:13px;
@@ -7427,7 +7428,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     font-family:'DM Sans',sans-serif; font-size:14px; color:var(--muted);
     line-height:1.55; max-width:420px; margin:0 auto;
   }
-  .req-empty-sub b { color:var(--green-dark); }
+  .req-empty-sub b { color:var(--green-text); }
   .req-card:hover {
     border-color:var(--green);
     box-shadow:0 4px 14px rgba(26,42,94,0.06);
@@ -8795,7 +8796,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     border:1.5px solid var(--navy-light); border-radius:999px; padding:11px 16px 11px 40px; outline:none; transition:border-color .15s ease; }
   .deals-search:focus { border-color:var(--green); }
   .deals-hint { font-family:'Nunito',sans-serif; font-weight:800; font-size:11px; letter-spacing:.5px;
-    text-transform:uppercase; color:var(--green-dark); margin:10px 0 16px; }
+    text-transform:uppercase; color:var(--green-text); margin:10px 0 16px; }
   .deals-cat { margin:0 0 22px; }
   /* Sand-toned block behind the top service-provider section for contrast. */
   .deals-cat-sand { background:linear-gradient(180deg,#F6EFE0,#F1E7D2); border:1px solid #E8DBBE;
@@ -9529,7 +9530,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     font-family:'Nunito'; font-weight:800; font-size:10px;
     text-transform:uppercase; letter-spacing:0.05em;
   }
-  .pt-status.completed { background:var(--green-light); color:var(--green-dark); }
+  .pt-status.completed { background:var(--green-light); color:var(--green-text); }
   .pt-status.cancelled { background:#fff0f2; color:#a83648; }
   .pt-status.expired   { background:#fff6e6; color:#92580D; }
 
@@ -9903,7 +9904,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .info-value .info-badge {
     display:inline-block;
-    background:rgba(51,217,117,0.12); color:var(--green-dark);
+    background:rgba(51,217,117,0.12); color:var(--green-text);
     padding:2px 9px; border-radius:10px;
     font-size:11px; font-weight:800;
     margin-left:6px;
@@ -10002,7 +10003,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .ph-badge-label {
     font-family:'Nunito'; font-weight:800; font-size:13px; line-height:1.2;
   }
-  .ph-badge.ts .ph-badge-label { color:var(--green-dark); }
+  .ph-badge.ts .ph-badge-label { color:var(--green-text); }
   .ph-badge.tier-elite .ph-badge-label { color:var(--navy); }
   .ph-badge.tier-pro .ph-badge-label { color:var(--green-dark); }
   /* "Add TrustShield" CTA — shown in the rail when the user isn't verified yet */
@@ -10063,7 +10064,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     color:var(--muted); margin-top:2px;
   }
   .pay-card .pc-default {
-    background:rgba(51,217,117,0.12); color:var(--green-dark);
+    background:rgba(51,217,117,0.12); color:var(--green-text);
     padding:3px 10px; border-radius:11px;
     font-family:'Nunito'; font-size:11px; font-weight:800;
     text-transform:uppercase; letter-spacing:0.6px;
@@ -10837,7 +10838,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       </div>
       <div class="cmp-us">
         <span class="cmp-ico">✓</span>
-        <span class="cmp-txt">You do. <b style="color:var(--green-dark)">Period.</b></span>
+        <span class="cmp-txt">You do. <b style="color:var(--green-text)">Period.</b></span>
       </div>
 
       <!-- Service & booking fees -->

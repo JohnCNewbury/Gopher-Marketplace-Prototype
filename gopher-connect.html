@@ -78,6 +78,18 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     /* ── Gopher Brand Style Guide 2026 · primary palette ── */
     --green: #33D975;        /* Shamrock Green — primary brand color */
     --green-dark: #1CB061;   /* Mountain Meadow — official hover/shade for Shamrock (guide §3.2) */
+    /* ⛔ PINE — the accessible GREEN TEXT colour, owner-approved 2026-10-02 and
+       added to the Gopher Style Guide §3.2. It exists because NO green in the
+       palette passes as text: Shamrock is ~2.4:1 on its own tint and Mountain
+       Meadow — the line above — is 2.83:1 on white. Pine is 5.42:1.
+
+       ⚠️ It was defined in gopher-request.html ONLY, in 1 file out of 157, which
+       is why Connect carried the same green-text load with no fix available to
+       it. Defining it here is step one; the conversions below are step two.
+
+       ⛔ TEXT ONLY. Never use it as a fill, and never convert green text that
+       sits on a DARK ground — Shamrock on navy is correct and must stay. */
+    --green-text: #0F7A3F;
     --green-light: #e2f3e9;
     /* Text color for use ON green fills — brand Midnight Blue (#002461),
        which passes WCAG AAA on Shamrock Green where white fails ("white-text trap"). */
@@ -467,7 +479,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .signup-back {
     background:none; border:none; cursor:pointer; padding:4px 8px; border-radius:7px;
     font-family:'Nunito',sans-serif; font-weight:800; font-size:13px;
-    color:var(--green-dark);
+    color:var(--green-text);
     margin-bottom:10px;
   }
   .signup-back:hover { background:var(--green-light); }
@@ -594,7 +606,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .signup-skip-link {
     background:none; border:none; padding:0; cursor:pointer;
-    color:var(--green-dark); text-decoration:underline;
+    color:var(--green-text); text-decoration:underline;
     font-family:'DM Sans',sans-serif; font-size:11px;
   }
   /* ─── Signup media uploaders ───────────────────────────────────────────
@@ -772,7 +784,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     font-family:'Nunito',sans-serif; font-weight:700; font-size:10px;
     color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;
   }
-  .signup-plan .sp-tag.popular { color:var(--green-dark); }
+  .signup-plan .sp-tag.popular { color:var(--green-text); }
 
   /* Success view */
   .signup-success { text-align:center; padding:8px 0 4px; }
@@ -799,7 +811,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     font-family:'DM Sans',sans-serif; font-size:13px; color:var(--navy);
   }
   .ss-id-row b {
-    font-family:'Nunito',sans-serif; font-weight:900; font-size:14px; color:var(--green-dark);
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:14px; color:var(--green-text);
     letter-spacing:0.02em;
   }
   .signup-fine {
@@ -811,7 +823,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     background:var(--green); border-radius:0 0 4px 4px;
   }
   .portal-tag {
-    display:inline-block; background:var(--green-light); color:var(--green-dark);
+    display:inline-block; background:var(--green-light); color:var(--green-text);
     font-family:'Nunito',sans-serif; font-weight:800; font-size:10px;
     letter-spacing:1.4px; text-transform:uppercase;
     border-radius:5px; padding:4px 9px; margin-bottom:14px;
@@ -1040,7 +1052,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .pe-field input:disabled { background:#f3f5f9; color:#8a93a3; border-color:#e7ebf1; cursor:not-allowed; }
   .pe-lock { font-family:'Nunito',sans-serif; font-weight:700; font-size:10px; color:#8a93a3;
     background:#eef1f6; border-radius:6px; padding:1px 7px; letter-spacing:0.2px; }
-  .pe-connect { font-family:'Nunito',sans-serif; font-weight:800; font-size:10px; color:var(--green-dark);
+  .pe-connect { font-family:'Nunito',sans-serif; font-weight:800; font-size:10px; color:var(--green-text);
     background:rgba(28,176,97,0.12); border-radius:6px; padding:1px 7px; letter-spacing:0.3px; }
   .pe-hint { font-family:'DM Sans',sans-serif; font-size:11px; color:var(--muted); line-height:1.4; }
   .pe-csz { display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px; margin-bottom:5px; }
@@ -1088,7 +1100,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .business-hero .ph-avatar .biz-logo-fallback { font-family:'Nunito',sans-serif; font-weight:800; font-size:34px; color:var(--green-dark); }
   .biz-logo-link {
     background:none; border:none; cursor:pointer; padding:0;
-    font-family:'Nunito',sans-serif; font-weight:700; font-size:12px; color:var(--green-dark);
+    font-family:'Nunito',sans-serif; font-weight:700; font-size:12px; color:var(--green-text);
     text-decoration:underline; text-underline-offset:2px;
   }
   .biz-logo-link:hover { color:var(--green); }
@@ -1103,7 +1115,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .iv-input:focus { outline:none; border-color:var(--green); }
   .iv-seg { display:flex; gap:8px; }
   .iv-seg-btn { flex:1; padding:9px; border:1.5px solid #e4e8f0; border-radius:9px; background:white; font-family:'Nunito',sans-serif; font-weight:700; font-size:13px; color:var(--muted); cursor:pointer; transition:all 0.15s; }
-  .iv-seg-btn.selected { border-color:var(--green); background:var(--green-light); color:var(--green-dark); }
+  .iv-seg-btn.selected { border-color:var(--green); background:var(--green-light); color:var(--green-text); }
   .iv-roles { display:flex; flex-direction:column; gap:8px; }
   .iv-role { display:flex; align-items:flex-start; gap:10px; padding:11px 13px; border:1.5px solid #e4e8f0; border-radius:10px; cursor:pointer; transition:all 0.15s; }
   .iv-role.selected { border-color:var(--green); background:var(--green-light); }
@@ -1211,8 +1223,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .os-rail-labels { font-size:12px; font-weight:800; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.03em; }
   .os-lab-low  { color:var(--muted); text-align:left; }
-  .os-lab-fair { color:var(--green-dark); text-align:center; }
-  .os-lab-gen  { color:var(--green-dark); text-align:right; }
+  .os-lab-fair { color:var(--green-text); text-align:center; }
+  .os-lab-gen  { color:var(--green-text); text-align:right; }
   .os-rail-vals { font-size:13px; font-weight:800; color:var(--navy); margin-top:8px; }
   .os-rail-vals span:first-child { text-align:left; }
   .os-rail-vals span:last-child  { text-align:right; grid-column:3; }
@@ -1261,7 +1273,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
        never merged — it sat on an abandoned branch for five weeks while the bug
        stayed live. A missing fix leaves no trace in the file; it was found by
        asking git what had touched these paths outside my branch. */
-    min-height:16px; color:var(--green-dark); padding:0 4px;
+    min-height:16px; color:var(--green-text); padding:0 4px;
   }
   .os-hint.warn { color:#92580D; }
   .os-hint.over { color:var(--green-dark); }
@@ -1287,7 +1299,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      end), and gating them would trade a working flow for visual sameness. */
   .qr-card-hero { background:linear-gradient(180deg,#FFFFFF 0%,#F7FBF8 100%); border-color:#DCEBE1; }
   .qr-eyebrow { font-family:'Nunito',sans-serif; font-weight:800; font-size:10px; letter-spacing:0.8px;
-                text-transform:uppercase; color:var(--green-dark); margin-bottom:6px; }
+                text-transform:uppercase; color:var(--green-text); margin-bottom:6px; }
   .qr-linklbl { font-family:'Nunito',sans-serif; font-weight:800; font-size:11px; text-transform:uppercase;
                 letter-spacing:0.6px; color:var(--muted); margin-top:16px; }
   .qr-card-hero .qr-box { margin-top:6px; }
@@ -1320,7 +1332,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .refer-card .rc-ico { font-size:26px; line-height:1; }
   .refer-card .rc-title { font-family:'Nunito',sans-serif; font-weight:800; font-size:15px; color:var(--navy); }
   .refer-card .rc-desc { font-family:'DM Sans',sans-serif; font-size:13px; color:var(--muted); line-height:1.5; }
-  .refer-card .rc-cta { font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:var(--green-dark); margin-top:4px; }
+  .refer-card .rc-cta { font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:var(--green-text); margin-top:4px; }
   .refer-track-tabs { display:flex; gap:8px; margin-bottom:14px; }
   .rtt-tab {
     border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:13px;
@@ -1454,7 +1466,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     flex-shrink:0;
     background:none; border:none; cursor:pointer;
     font-family:'Nunito',sans-serif; font-weight:800; font-size:12px;
-    color:var(--green-dark); padding:6px 10px; border-radius:8px;
+    color:var(--green-text); padding:6px 10px; border-radius:8px;
     align-self:center; margin:0 auto;
     transition:all 0.15s;
   }
@@ -1474,7 +1486,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .ai-contact-back {
     border:none; background:none; cursor:pointer;
     font-family:'Nunito',sans-serif; font-weight:800; font-size:12px;
-    color:var(--green-dark); padding:4px 8px; border-radius:7px;
+    color:var(--green-text); padding:4px 8px; border-radius:7px;
   }
   .ai-contact-back:hover { background:var(--green-light); }
   .ai-contact-row {
@@ -1607,7 +1619,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     .gc-modal-hac .hire-again-cats { grid-template-columns:repeat(2,1fr); gap:8px; }
     .gc-modal-hac .hac-chip .hac-photo { aspect-ratio:16/9; }
   }
-  .ra-fast-all { background:none; border:none; font-family:'Nunito',sans-serif; font-weight:800; font-size:12px; color:var(--green-dark); cursor:pointer; padding:0; margin:0 0 10px; text-decoration:underline; align-self:flex-start; }
+  .ra-fast-all { background:none; border:none; font-family:'Nunito',sans-serif; font-weight:800; font-size:12px; color:var(--green-text); cursor:pointer; padding:0; margin:0 0 10px; text-decoration:underline; align-self:flex-start; }
   .hac-chip {
     display:flex; flex-direction:column; align-items:stretch; cursor:pointer;
     padding:0; overflow:hidden; border:2px solid #e7eaf2; border-radius:12px; background:white;
@@ -1813,7 +1825,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .section-label {
     font-family:'Nunito',sans-serif; font-weight:800;
     font-size:12px; letter-spacing:2px; text-transform:uppercase;
-    color:var(--green-dark); margin-bottom:10px;
+    color:var(--green-text); margin-bottom:10px;
   }
   .section-title {
     font-family:'Nunito',sans-serif; font-weight:900;
@@ -1849,7 +1861,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .use-eyebrow {
     display:inline-flex; align-items:center; gap:8px;
     font-family:'Nunito',sans-serif; font-weight:800; font-size:12px;
-    letter-spacing:2px; text-transform:uppercase; color:var(--green-dark);
+    letter-spacing:2px; text-transform:uppercase; color:var(--green-text);
     background:var(--green-light); border:1px solid rgba(51,217,117,0.25);
     padding:6px 14px; border-radius:99px; margin-bottom:18px;
   }
@@ -2810,7 +2822,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     border-radius:8px;
     display:flex; align-items:center; justify-content:center;
     flex-shrink:0;
-    color:var(--green-dark);
+    color:var(--green-text);
     font-size:16px;
   }
   .ts-perk-body strong {
@@ -2922,9 +2934,9 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .idsub-thumb[hidden] { display:none; }
   .idsub-thumb img { width:64px; height:44px; object-fit:cover; border-radius:6px; flex:0 0 auto; }
   .idsub-thumb .idsub-thumb-meta { font-family:'DM Sans',sans-serif; font-size:12px; color:var(--text); }
-  .idsub-thumb .idsub-thumb-meta b { color:var(--green-dark); }
+  .idsub-thumb .idsub-thumb-meta b { color:var(--green-text); }
   .idsub-thumb .idsub-retake { margin-left:auto; font-family:'Nunito',sans-serif; font-weight:700;
-    font-size:11px; color:var(--green-dark); background:none; border:none; cursor:pointer; text-decoration:underline; }
+    font-size:11px; color:var(--green-text); background:none; border:none; cursor:pointer; text-decoration:underline; }
   .idsub-actions { display:flex; flex-direction:column; gap:10px; margin-top:18px; }
   .idsub-actions .gc-modal-btn { width:100%; margin:0; }
   .idsub-actions .gc-modal-btn[disabled] { opacity:0.45; cursor:not-allowed; }
@@ -4649,7 +4661,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   /* Eyebrow above the headline — context cue */
   .fc-eyebrow {
     font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
-    color:var(--green-dark);
+    color:var(--green-text);
     text-transform:uppercase; letter-spacing:0.14em;
     margin-bottom:8px;
     position:relative; z-index:1;
@@ -4713,7 +4725,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .fc-wide .fc-body { flex:1; }
   .fc-wide h3 { font-size:24px; margin-bottom:10px; }
   .fc-wide p { font-size:15px; max-width:900px; }
-  .fc-wide .fc-eyebrow { color:var(--green-dark); }
+  .fc-wide .fc-eyebrow { color:var(--green-text); }
   /* Headline accent — used in card 5 to pop BEST + WIN in Mountain Meadow,
      reinforcing the "race to the top" thesis without competing with the navy. */
   .fc-accent {
@@ -4735,7 +4747,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .fts-label {
     font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
-    color:var(--green-dark);
+    color:var(--green-text);
     text-transform:uppercase; letter-spacing:0.16em;
   }
   .fts-tiers { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
@@ -4801,7 +4813,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .plan-name {
     font-family:'Nunito',sans-serif; font-weight:800; font-size:14px;
-    text-transform:uppercase; letter-spacing:1.5px; color:var(--green);
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--green-text);
     margin-bottom:12px;
   }
   .plan-card.popular .plan-name { color:#7de88a; }
@@ -5350,7 +5362,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .dash-block-head .view-all {
     font-family:'Nunito'; font-weight:700; font-size:12px;
-    color:var(--green-dark);
+    color:var(--green-text);
     text-decoration:underline; cursor:pointer;
     background:none; border:none; padding:0;
   }
@@ -6669,7 +6681,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .deals-modal { text-align:center; }
   .deals-badge {
     display:inline-block; font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
-    letter-spacing:0.6px; text-transform:uppercase; color:var(--green-dark);
+    letter-spacing:0.6px; text-transform:uppercase; color:var(--green-text);
     background:var(--green-light); border-radius:999px; padding:5px 12px; margin-bottom:10px;
   }
   .deals-body {
@@ -6695,7 +6707,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     border:1.5px solid var(--navy-light); border-radius:999px; padding:11px 16px 11px 40px; outline:none; transition:border-color .15s ease; }
   .deals-search:focus { border-color:var(--green); }
   .deals-hint { font-family:'Nunito',sans-serif; font-weight:800; font-size:11px; letter-spacing:.5px;
-    text-transform:uppercase; color:var(--green-dark); margin:10px 0 16px; }
+    text-transform:uppercase; color:var(--green-text); margin:10px 0 16px; }
   .deals-cat { margin:0 0 22px; }
   /* Sand-toned block behind the top service-provider section for contrast. */
   .deals-cat-sand { background:linear-gradient(180deg,#F6EFE0,#F1E7D2); border:1px solid #E8DBBE;
@@ -7803,7 +7815,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .info-card-head .edit-btn:hover { border-color:var(--green); color:var(--green-dark); }
   .info-value .pi-verified { display:inline-block; margin-left:8px; padding:2px 9px; border-radius:999px;
-    background:rgba(28,176,97,0.12); color:var(--green-dark); font-family:'Nunito',sans-serif;
+    background:rgba(28,176,97,0.12); color:var(--green-text); font-family:'Nunito',sans-serif;
     font-weight:800; font-size:11px; letter-spacing:0.3px; vertical-align:middle; }
   .info-row {
     display:grid;
@@ -7823,7 +7835,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .info-value .info-badge {
     display:inline-block;
-    background:rgba(51,217,117,0.12); color:var(--green-dark);
+    background:rgba(51,217,117,0.12); color:var(--green-text);
     padding:2px 9px; border-radius:10px;
     font-size:11px; font-weight:800;
     margin-left:6px;
@@ -7896,7 +7908,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .bv-check-list { text-align:left; margin:2px 0 18px; display:flex; flex-direction:column; gap:11px; }
   .bv-check { display:flex; align-items:flex-start; gap:11px; font-family:'Nunito'; font-size:14px; color:var(--navy); line-height:1.35; }
   .bv-check-ico { flex-shrink:0; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; margin-top:1px; }
-  .bv-check-ico[data-ok] { background:#e7f9ee; color:#1fb85f; }
+  .bv-check-ico[data-ok] { background:#e7f9ee; color:var(--green-text); }  /* was #1fb85f on its own tint */
   .bv-check-ico[data-pending] { background:#eef1f7; color:#8a97b0; }
 
   /* Worker-tier official lockup — wide horizontal credential chip. Same 62px art-slot
