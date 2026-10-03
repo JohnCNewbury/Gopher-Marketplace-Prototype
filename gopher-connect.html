@@ -2205,8 +2205,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:flex; justify-content:space-between; align-items:center;
     margin-bottom:8px;
   }
+  /* Owner 2026-10-03 — mirrors gopher-request.html. Nothing changed font: this
+     title and .mockup-content h3 are both Nunito. The heading went 22px → 32px
+     with the 2026-07-20 owner deck and this stayed at 13px, so the pair went
+     from 1.7x to 2.5x and the title dropped to Caption size (12-13.5) for the
+     title of the whole flow container. 18px is the floor of H3 (18-20). */
   .progress-meta-title {
-    font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:var(--navy);
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:18px; color:var(--navy);
   }
   .progress-meta-left { display:flex; align-items:center; gap:8px; min-width:0; }
   .progress-meta-cat {
@@ -5207,6 +5212,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     font-family:'DM Sans'; font-size:12px; color:var(--muted);
     font-weight:500;
   }
+  /* Owner 2026-10-03: "the 'Welcome back' is ONLY on the home screen." It is a
+     sibling above every .dash-section, so it rendered on every one of them.
+     Keyed off which section is .active, not a JS-set class, so it cannot fall
+     out of step with whichever path opened the dashboard. */
+  .dashboard .dash-greeting { display:none; }
+  .dashboard:has(.dash-section[data-section="choose"].active) .dash-greeting { display:block; }
   .dash-section-title {
     font-family:'Nunito'; font-weight:800; font-size:22px;
     color:var(--navy); margin-top:2px;
@@ -7036,13 +7047,45 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   /* Part 2: horizontal jump-tabs — hidden in the demo, shown in the dashboard */
   /* Horizontal step tabs show in BOTH the demo and the dashboard new-request
      view, so the demo is a true replica of the dashboard flow. */
-  .mockup-step-tabs {
-    display:flex; flex-wrap:wrap; gap:9px;
-    padding:16px 22px 4px;
-  }
+  /* Owner 2026-10-03 — mirrors gopher-request.html. Side padding was 22px while
+     .mockup-progress and .mockup-content use 28px, so the first chip sat 6px
+     left of the rest of the column; and the chips were content-width packed
+     left while .progress-track renders seven EQUAL full-width segments for the
+     same seven steps, so the two drifted apart step by step. In the dashboard
+     each chip is now flex:1 on the track's own 4px gap — chip i under segment
+     i, row ending where the track ends. */
+  /* ⛔ Scoping NOTE — this differs from gopher-request.html on purpose. There the
+     flow node is relocated INTO .dash-section[data-rqsec="new-request"], so the
+     aligned mode can be scoped to the dashboard and the marketing demo can keep
+     its packed row (its "Start over" button shares that flex row). Connect has
+     no "Start over" and the flow can be rendered from #flow-demo OR from
+     #dashFlowHost depending on how the section was entered — verified in-browser,
+     the section-scoped selector matched NOTHING while the row rendered in
+     #flow-demo. So the aligned mode is unscoped here. The pre-existing
+     dashboard-scoped selector is carried along in each group rather than left to
+     out-specify the fallback below and pin it to nowrap under 1100px. */
+  .mockup-step-tabs,
   .dash-section[data-section="new-request"] .mockup-step-tabs {
-    display:flex; flex-wrap:wrap; gap:9px;
-    padding:16px 22px 4px;
+    display:flex; flex-wrap:nowrap; gap:4px;
+    padding:16px 28px 4px;
+  }
+  .mockup-step-tabs .mst-tab,
+  .dash-section[data-section="new-request"] .mst-tab {
+    flex:1 1 0; min-width:0;
+    padding-left:8px; padding-right:8px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  /* Measured: "Pick a service" is the tightest label and starts ellipsing at a
+     main column of ~1065px, so the fallback has to fire ABOVE that, not at the
+     1024px it was first written to — otherwise there is a ~40px band where every
+     step reads "Pick a servi…". Falls back to the packed row instead. */
+  @media (max-width:1100px){
+    .mockup-step-tabs,
+    .dash-section[data-section="new-request"] .mockup-step-tabs { flex-wrap:wrap; gap:9px; }
+    .mockup-step-tabs .mst-tab,
+    .dash-section[data-section="new-request"] .mst-tab {
+      flex:0 0 auto; padding-left:16px; padding-right:16px;
+    }
   }
   .mst-tab {
     border:none; cursor:pointer;
@@ -7076,6 +7119,58 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
 
   /* ─── Request History table ─── */
+  /* ── Request History cards (owner 2026-10-02) ───────────────────────────
+     Mirrors gopher-request.html: the history list is CARDS, matching the live
+     app, and the GO-To checkbox COLUMN is gone because a GO-To is created by a
+     button on the request there, never by ticking a column. Ratings keep this
+     dashboard's star + number convention rather than the app's gopher glyphs —
+     app UX, our styling. */
+  .prev-cards { display:flex; flex-direction:column; gap:12px; }
+  .prev-card {
+    background:white; border:1px solid #e7eaf2; border-radius:14px;
+    padding:16px 18px 14px;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .prev-card:hover { border-color:#d3dae8; box-shadow:0 4px 16px rgba(0,36,97,0.07); }
+  .prev-card-head {
+    display:flex; align-items:center; gap:10px; width:100%;
+    background:none; border:0; padding:0; cursor:pointer; text-align:left;
+  }
+  .prev-card-title {
+    font-family:'Nunito'; font-weight:900; font-size:16px; color:var(--navy);
+    flex:1 1 auto; min-width:0;
+  }
+  .prev-card-chev { flex:0 0 auto; color:#9fb0c9; font-size:17px; line-height:1; }
+  .prev-card-sub { font-family:'DM Sans'; font-size:13px; color:var(--muted); margin:3px 0 8px; }
+  /* Owner 2026-10-02: the card was too tall. The money/Gopher/rating meta and
+     the two actions share ONE row now instead of stacking three deep. */
+  .prev-card-foot {
+    display:flex; align-items:center; justify-content:space-between;
+    gap:14px; flex-wrap:wrap;
+  }
+  .prev-card-rows { display:flex; flex-wrap:wrap; gap:4px 24px; flex:1 1 auto; min-width:0; }
+  .prev-card-row { font-family:'DM Sans'; font-size:14px; color:var(--navy); }
+  .prev-card-row .pcr-l { color:var(--muted); }
+  .prev-card-row .pcr-v { font-weight:700; }
+  /* Owner 2026-10-02: NOT full-width pills. The app's buttons look compact
+     because a phone is 390px wide; stretched across a desktop card the same
+     shape reads as two enormous bars. These follow .wbtn, the action-button
+     convention already used on the worker cards here — compact, 9px radius,
+     nowrap — right-aligned on the card. */
+  .prev-card-acts { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  /* Unscoped on purpose: the same control is used by the history card AND the
+     detail view's sticky bar. Scoping it under .prev-card-acts left the detail
+     bar's buttons unstyled. */
+  .pca {
+    flex:0 0 auto; padding:9px 16px; border-radius:9px; cursor:pointer;
+    font-family:'Nunito'; font-weight:800; font-size:13px; white-space:nowrap;
+    transition:background .15s, color .15s, border-color .15s;
+  }
+  .pca-goto { background:white; color:var(--navy); border:1.5px solid #d7dde9; }
+  .pca-goto:hover { border-color:var(--navy); background:var(--navy-light); }
+  .pca-again { background:var(--navy); color:#fff; border:1.5px solid var(--navy); }
+  .pca-again:hover { background:var(--navy-mid); border-color:var(--navy-mid); }
+
   .prev-table-wrap {
     background:white;
     border:1px solid #e7eaf2;
@@ -7207,6 +7302,40 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .prev-empty { padding:28px 18px; text-align:center; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:13px; }
 
   /* Detail card */
+  /* ── Request detail, laid out like the live app (owner 2026-10-02) ──────
+     Mirrors gopher-request.html; .pca is shared with the history cards. */
+  .pdx-head { margin:2px 0 16px; }
+  .pdx-type { font-family:'Nunito'; font-weight:900; font-size:17px; color:var(--navy); }
+  .pdx-when { font-family:'DM Sans'; font-size:13px; color:var(--muted); margin-top:2px; }
+  .pdx-sec { border-top:1px solid #eef0f5; padding:14px 0 4px; }
+  .pdx-h { font-family:'Nunito'; font-weight:900; font-size:13px; color:var(--navy); margin-bottom:8px; }
+  .pdx-row {
+    display:flex; justify-content:space-between; align-items:flex-start; gap:18px;
+    padding:4px 0; font-family:'DM Sans'; font-size:14px;
+  }
+  .pdx-l { color:var(--muted); flex:0 1 auto; }
+  .pdx-v { color:var(--navy); font-weight:600; text-align:right; flex:1 1 auto; min-width:0; }
+  .pdx-dim { color:var(--muted); font-weight:400; }
+  .pdx-sub { padding-left:16px; }
+  .pdx-sub .pdx-row { padding:2px 0; font-size:13px; }
+  .pdx-sub .pdx-v { font-weight:400; color:var(--muted); }
+  .pdx-money .pdx-row:not(.pdx-total) .pdx-v { font-weight:700; }
+  .pdx-total {
+    border-top:2px solid #eef0f5; margin-top:8px; padding-top:10px;
+    font-family:'Nunito'; font-weight:900; font-size:15px;
+  }
+  .pdx-total .pdx-l, .pdx-total .pdx-v { color:var(--navy); font-weight:900; }
+  .pdx-link {
+    background:none; border:0; padding:0; cursor:pointer;
+    font-family:'Nunito'; font-weight:800; font-size:13px; color:var(--navy);
+    text-decoration:underline; text-underline-offset:3px;
+  }
+  .pdx-link:hover { color:var(--green-dark); }
+  .pdx-bar {
+    position:sticky; bottom:0; display:flex; gap:8px; justify-content:flex-end;
+    border-top:1px solid #eef0f5; margin-top:16px; padding:12px 0 2px; background:white;
+  }
+
   .prev-detail-card {
     background:white; border:1px solid #e7eaf2; border-radius:14px;
     padding:22px 24px; max-width:760px;
@@ -7326,6 +7455,94 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
 
   /* The strip — between the category pills and the search bar */
+  /* ── Review My GO-To sheet (owner 2026-10-02) ──────────────────────────── */
+  .gtr-ov { align-items:flex-end; justify-content:center; z-index:9900; }
+  .gtr-sheet {
+    background:white; width:100%; max-width:560px; max-height:92vh;
+    border-radius:18px 18px 0 0; display:flex; flex-direction:column;
+    box-shadow:0 -18px 50px rgba(12,22,48,0.3);
+  }
+  .gtr-head {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px 18px; border-bottom:1px solid #eef0f5;
+  }
+  .gtr-title { font-family:'Nunito'; font-weight:900; font-size:17px; color:var(--navy); }
+  .gtr-link {
+    background:none; border:0; cursor:pointer; padding:4px 2px;
+    font-family:'Nunito'; font-weight:800; font-size:13px; color:var(--green-dark);
+  }
+  .gtr-body { overflow-y:auto; padding:16px 18px 8px; }
+  .gtr-sec { border-top:1px solid #eef0f5; padding:14px 0 6px; }
+  .gtr-h { font-family:'Nunito'; font-weight:900; font-size:13px; color:var(--navy); margin-bottom:8px; }
+  .gtr-field label {
+    display:block; font-family:'Nunito'; font-weight:800; font-size:12px;
+    color:var(--navy); margin-bottom:6px;
+  }
+  .gtr-field input {
+    width:100%; padding:10px 12px; border:1px solid #e7eaf2; border-radius:10px;
+    font-family:'DM Sans'; font-size:14px; color:var(--navy); outline:none;
+  }
+  .gtr-field input:focus { border-color:var(--green); }
+  .gtr-hint { font-family:'DM Sans'; font-size:12px; color:var(--muted); margin-top:6px; line-height:1.45; }
+  .gtr-note {
+    font-family:'DM Sans'; font-size:12px; color:var(--muted);
+    line-height:1.5; margin-top:10px;
+  }
+  .gtr-money .pdx-total { border-top:2px solid #eef0f5; margin-top:8px; padding-top:10px; }
+  .gtr-pays { display:flex; flex-direction:column; gap:6px; }
+  .gtr-pay {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    width:100%; padding:11px 13px; border:1.5px solid #e7eaf2; border-radius:10px;
+    background:white; cursor:pointer; text-align:left;
+  }
+  .gtr-pay:hover { border-color:#c9d2e3; }
+  .gtr-pay.checked { border-color:var(--green); background:#f6fbf7; }
+
+  /* ⛔ The Review sheet's two controls drew NO tick (found 2026-10-03, by
+     testing every .prev-check-box on the page rather than the one the owner
+     had reported). The tick lives on `.prev-check-row.checked`, and neither
+     .gtr-pay nor .gtr-waiver carries that class — so the payment method and
+     the LIABILITY WAIVER both highlighted while their box stayed empty. The
+     waiver is what gates Save, so the one control a user must consciously
+     tick was the one that never looked ticked.
+     Any new control reusing .prev-check-box needs a rule here too; the
+     functional check is in scripts/web-checks/check-box-ticks.js. */
+  .gtr-pay .prev-check-box,
+  .gtr-waiver .prev-check-box { position:relative; flex:0 0 auto; }
+  .gtr-pay.checked .prev-check-box,
+  .gtr-waiver.checked .prev-check-box { background:var(--navy); border-color:var(--navy); }
+  .gtr-pay.checked .prev-check-box::after,
+  .gtr-waiver.checked .prev-check-box::after {
+    content:'✓'; position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; color:#fff; font-size:12px; font-weight:900; line-height:1;
+  }
+  .gtr-pay-name { font-family:'DM Sans'; font-size:14px; color:var(--navy); font-weight:600; }
+  .gtr-def {
+    font-family:'Nunito'; font-weight:800; font-size:10px; color:var(--green-dark);
+    margin-left:8px; text-transform:uppercase; letter-spacing:0.4px;
+  }
+  .gtr-waiver {
+    display:flex; align-items:flex-start; gap:10px; width:100%; text-align:left;
+    background:none; border:0; cursor:pointer; padding:14px 0 6px;
+    font-family:'DM Sans'; font-size:13px; color:var(--navy); line-height:1.5;
+  }
+  .gtr-gate {
+    font-family:'Nunito'; font-weight:800; font-size:12px; color:var(--muted);
+    text-align:center; padding:2px 0 8px;
+  }
+  .gtr-foot {
+    display:flex; gap:8px; justify-content:flex-end;
+    padding:12px 18px 16px; border-top:1px solid #eef0f5;
+  }
+  .gtr-foot .pca[disabled] { opacity:.45; cursor:not-allowed; }
+
+  .gfb-title {
+    font-family:'Nunito'; font-weight:900; font-size:15px; color:var(--navy);
+    display:flex; align-items:center; gap:2px;
+  }
+  .gfb-title .go-mark { height:1.05em; vertical-align:-0.16em; }
+  .gfb-sub { font-family:'DM Sans'; font-size:13px; color:var(--muted); margin-top:2px; }
+
   .goto-strip { margin-bottom:18px; }
   .goto-strip-head { display:flex; align-items:baseline; gap:10px; margin-bottom:10px; }
   .goto-strip-head h4 {
@@ -7367,7 +7584,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .goto-link.danger:hover { color:#a83648; }
   .goto-sends {
     font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
-    color:var(--green-dark); white-space:nowrap;
+    color:var(--green-dark); flex:1 1 100%; text-align:center; line-height:1.35;
   }
   .goto-empty {
     padding:22px 18px; text-align:center; color:var(--muted);
@@ -7391,6 +7608,79 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     line-height:1.6; margin-bottom:18px;
   }
   .goto-field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  /* ⛔ display:flex above BEATS the user-agent [hidden] rule, so a field hidden
+     by the markup rendered anyway — the Cost of items box showed on a GO-To that
+     buys nothing. gopher-connect.html carries a global [hidden] enforcement and
+     gopher-request.html does not, so this is scoped here rather than adding a
+     global rule to a 29k-line file late in the day. */
+  .goto-field[hidden] { display:none !important; }
+  /* Owner 2026-10-02: the money fields have to READ as money. They were bare
+     number inputs with the browser's spinner arrows. This is the same
+     .cost-input-box treatment the request flow's "Cost of items needed" field
+     already uses — $ prefix, Nunito figures, no spinners — widened to fill the
+     editor field instead of its inline default. */
+  .goto-money { display:flex; width:100%; margin-top:0; }
+  /* ⛔ .goto-field input already paints a border, padding and a radius on EVERY
+     input in the editor, so the currency input drew a second box inside the
+     .cost-input-box frame. Strip it back to a bare field; the wrapper is the
+     control. */
+  .goto-money .cost-amount-input {
+    border:0; padding:0; border-radius:0; background:transparent;
+    font-family:'Nunito'; font-weight:700; font-size:16px; color:var(--navy);
+  }
+  .goto-money .cost-amount-input:focus { border:0; }
+  /* Focus belongs to the wrapper, which is what the user sees as the field. */
+  .goto-money:focus-within { border-color:var(--green); }
+
+  /* ── GO-To setup sheet: section headings + toggles (owner 2026-10-03) ─────
+     The setup screen is ONE prepopulated sheet, not the step-by-step flow, so
+     it carries the live app's section structure inline. */
+  .goto-sec-h {
+    font-family:'Nunito'; font-weight:900; font-size:11px; letter-spacing:0.6px;
+    text-transform:uppercase; color:var(--muted);
+    margin:22px 0 10px; padding-bottom:6px; border-bottom:1px solid #eef0f5;
+  }
+  .goto-req {
+    font-family:'Nunito'; font-weight:800; font-size:10px; color:var(--error, #C44257);
+    text-transform:uppercase; letter-spacing:0.4px; margin-left:6px;
+  }
+  .goto-radios { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+  .goto-radio {
+    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+    background:white; border:1.5px solid #e7eaf2; border-radius:10px;
+    padding:11px 13px; cursor:pointer;
+    font-family:'DM Sans'; font-size:14px; color:var(--navy);
+  }
+  .goto-radio:hover { border-color:#c9d2e3; }
+  .goto-radio.checked { border-color:var(--green); background:#f6fbf7; }
+  .goto-radio .radio-dot {
+    width:16px; height:16px; border-radius:50%; border:2px solid #c9d2e3;
+    flex:0 0 auto; position:relative;
+  }
+  .goto-radio.checked .radio-dot { border-color:var(--green); }
+  .goto-radio.checked .radio-dot::after {
+    content:''; position:absolute; inset:3px; border-radius:50%; background:var(--green);
+  }
+
+  .goto-toggles { display:flex; flex-direction:column; gap:8px; }
+  .goto-tog {
+    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+    background:white; border:1.5px solid #e7eaf2; border-radius:10px;
+    padding:11px 13px; cursor:pointer;
+    font-family:'DM Sans'; font-size:14px; color:var(--navy);
+  }
+  .goto-tog:hover { border-color:#c9d2e3; }
+  .goto-tog.checked { border-color:var(--green); background:#f6fbf7; }
+  /* ⛔ The tick mark lives on `.prev-check-row.checked .prev-check-box`, scoped to
+     that class — which these toggles are not. They highlighted green while the box
+     stayed empty, so a ticked option did not read as ticked. */
+  .goto-tog .prev-check-box { position:relative; flex:0 0 auto; }
+  .goto-tog.checked .prev-check-box { background:var(--navy); border-color:var(--navy); }
+  .goto-tog.checked .prev-check-box::after {
+    content:'✓'; position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; color:#fff; font-size:12px; font-weight:900; line-height:1;
+  }
+
   .goto-field label { font-family:'Nunito',sans-serif; font-weight:800; font-size:12px; color:var(--navy); }
   .goto-field input, .goto-field select, .goto-field textarea {
     width:100%; padding:10px 12px; border:1px solid #e7eaf2; border-radius:10px;
@@ -9422,7 +9712,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         <div class="mockup-progress">
           <div class="progress-meta">
             <div class="progress-meta-left">
-              <span class="progress-meta-title" id="progressTitle">New request Details</span>
+              <span class="progress-meta-title" id="progressTitle">New Request Details</span>
               <span class="progress-meta-cat" id="progressCat" hidden></span>
             </div>
             <span class="progress-meta-count" id="progressCount">Step 1 of 5</span>
@@ -10171,16 +10461,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
             <div class="prev-search" id="prevSearchWrap">
               <span class="prev-search-ico" aria-hidden="true">🔍</span>
-              <input type="text" id="prevSearch" placeholder="Search by ID, category, details, or worker">
+              <input type="text" id="prevSearch" placeholder="Search by ID, type, details or Gopher">
             </div>
 
             <div class="prev-table-wrap" id="prevTableWrap">
-              <table class="prev-table">
-                <thead id="prevTableHead"></thead>
-                <tbody id="prevRequestsRows">
-                  <!-- Filled by JS -->
-                </tbody>
-              </table>
+              <div class="prev-cards" id="prevCards"><!-- filled by renderPrevRequests() --></div>
               <div id="prevEmpty" class="prev-empty" hidden>No requests in this category.</div>
             </div>
           </div>
@@ -11467,7 +11752,8 @@ const PAY_BADGES = {
        `fromDeal && dealKind === 'service'` — keyed on BOTH. Keying it on fromDeal
        alone would waive every fee on every merchant deal. */
     fromDeal: false, dealKind: null, dealBoost: false,   // Gopher Deals provenance (set by __startDealRequest)
-    hireAgainGophers: []
+    hireAgainGophers: [],
+
     };
   }
 
@@ -11796,7 +12082,7 @@ const PAY_BADGES = {
       return `<div class="progress-seg ${cls}"></div>`;
     }).join('');
     $progressCount.textContent = `Step ${state.step} of 7`;
-    $progressTitle.textContent = state.step === 7 ? 'Request Submitted' : 'New request Details';
+    $progressTitle.textContent = state.step === 7 ? 'Request Submitted' : 'New Request Details';
     // Keep the picked category visible through every step (badge beside the title).
     const catData = state.category ? CATEGORIES[state.category] : null;
     if($progressCat){
@@ -13202,6 +13488,125 @@ const PAY_BADGES = {
   }
 
   // ---- Main render ----
+  /* The flow runs in its own scope and cannot see the dashboard's GO_MARK. */
+  const GO_MARK_FLOW = '<img class="go-mark" src="assets/img/go-mark.svg" alt="GO">';
+
+  /* ── Review My GO-To (owner 2026-10-02) ──────────────────────────────────
+     Mirrors gopher-request.html. ⛔ The waiver is ticked EVERY time and Save
+     stays disabled until it is: a GO-To sends with no review screen, so this is
+     the only moment the requester agrees to what every future send carries. */
+  window.__openGoToReview = function(rec, onSaved){
+    if(!rec) return false;
+    const esc = (v) => String(v == null ? '' : v)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const num = (v) => parseFloat(String(v).replace(/[^0-9.]/g,'')) || 0;
+    const workerPayNum = num(rec.workerPay);
+    const goodsNum     = num(rec.goodsCost);
+    const fee   = computeConnectFee(workerPayNum + goodsNum);
+    const money = (n) => '$' + Number(n || 0).toFixed(2);
+    const gophers = rec.gophers || [];
+    const methods = ((window.__payStore && window.__payStore.length) ? window.__payStore : Object.keys(PAY_METHODS).map(k => ({ key:k, shortLabel:PAY_METHODS[k].shortLabel, name:PAY_METHODS[k].name, sub:PAY_METHODS[k].sub, isDefault:k==='visa' })));
+    const selKey  = (methods.find(m => m.key === rec.payKey)
+                  || methods.find(m => m.isDefault) || methods[0] || {}).key || '';
+    const label = (m) => (m.sub ? m.name + ' · ' + m.sub : m.name);
+
+    const ov = document.createElement('div');
+    ov.className = 'gc-modal-overlay gtr-ov';
+    ov.innerHTML = `
+      <div class="gtr-sheet" role="dialog" aria-modal="true" aria-labelledby="gtrTitle">
+        <div class="gtr-head">
+          <button type="button" class="gtr-link" data-gtr-back>← Edit</button>
+          <div class="gtr-title" id="gtrTitle">Review My ${GO_MARK_FLOW}-To</div>
+          <button type="button" class="gtr-link" data-gtr-cancel>Cancel</button>
+        </div>
+        <div class="gtr-body">
+          <div class="gtr-field">
+            <label for="gtrName">Name this ${GO_MARK_FLOW}-To</label>
+            <input type="text" id="gtrName" maxlength="60" value="${esc(rec.name || '')}">
+            <div class="gtr-hint">Only you see this name. It is not sent with the request.</div>
+          </div>
+          <div class="gtr-sec"><div class="gtr-h">What will be sent</div>
+            ${rec.pickup  ? `<div class="pdx-row"><span class="pdx-l">Pick Up</span><span class="pdx-v">${esc(rec.pickup)}</span></div>` : ''}
+            ${rec.dropoff ? `<div class="pdx-row"><span class="pdx-l">Drop Off</span><span class="pdx-v">${esc(rec.dropoff)}</span></div>` : ''}
+            <div class="pdx-row"><span class="pdx-l">Type</span><span class="pdx-v">${esc(rec.category)}</span></div>
+            <div class="pdx-row"><span class="pdx-l">Details</span><span class="pdx-v">${esc(rec.details)}</span></div>
+            <div class="pdx-row"><span class="pdx-l">Items to be purchased</span><span class="pdx-v">${rec.itemsPurchased ? 'Yes' : 'No'}</span></div>
+            <div class="pdx-row"><span class="pdx-l">Age-restricted items</span><span class="pdx-v">${rec.ageRestricted ? 'Yes' : 'No'}</span></div>
+            <div class="pdx-row"><span class="pdx-l">Allow counter offers</span><span class="pdx-v">${rec.counterOffers ? 'Yes' : 'No'}</span></div>
+            <div class="pdx-row"><span class="pdx-l">When</span><span class="pdx-v">Need it now when you tap</span></div>
+          </div>
+          <div class="gtr-sec"><div class="gtr-h">How your Gopher will be chosen</div>
+            <div class="pdx-row"><span class="pdx-l">Gopher Requested</span><span class="pdx-v">${esc(rec.chosenHow || 'First Available')}${gophers.length ? `<br><span class="pdx-dim">${esc(gophers.join(', '))}</span>` : ''}</span></div>
+          </div>
+          <div class="gtr-sec gtr-money">
+            <div class="pdx-row"><span class="pdx-l">Payment to your Gopher</span><span class="pdx-v">${money(workerPayNum)}</span></div>
+            ${goodsNum > 0 ? `<div class="pdx-row"><span class="pdx-l">Cost of items</span><span class="pdx-v">${money(goodsNum)}</span></div>` : ''}
+            <div class="pdx-row"><span class="pdx-l">Request Fees</span><span class="pdx-v">${money(fee.connectFee)}</span></div>
+            <div class="pdx-row pdx-total"><span class="pdx-l">Total today</span><span class="pdx-v">${money(fee.gmvTotal)}</span></div>
+            <div class="gtr-note">Each send is priced again when you tap, the same way as any
+              request. Your payment method is pre-authorized for an additional 20% when a
+              Gopher accepts.</div>
+          </div>
+          <div class="gtr-sec"><div class="gtr-h">Method of payment</div>
+            <div class="gtr-pays">${methods.map(m => `
+              <button type="button" class="gtr-pay ${m.key === selKey ? 'checked' : ''}" data-gtr-pay="${esc(m.key)}">
+                <span class="gtr-pay-name">${esc(label(m))}${m.isDefault ? '<span class="gtr-def">Default</span>' : ''}</span>
+                <span class="prev-check-box"></span>
+              </button>`).join('')}
+            </div>
+            <div class="gtr-hint">Every request this ${GO_MARK_FLOW}-To sends uses this method. If it is
+              removed or can't be used by then, your default card is used instead, with no
+              prompt. To use a method that isn't listed, add it in Account → Payment Methods first.</div>
+          </div>
+          <button type="button" class="gtr-waiver" data-gtr-waiver>
+            <span class="prev-check-box"></span>
+            <span><b>Liability Waiver</b> — You agree that Gopher, Inc is released from any/all
+              liability associated with every request this ${GO_MARK_FLOW}-To sends.</span>
+          </button>
+          <div class="gtr-gate" id="gtrGate">Agree to the Liability Waiver to save.</div>
+        </div>
+        <div class="gtr-foot">
+          <button type="button" class="pca pca-goto" data-gtr-back>Back</button>
+          <button type="button" class="pca pca-again" data-gtr-save disabled>Save ${GO_MARK_FLOW}-To</button>
+        </div>
+      </div>`;
+    document.body.appendChild(ov);
+
+    let payKey = selKey;
+    const saveBtn = ov.querySelector('[data-gtr-save]');
+    const waiver  = ov.querySelector('[data-gtr-waiver]');
+    const gate    = ov.querySelector('#gtrGate');
+    /* ⛔ The waiver is ticked EVERY time and Save stays disabled until it is: a
+       GO-To sends with no review screen, so this is the only moment the
+       requester agrees to what every future send carries. */
+    const sync = () => {
+      const ok = waiver.classList.contains('checked');
+      saveBtn.disabled = !ok;
+      gate.style.visibility = ok ? 'hidden' : 'visible';
+    };
+    waiver.addEventListener('click', () => { waiver.classList.toggle('checked'); sync(); });
+    ov.querySelectorAll('[data-gtr-pay]').forEach(b => b.addEventListener('click', () => {
+      payKey = b.dataset.gtrPay;
+      ov.querySelectorAll('[data-gtr-pay]').forEach(x => x.classList.toggle('checked', x === b));
+    }));
+    const close = () => ov.remove();
+    ov.querySelectorAll('[data-gtr-cancel]').forEach(b => b.addEventListener('click', close));
+    ov.querySelectorAll('[data-gtr-back]').forEach(b => b.addEventListener('click', close));
+    sync();
+
+    saveBtn.addEventListener('click', () => {
+      if(saveBtn.disabled) return;
+      const chosenPay = methods.find(m => m.key === payKey);
+      const out = Object.assign({}, rec, {
+        name: (ov.querySelector('#gtrName').value || '').trim() || rec.name || 'Saved request',
+        payKey: payKey, payLabel: chosenPay ? label(chosenPay) : '', waiver: true
+      });
+      close();
+      if(typeof onSaved === 'function') onSaved(out);
+    });
+    return true;
+  };
+
   function render(){
     // Normalize: the "How is the worker selected?" choice is only offered for
     // Delivery/Courier, Junk Removal, and Ride Sharing. For every other category
@@ -13218,6 +13623,7 @@ const PAY_BADGES = {
     else if(state.step === 5) $content.innerHTML = renderStep5();
     else if(state.step === 6) $content.innerHTML = renderStep6();
     else                      $content.innerHTML = renderStep7();
+
 
     // Step 1 ("Pick a service") has no footer — picking a category is the
     // transition trigger, so the Back/Continue bar is hidden on this step only.
@@ -14882,7 +15288,9 @@ const PAY_BADGES = {
     state.step = 6;                // land on Review
     state.maxStepReached = 6;      // all earlier steps unlocked for edits
     render();
+    return true;
   };
+
 
   // ---- Request NOW ⚡ — 1-click re-submit (no Review) ----
   // Identical prefill to __startRequestAgainFast (which already forces Need ASAP),
@@ -15843,29 +16251,113 @@ const PAY_BADGES = {
     ],
     previousRequests: [
       { date:'5/12/26', id:'GC-00120', category:'Delivery',     details:'Catering tray drop-off',           worker:'Devon M.',  amount:'$47.50',  rating:'5.00',
-        breakdown:{ workerPay:38.50, fees:9.00 }, isMyGopher:true,  blocked:false },
+        breakdown:{ workerPay:38.50, fees:9.00, gopherFee:3.99, instantTransfer:5.01 },
+        type:'Courier Delivery',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'Acme DC-2, 1400 Corporation Pkwy, Raleigh, NC 27610',
+        payMethod:'American Express 6004', timing:'Need It Now!',
+        openUntil:'5/12/26 5:00 PM', acceptedAt:'5/12/26 8:20 AM', completedAt:'5/12/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:'First Available',
+        isMyGopher:true,  blocked:false },
       { date:'5/10/26', id:'GC-00119', category:'Day Labor',    details:'2 workers · unload pavers (2 hr)', worker:'Marcus K.', amount:'$120.00', rating:'4.50',
-        breakdown:{ workerPay:100.00, fees:20.00 }, isMyGopher:false, blocked:false },
+        breakdown:{ workerPay:100.00, fees:20.00, gopherFee:3.99, instantTransfer:16.01 },
+        type:'Warehouse Support',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'510 Fayetteville St, Raleigh, NC 27601',
+        payMethod:'Visa 4242', timing:'Flexible on timing',
+        openUntil:'5/10/26 5:00 PM', acceptedAt:'5/10/26 8:20 AM', completedAt:'5/10/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:"I'll select my worker",
+        isMyGopher:false, blocked:false },
       { date:'5/06/26', id:'GC-00118', category:'Home Services',details:'Install 2 ceiling fans',           worker:'Rosa P.',   amount:'$140.00', rating:'5.00',
-        breakdown:{ workerPay:120.00, fees:20.00 }, isMyGopher:true,  blocked:false },
+        breakdown:{ workerPay:120.00, fees:20.00, gopherFee:3.99, instantTransfer:16.01 },
+        type:'Facilities & Repair',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'No specific drop-off location',
+        payMethod:'American Express 6004', timing:'Need It Now!',
+        openUntil:'5/06/26 5:00 PM', acceptedAt:'5/06/26 8:20 AM', completedAt:'5/06/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:'Notify One Of MY Gophers',
+        isMyGopher:true,  blocked:false },
       { date:'5/01/26', id:'GC-00117', category:'Moving',       details:'2BR move — Raleigh → Durham',      worker:'Aaron T.',  amount:'$347.50', rating:'4.92',
-        breakdown:{ workerPay:300.00, fees:47.50 }, isMyGopher:false, blocked:false },
+        breakdown:{ workerPay:300.00, fees:47.50, gopherFee:4.99, instantTransfer:42.51 },
+        type:'Equipment Move',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'Client site — 820 Aviation Pkwy, Morrisville, NC 27560',
+        payMethod:'Mastercard 1928', timing:'Flexible on timing',
+        openUntil:'5/01/26 5:00 PM', acceptedAt:'5/01/26 8:20 AM', completedAt:'5/01/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:'First Available',
+        isMyGopher:false, blocked:false },
       { date:'4/28/26', id:'GC-00116', category:'Junk Removal', details:'Old retail fixtures',              worker:'Tyler J.',  amount:'$210.00', rating:'4.91',
-        breakdown:{ workerPay:180.00, fees:30.00 }, isMyGopher:false, blocked:false },
+        breakdown:{ workerPay:180.00, fees:30.00, gopherFee:3.99, instantTransfer:26.01 },
+        type:'Site Clearance',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'Acme DC-2, 1400 Corporation Pkwy, Raleigh, NC 27610',
+        payMethod:'American Express 6004', timing:'Need It Now!',
+        openUntil:'4/28/26 5:00 PM', acceptedAt:'4/28/26 8:20 AM', completedAt:'4/28/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:"I'll select my worker",
+        isMyGopher:false, blocked:false },
       { date:'4/22/26', id:'GC-00115', category:'Delivery',     details:'Document courier · downtown',      worker:'Jordan R.', amount:'$22.50',  rating:'4.88',
-        breakdown:{ workerPay:18.00, fees:4.50 }, isMyGopher:false, blocked:false },
+        breakdown:{ workerPay:18.00, fees:4.50, gopherFee:3.99, instantTransfer:0.51 },
+        type:'Courier Delivery',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'510 Fayetteville St, Raleigh, NC 27601',
+        payMethod:'Visa 4242', timing:'Flexible on timing',
+        openUntil:'4/22/26 5:00 PM', acceptedAt:'4/22/26 8:20 AM', completedAt:'4/22/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:'Notify One Of MY Gophers',
+        isMyGopher:false, blocked:false },
       { date:'4/18/26', id:'GC-00114', category:'Yard Work',    details:'Office landscaping touch-up',      worker:'Tomás V.',  amount:'$185.00', rating:'4.93',
-        breakdown:{ workerPay:160.00, fees:25.00 }, isMyGopher:false, blocked:false },
+        breakdown:{ workerPay:160.00, fees:25.00, gopherFee:3.99, instantTransfer:21.01 },
+        type:'Grounds Maintenance',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'No specific drop-off location',
+        payMethod:'American Express 6004', timing:'Need It Now!',
+        openUntil:'4/18/26 5:00 PM', acceptedAt:'4/18/26 8:20 AM', completedAt:'4/18/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:'First Available',
+        isMyGopher:false, blocked:false },
       { date:'4/15/26', id:'GC-00113', category:'Home Services',details:'Conf-room AV install',             worker:'Maria G.',  amount:'$240.00', rating:'5.00',
-        breakdown:{ workerPay:210.00, fees:30.00 }, isMyGopher:true,  blocked:false },
+        breakdown:{ workerPay:210.00, fees:30.00, gopherFee:3.99, instantTransfer:26.01 },
+        type:'Facilities & Repair',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'Client site — 820 Aviation Pkwy, Morrisville, NC 27560',
+        payMethod:'Mastercard 1928', timing:'Flexible on timing',
+        openUntil:'4/15/26 5:00 PM', acceptedAt:'4/15/26 8:20 AM', completedAt:'4/15/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:"I'll select my worker",
+        isMyGopher:true,  blocked:false },
       { date:'3/22/26', id:'GC-00112', category:'Home Services',details:'Quarterly office deep clean (full day)', worker:'Priya N.',  amount:'$644.00', rating:'4.97',
-        breakdown:{ workerPay:560.00, fees:84.00 }, isMyGopher:true,  blocked:false },
+        breakdown:{ workerPay:560.00, fees:84.00, gopherFee:4.99, instantTransfer:79.01 },
+        type:'Facilities & Repair',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'Acme DC-2, 1400 Corporation Pkwy, Raleigh, NC 27610',
+        payMethod:'American Express 6004', timing:'Need It Now!',
+        openUntil:'3/22/26 5:00 PM', acceptedAt:'3/22/26 8:20 AM', completedAt:'3/22/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:'Notify One Of MY Gophers',
+        isMyGopher:true,  blocked:false },
       { date:'2/18/26', id:'GC-00111', category:'Day Labor',    details:'Warehouse inventory count · 2-day',  worker:'Priya N.',  amount:'$598.00', rating:'4.95',
-        breakdown:{ workerPay:520.00, fees:78.00 }, isMyGopher:true,  blocked:false },
+        breakdown:{ workerPay:520.00, fees:78.00, gopherFee:4.99, instantTransfer:73.01 },
+        type:'Warehouse Support',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'510 Fayetteville St, Raleigh, NC 27601',
+        payMethod:'Visa 4242', timing:'Flexible on timing',
+        openUntil:'2/18/26 5:00 PM', acceptedAt:'2/18/26 8:20 AM', completedAt:'2/18/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:'First Available',
+        isMyGopher:true,  blocked:false },
       { date:'2/02/26', id:'GC-00110', category:'Delivery',     details:'Recurring weekly courier route',     worker:'Priya N.',  amount:'$552.00', rating:'4.99',
-        breakdown:{ workerPay:480.00, fees:72.00 }, isMyGopher:true,  blocked:false },
+        breakdown:{ workerPay:480.00, fees:72.00, gopherFee:4.99, instantTransfer:67.01 },
+        type:'Courier Delivery',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'No specific drop-off location',
+        payMethod:'American Express 6004', timing:'Need It Now!',
+        openUntil:'2/02/26 5:00 PM', acceptedAt:'2/02/26 8:20 AM', completedAt:'2/02/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:"I'll select my worker",
+        isMyGopher:true,  blocked:false },
       { date:'1/16/26', id:'GC-00109', category:'Event Staffing',details:'Trade-show booth setup & teardown', worker:'Priya N.',  amount:'$690.00', rating:'4.98',
-        breakdown:{ workerPay:600.00, fees:90.00 }, isMyGopher:true,  blocked:false },
+        breakdown:{ workerPay:600.00, fees:90.00, gopherFee:4.99, instantTransfer:85.01 },
+        type:'Event Crew',
+        pickup:'510 Fayetteville St, Raleigh, NC 27601', dropoff:'Client site — 820 Aviation Pkwy, Morrisville, NC 27560',
+        payMethod:'Mastercard 1928', timing:'Flexible on timing',
+        openUntil:'1/16/26 5:00 PM', acceptedAt:'1/16/26 8:20 AM', completedAt:'1/16/26 3:45 PM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:'Notify One Of MY Gophers',
+        isMyGopher:true,  blocked:false },
     ],
     cancelledRequests: [
       { date:'5/14/26', id:'GC-00125', category:'Delivery',   details:'Lunch run · Pinewood Cafe',         reason:'Cancelled by you · plans changed' },
@@ -20519,12 +21011,11 @@ const PAY_BADGES = {
   // Only COMPLETED requests can become a GO-To, so only those two views carry
   // the column. A GO-To fires with no review step, so it has to start from a job
   // that actually worked — and from a worker payment a worker already accepted.
-  const PREV_TAB_COLS = {
-    all:       ['Date','Request ID','Category','Details','Status','Worker','Amount','', GOTO_COL],
-    completed: ['Date','Request ID','Category','Details','Worker','Amount','Rating','', GOTO_COL],
-    cancelled: ['Date','Request ID','Category','Details','Status',''],
-    expired:   ['Date','Request ID','Category','Details','Status',''],
-  };
+  /* ⛔ PREV_TAB_COLS is GONE with the table, and so is the GO-To checkbox column:
+     in the live app a GO-To is created by a BUTTON on the request, never by
+     ticking a column. The rule the column carried survives in the renderer —
+     only a COMPLETED request offers Create a GO-To, since a GO-To sends with no
+     review step and must start from a job that worked at an accepted price. */
 
   // ── MY GO-TOS store ──────────────────────────────────────────────────────
   // A GO-To is a user-owned COPY of a past request, taken when the box is
@@ -20535,6 +21026,26 @@ const PAY_BADGES = {
   // by design: one past request can seed several GO-Tos.
   // HOOK POINT: swap the array for a persisted per-user collection later.
   let goToSeq = 0;
+  /* ⛔ A new gid must not collide with one ALREADY in the store. This used to be
+     a bare `'GT-' + (++goToSeq)`, which is only safe while DASH_DATA.goTos
+     starts EMPTY -- true of the repo seed (`goTos: []`), and false of every
+     real account, which loads its saved GO-To's from the server. The first
+     GO-To a user created then minted 'GT-1' on top of their existing 'GT-1'.
+     gid is the key for EVERY action on a card, so the damage was not cosmetic:
+       - Edit opened the OTHER record (GoTos.get -> .find -> first match),
+       - Save then wrote this card's fields OVER that other record,
+       - Remove deleted the other one,
+       - and Submit SENT it -- a real request, to a real Gopher, for the wrong
+         job, charged to the other record's saved card.
+     Found 2026-10-03 by the owner, reproduced from a seeded store.
+     Scanning on every mint (not just seeding the counter once) is deliberate:
+     records can arrive from the server at any point in a session. */
+  function mintGoToId(){
+    const used = new Set((DASH_DATA.goTos || []).map(g => String(g && g.gid)));
+    let id;
+    do { id = 'GT-' + (++goToSeq); } while (used.has(id));
+    return id;
+  }
   const GoTos = {
     all(){ return DASH_DATA.goTos; },
     count(){ return DASH_DATA.goTos.length; },
@@ -20544,7 +21055,7 @@ const PAY_BADGES = {
       if(!rec) return null;
       const existing = rec.gid ? GoTos.get(rec.gid) : null;
       if(existing){ Object.assign(existing, rec); return existing; }
-      const created = Object.assign({}, rec, { gid:'GT-' + (++goToSeq) });
+      const created = Object.assign({}, rec, { gid: mintGoToId() });
       DASH_DATA.goTos.push(created);
       return created;
     },
@@ -20555,11 +21066,9 @@ const PAY_BADGES = {
   };
 
   function renderPrevRequests(){
-    const head = document.getElementById('prevTableHead');
-    const body = document.getElementById('prevRequestsRows');
-    if(!head || !body) return;
+    const cards = document.getElementById('prevCards');
+    if(!cards) return;
 
-    // The GO-To's tab is the strip on its own — no search box, no history table.
     const searchWrap = document.getElementById('prevSearchWrap');
     const tableWrap  = document.getElementById('prevTableWrap');
     const onGoTos    = (prevTab === 'gotos');
@@ -20568,89 +21077,75 @@ const PAY_BADGES = {
     renderGoTos();
     if(onGoTos) return;
 
-    // Header for the active tab (last col = the GO-To box)
-    const cols = PREV_TAB_COLS[prevTab];
-    head.innerHTML = `<tr>${cols.map((c, i) =>
-      `<th${i === cols.length - 1 ? ' class="pt-fav-h"' : ''}>${c}</th>`).join('')}</tr>`;
-
     const q = prevSearch.trim().toLowerCase();
     const rows = PREV_TAB_DATA[prevTab]().filter(r => {
       if(!q) return true;
-      return [r.id, r.category, r.details, r.worker, r.reason].filter(Boolean).some(v => String(v).toLowerCase().includes(q));
+      return [r.id, r.category, r.details, r.worker, r.reason]
+        .filter(Boolean)
+        .some(v => String(v).toLowerCase().includes(q));
     });
 
     const empty = document.getElementById('prevEmpty');
     if(rows.length === 0){
-      body.innerHTML = '';
-      if(empty){ empty.hidden = false; empty.textContent = q ? 'No requests match your search.' : 'No requests in this category.'; }
-    } else {
-      if(empty) empty.hidden = true;
-
-      // The GO-To box. Checked = this past request already has at least one
-      // GO-To saved from it; the badge counts them when there's more than one.
-      // Clicking always opens the editor on a NEW copy (duplicates are allowed) —
-      // removal happens from the card itself, so a stray click is never
-      // destructive. COMPLETED ONLY: other rows get a dashed placeholder so the
-      // column still lines up in the All view, with the reason on hover.
-      const favCell = (r) => {
-        const n = GoTos.forSource(r.id).length;
-        const tip = n ? `Saved as a GO-To (${n}) — click to save another copy`
-                      : 'Save as a GO-To';
-        return `<td class="pt-fav-c"><button class="pt-fav ${n ? 'checked' : ''}"
-          data-prev-fav="${r.id}" title="${tip}" aria-label="${tip}"
-          >${n > 1 ? `<span class="pt-fav-n">${n}</span>` : ''}</button></td>`;
-      };
-      const favCellNA = () => `<td class="pt-fav-c"><span class="pt-fav-na"
-        title="Only completed requests can be saved as a GO-To">&mdash;</span></td>`;
-      const viewCell = (r) => `<td><button class="pt-action" data-prev-view="${r.id}">View</button></td>`;
-
-      body.innerHTML = rows.map(r => {
-        if(prevTab === 'all'){
-          // Mixed buckets: show the status, and dash out the completed-only
-          // columns for records that never got that far.
-          const st = prevStatusOf(r);
-          return `<tr>
-            <td>${r.date}</td>
-            <td class="pt-id">#${r.id}</td>
-            <td>${r.category}</td>
-            <td>${r.details}</td>
-            <td><span class="pt-status ${st}">${st}</span></td>
-            <td>${r.worker || '—'}</td>
-            <td class="pt-amount">${r.amount || '—'}</td>
-            ${viewCell(r)}${st === 'completed' ? favCell(r) : favCellNA()}
-          </tr>`;
-        }
-        if(prevTab === 'completed'){
-          return `<tr>
-            <td>${r.date}</td>
-            <td class="pt-id">#${r.id}</td>
-            <td>${r.category}</td>
-            <td>${r.details}</td>
-            <td>${r.worker}</td>
-            <td class="pt-amount">${r.amount}</td>
-            <td class="pt-rating">⭐ ${r.rating}</td>
-            ${viewCell(r)}${favCell(r)}
-          </tr>`;
-        }
-        // Cancelled / expired — no GO-To column at all on these two tabs.
-        return `<tr>
-          <td>${r.date}</td>
-          <td class="pt-id">#${r.id}</td>
-          <td>${r.category}</td>
-          <td>${r.details}</td>
-          <td style="color:var(--muted);font-size:13px;">${r.reason || '—'}</td>
-          ${viewCell(r)}
-        </tr>`;
-      }).join('');
-
-      // Wire View buttons
-      body.querySelectorAll('[data-prev-view]').forEach(b => {
-        b.addEventListener('click', () => openPrevDetail(b.dataset.prevView));
-      });
-      body.querySelectorAll('[data-prev-fav]').forEach(b => {
-        b.addEventListener('click', () => introThenGoToEditor(b.dataset.prevFav));
-      });
+      cards.innerHTML = '';
+      if(empty){
+        empty.hidden = false;
+        empty.textContent = q ? 'No requests match your search.' : 'No requests in this category.';
+      }
+      return;
     }
+    if(empty) empty.hidden = true;
+
+    cards.innerHTML = rows.map(r => {
+      const st   = prevStatusOf(r);
+      const done = (st === 'completed');
+      const sub  = [`#${r.id}`, r.date].filter(Boolean).join(' · ');
+      /* Money and Gopher exist only on a job that completed; the rest dash out,
+         exactly as the app does. */
+      const money = done ? (r.amount || '—') : '—';
+      const who   = done ? (r.worker || '—') : '—';
+      /* Owner 2026-10-02: ALWAYS "Create a GO-To". The label used to switch to
+         "Create another" once one existed, which is logic to maintain for no
+         gain and a string the app never shows. */
+      return `<div class="prev-card">
+        <button class="prev-card-head" data-prev-view="${r.id}"
+                aria-label="Open request #${r.id}">
+          <span class="prev-card-title">${r.category}</span>
+          <span class="pt-status ${st}">${st}</span>
+          <span class="prev-card-chev" aria-hidden="true">›</span>
+        </button>
+        <div class="prev-card-sub">Request ${sub}${r.details ? ` · ${r.details}` : ''}</div>
+        <div class="prev-card-foot">
+          <div class="prev-card-rows">
+            <div class="prev-card-row"><span class="pcr-l">Total Spent</span> <span class="pcr-v">${money}</span></div>
+            <div class="prev-card-row"><span class="pcr-l">Gopher:</span> <span class="pcr-v">${who}</span></div>
+            ${done && r.rating ? `<div class="prev-card-row"><span class="pcr-l">Rating</span> ⭐ ${r.rating}</div>` : ''}
+          </div>
+          <div class="prev-card-acts">
+            ${done ? `<button class="pca pca-goto" data-prev-fav="${r.id}">Create a ${GO_MARK}-To</button>` : ''}
+            <button class="pca pca-again" data-prev-again="${r.id}">Request Again</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    cards.querySelectorAll('[data-prev-view]').forEach(b => {
+      b.addEventListener('click', () => openPrevDetail(b.dataset.prevView));
+    });
+    cards.querySelectorAll('[data-prev-fav]').forEach(b => {
+      b.addEventListener('click', () => introThenGoToEditor(b.dataset.prevFav));
+    });
+    /* Request Again = prefill and REVIEW, the same w/-edits route the detail
+       panel uses: the MY Gophers picker first when the business has any,
+       otherwise straight to Review. The one-tap send is what a GO-To is for. */
+    cards.querySelectorAll('[data-prev-again]').forEach(b => {
+      b.addEventListener('click', () => {
+        const r = findPrevById(b.dataset.prevAgain);
+        if(!r) return;
+        if((DASH_DATA.myGophers || []).length) openRaFastModal(r);
+        else if(typeof window.__startRequestAgainFast === 'function') window.__startRequestAgainFast(r, []);
+      });
+    });
   }
 
   // ── MY GO-TOS: intro, strip, editor, and the one-tap send ────────────────
@@ -20662,9 +21157,22 @@ const PAY_BADGES = {
   let goToIntroSeen = false;
   let goToIntroFor  = null;
 
+  /* ⛔ Create a GO-To now runs the REAL request flow (owner 2026-10-02), not the
+     condensed editor. openGoToEditor stays for EDIT, where the point is to
+     change one field on a saved card rather than walk seven screens again. */
+  /* ⛔ A GO-To is set up on its OWN prepopulated sheet, NOT by walking the
+     step-by-step request flow (owner 2026-10-03: "it is supposed to have the
+     GO-To unique registration sheet, mostly prepopulated"). I built the wizard
+     route first and it was wrong — the live app's setup screen has no step
+     tracker and no Pick a service / Job details tabs; it is one continuous form
+     carrying every field the one tap will send. openGoToEditor IS that sheet. */
+  function startGoToFromSource(srcId){
+    openGoToEditor(null, srcId);
+  }
+
   function introThenGoToEditor(srcId){
     const ov = document.getElementById('goToIntroOverlay');
-    if(goToIntroSeen || !ov){ openGoToEditor(null, srcId); return; }
+    if(goToIntroSeen || !ov){ startGoToFromSource(srcId); return; }
     const never = document.getElementById('goToIntroNever');
     if(never) never.classList.remove('checked');
     goToIntroFor = srcId;
@@ -20680,7 +21188,7 @@ const PAY_BADGES = {
     if(ov) ov.hidden = true;
     const id = goToIntroFor;
     goToIntroFor = null;
-    if(proceed && id) openGoToEditor(null, id);
+    if(proceed && id) startGoToFromSource(id);
   }
 
   // COMPLETED bucket only — a GO-To can only be built from a request that
@@ -20709,7 +21217,11 @@ const PAY_BADGES = {
     if(!strip || !cards) return;
 
     const list = GoTos.all();
-    strip.hidden = (!list.length && prevTab !== 'gotos');
+    /* ⛔ Owner 2026-10-02: do NOT pin the GO-To's above the other tabs. The web
+       used to float this strip over every tab once one was saved; the app shows
+       them only under the GO-To's pill. Web-only placement is exactly the kind
+       of difference that makes the two surfaces behave unlike each other. */
+    strip.hidden = (prevTab !== 'gotos');
     if(count) count.textContent = list.length ? `${list.length} saved` : '';
 
     if(!list.length){
@@ -20722,6 +21234,19 @@ const PAY_BADGES = {
 
     cards.innerHTML = list.map(g => {
       const pay = Number(g.workerPay) > 0 ? ` · ${fmt(g.workerPay)} to your Gopher` : '';
+      /* The app's card states everything the one tap will send: the goods cost
+         when there is one, where it goes, when, and which method pays. Anything
+         it does not show is something the requester cannot check before it goes. */
+      const goods = Number(g.goodsCost) > 0 ? ` · ${fmt(g.goodsCost)} goods` : '';
+      const where = [g.pickup, g.dropoff].filter(Boolean).map(goEsc).join(' → ');
+      const payLabel = (function(){
+        if(g.payLabel) return g.payLabel;
+        const m = (window.__getPayMethods ? window.__getPayMethods() : [])
+          .find(x => x.key === g.payKey);
+        if(!m) return '';
+        const nm = (window.__payDisplayName ? window.__payDisplayName(m) : m.name) || m.name;
+        return m.last4 ? `${nm} ${m.last4}` : nm;
+      })();
       // The name defaults to the first clause of the details, so the two are
       // usually the same string — only show details when it adds something.
       const showDet = String(g.details || '').trim() &&
@@ -20729,15 +21254,20 @@ const PAY_BADGES = {
       return `<div class="goto-card">
         <div class="goto-card-main">
           <div class="goto-card-name" title="${goEsc(g.name)}">${goEsc(g.name)}</div>
-          <div class="goto-card-meta">${goEsc(g.category)}${pay}</div>
+          <div class="goto-card-meta">${goEsc(g.category)}${pay}${goods}</div>
           ${showDet ? `<div class="goto-card-det" title="${goEsc(g.details)}">${goEsc(g.details)}</div>` : ''}
+          ${where ? `<div class="goto-card-det"><b>Where</b> ${where}</div>` : ''}
+          <div class="goto-card-det"><b>When</b> Need it now when you tap</div>
+          ${payLabel ? `<div class="goto-card-det"><b>Payment</b> ${goEsc(payLabel)}</div>` : ''}
         </div>
         <div class="goto-card-side">
-          <button class="goto-cta" data-goto-now="${g.gid}">Request my ${GO_MARK}-To NOW ⚡️</button>
+          <button class="goto-cta" data-goto-now="${g.gid}">Submit my ${GO_MARK}-To</button>
           <div class="goto-links">
             <button class="goto-link" data-goto-edit="${g.gid}">Edit</button>
             <button class="goto-link danger" data-goto-del="${g.gid}">Remove</button>
-            <span class="goto-sends">Sends immediately</span>
+            <span class="goto-sends">${(g.gophers && g.gophers.length)
+              ? `Sends to ${goEsc(g.gophers.slice(0,3).join(', '))}${g.gophers.length > 3 ? ` +${g.gophers.length - 3}` : ''} first · sends immediately`
+              : 'Sends immediately'}</span>
           </div>
         </div>
       </div>`;
@@ -20764,6 +21294,14 @@ const PAY_BADGES = {
     let draft;
     if(existing){
       draft = Object.assign({}, existing, { gophers:(existing.gophers || []).slice() });
+      /* Records saved before anyPickup was persisted have no boolean, so fall
+         back to reading the stored pick-up text -- once, here, rather than
+         leaving the rest of the sheet to infer it. A record saved SINCE always
+         wins, even when its text would read the other way. */
+      if(typeof existing.anyPickup !== 'boolean'){
+        draft.anyPickup = /anywhere|no specific|no pick/i.test(String(existing.pickup || ''));
+      }
+      if(pickupToggleHidden(draft.category)) draft.anyPickup = false;
     } else {
       const src = findPrevById(srcId);
       if(!src) return;
@@ -20776,6 +21314,20 @@ const PAY_BADGES = {
         category: src.category || 'Other',
         details: src.details || '',
         workerPay: (src.breakdown && Number(src.breakdown.workerPay)) || '',
+        /* ⛔ Owner 2026-10-02: a GO-To sends on ONE TAP with no review screen, so
+           every field that goes out with it has to be visible and editable here.
+           Address and cost of items were missing entirely — the editor could not
+           show them, so a saved GO-To carried whatever the source request had
+           and the requester had no way to see it, let alone correct it. */
+        itemsPurchased: !!src.itemsPurchased,
+        ageRestricted:  !!src.ageRestricted,
+        counterOffers:  src.counterOffers !== false,
+        anyPickup: defaultAnyPickup(src.category || 'Other', src.pickup),
+        notes: '',
+        pickup:  src.pickup  || '',
+        dropoff: src.dropoff || '',
+        goodsCost: (src.costOfItems != null ? src.costOfItems
+                   : (src.breakdown && src.breakdown.costOfItems != null ? src.breakdown.costOfItems : '')),
         payKey: null,
         waiver: true,
         // Pre-check whoever did it last time, but only if they're actually saved
@@ -20785,6 +21337,48 @@ const PAY_BADGES = {
     }
 
     const gophers = (DASH_DATA.myGophers || []);
+    /* ⛔ "Gopher can purchase from anywhere" only makes sense for a delivery or
+       errand. The request flow already varies this toggle by category — moving
+       calls it a single-location move — and the GO-To sheet has to say the same
+       thing, or the two surfaces describe one switch differently. Wording lifted
+       from the flow's own pick-up step rather than invented here. */
+    // Label for the "no pick-up address" switch, per request type.
+    // Keyed on the EXACT category value, never a substring: 'Junk Removal'
+    // lowercases to 'junk removal', which contains 'mov', so an
+    // indexOf('mov') test labelled a junk haul a "Single-location move"
+    // (found 2026-10-03). GOTO_CATS is the only source of these keys.
+    const NO_PICKUP_LABELS = {
+      'delivery': 'Gopher can purchase from anywhere',
+      'errands':  'Gopher can purchase from anywhere',
+      'moving':   'Single-location move'
+    };
+    function noPickupLabel(cat){
+      const c = String(cat || '').trim().toLowerCase();
+      return NO_PICKUP_LABELS[c] || 'No pick up \u2014 work happens on site';
+    }
+    /* ⛔ A ride's pick-up IS its origin, so "no pick-up address" is a
+       contradiction there -- switching it on would leave the ride with only a
+       destination. Owner 2026-10-03: hide the control for rides. Hiding it is
+       not enough on its own: anyPickup must be forced OFF too, or a ride
+       inherits a hidden true from its source request and the address field
+       stays hidden with it. */
+    function pickupToggleHidden(cat){
+      return /^ride\b|ride sharing/i.test(String(cat || '').trim());
+    }
+    /* Owner 2026-10-03: default the switch ON for the on-site categories --
+       "allow the user to deselect if somehow relevant (after all, Gopher IS
+       anything anytime anywhere)". A DEFAULT only decides where there is
+       nothing to honour: when the source request carries a real pick-up
+       address, that address wins, or prefilling would silently discard it. */
+    function defaultAnyPickup(cat, srcPickup){
+      if(pickupToggleHidden(cat)) return false;
+      const p = String(srcPickup || '').trim();
+      if(/anywhere|no specific|no pick/i.test(p)) return true;
+      if(p) return false;                       // a real address -- keep it
+      const c = String(cat || '').trim().toLowerCase();
+      return !NO_PICKUP_LABELS[c];              // on-site categories default ON
+    }
+
     // Card in use — the same list the checkout picker and Payment info share.
     const payMethods = (DASH_DATA.paymentMethods || []);
     const defPay     = payMethods.find(m => m.isDefault) || payMethods[0];
@@ -20795,76 +21389,145 @@ const PAY_BADGES = {
     panel.innerHTML = `
       <div class="goto-edit-card">
         <button class="prev-detail-back" data-goto-back>← Back to history</button>
-        <!-- one span, not loose nodes: .prev-detail-status is inline-flex with a
-             6px gap, which would otherwise push "-To" off the mark -->
-        <span class="prev-detail-status completed"><span>${existing ? 'Editing' : 'New'} ${GO_MARK}-To</span></span>
-        <div class="prev-detail-title">${existing ? `Edit this ${GO_MARK}-To` : `Save as a ${GO_MARK}-To`}</div>
-        <div class="goto-edit-note">
-          This is a <b>copy you own</b> — change anything before saving.
-          It carries no request ID${draft.srcId ? `: <b>#${goEsc(draft.srcId)}</b> stays in your history exactly as it is` : ''},
-          and a fresh one is issued each time you send it.
+
+        <!-- ⛔ ONE header. The live app's setup screen opens with this green block
+             and nothing above it; the old "Save as a GO-To / this is a copy you
+             own" panel was a second competing header saying the same thing. -->
+        <div class="goto-flow-banner">
+          <div class="gfb-title">Setting up a ${GO_MARK}-To</div>
+          <div class="gfb-sub">Nothing is requested until you send it.</div>
+          <div class="goto-field" style="margin-top:12px;">
+            <label for="gotoCat">Request type</label>
+            <!-- ⛔ A saved category that is not in GOTO_CATS must still be an
+                 OPTION, or the browser falls back to the first one and the next
+                 Save silently rewrites it. The seeded GO-To's alone carry
+                 'Restaurant/Food Truck' and 'Age-Restricted'; a real account's
+                 categories come from the server and need not match this list at
+                 all. Opening Edit and pressing Save must never change a field
+                 the requester did not touch. -->
+            <select id="gotoCat">${(GOTO_CATS.some(c => sameCat(c, draft.category))
+                || !String(draft.category || '').trim()
+                ? GOTO_CATS : GOTO_CATS.concat([draft.category])).map(c =>
+              `<option value="${goEsc(c)}"${sameCat(c, draft.category) ? ' selected' : ''}>${goEsc(c)}</option>`).join('')}</select>
+          </div>
         </div>
 
+        <div class="goto-sec-h">Request details</div>
         <div class="goto-field">
-          <label for="gotoName">Name this GO-To</label>
-          <input type="text" id="gotoName" maxlength="60" placeholder="e.g. Friday catering run"
-                 value="${goEsc(draft.name)}">
-        </div>
-
-        <div class="goto-field">
-          <label for="gotoCat">Request type</label>
-          <select id="gotoCat">${GOTO_CATS.map(c =>
-            `<option value="${c}"${sameCat(c, draft.category) ? ' selected' : ''}>${c}</option>`).join('')}</select>
-        </div>
-
-        <div class="goto-field">
-          <label for="gotoDetails">Details</label>
+          <label for="gotoDetails">Description <span class="goto-req">required</span></label>
           <textarea id="gotoDetails" placeholder="What do you need done?">${goEsc(draft.details)}</textarea>
         </div>
+        <!-- ⛔ Age-restricted FIRST, items-purchased second (owner 2026-10-03).
+             Items-purchased reveals the Cost of items field directly beneath it;
+             with the AR toggle in between, a control and the field it opens were
+             separated by an unrelated switch and the section read as three
+             disconnected rows. -->
+        <div class="goto-field goto-toggles">
+          <button type="button" class="goto-tog ${draft.ageRestricted ? 'checked' : ''}" data-goto-tog="ageRestricted">
+            <span class="prev-check-box"></span><span>My order includes age-restricted items</span>
+          </button>
+          <button type="button" class="goto-tog ${draft.itemsPurchased ? 'checked' : ''}" data-goto-tog="itemsPurchased">
+            <span class="prev-check-box"></span><span>Select if you need items purchased</span>
+          </button>
+        </div>
+        <!-- Cost of items belongs to Request details, with the toggle that turns
+             it on — not under Drop off, where it had drifted. -->
+        <div class="goto-field" id="gotoGoodsField"${draft.itemsPurchased ? '' : ' hidden'}>
+          <label for="gotoGoods">Cost of items</label>
+          <div class="cost-input-box goto-money">
+            <span class="ci-currency">$</span>
+            <input type="text" inputmode="decimal" class="cost-amount-input" id="gotoGoods"
+                   placeholder="0.00" autocomplete="off" aria-label="Cost of items"
+                   value="${draft.goodsCost === '' || draft.goodsCost == null ? '' : Number(draft.goodsCost).toFixed(2)}">
+          </div>
+          <div class="goto-hint">What the Gopher pays at the till, on top of their payment.</div>
+        </div>
 
+        <div class="goto-sec-h">Pick up location</div>
+        <div class="goto-field goto-toggles" id="gotoAnyPickupRow"${pickupToggleHidden(draft.category) ? ' hidden' : ''}>
+          <button type="button" class="goto-tog ${draft.anyPickup ? 'checked' : ''}" data-goto-tog="anyPickup">
+            <span class="prev-check-box"></span><span id="gotoAnyPickupLabel">${noPickupLabel(draft.category)}</span>
+          </button>
+        </div>
+        <div class="goto-field" id="gotoPickupField"${draft.anyPickup ? ' hidden' : ''}>
+          <label for="gotoPickup">Enter address here</label>
+          <input type="text" id="gotoPickup" placeholder="Pick-up address"
+                 value="${goEsc(draft.anyPickup ? '' : (draft.pickup || ''))}">
+        </div>
+
+        <div class="goto-sec-h">Drop off location</div>
         <div class="goto-field">
-          <label for="gotoPay">Payment to Gopher</label>
-          <input type="number" id="gotoPay" min="1" step="1" placeholder="Required — e.g. 45"
-                 value="${hadPay ? Number(draft.workerPay) : ''}">
+          <label for="gotoDropoff">Enter address here</label>
+          <input type="text" id="gotoDropoff" placeholder="Where should it end up?"
+                 value="${goEsc(draft.dropoff || '')}">
+        </div>
+
+        <!-- No scheduling on a GO-To (owner, 2026-10-03). This was a radio group
+             with exactly ONE option — permanently checked, read by no JS
+             (nothing ever queried data-goto-when) — under a hint written in an
+             internal voice. A choice of one is not a choice; it is now a
+             statement. If scheduling is ever added, it comes back as a real
+             radio group with the second option that justifies it. -->
+        <div class="goto-sec-h">Request time</div>
+        <div class="goto-field">
+          <div class="goto-hint" style="margin-top:0;">Your ${GO_MARK}-To is sent the moment you tap it.
+            To book something for a later date or time, make a normal request instead.</div>
+        </div>
+
+        <div class="goto-sec-h">Request Gopher</div>
+        <div class="goto-field">
+          <div class="goto-hint" style="margin-top:0;">How would you like to select your Gopher?</div>
+          <div class="goto-radios" id="gotoWho">
+            <button type="button" class="goto-radio ${draft.gophers.length ? '' : 'checked'}" data-goto-who="first">
+              <span class="radio-dot"></span><span>First Available</span>
+            </button>
+            <button type="button" class="goto-radio ${draft.gophers.length ? 'checked' : ''}" data-goto-who="my">
+              <span class="radio-dot"></span><span>Notify One Of MY Gophers</span>
+            </button>
+          </div>
+        </div>
+        <div class="goto-field" id="gotoGophersField"${draft.gophers.length ? '' : ' hidden'}>
+          ${gophers.length ? `<div class="goto-gophers">${gophers.map(g => `
+            <button type="button" class="goto-gopher-row ${draft.gophers.indexOf(g.name) !== -1 ? 'checked' : ''}"
+                    data-goto-gopher="${goEsc(g.name)}">
+              <span class="prev-check-box"></span>
+              <span>${goEsc(g.name)}<span style="color:var(--muted);"> · last: ${goEsc(g.lastCategory || '—')}</span></span>
+            </button>`).join('')}</div>`
+          : `<div class="goto-empty" style="padding:12px;">No MY Gophers saved yet — this one will open to the wider workforce.</div>`}
+        </div>
+
+        <div class="goto-sec-h">Special requests</div>
+        <div class="goto-field">
+          <label for="gotoNotes">Any special instructions? (optional)</label>
+          <textarea id="gotoNotes" placeholder="Is there anything else that might help with fulfilling your request?">${goEsc(draft.notes || '')}</textarea>
+        </div>
+
+        <div class="goto-sec-h">Payment information</div>
+        <div class="goto-field">
+          <label for="gotoPay">Payment to your Gopher</label>
+          <div class="cost-input-box goto-money">
+            <span class="ci-currency">$</span>
+            <input type="text" inputmode="decimal" class="cost-amount-input" id="gotoPay"
+                   placeholder="0.00" autocomplete="off" aria-label="Payment to your Gopher"
+                   value="${hadPay ? Number(draft.workerPay).toFixed(2) : ''}">
+          </div>
           <div class="goto-hint" id="gotoPayHint">${hadPay
             ? 'This is what a Gopher already accepted for this job &mdash; your best odds of it being picked up again. Change it if you like.'
             : 'This request has no accepted amount on record. A GO-To sends with no review step, so set one here.'
           }</div>
         </div>
-
-        <div class="goto-field">
-          <label for="gotoCard">Card being used</label>
-          ${payMethods.length
-            ? `<select id="gotoCard">${payMethods.map(m =>
-                `<option value="${m.key}"${m.key === selPayKey ? ' selected' : ''}>${goEsc(payLabel(m))}</option>`
-              ).join('')}</select>
-               <div class="goto-hint">Charged the moment you tap the button. Add or remove cards under Payment info.</div>`
-            : `<div class="goto-empty" style="padding:14px;">No payment method on file — add one under Payment info first.</div>`}
+        <div class="goto-field goto-toggles">
+          <button type="button" class="goto-tog ${draft.counterOffers === false ? '' : 'checked'}" data-goto-tog="counterOffers">
+            <span class="prev-check-box"></span><span>Allow counter offers</span>
+          </button>
         </div>
-
-        <div class="goto-field">
-          <label>Send to these MY Gophers first</label>
-          ${gophers.length ? `<div class="goto-gophers">${gophers.map(g => `
-            <button type="button" class="goto-gopher-row ${draft.gophers.indexOf(g.name) !== -1 ? 'checked' : ''}"
-                    data-goto-gopher="${goEsc(g.name)}">
-              <span class="prev-check-box"></span>
-              <span>${goEsc(g.name)}<span style="color:var(--muted);"> · ${goEsc(g.specialty || '—')}</span></span>
-            </button>`).join('')}</div>`
-          : `<div class="goto-empty" style="padding:14px;">
-               No MY Gophers saved yet — this one will open to the wider workforce.
-             </div>`}
-        </div>
-
-        <button type="button" class="goto-waiver ${draft.waiver === false ? '' : 'checked'}" data-goto-waiver>
-          <span class="prev-check-box"></span>
-          <span><b>Liability waiver &mdash; accepted for every send.</b> You agree Gopher, Inc. is
-          released from liability associated with this request, and authorise the card above to be
-          charged for the total shown. A GO-To sends immediately with no review step, so this is
-          accepted here and re-affirmed each time you tap the button.</span>
-        </button>
+        <!-- ⛔ No card picker here. The live app chooses the METHOD on the review
+             sheet, next to the waiver that authorises it — splitting the two
+             across screens is how someone agrees to a charge on a card they did
+             not pick. -->
 
         <div class="goto-edit-ctas">
-          <button class="prev-detail-cta cta-now" data-goto-save>${existing ? 'Save changes' : `Save ${GO_MARK}-To`}</button>
+          <button class="prev-detail-cta cta-now" data-goto-save>Review my ${GO_MARK}-To →</button>
           <button class="prev-detail-cta" data-goto-cancel>Cancel</button>
         </div>
       </div>`;
@@ -20872,41 +21535,140 @@ const PAY_BADGES = {
     panel.querySelectorAll('[data-goto-gopher]').forEach(row => {
       row.addEventListener('click', () => row.classList.toggle('checked'));
     });
+    /* Toggles that REVEAL a field have to move it, or the sheet shows a cost
+       box for a request that buys nothing, or an address box for a GO-To whose
+       Gopher picks the shop. */
+    const show = (id, on) => { const el = document.getElementById(id); if(el) el.hidden = !on; };
+    // Once the requester sets this switch themselves, the category default stops
+    // overriding them.
+    let pickupTouched = false;
+    panel.querySelectorAll('[data-goto-tog]').forEach(t => {
+      t.addEventListener('click', () => {
+        t.classList.toggle('checked');
+        const on = t.classList.contains('checked');
+        if(t.dataset.gotoTog === 'itemsPurchased') show('gotoGoodsField', on);
+        if(t.dataset.gotoTog === 'anyPickup'){ pickupTouched = true; show('gotoPickupField', !on); }
+        refreshGoToSave();
+      });
+    });
+    /* Gopher selection is a RADIO: First Available or Notify One Of MY Gophers,
+       the live app's two options on this screen. Choosing MY Gophers reveals the
+       list; choosing First Available hides it and clears the picks, so a saved
+       GO-To cannot carry favourites it will not route to. */
+    /* The label follows the Request type while the sheet is open, not only at
+       first paint. */
+    const catSel = document.getElementById('gotoCat');
+    if(catSel) catSel.addEventListener('change', () => {
+      const lbl = document.getElementById('gotoAnyPickupLabel');
+      if(lbl) lbl.textContent = noPickupLabel(catSel.value);
+      /* Switching INTO a ride has to force the switch off and bring the address
+         field back, not just hide the control -- otherwise the ride keeps a
+         hidden "no pick-up" and loses its origin with no way to say so. */
+      const row  = document.getElementById('gotoAnyPickupRow');
+      const tgl  = panel.querySelector('[data-goto-tog="anyPickup"]');
+      const hide = pickupToggleHidden(catSel.value);
+      if(row) row.hidden = hide;
+      if(hide){
+        if(tgl) tgl.classList.remove('checked');
+      } else if(!pickupTouched && tgl){
+        /* The default is per CATEGORY, so it re-applies when the category
+           changes -- not only at first paint, or picking Yard Work on a sheet
+           started from a Delivery would never default ON. It stops the moment
+           the requester touches the switch themselves: after that the choice is
+           theirs.
+           Deliberately IGNORES any address already in the box here, unlike
+           first paint. At first paint the source request's own pick-up is real
+           information about that job and is honoured. On a category change the
+           requester is redefining the job, and a prefilled address is a
+           leftover from the old one -- and nothing is lost by superseding it:
+           the field keeps its value, hidden, and switching the toggle back off
+           returns it untouched. Without this, Connect never defaulted ON at
+           all, because every one of its requests carries an address. */
+        tgl.classList.toggle('checked', defaultAnyPickup(catSel.value, ''));
+      }
+      show('gotoPickupField', hide || !(tgl && tgl.classList.contains('checked')));
+    });
+    panel.querySelectorAll('[data-goto-who]').forEach(r => {
+      r.addEventListener('click', () => {
+        panel.querySelectorAll('[data-goto-who]').forEach(x => x.classList.toggle('checked', x === r));
+        const my = r.dataset.gotoWho === 'my';
+        show('gotoGophersField', my);
+        if(!my) panel.querySelectorAll('.goto-gopher-row.checked').forEach(g => g.classList.remove('checked'));
+      });
+    });
 
     // A GO-To skips Review entirely, so the two things Review would otherwise
     // collect — a worker payment above $0 and the waiver — are settled here.
     const saveBtn  = panel.querySelector('[data-goto-save]');
     const payEl    = document.getElementById('gotoPay');
     const payHint  = document.getElementById('gotoPayHint');
-    const waiverEl = panel.querySelector('[data-goto-waiver]');
+    /* ⛔ The waiver is NOT collected here any more — it is on the Review sheet,
+       which is where the live app agrees it, once, covering every future send.
+       This screen only has to guarantee a payment above $0 before review. */
     function refreshGoToSave(){
       const pay = parseFloat(payEl ? payEl.value : '');
       const payOk = !isNaN(pay) && pay > 0;
-      const waiverOk = waiverEl.classList.contains('checked');
-      saveBtn.disabled = !(payOk && waiverOk);
+      saveBtn.disabled = !payOk;
       if(payHint) payHint.classList.toggle('warn', !payOk && payEl.value !== '');
     }
     if(payEl) payEl.addEventListener('input', refreshGoToSave);
-    waiverEl.addEventListener('click', () => { waiverEl.classList.toggle('checked'); refreshGoToSave(); });
     refreshGoToSave();
 
     saveBtn.addEventListener('click', () => {
       if(saveBtn.disabled) return;
       const val = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
       const pay = parseFloat(val('gotoPay'));
-      GoTos.save({
+      const tog = (k) => {
+        const el = panel.querySelector(`[data-goto-tog="${k}"]`);
+        return !!(el && el.classList.contains('checked'));
+      };
+      const gophers = Array.from(panel.querySelectorAll('.goto-gopher-row.checked'))
+                           .map(el => el.dataset.gotoGopher);
+      /* ⛔ The setup sheet does NOT save. It hands the assembled record to the
+         Review My GO-To sheet, which is where the live app shows what the one
+         tap will send, picks the method and takes the liability waiver — and
+         only then saves. Saving straight from here would skip the only screen
+         that exists to be read. */
+      const rec = {
         gid: draft.gid,
         srcId: draft.srcId,
-        name: val('gotoName').trim() || draft.name || 'Saved request',
+        /* The NAME is collected on the review sheet, as the live app does — this
+           screen has no name field any more. The default rides along so the
+           review sheet opens with something sensible in it. */
+        name: draft.name || 'Saved request',
         category: val('gotoCat'),
         details: val('gotoDetails').trim(),
+        notes: val('gotoNotes').trim(),
         workerPay: pay,
-        payKey: val('gotoCard') || selPayKey || null,
-        waiver: waiverEl.classList.contains('checked'),
-        gophers: Array.from(panel.querySelectorAll('.goto-gopher-row.checked'))
-                      .map(el => el.dataset.gotoGopher)
-      });
-      closeGoToEditor();
+        /* ⛔ Two bugs lived on this line. The saved pickup string was
+           HARD-CODED to the delivery wording, so a Moving GO-To stored and
+           displayed "Gopher can purchase from anywhere" -- visible on the
+           owner's own card. And anyPickup was never persisted at all: Edit
+           re-derived it by regex-matching that display string, so changing the
+           wording would have silently flipped the switch off on reopen. The
+           boolean is now stored, and the string follows the category. */
+        anyPickup: tog('anyPickup'),
+        pickup:  tog('anyPickup') ? noPickupLabel(val('gotoCat')) : val('gotoPickup').trim(),
+        dropoff: val('gotoDropoff').trim(),
+        goodsCost: val('gotoGoods').trim() === '' ? '' : Number(val('gotoGoods')),
+        itemsPurchased: tog('itemsPurchased'),
+        ageRestricted:  tog('ageRestricted'),
+        counterOffers:  tog('counterOffers'),
+        chosenHow: (panel.querySelector('[data-goto-who].checked') || {}).dataset
+                     ? ((panel.querySelector('[data-goto-who].checked').dataset.gotoWho === 'my')
+                        ? 'Notify One Of MY Gophers' : 'First Available')
+                     : (gophers.length ? 'Notify One Of MY Gophers' : 'First Available'),
+        payKey: selPayKey || null,   // the method is CHOSEN on the review sheet
+        gophers: gophers
+      };
+      if(!(window.__openGoToReview && window.__openGoToReview(rec, (finalRec) => {
+        GoTos.save(finalRec);
+        closeGoToEditor();
+      }))){
+        // Review unavailable — never strand the user mid-setup.
+        GoTos.save(Object.assign({}, rec, { waiver:true }));
+        closeGoToEditor();
+      }
     });
 
     panel.querySelector('[data-goto-cancel]').addEventListener('click', closeGoToEditor);
@@ -21142,39 +21904,80 @@ const PAY_BADGES = {
     const title = document.getElementById('prevSecTitle');
 
     if(status === 'completed'){
+      /* ── Completed view: the live app's section order, with our styling ──
+         Mirrors gopher-request.html. ⛔ Every section is conditional — the
+         seeded history carries these fields but a request created by the flow
+         in this session does not, and an empty row is worse than no section. */
       const firstName = (r.worker || '').split(' ')[0] || 'Your Gopher';
       const ratingNum = parseFloat(r.rating) || 0;
       const stars = Array.from({length:5},(_,i) => `<span class="star ${i < Math.round(ratingNum) ? '' : 'dim'}">★</span>`).join('');
+      const row = (label, value) => (value === undefined || value === null || value === '')
+        ? '' : `<div class="pdx-row"><span class="pdx-l">${label}</span><span class="pdx-v">${value}</span></div>`;
+      const yesNo = (v) => (v === undefined || v === null) ? '' : (v ? 'Yes' : 'No');
+      const section = (heading, rows) => {
+        const body = rows.filter(Boolean).join('');
+        return body ? `<div class="pdx-sec"><div class="pdx-h">${heading}</div>${body}</div>` : '';
+      };
+      const bd = r.breakdown || {};
+      const feeLines = (bd.gopherFee != null || bd.instantTransfer != null)
+        ? `<div class="pdx-sub">${row('Gopher Fee', fmt(bd.gopherFee))}${row('Instant Transfer Fee', fmt(bd.instantTransfer))}</div>`
+        : '';
       panel.innerHTML = `
         <div class="prev-detail-card">
           <button class="prev-detail-back" data-prev-back>← Back to history</button>
           <span class="prev-detail-status completed">Completed</span>
           <div class="prev-detail-title">Request #${r.id}</div>
-          <div class="prev-detail-rows">
-            <div class="prev-detail-row"><span class="pdr-label">Date:</span><span class="pdr-value">${r.date}</span></div>
-            <div class="prev-detail-row"><span class="pdr-label">Request type:</span><span class="pdr-value">${r.category}</span></div>
-            <div class="prev-detail-row"><span class="pdr-label">Details:</span><span class="pdr-value">${r.details}</span></div>
-            <div class="prev-detail-row"><span class="pdr-label">Gopher name:</span><span class="pdr-value">${r.worker}</span></div>
-            <div class="prev-detail-row"><span class="pdr-label under">Total spent:</span><span class="pdr-value">${r.amount}</span></div>
-            <div class="prev-detail-row"><span class="pdr-label">Payment to Gopher:</span><span class="pdr-value">${fmt(r.breakdown.workerPay)}</span></div>
-            <div class="prev-detail-row"><span class="pdr-label">Fees:</span><span class="pdr-value">${fmt(r.breakdown.fees)}</span></div>
-            <div class="prev-detail-row"><span class="pdr-label">Rating:</span><span class="pdr-value">${ratingNum.toFixed(2)} <span class="prev-detail-rating">${stars}</span></span></div>
+          <div class="pdx-head">
+            <div class="pdx-type">${r.type || r.category}</div>
+            <div class="pdx-when">${[r.category, r.date].filter(Boolean).join(' · ')}</div>
           </div>
+
+          ${section('Where', [ row('Pick Up', r.pickup), row('Drop Off', r.dropoff) ])}
+          ${section('Method of payment', [ row('Method of payment', r.payMethod) ])}
+          ${section('When', [
+            row('Timing', r.timing), row('Open until', r.openUntil),
+            row('Accepted', r.acceptedAt), row('Completed', r.completedAt)
+          ])}
+          ${section('Request details', [
+            row('Type', r.type || r.category), row('Details', r.details),
+            row('Items to be purchased', yesNo(r.itemsPurchased)),
+            row('Age-restricted items', yesNo(r.ageRestricted)),
+            row('Allow counter offers', yesNo(r.counterOffers)),
+            row('Liability Waiver', r.waiver)
+          ])}
+          ${section('How your Gopher was chosen', [
+            row('Gopher Requested', r.chosenHow ? `${r.chosenHow}${r.worker ? `<br><span class="pdx-dim">${r.worker}</span>` : ''}` : '')
+          ])}
+
+          <div class="pdx-sec pdx-money">
+            ${row('Payment to your Gopher', fmt(bd.workerPay))}
+            ${row('Fees', fmt(bd.fees))}
+            ${feeLines}
+            <div class="pdx-row pdx-total"><span class="pdx-l">Total Spent</span><span class="pdx-v">${r.amount}</span></div>
+          </div>
+
+          <div class="pdx-sec">
+            <div class="pdx-row">
+              <span class="pdx-l">Gopher: <b>${r.worker}</b></span>
+              <span class="pdx-v"><button class="pdx-link" data-prev-profile="${r.id}">Review Profile</button></span>
+            </div>
+            <div class="pdx-row"><span class="pdx-l">Rating</span><span class="pdx-v">${ratingNum.toFixed(2)} <span class="prev-detail-rating">${stars}</span></span></div>
+          </div>
+
           <div class="prev-detail-checks">
             <button class="prev-check-row ${r.isMyGopher?'checked':''}" data-prev-toggle="myGopher">
               <span class="prev-check-box"></span>
               <span>${firstName} is one of your MY Gophers</span>
             </button>
-          </div>
-          <div class="prev-detail-ctas">
-            <button class="prev-detail-cta cta-now" data-prev-now="${r.id}">Request again NOW ⚡️</button>
-            <button class="prev-detail-cta" data-prev-again="${r.id}">Request again w/ edits</button>
-          </div>
-          <div class="prev-detail-checks prev-detail-block">
             <button class="prev-check-row ${r.blocked?'checked':''}" data-prev-toggle="blocked">
               <span class="prev-check-box"></span>
               <span>Do not send requests to ${firstName} again</span>
             </button>
+          </div>
+
+          <div class="pdx-bar">
+            <button class="pca pca-goto" data-prev-fav="${r.id}">Create a ${GO_MARK}-To</button>
+            <button class="pca pca-again" data-prev-again="${r.id}">Request Again</button>
           </div>
         </div>`;
     } else {
@@ -21214,6 +22017,15 @@ const PAY_BADGES = {
       if(myG.length){ openRaFastModal(r); }
       else { window.__startRequestAgainFast(r, []); }
     });
+    /* Create a GO-To from the detail view's sticky bar — same entry point as the
+       history card, so the first-run intro still gates it. */
+    const favBtn = panel.querySelector('[data-prev-fav]');
+    if(favBtn) favBtn.addEventListener('click', () => introThenGoToEditor(r.id));
+    /* Review Profile: history records carry no worker id, and the profile view
+       is keyed by worker INDEX on a live request — so this opens MY Gophers,
+       where that Gopher's card lives. A real destination beats a dead link. */
+    const profBtn = panel.querySelector('[data-prev-profile]');
+    if(profBtn) profBtn.addEventListener('click', () => { closePrevDetail(); showSection('gophers'); });
     const nowBtn = panel.querySelector('[data-prev-now]');
     if(nowBtn) nowBtn.addEventListener('click', () => {
       // Request NOW ⚡: no picker, no Review — send it exactly as it went out before,
@@ -22331,6 +23143,22 @@ const PAY_BADGES = {
     const host   = document.getElementById('dashFlowHost');
     return !!(mockup && host && host.contains(mockup));
   };
+  /* ── Bridge for the GO-To review sheet (owner 2026-10-02) ────────────────
+     The request flow runs in its own scope and cannot see the GoTos store, so
+     the sheet hands its finished record over here. Saving lands the user on
+     Request History → GO-To's, where the new card is. */
+  window.__saveGoToFromFlow = function(rec){
+    if(!rec) return false;
+    GoTos.save(rec);
+    if(typeof window.__exitFlowToDashboard === 'function') window.__exitFlowToDashboard();
+    prevTab = 'gotos';
+    document.querySelectorAll('[data-prevtab]').forEach(b =>
+      b.classList.toggle('active', b.dataset.prevtab === 'gotos'));
+    showSection('previous');
+    renderPrevRequests();
+    return true;
+  };
+
   window.__exitFlowToDashboard = () => {
     restoreFlowMockup();
     showSection('home');
