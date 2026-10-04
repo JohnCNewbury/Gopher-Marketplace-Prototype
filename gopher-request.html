@@ -13681,6 +13681,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       // Access details ride along to the worker. Gated on field VISIBILITY (not
       // on whether addresses broadcast) so destination stairs are captured for
       // Labor/Other too (they offer dest-stairs but don't broadcast addresses).
+      numRiders:             isVisible('riderInfo') ? state.numRiders : null,
+      numBags:               isVisible('riderInfo') ? state.numBags   : null,
       pickupStairs:          isVisible('pickupStairs') && !state.noSpecificPickup ? state.pickupStairs : 0,
       destStairs:            isVisible('destStairs') ? state.destStairs : 0,
       serviceElevatorPickup: isVisible('serviceElevator') && !state.noSpecificPickup ? !!state.serviceElevatorPickup : false,
@@ -22297,6 +22299,24 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
        them, and the renderer omits the sections it has no data for rather than
        printing empty rows. */
     previousRequests: [
+      /* G40-580 addendum, owner-approved 2026-10-04: ONE completed Need a Ride
+         in the demo history, so the Riders / Large bags rows on the detail
+         panel can actually be seen. Demo data only -- a seeded worker already
+         used elsewhere in this list, and an amount consistent with the ride
+         pricing model. Shape mirrored field-for-field from GR-00120 below.
+         2 riders and 2 bags, as the owner specified. */
+      { date:'5/14/26', id:'GR-00121', category:'Need a Ride', type:'Airport run',
+        details:'RDU Airport to 412 Oakwood Ave \u00b7 2 riders \u00b7 2 large bags',
+        worker:'Priya N.', amount:'$41.27', rating:'5.00',
+        breakdown:{ workerPay:34.00, fees:7.27, gopherFee:2.99, instantTransfer:4.28 },
+        pickup:'RDU Airport, Terminal 2, Morrisville, NC 27560',
+        dropoff:'412 Oakwood Ave, Raleigh, NC 27601',
+        numRiders:'2', numBags:'2',
+        payMethod:'Visa 4242', timing:'Need It Now!',
+        openUntil:'5/14/26 9:40 AM', acceptedAt:'5/14/26 8:46 AM', completedAt:'5/14/26 9:31 AM',
+        itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
+        chosenHow:'First Available',
+        isMyGopher:false, blocked:false },
       { date:'5/12/26', id:'GR-00120', category:'Delivery', type:'Restaurant/Food Truck',
         details:'Catering tray drop-off to 1820 Holloway St',
         worker:'Devon M.', amount:'$47.50', rating:'5.00',
@@ -23031,6 +23051,12 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       userCreated: true,            // deletable user-made request (red X)
       scheduledForLater: !!data.scheduledForLater,
       ageRestricted: !!data.ageRestricted,
+      /* G40-580: riders and bags lived ONLY in flow state and were dropped at
+         submit, so the detail panel had nothing to read them from. The owner
+         asked for a "Large bags" row wherever a rider's details are shown
+         after submitting -- that needed the DATA first, not just a row. */
+      numRiders: data.numRiders || null,
+      numBags:   data.numBags   || null,
       idVerification: data.idVerification || null,
       idRequiredAtCompletion: !!data.idRequiredAtCompletion,
       bidsMode: !!data.bidsMode,
@@ -27120,8 +27146,21 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
             row('Timing', r.timing), row('Open until', r.openUntil),
             row('Accepted', r.acceptedAt), row('Completed', r.completedAt)
           ])}
+          ${''/* G40-580, owner: a "Large bags" row under Riders wherever a rider's
+                details show AFTER submitting. ⚠️ This panel is that screen --
+                openPrevDetail, reached from Request History. My first attempt
+                put these rows in the "Review my GO-To" sheet, which also uses
+                .pdx-row markup but is shown BEFORE anything is saved. Same
+                classes, different screen; the markup looked right and was in
+                the wrong place.
+
+                row() already drops anything empty, so a non-ride simply has no
+                Riders line. Bags are passed only ABOVE 0 -- "Large bags: 0" is
+                noise on a request that carried none. */}
           ${section('Request details', [
             row('Type', r.type || r.category), row('Details', r.details),
+            row('Riders', r.numRiders),
+            row('Large bags', (parseInt(r.numBags, 10) || 0) > 0 ? r.numBags : ''),
             row('Items to be purchased', yesNo(r.itemsPurchased)),
             row('Age-restricted items', yesNo(r.ageRestricted)),
             row('Allow counter offers', yesNo(r.counterOffers)),
