@@ -4477,7 +4477,36 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     background:white; border-radius:18px; padding:28px 26px 24px;
     width:100%; max-width:380px; position:relative; text-align:center;
     box-shadow:0 30px 80px rgba(0,0,0,0.35);
+    /* ⛔ ACTIONS ARE ANCHORED AT THE BOTTOM. Owner 2026-10-03, as a blanket
+       rule for every modal: "The standard modal should be buttons (and those
+       with 'dont show me this again') anchored on the bottom."
+       In a SHORT modal the buttons were already last, so nothing moves. The
+       case this fixes is a TALL one — the age-restricted waiver, the fee
+       breakdowns — where the modal grew past the viewport and the only way to
+       the button was to scroll a dialog people do not expect to scroll. The
+       body now scrolls and the actions stay put.
+       Done here, once, rather than in ~20 individual modal markups: every one
+       already ends with its buttons, so pinning them by CLASS reaches all of
+       them and any modal added later. */
+    max-height:min(86vh, 760px); overflow-y:auto;
   }
+  /* The action block: whatever trails the modal, pinned to its floor. The
+     white backdrop and the top rule keep scrolled content from bleeding
+     through behind the buttons. */
+  .gr-modal > .gr-modal-btn,
+  .gr-modal > .gr-modal-btn-secondary,
+  .gr-modal > .gr-modal-btn-danger,
+  .gr-modal > .gr-modal-btn-text,
+  .gr-modal > .prev-check-row,
+  .gr-modal > .goto-intro-never {
+    position:sticky; bottom:0; z-index:2;
+    background-clip:padding-box;
+  }
+  .gr-modal > .gr-modal-btn-text,
+  .gr-modal > .prev-check-row,
+  .gr-modal > .goto-intro-never { background:#fff; }
+  /* The first pinned element carries the separation from the scrolling body. */
+  .gr-modal > .gr-modal-btn:first-of-type { box-shadow:0 -10px 14px -10px rgba(0,0,0,0.18), 0 6px 18px rgba(51,217,117,0.3); }
   .gr-modal-close {
     position:absolute; top:12px; right:15px;
     background:none; border:none; font-size:23px; line-height:1;
@@ -14034,16 +14063,26 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // ──── Step 3 Worker info gating ────
     workerSetup:  ['delivery','home','ride'],                        // hidden for Delivery, Home, Ride
     laborMgmt:    ['delivery','home','ride'],                        // hidden for Delivery, Home, Ride
-    // "How is the worker selected?" choice — ONLY for Delivery/Courier, Junk Removal, Ride Sharing.
-    // All other categories require the user to select their worker (no "first available" option).
-    workerSelectChoice: ['moving','home','labor','yard','other'],
+    /* "How is the worker selected?" choice.
+       MOVING shows it (owner 2026-10-03, spec v3.20 / MV-03): "Web and PT
+       missing the select my worker and MY Gopher". Moving is the one visible
+       category with NO First Available — the live app has never had it — so the
+       `first` row is suppressed for Moving in renderStep3() and render()
+       coerces any stale 'first' away. The rest still force 'select'. */
+    workerSelectChoice: ['home','labor','yard','other'],
     // ──── Step 4 Location-section visibility ────
     pickupSection:    ['home','labor','junk','yard','other'],         // Delivery, Moving, Ride only
     noSpecificPickup: ['home','labor','junk','yard','ride','other'],  // Delivery, Moving only
     pickupStairs:     ['delivery','home','labor','junk','yard','ride','other'], // Moving only
     // Service-elevator toggle — Moving only. One gate row reused by both the
     // Pickup and Destination toggles (modeled like stairs, tracked per-end).
-    serviceElevator:  ['delivery','home','labor','junk','yard','ride','other'], // Moving only
+    /* ⛔ SERVICE ELEVATOR IS A CONNECT FEATURE, not a Request one. Owner
+       2026-10-03, testing the live Moving port: "PT is showing Access to
+       service elevator and that is NOT a request feature. That is a Connect
+       feature." Spec v3.19 / INV-13. It was Moving-only here; it is now hidden
+       for EVERY category, which is how it leaves Request without deleting the
+       state (the payload snapshot already zeroes it when not visible). */
+    serviceElevator:  ['delivery','moving','home','labor','junk','yard','ride','other'], // Connect-only: never shown
     destStairs:       ['delivery','home','yard','ride'],              // Moving, Labor, Junk, Other only
     multiStop:        ['delivery','moving','home','labor','junk','yard','ride','other'], // Request: single pickup + single destination only (no multi-stop)
     // ──── Step 5 Worker pay ────
@@ -14574,6 +14613,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   //   Page 3: Rider(s) Info — riders, bags, special instructions
   //   Page 5: Item Info — count, multiple items, hazardous
   // ───────────────────────────────────────────────
+  /* ⛔ Moving ships with NO card-title icons yet. Owner 2026-10-02: "we dont
+     need all the icons yet", carried into the 909 desk's completed-category
+     package for Moving. Every other category keeps its icon, so this is a
+     per-category suppression, not a deletion -- when the icons are approved,
+     delete this function and the markup is already correct. */
+  function sstIco(ch){
+    return state.category === 'moving' ? '' : ('<span class="sst-ico">' + ch + '</span>');
+  }
+
   function renderStep2(){
     const c = CATEGORIES[state.category];
     return `
@@ -14583,7 +14631,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <!-- ░ Page 1 — Describe (hidden for Ride Sharing) ░ -->
       ${isVisible('describe') ? `
       <div class="step-section">
-        <div class="step-section-title"><span class="sst-ico">✏️</span>Describe what you need</div>
+        <div class="step-section-title">${sstIco('✏️')}Describe what you need</div>
         <textarea class="field-textarea" id="descriptionInput" data-field="description" placeholder="${describeHint()}" rows="3">${state.description}</textarea>
         ${isVisible('addPic') ? (
           state.picThumbs.length === 0
@@ -14609,7 +14657,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <!-- ░ Page 2 — Delivery Type (only shown for Delivery / Courier) ░ -->
       ${state.category === 'delivery' ? `
       <div class="step-section">
-        <div class="step-section-title"><span class="sst-ico">📋</span>Delivery type</div>
+        <div class="step-section-title">${sstIco('📋')}Delivery type</div>
         <div class="toggle-row">
           <button class="toggle-switch ${state.ageRestricted?'on':''}" data-toggle="ageRestricted" aria-label="Age-restricted toggle"></button>
           <span class="tr-label">Slide if this delivery includes Age-restricted items
@@ -14664,7 +14712,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <!-- ░ Page 3 — Rider(s) Info (Delivery + Ride only) ░ -->
       ${isVisible('riderInfo') ? `
       <div class="step-section">
-        <div class="step-section-title"><span class="sst-ico">👥</span>Rider info</div>
+        <div class="step-section-title">${sstIco('👥')}Rider info</div>
         <div class="field-row split">
           <div>
             <label style="font-family:Nunito;font-weight:700;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:5px;"># of riders</label>
@@ -14690,7 +14738,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <!-- ░ Page 5 — Item Info (Moving + Junk Removal only) ░ -->
       ${isVisible('itemInfo') ? `
       <div class="step-section">
-        <div class="step-section-title"><span class="sst-ico">📦</span>Item info</div>
+        <div class="step-section-title">${sstIco('📦')}Item info</div>
         ${!state.multipleItems ? `
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <span style="font-family:Nunito;font-weight:700;font-size:13px;color:var(--text);"># of items involved</span>
@@ -14734,31 +14782,44 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
       <!-- Number of workers / pay-by-hour (hidden for Delivery, Home Services, Ride Sharing) -->
       ${isVisible('workerSetup') ? `
+      ${''/* ⛔ MOVING speaks "Gopher", every other category still says "worker".
+             Taken verbatim from the merged app at aae10b7a,
+             src/component/yardFlow/MovingCrewCard.js: card title "Gopher setup",
+             switch "More than 1 Gopher needed", counter "# of Gophers needed"
+             (min 2), and the note below it. Deliberately scoped to Moving —
+             the other categories have not been released by the 909 desk and a
+             blanket worker->Gopher rename would change screens that are still
+             mid-pass. */}
+      ${(() => { const mv = state.category === 'moving';
+                 const unit = mv ? 'Gopher' : 'worker'; return `
       <div class="step-section">
-        <div class="step-section-title"><span class="sst-ico">👷</span>Worker setup</div>
+        <div class="step-section-title">${sstIco('👷')}${mv ? 'Gopher setup' : 'Worker setup'}</div>
         <div class="toggle-row">
           <button class="toggle-switch ${state.moreThanOneWorker?'on':''}" data-toggle="moreThanOneWorker"></button>
-          <span class="tr-label">More than 1 worker needed</span>
+          <span class="tr-label">More than 1 ${unit} needed</span>
         </div>
         ${state.moreThanOneWorker ? `
           <div class="sub-field">
-            <div class="sf-label"># of workers needed</div>
+            <div class="sf-label"># of ${unit}s needed</div>
             <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
               <div class="field-counter">
                 <button class="counter-btn" data-counter="dec-workers" ${state.numWorkers<=2?'disabled':''}>−</button>
                 <span class="counter-val">${state.numWorkers}</span>
                 <button class="counter-btn" data-counter="inc-workers">+</button>
               </div>
-              <span style="font-family:'DM Sans';font-size:12px;color:var(--muted);">workers</span>
+              <span style="font-family:'DM Sans';font-size:12px;color:var(--muted);">${unit}s</span>
             </div>
-             <div class="sf-note">You&rsquo;ll select <b>one</b> worker &mdash; they&rsquo;re responsible for bringing the additional worker${state.numWorkers>2?'s':''}.</div>
+             <div class="sf-note">You&rsquo;ll select <b>one</b> ${unit} &mdash; they&rsquo;re responsible for bringing the additional ${unit}${state.numWorkers>2?'s':''}.</div>
           </div>
         ` : ''}
+        ${''/* MV-05 / spec v3.19 INV-9: Moving has NO pay-by-the-hour in Request.
+              Owner 2026-10-03: "no Hourly for moving ... That is a Connect feature." */}
+        ${mv ? '' : `
         <div class="toggle-row">
           <button class="toggle-switch ${state.payByHour?'on':''}" data-toggle="payByHour"></button>
           <span class="tr-label">Pay by the hour</span>
-        </div>
-        ${state.payByHour ? `
+        </div>`}
+        ${(!mv && state.payByHour) ? `
           <div class="sub-field">
             <div class="sf-label"># of hours needed</div>
             <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
@@ -14772,25 +14833,62 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           </div>
         ` : ''}
       </div>
+      `; })()}
       ` : ''}
 
       <!-- How worker is selected — ONLY for Delivery/Courier, Junk Removal, Ride Sharing -->
       ${isVisible('workerSelectChoice') ? `
       <div class="step-section">
-        <div class="step-section-title"><span class="sst-ico">🎯</span>How do you want to select your worker? (${myUnlocked ? '3 of 3' : '2 of 3'} options available)</div>
+        ${''/* The count must describe what is actually RENDERED — Moving drops one
+              option, so a hard-coded "3 of 3" would claim one the user cannot see. */}
+        ${(() => {
+          const mvSel = state.category === 'moving';
+          const total = mvSel ? 2 : 3;
+          const avail = (mvSel ? 1 : 2) + (myUnlocked ? 1 : 0);
+          return `<div class="step-section-title">${sstIco('🎯')}How do you want to select your ${mvSel ? 'Gopher' : 'worker'}? (${avail} of ${total} options available)</div>`;
+        })()}
         <div class="radio-group rg-stack">
+          ${state.category === 'moving' ? '' : `
           <div class="radio-row ${state.workerSelection==='first'?'selected':''}" data-radio="workerSelection" data-val="first">
             <span class="radio-dot"></span>
             <span class="rr-label">First available worker — fastest match</span>
-          </div>
+          </div>`}
+          ${''/* MOVING: a PLAIN label plus a ?, per the 909 desk's package. The
+                ? copy is the merged app's, from src/component/yardFlow/
+                InfoSheetContent.js @ aae10b7a — smg() lines 32-42 and
+                favGopher() lines 43-58 — approved by the desk with the web's
+                own labels substituted for the app's {select} / {priority}
+                slots, and the web's popover shape kept rather than the app's
+                lead+points sheet.
+                ⚠️ The two are COUPLED: favGopher's first point names the other
+                option, so these labels must be changed together or the second
+                sheet will describe a control that no longer exists. */}
           <div class="radio-row ${state.workerSelection==='select'?'selected':''}" data-radio="workerSelection" data-val="select">
             <span class="radio-dot"></span>
-            <span class="rr-label">I'll select my worker — review ratings, reviews and job history before selecting</span>
+            <span class="rr-label">${state.category === 'moving' ? `I'll select my worker
+              <span class="info-tip" onclick="event.stopPropagation()">
+                <button class="info-btn" aria-label="About I'll select my worker">?</button>
+                <div class="info-popover" role="tooltip">
+                  <h5>I&rsquo;ll select my worker</h5>
+                  <p>When choosing <b>I&rsquo;ll select my worker</b>, each Gopher interested will create an alert in the app for you.</p>
+                  <p>You can see their rating, reviews and job history before making your selection!</p>
+                  <p>This option requires some engagement during the selection process.</p>
+                </div>
+              </span>` : `I'll select my worker — review ratings, reviews and job history before selecting`}</span>
           </div>
           ${myUnlocked ? `
           <div class="radio-row ${state.workerSelection==='my'?'selected':''}" data-radio="workerSelection" data-val="my">
             <span class="radio-dot"></span>
-            <span class="rr-label">Prioritize MY Gophers — we'll notify your favs first</span>
+            <span class="rr-label">${state.category === 'moving' ? `Prioritize MY Gopher(s)
+              <span class="info-tip" onclick="event.stopPropagation()">
+                <button class="info-btn" aria-label="About Prioritize MY Gophers">?</button>
+                <div class="info-popover" role="tooltip">
+                  <h5>Prioritize MY Gopher(s)</h5>
+                  <p>When selecting <b>Prioritize MY Gopher(s)</b>, each favorite you select will be notified of your request.</p>
+                  <p>If none of your MY Gophers have accepted within about a minute, all other Gophers in the area will see your request and you will be able to choose the same way as I&rsquo;ll select my worker.</p>
+                  <p>This option requires some engagement during the selection process, yet only if your MY Gopher is unavailable.</p>
+                </div>
+              </span>` : `Prioritize MY Gophers — we'll notify your favs first`}</span>
           </div>
           ` : `
           <div class="radio-row locked" aria-disabled="true">
@@ -14847,7 +14945,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <!-- ░ Page 6 — Pick-Up ░ -->
       ${isVisible('pickupSection') ? `
       <div class="step-section">
-        <div class="step-section-title"><span class="sst-ico">📍</span>Pick-up location</div>
+        <div class="step-section-title">${sstIco('📍')}Pick-up location</div>
         ${isVisible('noSpecificPickup') ? `
         <div class="toggle-row">
           <button class="toggle-switch ${state.noSpecificPickup?'on':''}" data-toggle="noSpecificPickup"></button>
@@ -14863,6 +14961,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           </div>
         ` : `
           ${renderMultiAddressBlock_pickup()}
+          ${''/* ⛔ TWO stairs fields is CORRECT on the web — owner 2026-10-03,
+                 after I raised the app's single total: "2 fields is correct and
+                 that is an oversight on my part. I'll get moving session back in
+                 the game." So the APP is the one changing, not this. Do not
+                 consolidate these to one total to match it. */}
           ${isVisible('pickupStairs') ? `
           <div class="toggle-row" style="margin-top:10px;justify-content:space-between;">
             <span class="tr-label">Flights of stairs at pick-up</span>
@@ -14887,7 +14990,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
       <!-- ░ Page 7 — Destination ░ -->
       <div class="step-section">
-        <div class="step-section-title"><span class="sst-ico">🏁</span>Destination</div>
+        <div class="step-section-title">${sstIco('🏁')}Destination</div>
         ${renderMultiAddressBlock_dropoff()}
         ${isVisible('destStairs') ? `
         <div class="toggle-row" style="margin-top:10px;justify-content:space-between;">
@@ -15187,20 +15290,27 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
       <div class="review-card">
         <div class="review-row"><span class="rl">Category</span><span class="rv">${c.name}</span></div>
-        ${(state.hireAgainGophers && state.hireAgainGophers.length) ? `<div class="review-row"><span class="rl">MY Gophers first</span><span class="rv" style="text-align:right;max-width:60%;">${state.hireAgainGophers.join(', ')}</span></div>` : ''}
+        ${''/* On MOVING this row moves BELOW the locations and is called
+              "Gopher requested", per the 909 desk's completed-category package
+              and the master doc's Step 6 order. Every other category keeps it
+              here, named "MY Gophers first". */}
+        ${(state.category !== 'moving' && state.hireAgainGophers && state.hireAgainGophers.length) ? `<div class="review-row"><span class="rl">MY Gophers first</span><span class="rv" style="text-align:right;max-width:60%;">${state.hireAgainGophers.join(', ')}</span></div>` : ''}
         ${isVisible('describe') && !state.descriptionIsPlaceholder ? `<div class="review-row"><span class="rl">Description</span><span class="rv" style="text-align:right;max-width:60%;">${state.description}</span></div>` : ''}
         ${isVisible('addPic') && state.picThumbs.length > 0 ? `<div class="review-row"><span class="rl">Pics</span><span class="rv"><div class="review-thumbs">${state.picThumbs.map((t,i)=>`<div class="review-thumb"><img src="${t.src}" alt="pic ${i+1}"></div>`).join('')}</div></span></div>` : ''}
         ${state.category === 'delivery' ? `<div class="review-row"><span class="rl">Delivery type</span><span class="rv">${state.ageRestricted?'Age-restricted · ':''}${state.itemsPurchased?'Purchase needed':'Items in hand'}</span></div>` : ''}
         ${isVisible('riderInfo') ? `<div class="review-row"><span class="rl">Rider info</span><span class="rv">${state.numRiders} rider${state.numRiders!=='1'?'s':''} · ${state.numBags} bag${state.numBags!=='1'?'s':''}</span></div>` : ''}
-        ${isVisible('workerSetup') ? `<div class="review-row"><span class="rl">Worker info</span><span class="rv">${workerInfoStr}</span></div>` : ''}
+        ${isVisible('workerSetup') ? `<div class="review-row"><span class="rl">${state.category === 'moving' ? 'Gopher info' : 'Worker info'}</span><span class="rv">${workerInfoStr}</span></div>` : ''}
         ${isVisible('itemInfo') ? `<div class="review-row"><span class="rl">Item info</span><span class="rv">${itemInfoStr}</span></div>` : ''}
         ${isVisible('pickupSection') ? pickupRows : ''}
         ${isVisible('pickupSection') ? pickupAccessRow : ''}
         ${dropoffRows}
         ${dropoffAccessRow}
+        ${(state.category === 'moving' && state.hireAgainGophers && state.hireAgainGophers.length) ? `<div class="review-row"><span class="rl">Gopher requested</span><span class="rv" style="text-align:right;max-width:60%;">${state.hireAgainGophers.join(', ')}</span></div>` : ''}
         ${showCostOfItems ? `<div class="review-row"><span class="rl">Cost of items</span><span class="rv">${fmt(costItemsNum)}</span></div>` : ''}
         <div class="review-row">
-          <span class="rl">Your offer to the worker${workerCount > 1 ? 's' : ''}${workerCount > 1 && !bidsMode ? `
+          ${''/* MOVING: "Your offer to your Gopher", and NO ? — master doc Step 6
+                row, which marks the Request fee as the only ? on this screen. */}
+          <span class="rl">${state.category === 'moving' ? 'Your offer to your Gopher' : ('Your offer to the worker' + (workerCount > 1 ? 's' : ''))}${state.category !== 'moving' && workerCount > 1 && !bidsMode ? `
             <span class="info-tip fee-tip" onclick="event.stopPropagation()">
               <button class="info-btn" aria-label="How payment is split across workers">?</button>
               <div class="info-popover fee-popover" role="tooltip">
@@ -15473,8 +15583,19 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       <div class="matched-burst">
         <div class="check-circle">✓</div>
         <h4>${isServiceDeal ? "You're Connected!" : (haFirst ? 'Request sent!' : 'Request Submitted!')}</h4>
-        <p>${isServiceDeal && prov ? ('Connected with ' + _esc(prov.name) + ' \u2014 they accepted your deal.')
-              : (haFirst ? (haLabel + ' has first dibs\u2026') : 'Currently looking for your worker\u2026')} · Request Order <strong>#${reqNum}</strong></p>
+        ${''/* MOVING types its status line out, matching the merged app's
+              "Looking for your Gopher…" (aae10b7a). The order number sits
+              beside it and is NOT typed — it is the thing a worried requester
+              reads back to support, so it must be there the instant the screen
+              paints rather than arriving a second later.
+              data-typeline carries the full string; typeStatusLine() reveals it
+              after render. With JS unavailable the span is empty, so the
+              fallback is handled by rendering the text into it immediately
+              when the helper cannot run. */}
+        <p>${(state.category === 'moving' && !isServiceDeal && !haFirst)
+              ? `<span class="s7-typed" data-typeline="Looking for your Gopher\u2026"></span>`
+              : (isServiceDeal && prov ? ('Connected with ' + _esc(prov.name) + ' \u2014 they accepted your deal.')
+                 : (haFirst ? (haLabel + ' has first dibs\u2026') : 'Currently looking for your worker\u2026'))} · Request Order <strong>#${reqNum}</strong></p>
       </div>
 
       <div class="review-card" style="margin-top:14px;">
@@ -15800,6 +15921,18 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // the user must select their worker, so force that selection.
     if(!isVisible('workerSelectChoice')) {
       state.workerSelection = 'select';
+    } else if(state.category === 'moving' && state.workerSelection === 'first'){
+      /* Moving shows no First Available, and 'first' is the app-wide default, so
+         a Moving request would otherwise open on an option it does not display:
+         a radio group with nothing selected.
+         The rule is the merged app's, not invented here — aae10b7a,
+         src/component/yardFlow/movingFlowSteps.js:441 mvGopherDefaults():
+           if (favGophers.length) -> notify_fav_gopher  (Prioritize MY Gophers)
+           else                   -> select_gopher      (I'll select my worker)
+         and an order being EDITED keeps whatever it already had, which is why
+         this only fires on the untouched 'first'. */
+      const myN = (window.__myGophersCount ? window.__myGophersCount() : 0);
+      state.workerSelection = myN > 0 ? 'my' : 'select';
     }
     // Never sit on an auto-hidden empty detail section — advance past it.
     if(state.step > 1 && state.step < 7 && stepIsEmpty(state.step)){
@@ -15815,6 +15948,23 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     else if(state.step === 6) $content.innerHTML = renderStep6();
     else                      $content.innerHTML = renderStep7();
 
+
+    // ─── Step 7: type the status line out ───
+    // Only ever reveals text already in the DOM attribute, so a failure here
+    // leaves the sentence present rather than blank.
+    $content.querySelectorAll('.s7-typed[data-typeline]').forEach(el => {
+      const full = el.getAttribute('data-typeline') || '';
+      if(!full || el.dataset.typed) return;
+      el.dataset.typed = '1';
+      let i = 0;
+      el.textContent = '';
+      const tick = () => {
+        i += 1;
+        el.textContent = full.slice(0, i);
+        if(i < full.length) setTimeout(tick, 45);
+      };
+      tick();
+    });
 
     // Step 1 ("Pick a service") has no footer — picking a category is the
     // transition trigger, so the Back/Continue bar is hidden on this step only.
