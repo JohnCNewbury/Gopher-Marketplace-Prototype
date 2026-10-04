@@ -12428,6 +12428,25 @@ const PAY_BADGES = {
   const asksForUnit = () => UNIT_CATEGORIES.indexOf(state.category) !== -1;
 
   const isVisible = (field) => !FIELD_HIDDEN_FOR[field].includes(state.category);
+
+  /* ── How many Gophers this request actually pays for ───────────────────────
+     ⛔ COUNT ONLY WHERE THE CREW CONTROL IS VISIBLE. moreThanOneWorker and
+     numWorkers are NOT category-scoped -- deliberately, so switching away and
+     back does not lose a crew the requester already set. But every arithmetic
+     site read them WITHOUT asking whether the category still shows the control,
+     so a crew set on Labor survived a Change-service into Delivery and priced
+     a single pizza run for three.
+
+     MEASURED before the fix: Labor, crew 3, change service to Delivery, $20
+     offer -> review read "Your offer to the workers $60.00", Total $65.87, with
+     NO crew row and NO crew control anywhere on screen to explain it.
+
+     Gating the COUNT rather than scoping the STATE is the stronger fix: it is
+     also right when the same category hides the control conditionally, which
+     scoping would miss. */
+  const crewCount = () => (isVisible('workerSetup') && state.moreThanOneWorker)
+    ? (parseInt(state.numWorkers, 10) || 1) : 1;
+
   // Whether "Request bids" is genuinely available for the CURRENT state — the same
   // rule that shows/hides the Step-5 bids radio (category table + multi-worker
   // labor management). Single source of truth for the pay gates: payMode 'bids'
@@ -12909,7 +12928,7 @@ const PAY_BADGES = {
               // Compute per-worker wage and combined total based on hours × $/hr × workers
               const rate = parseFloat(state.payAmount.replace(/[^\d.]/g,'')) || 0;
               const hours = parseInt(state.numHours, 10) || 1;
-              const workers = state.moreThanOneWorker ? (parseInt(state.numWorkers, 10) || 1) : 1;
+              const workers = crewCount();
               const perWorker = (rate * hours).toFixed(2);
               const combined  = (rate * hours * workers).toFixed(2);
               return `
@@ -13143,7 +13162,7 @@ const PAY_BADGES = {
     const showCostOfItems = state.itemsPurchased && state.category === 'delivery';
     // Worker payment = per-worker amount × number of workers, for BOTH flat and
     // hourly pay. Per-worker is the flat amount, or (rate × hours) when hourly.
-    const workerCount = state.moreThanOneWorker ? (parseInt(state.numWorkers, 10) || 1) : 1;
+    const workerCount = crewCount();
     const payRate = toNum(state.payAmount);
     const payHours = state.payByHour ? (parseInt(state.numHours, 10) || 1) : 1;
     const perWorkerPay = state.payByHour ? (payRate * payHours) : payRate;
@@ -13525,7 +13544,7 @@ const PAY_BADGES = {
     const bidsMode = state.payMode !== 'set';
     // Worker payment = per-worker amount × number of workers, for BOTH flat and
     // hourly pay. Per-worker is the flat amount, or (rate × hours) when hourly.
-    const workerCount = state.moreThanOneWorker ? (parseInt(state.numWorkers, 10) || 1) : 1;
+    const workerCount = crewCount();
     const payRate = toNum(state.payAmount);
     const payHours = state.payByHour ? (parseInt(state.numHours, 10) || 1) : 1;
     const perWorkerPay = state.payByHour ? (payRate * payHours) : payRate;
@@ -15465,7 +15484,7 @@ const PAY_BADGES = {
 
     // Workers NEEDED comes from what the user requested in the flow
     // (interested is a larger candidate pool of 6+).
-    const workersNeeded = state.moreThanOneWorker ? (parseInt(state.numWorkers, 10) || 1) : 1;
+    const workersNeeded = crewCount();
 
     // Locations & description carried through so a started request's Live
     // Activity map + recap reflect what the user actually entered.
@@ -15626,7 +15645,7 @@ const PAY_BADGES = {
     state.maxStepReached = 2;                     // category done; forward gating applies from here
     render();
   };
-  window.__getFlowWorkerCount = () => state.moreThanOneWorker ? (parseInt(state.numWorkers,10)||1) : 1;
+  window.__getFlowWorkerCount = () => crewCount();
   window.__getHireAgainGophers = () => state.hireAgainGophers || [];
 
   // ---- Request again FAST: prefill from a previous request and jump to Review ----

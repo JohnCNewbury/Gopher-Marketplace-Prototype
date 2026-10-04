@@ -13557,7 +13557,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       const hours = parseInt(state.numHours, 10) || 1;
       perWorker = toNum(state.payAmount) * hours;
     }
-    const workersNeeded = state.moreThanOneWorker ? (parseInt(state.numWorkers, 10) || 1) : 1;
+    const workersNeeded = crewCount();
     // PT (split-screen playground): broadcast to NOBODY. The demo pool would
     // auto-hire a fake Gopher under 'first available' before the real worker on
     // the Go phone ever saw the request — the harness could then never observe
@@ -13681,6 +13681,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       // Access details ride along to the worker. Gated on field VISIBILITY (not
       // on whether addresses broadcast) so destination stairs are captured for
       // Labor/Other too (they offer dest-stairs but don't broadcast addresses).
+      specialInstructions:   isVisible('riderInfo') ? (state.specialInstructions || '').trim() : '',
       numRiders:             isVisible('riderInfo') ? state.numRiders : null,
       numBags:               isVisible('riderInfo') ? state.numBags   : null,
       pickupStairs:          isVisible('pickupStairs') && !state.noSpecificPickup ? state.pickupStairs : 0,
@@ -14292,6 +14293,25 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
 
   const isVisible = (field) => !FIELD_HIDDEN_FOR[field].includes(state.category);
+
+  /* ── How many Gophers this request actually pays for ───────────────────────
+     ⛔ COUNT ONLY WHERE THE CREW CONTROL IS VISIBLE. moreThanOneWorker and
+     numWorkers are NOT category-scoped -- deliberately, so switching away and
+     back does not lose a crew the requester already set. But every arithmetic
+     site read them WITHOUT asking whether the category still shows the control,
+     so a crew set on Labor survived a Change-service into Delivery and priced
+     a single pizza run for three.
+
+     MEASURED before the fix: Labor, crew 3, change service to Delivery, $20
+     offer -> review read "Your offer to the workers $60.00", Total $65.87, with
+     NO crew row and NO crew control anywhere on screen to explain it.
+
+     Gating the COUNT rather than scoping the STATE is the stronger fix: it is
+     also right when the same category hides the control conditionally, which
+     scoping would miss. */
+  const crewCount = () => (isVisible('workerSetup') && state.moreThanOneWorker)
+    ? (parseInt(state.numWorkers, 10) || 1) : 1;
+
   // Bids stay available for >1-worker requests — the single bidder is responsible for paying the WHOLE
   // crew, so one bid covers every worker (no discrepancy). Hidden only by category (bidsOption matrix)
   // and, for Labor/Yard, when paying by the hour. NOT gated by moreThanOneWorker.
@@ -14932,7 +14952,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         </div>
         <div style="margin-top:10px;">
           <label style="font-family:Nunito;font-weight:700;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:5px;">Special instructions for driver</label>
-          <div class="field-textarea" style="min-height:42px;color:${state.specialInstructions?'var(--text)':'#94a0b8'};">${state.specialInstructions || 'e.g. ring the front desk on arrival'}</div>
+          ${''/* ⛔ THIS WAS A DEAD FIELD until 2026-10-04. It was a DIV, not
+                contenteditable, and nothing ever wrote state.specialInstructions
+                -- it showed a placeholder a rider could never replace, so the
+                instruction never reached the Gopher. Measured before the fix:
+                tagName DIV, isContentEditable false. Now a real textarea, bound
+                like #descriptionInput. */}
+          <textarea class="field-textarea" id="specialInstructionsInput" data-field="specialInstructions"
+                    style="min-height:42px;" rows="2"
+                    placeholder="e.g. ring the front desk on arrival">${escText(state.specialInstructions)}</textarea>
         </div>
         ${''/* G40-580: no TrustShield banner on a ride. The promo stays on the
               delivery age-restricted path above, where it buys the requester
@@ -15335,7 +15363,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
               // Compute per-worker wage and combined total based on hours × $/hr × workers
               const rate = parseFloat(state.payAmount.replace(/[^\d.]/g,'')) || 0;
               const hours = parseInt(state.numHours, 10) || 1;
-              const workers = state.moreThanOneWorker ? (parseInt(state.numWorkers, 10) || 1) : 1;
+              const workers = crewCount();
               const perWorker = (rate * hours).toFixed(2);
               const combined  = (rate * hours * workers).toFixed(2);
               const done = isCompletedFlow();          // signed-off flows say "Gopher"
@@ -15556,7 +15584,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
        the owner reviewed, and a SPACED "hrs" rather than "4hr", which ran into
        the count beside it. Unfinished categories keep the old string. */
     const wiDone  = isCompletedFlow();
-    const wiCount = state.moreThanOneWorker ? (parseInt(state.numWorkers, 10) || 1) : 1;
+    const wiCount = crewCount();
     const wiUnit  = wiDone ? 'Gopher' : 'worker';
     const wiHours = parseInt(state.numHours, 10) || 1;
     const workerInfoStr = `${wiCount} ${wiUnit}${wiCount !== 1 ? 's' : ''}${state.payByHour ? ` · ${wiHours} hr${wiHours !== 1 ? 's' : ''}` : ''}`;
@@ -15568,7 +15596,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     const showCostOfItems = state.itemsPurchased && state.category === 'delivery';
     // Worker payment = per-worker amount × number of workers, for BOTH flat and
     // hourly pay. Per-worker is the flat amount, or (rate × hours) when hourly.
-    const workerCount = state.moreThanOneWorker ? (parseInt(state.numWorkers, 10) || 1) : 1;
+    const workerCount = crewCount();
     const payRate = toNum(state.payAmount);
     const payHours = state.payByHour ? (parseInt(state.numHours, 10) || 1) : 1;
     const perWorkerPay = state.payByHour ? (payRate * payHours) : payRate;
@@ -15602,7 +15630,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
               the field being VISIBLE for the category, so a category that
               never asked is not shown an empty row. */}
         ${isVisible('riderInfo') ? `<div class="review-row"><span class="rl">Riders</span><span class="rv">${state.numRiders} rider${state.numRiders!=='1'?'s':''}</span></div>` : ''}
-        ${isVisible('riderInfo') ? `<div class="review-row"><span class="rl">Large bags</span><span class="rv">${state.numBags} bag${state.numBags!=='1'?'s':''}</span></div>` : ''}
+        ${(isVisible('riderInfo') && (parseInt(state.numBags, 10) || 0) > 0) ? `<div class="review-row"><span class="rl">Large bags</span><span class="rv">${state.numBags} bag${state.numBags!=='1'?'s':''}</span></div>` : ''}
         ${isVisible('workerSetup') ? `<div class="review-row"><span class="rl">${isCompletedFlow() ? 'Gopher info' : 'Worker info'}</span><span class="rv">${workerInfoStr}</span></div>` : ''}
         ${isVisible('itemInfo') ? `<div class="review-row"><span class="rl">Item info</span><span class="rv">${itemInfoStr}</span></div>` : ''}
         ${isVisible('pickupSection') ? pickupRows : ''}
@@ -15880,7 +15908,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // ── Live cost (mirrors Step 6) ──
     const toNum = (v) => parseFloat(String(v).replace(/[^0-9.]/g,'')) || 0;
     const fmt   = (n) => '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-    const s7workerCount = state.moreThanOneWorker ? (parseInt(state.numWorkers, 10) || 1) : 1;
+    const s7workerCount = crewCount();
     const s7payRate = toNum(state.payAmount);
     const s7payHours = state.payByHour ? (parseInt(state.numHours, 10) || 1) : 1;
     const s7perWorkerPay = state.payByHour ? (s7payRate * s7payHours) : s7payRate;
@@ -16490,6 +16518,9 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     $content.querySelectorAll('input[data-field="pickupUnit"], input[data-field="destUnit"]').forEach(el => {
       el.addEventListener('input', () => { state[el.getAttribute('data-field')] = el.value; });
     });
+    /* Same no-re-render pattern: re-rendering per keystroke drops focus mid-word. */
+    const $si = $content.querySelector('#specialInstructionsInput');
+    if($si) $si.addEventListener('input', () => { state.specialInstructions = $si.value; });
 
     // Update state on input WITHOUT a full re-render so the field keeps focus
     // while typing. Values are picked up when the review step renders.
@@ -22312,6 +22343,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
         pickup:'RDU Airport, Terminal 2, Morrisville, NC 27560',
         dropoff:'412 Oakwood Ave, Raleigh, NC 27601',
         numRiders:'2', numBags:'2',
+        specialInstructions:'Meet at the north doors, Terminal 2 arrivals',
         payMethod:'Visa 4242', timing:'Need It Now!',
         openUntil:'5/14/26 9:40 AM', acceptedAt:'5/14/26 8:46 AM', completedAt:'5/14/26 9:31 AM',
         itemsPurchased:false, ageRestricted:false, counterOffers:true, waiver:'Agreed',
@@ -23055,6 +23087,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
          submit, so the detail panel had nothing to read them from. The owner
          asked for a "Large bags" row wherever a rider's details are shown
          after submitting -- that needed the DATA first, not just a row. */
+      specialInstructions: data.specialInstructions || '',
       numRiders: data.numRiders || null,
       numBags:   data.numBags   || null,
       idVerification: data.idVerification || null,
@@ -27161,6 +27194,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
             row('Type', r.type || r.category), row('Details', r.details),
             row('Riders', r.numRiders),
             row('Large bags', (parseInt(r.numBags, 10) || 0) > 0 ? r.numBags : ''),
+            row('Special instructions', r.specialInstructions),
             row('Items to be purchased', yesNo(r.itemsPurchased)),
             row('Age-restricted items', yesNo(r.ageRestricted)),
             row('Allow counter offers', yesNo(r.counterOffers)),
