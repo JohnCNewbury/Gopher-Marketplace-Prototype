@@ -7043,18 +7043,35 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .dash-main    { grid-area:main; }
 
   /* ─── Sidebar ─── */
-  /* ⛔ GOPHER'S BLUE. Owner 2026-10-03, after seeing three options side by side:
-     "I'm still struggling with the 2 different blues with the sidebar and the
-     request card."
+  /* ⛔ GOPHER'S BLUE IS FLAT #002461 — Midnight Blue, no gradient.
+     Owner 2026-10-04, asked which blue is ours, the web sidebar or the Go
+     prototype: "Go with flat." The prototype's --navy is #002461, so this is
+     now the IDENTICAL hex on both, not an approximation of it.
 
-     He was right and the cause was measurable. The home card is
-     linear-gradient(150deg,#053a75,#002461) — it LANDS ON MIDNIGHT BLUE
-     #002461, the brand colour. The sidebar was #1a2a5e → #0f1a3d, and NEITHER
-     stop is in the palette. They looked different because they were different,
-     and only one of them was the brand.
+     ⚠️ THE NOTE THAT STOOD HERE WAS STALE AND WOULD HAVE BLOCKED THIS CHANGE.
+     It said the sidebar carried "the card's own ramp",
+     linear-gradient(150deg,#053a75,#002461), so that the two biggest surfaces
+     matched. THAT CARD RAMP NO LONGER EXISTS — the home cards went white with
+     Sand logo panels on 2026-10-03/04, and #053a75 now appears in this file
+     ONLY on this rule. The coupling that justified the gradient was already
+     gone, so flattening re-creates nothing. Verified by grep before editing,
+     not inferred from the comment.
 
-     This is now the card's own ramp, so the two biggest surfaces on the screen
-     are the same blue. White on #002461 is 14.74:1.
+     The 2026-10-03 ruling this replaces ("the 2 different blues with the
+     sidebar and the request card") is not overturned — it is satisfied more
+     completely. One flat brand value beats two ramps that merely agree.
+
+     Why flat rather than a darker ramp (#002461 → #001A47): a flat value is a
+     TOKEN. The app, the web, email templates and the deck can all carry one
+     string. A two-stop gradient has to be re-expressed in every medium that
+     cannot render one — which is exactly how the non-palette #053a75 got loose
+     in the first place. Contrast did NOT decide this: white clears AA on all
+     three candidates (11.24 / 14.74 / 16.95:1). It is a brand call, not an
+     accessibility one, and it is recorded as such.
+
+     ⚠️ Final/gopher-deals.html still carries the old gradient on its own
+     .dash-sidebar. Different surface, different workstream — FLAGGED to the
+     owner, deliberately not changed here.
 
      ⚠️ The two rejected options are recorded so they are not re-proposed:
        · Card in Shamrock — the Deals card beside it carries its merchant
@@ -7065,7 +7082,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
          badges are Shamrock pills: on a Shamrock sidebar that is 1.00:1. They
          do not fade, they vanish, leaving a floating numeral. */
   .dash-sidebar {
-    background:linear-gradient(180deg, #053a75 0%, #002461 100%);
+    background:#002461;
     color:white;
     display:flex; flex-direction:column;
     padding:18px 14px;
@@ -8161,6 +8178,18 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .wcard-fresh .wcard-photo { border-color:var(--green); }
   .wcard-photo img { width:100%; height:100%; object-fit:cover; }
+  /* ⛔ THIS RULE DID NOT EXIST IN THIS FILE. `.wcard-photo-fallback` was referenced
+     three times in the markup and styled zero times, so the initial rendered as an
+     unstyled 16px glyph in the corner of a 42px circle — effectively invisible.
+     gopher-connect.html has carried this rule all along; Request never got it.
+     Ported verbatim rather than re-invented, so the two surfaces match. */
+  .wcard-photo-fallback {
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, var(--navy), #3d52a0);
+    color:#fff;
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:16px;
+  }
   .wcard-main { flex:1; min-width:0; }
   .wcard-top { display:flex; align-items:center; gap:7px; }
   .wcard-name { font-family:'Nunito'; font-weight:800; font-size:14px; color:var(--navy); }
@@ -15063,7 +15092,19 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         ` : ''}
         ${state.payMode==='set' ? `
           <div class="sub-field pay-sub-field">
-            <div class="sf-label">${state.payByHour ? 'Your offer to the worker (per hour)' : 'Your offer to the worker'}</div>
+            ${''/* G40-576 addendum (John, 2026-10-04, on the A50): "add one √ that
+                  says ..." — the payment-clarity line the app ships in
+                  src/component/yardFlow/InfoSheetContent.js ownPrice() and
+                  modalContent.js (Request !445, merged). Same sentence verbatim,
+                  "your Gopher" kept as the live app words it.
+                  ⚠ It hangs off the OFFER FIELD, not the "Set your offer" radio's ?,
+                  because that radio is inside showBidsOption — bidsOption:
+                  ['delivery','ride'] hides it for Delivery and Ride, and the hourly
+                  branch hides it for Labor/Yard. On the field it renders for EVERY
+                  category whenever payMode==='set'. */}
+            <div class="sf-label">${state.payByHour ? 'Your offer to the worker (per hour)' : 'Your offer to the worker'}
+              <button class="info-btn" data-info="Your offer to your Gopher here is 100% of what they will earn for the job, paid directly to them after you confirm the work has been completed.">?</button>
+            </div>
             <div class="cost-input-box" style="margin-top:6px;">
               <span class="cib-currency">$</span>
               <input type="text" inputmode="decimal" class="cost-amount-input" id="payAmountInput" data-field="payAmount" value="${state.payAmount.replace(/^\$/,'')}" placeholder="0.00" aria-label="Your offer to the worker">
@@ -23885,7 +23926,12 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
           : '';
         return `
           <div class="wcard ${fresh?'wcard-fresh':''}">
-            <div class="wcard-photo"><img src="${w.photo}" alt="${w.name}"></div>
+            <!-- ⛔ Was an unconditional <img src="${w.photo}">. Every seeded worker
+                 carries photo:'' (see makeSeedWorker), so this emitted <img src="">
+                 — an empty circle, and an empty src re-requests the PAGE URL in some
+                 browsers. The sibling renderer below already guarded this; this one
+                 never did. Same guard now, matching gopher-connect.html. -->
+            <div class="wcard-photo">${w.photo ? `<img src="${w.photo}" alt="${w.name}">` : `<div class="wcard-photo-fallback">${(w.name||'?').charAt(0)}</div>`}</div>
             <div class="wcard-main">
               <div class="wcard-top">
                 <span class="wcard-name">${w.name}</span>

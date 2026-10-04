@@ -851,6 +851,13 @@ body{
 
 .demo-ribbon{background:#FFF3D6;color:#7a5300;border:1px solid #f0dca6;border-radius:10px;padding:9px 13px;margin:0 0 14px;font-family:'DM Sans',sans-serif;font-size:12.5px;text-align:center;}
 .demo-ribbon b{font-family:'Nunito',sans-serif;font-weight:900;color:#7a5300;}
+/* ⛔ MODAL ACTIONS ARE ANCHORED AT THE BOTTOM. Owner 2026-10-03, as a blanket rule for every modal: "The standard modal
+   should be buttons (and those with 'dont show me this again') anchored on the bottom." A tall modal scrolls its body
+   and keeps the actions in view; a short one is unchanged because the actions are already last. */
+[role="dialog"]{max-height:min(86vh,760px);overflow-y:auto;}
+[role="dialog"] > button,[role="dialog"] > label{position:sticky;bottom:0;z-index:2;}
+[role="dialog"] > label{background:#fff;}
+.offer-card .os-actions{position:sticky;bottom:0;z-index:2;background:#fff;}
 </style>
 </head>
 <body><script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script><style>html.embedded,html.embedded body{padding:0;margin:0;min-height:0;background:#FBF7EF;}html.embedded #phone{position:absolute;inset:0;width:auto;height:auto;max-width:none;max-height:none;border-radius:0;box-shadow:none;}</style>
@@ -1109,11 +1116,11 @@ const FIELD_HIDDEN_FOR = {
   itemInfo:['delivery','home','labor','yard','ride','other'],
   hazardous:['delivery','moving','home','labor','yard','ride','other'],
   workerSetup:['delivery','home','ride'],
-  workerSelectChoice:['moving','home','labor','yard','other'],
+  workerSelectChoice:['home','labor','yard','other'],   /* Moving SHOWS it (owner 2026-10-03, G40-576 package): two options, no First Available */
   pickupSection:['home','labor','junk','yard','other'],
   noSpecificPickup:['home','labor','junk','yard','ride','other'],
   pickupStairs:['delivery','home','labor','junk','yard','ride','other'],
-  serviceElevator:['delivery','home','labor','junk','yard','ride','other'],
+  serviceElevator:['delivery','moving','home','labor','junk','yard','ride','other'],   /* Connect-only: never shown in Request (owner 2026-10-03, G40-576 package) */
   destStairs:['delivery','home','yard','ride'],
   /* ⚠️ POLARITY: this table is FIELD_HIDDEN_FOR — every array lists the categories a field is
      HIDDEN for. isVisible(f) = !FIELD_HIDDEN_FOR[f].includes(category). So REMOVING a category
@@ -1504,7 +1511,7 @@ function renderStep2(){
   // Page 1 — Describe
   if(isVisible('describe')){
     h+=`<div class="step-section">
-      <div class="sst"><span class="sst-ico">${svgIco('pencil')}</span>Describe what you need</div>
+      <div class="sst">${sstI(svgIco('pencil'))}Describe what you need</div>
       <textarea class="field-textarea" id="descriptionInput" data-field="description" rows="3" placeholder="${esc(c.ph)}">${esc(state.description)}</textarea>
       ${isVisible('addPic') ? renderPics() : ''}
     </div>`;
@@ -1513,7 +1520,7 @@ function renderStep2(){
   // Page 2 — Delivery Type (delivery only)
   if(state.category==='delivery'){
     h+=`<div class="step-section">
-      <div class="sst"><span class="sst-ico">${svgIco('list')}</span>Delivery type</div>
+      <div class="sst">${sstI(svgIco('list'))}Delivery type</div>
       <div class="toggle-row">
         <button class="toggle-switch ${state.ageRestricted?'on':''}" data-toggle="ageRestricted" aria-label="Age-restricted items"></button>
         <span class="tr-label">Includes age-restricted items
@@ -1567,7 +1574,7 @@ function renderStep2(){
   // Page 3 — Rider info (ride only)
   if(isVisible('riderInfo')){
     h+=`<div class="step-section">
-      <div class="sst"><span class="sst-ico">${svgIco('users')}</span>Rider info</div>
+      <div class="sst">${sstI(svgIco('users'))}Rider info</div>
       <div class="field-row split">
         <div><label class="flabel"># of riders</label>
           <select class="field-select" data-select="numRiders">${['1','2','3','4','5','6'].map(n=>`<option ${n===state.numRiders?'selected':''}>${n}</option>`).join('')}</select></div>
@@ -1584,7 +1591,7 @@ function renderStep2(){
   if(isVisible('itemInfo')){
     const autoOn = state.itemCount>=5 && !state.multipleItems;
     h+=`<div class="step-section">
-      <div class="sst"><span class="sst-ico">${svgIco('moving')}</span>Item info</div>
+      <div class="sst">${sstI(svgIco('moving'))}Item info</div>
       ${!state.multipleItems ? `
       <div class="toggle-row spaced">
         <span class="tr-label"># of items involved</span>
@@ -1618,6 +1625,9 @@ function renderPics(){
     <span class="pic-count">${state.picThumbs.length} of 3 attached</span>
   </div>`;
 }
+/* Moving ships with NO card-title icons yet ("we dont need all the icons yet" — owner 2026-10-02, carried into the
+   909 desk's G40-576 package). Per-category suppression, not a deletion: every other category keeps its icon. */
+function sstI(ico){ return state.category==='moving' ? '' : '<span class="sst-ico">'+ico+'</span>'; }
 function infoTip(id,title,paras,emphasis){
   const open = state.openInfo===id;
   return `<span class="info-tip ${open?'open':''}" data-info="${id}">
@@ -1638,28 +1648,29 @@ function renderStep3(){
 
   if(isVisible('workerSetup')){
     any=true;
+    const mv=state.category==='moving', unit=mv?'Gopher':'worker';
     h+=`<div class="step-section">
-      <div class="sst"><span class="sst-ico">${svgIco('worker')}</span>Worker setup</div>
+      <div class="sst">${sstI(svgIco('worker'))}${mv?'Gopher setup':'Worker setup'}</div>
       <div class="toggle-row">
         <button class="toggle-switch ${state.moreThanOneWorker?'on':''}" data-toggle="moreThanOneWorker"></button>
-        <span class="tr-label">More than 1 worker needed</span>
+        <span class="tr-label">More than 1 ${unit} needed</span>
       </div>
       ${state.moreThanOneWorker ? `
-        <div class="sub-field"><div class="sf-label"># of workers needed</div>
+        <div class="sub-field"><div class="sf-label"># of ${unit}s needed</div>
           <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
             <div class="field-counter">
               <button class="counter-btn" data-counter="dec-workers" ${state.numWorkers<=2?'disabled':''}>−</button>
               <span class="counter-val">${state.numWorkers}</span>
               <button class="counter-btn" data-counter="inc-workers">+</button>
-            </div><span style="font-family:'DM Sans';font-size:12px;color:var(--muted-cool);">workers</span>
+            </div><span style="font-family:'DM Sans';font-size:12px;color:var(--muted-cool);">${unit}s</span>
           </div>
-          <div style="font-family:'DM Sans';font-size:11.5px;line-height:1.45;color:var(--muted-cool);margin-top:8px;">You&rsquo;ll select <b style="color:var(--navy);font-weight:700;">one</b> worker &mdash; they&rsquo;re responsible for bringing the additional worker${state.numWorkers>2?'s':''}.</div>
+          <div style="font-family:'DM Sans';font-size:11.5px;line-height:1.45;color:var(--muted-cool);margin-top:8px;">You&rsquo;ll select <b style="color:var(--navy);font-weight:700;">one</b> ${unit} &mdash; they&rsquo;re responsible for bringing the additional ${unit}${state.numWorkers>2?'s':''}.</div>
           </div>`:''}
-      <div class="toggle-row">
+      ${mv ? '' : `<div class="toggle-row">
         <button class="toggle-switch ${state.payByHour?'on':''}" data-toggle="payByHour"></button>
         <span class="tr-label">Pay by the hour</span>
-      </div>
-      ${state.payByHour ? `
+      </div>`}
+      ${(!mv && state.payByHour) ? `
         <div class="sub-field"><div class="sf-label"># of hours needed</div>
           <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
             <div class="field-counter">
@@ -1673,15 +1684,28 @@ function renderStep3(){
 
   if(isVisible('workerSelectChoice')){
     any=true;
+    /* MOVING (G40-576 package): "I'll select my worker" and "Prioritize MY Gopher(s)", each a PLAIN label with a ?,
+       NO First Available. ? copy is the merged app's, src/component/yardFlow/InfoSheetContent.js smg() and favGopher(),
+       verbatim, with the two option labels below substituted for the app's {select} / {priority} slots.
+       ⚠️ COUPLED: the favGopher sheet names the select option by its label, so change these labels together.
+       The prototype requester has no MY Gophers, so the second option stays the locked row. */
+    const mvSel = state.category==='moving';
+    const SEL_LBL = "I'll select my worker", PRI_LBL = "Prioritize MY Gopher(s)";
     h+=`<div class="step-section">
-      <div class="sst"><span class="sst-ico">${svgIco('target')}</span>How do you want to select your worker? (2 of 3 options available)</div>
+      <div class="sst">${sstI(svgIco('target'))}How do you want to select your ${mvSel?'Gopher':'worker'}? (${mvSel?'1 of 2':'2 of 3'} options available)</div>
       <div class="radio-group">
-        <div class="radio-row ${state.workerSelection==='first'?'selected':''}" data-radio="workerSelection" data-val="first">
-          <span class="radio-dot"></span><span class="rr-label">First available worker — fastest match</span></div>
+        ${mvSel ? '' : `<div class="radio-row ${state.workerSelection==='first'?'selected':''}" data-radio="workerSelection" data-val="first">
+          <span class="radio-dot"></span><span class="rr-label">First available worker — fastest match</span></div>`}
         <div class="radio-row ${state.workerSelection==='select'?'selected':''}" data-radio="workerSelection" data-val="select">
-          <span class="radio-dot"></span><span class="rr-label">I'll select my worker — review ratings, reviews and job history before selecting</span></div>
+          <span class="radio-dot"></span><span class="rr-label">${mvSel ? SEL_LBL + infoTip('wsel', SEL_LBL, [
+            'When choosing <b>'+SEL_LBL+'</b>, each Gopher interested will create an alert in the app for you.',
+            'You can see their rating, reviews and job history before making your selection!',
+            'This option requires some engagement during the selection process.']) : "I'll select my worker — review ratings, reviews and job history before selecting"}</span></div>
         <div class="radio-row ghost" aria-disabled="true">
-          <span class="radio-dot"></span><span class="rr-label">Prioritize MY Gophers — we'll notify your favs first
+          <span class="radio-dot"></span><span class="rr-label">${mvSel ? PRI_LBL + infoTip('wpri', PRI_LBL, [
+            'When selecting <b>'+PRI_LBL+'</b>, each favorite you select will be notified of your request.',
+            'If none of your MY Gophers have accepted within about a minute, all other Gophers in the area will see your request and you will be able to choose the same way as '+SEL_LBL+'.',
+            'This option requires some engagement during the selection process, yet only if your MY Gopher is unavailable.']) : "Prioritize MY Gophers — we'll notify your favs first"}
             <span class="rr-lock-hint">${svgIco('shield')} MY Gophers can be added from recommendations or previous completed requests.</span></span></div>
       </div>
     </div>`;
@@ -1703,19 +1727,19 @@ function renderStep4(){
 
   if(isVisible('pickupSection')){
     h+=`<div class="step-section">
-      <div class="sst"><span class="sst-ico">${svgIco('location')}</span>Pick-up location</div>
+      <div class="sst">${sstI(svgIco('location'))}Pick-up location</div>
       ${isVisible('noSpecificPickup') ? `
       <div class="toggle-row">
         <button class="toggle-switch ${state.noSpecificPickup?'on':''}" data-toggle="noSpecificPickup"></button>
         <span class="tr-label">${state.category==='moving' ? 'Single-location move' : 'Pickup location is flexible'}
           ${state.category==='moving'
-            ? infoTip('nsp','Single-location move',['Just need moving help at ONE address? Slide this on. Your worker helps on-site — loading, unloading, rearranging — and will NOT travel between two locations.'])
+            ? infoTip('nsp','Single-location move',['Just need moving help at <b>ONE</b> address? Slide this on.','Your Gopher helps on-site — loading, unloading, rearranging — and will NOT travel between two locations.','Enter the move address under Destination below.'])
             : infoTip('nsp','No specific pick-up',['Either the worker can purchase your items anywhere they\'re available, or there\'s no actual pick-up spot for this request.'])}
         </span>
       </div>`:''}
       ${state.noSpecificPickup && isVisible('noSpecificPickup') ? `
         <div class="sub-field"><div class="sf-label">${state.category==='moving' ? 'Single-location move' : 'Pick-up flexibility'}</div>
-        <div class="sf-value">${state.category==='moving' ? 'Your worker helps at ONE address only — loading, unloading, or rearranging items on site. This is not a two-location move. Enter the move address under Destination below.' : "The worker can purchase anywhere your items are available, or there's no fixed pick-up location."}</div></div>
+        <div class="sf-value">${state.category==='moving' ? 'Your Gopher helps at ONE address only — loading, unloading, or rearranging items on site. This is not a two-location move. Enter the move address under Destination below.' : "The worker can purchase anywhere your items are available, or there's no fixed pick-up location."}</div></div>
       ` : `
         <div class="addr-block"><span class="addr-pin">${svgIco('location')}</span>
           <input class="addr-input" data-field="pickupStops" value="${esc(pickupAddr())}" placeholder="Add pick-up address"></div>
@@ -1737,7 +1761,7 @@ function renderStep4(){
   }
 
   h+=`<div class="step-section">
-    <div class="sst"><span class="sst-ico">${svgIco('flag')}</span>Destination</div>
+    <div class="sst">${sstI(svgIco('flag'))}Destination</div>
     <div class="addr-block"><span class="addr-pin">${svgIco('flag')}</span>
       <input class="addr-input" data-field="dropoffStops" value="${esc(dropoffAddr())}" placeholder="Add destination address"></div>
     ${isVisible('destStairs') ? `
@@ -1779,11 +1803,28 @@ function renderStep5(){
       ${showBids ? `
       <div class="radio-row ${state.payMode==='set'?'selected':''}" data-radio="payMode" data-val="set">
         <span class="radio-dot"></span><span class="rr-label">Set your offer
-          <span style="color:var(--muted-cool);font-weight:500;font-size:11px;">(any request)</span></span></div>` : ''}`;
+          <span style="color:var(--muted-cool);font-weight:500;font-size:11px;">(any request)</span>
+          ${infoTip('own','Set your offer',[
+            'Selecting this option allows you to set whatever price you think is fair.',
+            'For certain requests, we may suggest a minimum based on the average accepted offers for that category.',
+            'Ultimately you can set whatever price you want.',
+            'Your offer to your Gopher here is 100% of what they will earn for the job, paid directly to them after you confirm the work has been completed.'])}</span></div>` : ''}`;
 
   if(state.payMode==='set'){
     h+=`<div class="sub-field" style="background:#fff;border-color:#e4e8f0;">
-      <div class="sf-label">${state.payByHour?'Your hourly offer to the worker':'Your offer to the worker'}</div>
+      ${''/* G40-576 addendum (John, 2026-10-04, on the A50): "add one √ that
+            says ..." — the payment-clarity line the app ships in
+            src/component/yardFlow/InfoSheetContent.js ownPrice() and
+            modalContent.js (Request !445, merged). Same sentence verbatim,
+            "your Gopher" kept as the live app words it.
+            ⚠ It hangs off the OFFER FIELD, not the "Set your offer" radio's ?,
+            because that radio is inside showBidsOption — bidsOption:
+            ['delivery','ride'] hides it for Delivery and Ride, and the hourly
+            branch hides it for Labor/Yard. On the field it renders for EVERY
+            category whenever payMode==='set'. */}
+      <div class="sf-label">${state.payByHour?'Your hourly offer to the worker':'Your offer to the worker'}
+        ${infoTip('earn','Your offer to the worker',['Your offer to your Gopher here is 100% of what they will earn for the job, paid directly to them after you confirm the work has been completed.'])}
+      </div>
       <div class="cost-input-box"><span class="ci-currency">$</span>
         <input type="text" inputmode="decimal" class="cost-amount-input" id="payAmountInput" data-field="payAmount" value="${esc(state.payAmount.replace(/^\$/,''))}" placeholder="0.00" aria-label="Your offer to the worker"></div>
       <div class="sf-hint">Exact amount your worker takes home — 100% of your offer. Request fees are shown at review.</div>
@@ -1949,7 +1990,7 @@ function renderStep6(){
   if(isVisible('addPic') && state.picThumbs.length) rows+=`<div class="review-row"><span class="rl">Pics</span><span class="rv"><div class="review-thumbs">${state.picThumbs.map(t=>`<div class="review-thumb">${t}</div>`).join('')}</div></span></div>`;
   if(state.category==='delivery') rows+=`<div class="review-row"><span class="rl">Delivery type</span><span class="rv">${state.ageRestricted?'Age-restricted · ':''}${state.itemsPurchased?'Purchase needed':'Items in hand'}</span></div>`;
   if(isVisible('riderInfo')) rows+=`<div class="review-row"><span class="rl">Rider info</span><span class="rv">${state.numRiders} rider${state.numRiders!=='1'?'s':''} · ${state.numBags} bag${state.numBags!=='1'?'s':''}</span></div>`;
-  if(isVisible('workerSetup')) rows+=`<div class="review-row"><span class="rl">Worker info</span><span class="rv">${wCount} worker${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`;
+  if(isVisible('workerSetup')) rows+=`<div class="review-row"><span class="rl">${state.category==='moving'?'Gopher info':'Worker info'}</span><span class="rv">${wCount} worker${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`;
   if(isVisible('itemInfo')) rows+=`<div class="review-row"><span class="rl">Item info</span><span class="rv">${state.itemCount} item${state.itemCount>1?'s':''}${state.multipleItems?' · mixed':''}${state.hazardous?' · hazmat':''}</span></div>`;
   if(isVisible('pickupSection')){
     rows+= state.noSpecificPickup
@@ -1964,7 +2005,7 @@ function renderStep6(){
   if(showCost) rows+=`<div class="review-row"><span class="rl">Cost of items</span><span class="rv">${fmt(costNum)}</span></div>`;
 
   // Payment to your worker(s) (single row; per-worker math lives in the info button)
-  rows+=`<div class="review-row earn"><span class="rl">${wCount===1?'Your offer to the worker':'Your offer to the workers'} ${workerPayTip(bids,wCount,perW,wPay)}</span>
+  rows+=`<div class="review-row earn"><span class="rl">${state.category==='moving' ? 'Your offer to your Gopher' : ((wCount===1?'Your offer to the worker':'Your offer to the workers') + ' ' + workerPayTip(bids,wCount,perW,wPay))}</span>
     <span class="rv">${bids?'Pending bids':fmt(wPay)}</span></div>`;
 
   // Request fee with breakdown popover
@@ -2319,6 +2360,8 @@ function render(){
   const sc=$('#scroll');
   // No "how is the worker selected?" choice → the user must select their worker (web parity).
   if(!isVisible('workerSelectChoice')) state.workerSelection='select';
+  // Moving shows no First Available; 'first' is the app-wide default (the prototype requester has no MY Gophers, so 'select').
+  else if(state.category==='moving' && state.workerSelection==='first') state.workerSelection='select';
   // Never sit on an auto-hidden empty step (e.g. the category was changed to
   // Home/Office from the context bar while on Worker info) — advance past it.
   if(state.step>1 && state.step<7 && stepIsEmpty(state.step)) state.step=nextVisibleStep(state.step);
