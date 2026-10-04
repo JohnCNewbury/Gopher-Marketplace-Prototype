@@ -1786,6 +1786,14 @@ function renderStep4(){
 /* ============================================================
    STEP 5 — Worker pay
    ============================================================ */
+/* The app's "Set your own price" sheet (src/component/yardFlow/InfoSheetContent.js ownPrice()), verbatim, all points
+   including the 100% line. ONE copy, rendered by exactly one ?: on the "Set your offer" radio when that radio exists,
+   otherwise on the offer field. Never both (owner 2026-10-04: "The full sheet, on the offer field"; "Never two ?s"). */
+const OWN_PRICE_SHEET=[
+  'Selecting this option allows you to set whatever price you think is fair.',
+  'For certain requests, we may suggest a minimum based on the average accepted offers for that category.',
+  'Ultimately you can set whatever price you want.',
+  'Your offer to your Gopher here is 100% of what they will earn for the job, paid directly to them after you confirm the work has been completed.'];
 function renderStep5(){
   const showBids = bidsAllowed();
   const rate = toNum(state.payAmount);
@@ -1804,11 +1812,7 @@ function renderStep5(){
       <div class="radio-row ${state.payMode==='set'?'selected':''}" data-radio="payMode" data-val="set">
         <span class="radio-dot"></span><span class="rr-label">Set your offer
           <span style="color:var(--muted-cool);font-weight:500;font-size:11px;">(any request)</span>
-          ${infoTip('own','Set your offer',[
-            'Selecting this option allows you to set whatever price you think is fair.',
-            'For certain requests, we may suggest a minimum based on the average accepted offers for that category.',
-            'Ultimately you can set whatever price you want.',
-            'Your offer to your Gopher here is 100% of what they will earn for the job, paid directly to them after you confirm the work has been completed.'])}</span></div>` : ''}`;
+          ${infoTip('own','Set your offer',OWN_PRICE_SHEET)}</span></div>` : ''}`;
 
   if(state.payMode==='set'){
     h+=`<div class="sub-field" style="background:#fff;border-color:#e4e8f0;">
@@ -1817,13 +1821,13 @@ function renderStep5(){
             src/component/yardFlow/InfoSheetContent.js ownPrice() and
             modalContent.js (Request !445, merged). Same sentence verbatim,
             "your Gopher" kept as the live app words it.
-            ⚠ It hangs off the OFFER FIELD, not the "Set your offer" radio's ?,
-            because that radio is inside showBidsOption — bidsOption:
-            ['delivery','ride'] hides it for Delivery and Ride, and the hourly
-            branch hides it for Labor/Yard. On the field it renders for EVERY
-            category whenever payMode==='set'. */}
+            ⚠ OWNER RULING 2026-10-04 ("The full sheet, on the offer field"): where
+            the "Set your offer" radio is ABSENT — bidsOption hides it for Delivery
+            and Ride, and the hourly branch hides it for Labor/Yard — the field
+            carries the FULL sheet (OWN_PRICE_SHEET). Where the radio exists it
+            carries the sheet instead, so a category never shows two ?s. */}
       <div class="sf-label">${state.payByHour?'Your hourly offer to the worker':'Your offer to the worker'}
-        ${infoTip('earn','Your offer to the worker',['Your offer to your Gopher here is 100% of what they will earn for the job, paid directly to them after you confirm the work has been completed.'])}
+        ${!showBids ? infoTip('earn','Set your offer',OWN_PRICE_SHEET) : ''}
       </div>
       <div class="cost-input-box"><span class="ci-currency">$</span>
         <input type="text" inputmode="decimal" class="cost-amount-input" id="payAmountInput" data-field="payAmount" value="${esc(state.payAmount.replace(/^\$/,''))}" placeholder="0.00" aria-label="Your offer to the worker"></div>

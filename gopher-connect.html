@@ -12713,6 +12713,34 @@ const PAY_BADGES = {
   // ───────────────────────────────────────────────
   // STEP 5 — Worker pay (Master Page 8)
   // ───────────────────────────────────────────────
+  /* ── The app's "Set your own price" sheet ───────────────────────────────────
+     Owner ruling 2026-10-04 (question tool): EVERY category reads the SAME
+     sheet, and no category shows two ?s for it. Copy is verbatim from the
+     merged app -- src/component/yardFlow/InfoSheetContent.js ownPrice() and
+     src/component/modalContent.js (Request !445) -- with "your Gopher" kept as
+     the live app words it. Identical to the helper of the same name in
+     gopher-request.html; the two must be changed together.
+
+     ⚠️ ONE DEFINITION, TWO MOUNT POINTS, and it must stay that way. The sheet
+     hangs off the "Set your offer" radio where that radio renders, and off the
+     offer-field label where it does not. On this surface the radio row is
+     `showBidsOption || state.payMode !== 'set'`, so once payMode IS 'set' --
+     the only state in which the offer field exists -- the row renders exactly
+     when showBidsOption is true. !showBidsOption is therefore the right gate
+     here too, same as Request. */
+  function ownPriceSheet(aria){
+    return `<span class="info-tip" onclick="event.stopPropagation()">
+      <button class="info-btn" aria-label="${aria}">?</button>
+      <div class="info-popover" role="tooltip">
+        <h5>Set your offer</h5>
+        <p>Selecting this option allows you to set whatever price you think is fair.</p>
+        <p>For certain requests, we may suggest a minimum based on the average accepted offers for that category.</p>
+        <p>Ultimately you can set whatever price you want.</p>
+        <p>Your offer to your Gopher here is 100% of what they will earn for the job, paid directly to them after you confirm the work has been completed.</p>
+      </div>
+    </span>`;
+  }
+
   function renderStep5(){
     // Bids row visibility rule:
     //  - Hidden for Delivery and Ride Sharing (always)
@@ -12739,24 +12767,20 @@ const PAY_BADGES = {
         <div class="radio-row ${state.payMode==='set'?'selected':''}" data-radio="payMode" data-val="set">
           <span class="radio-dot"></span>
           <span class="rr-label">Set your offer
-            <button class="info-btn" data-info="You decide the flat offer up front">?</button>
+            ${ownPriceSheet("About Set your offer")}
           </span>
         </div>
         ` : ''}
         ${state.payMode==='set' ? `
           <div class="sub-field pay-sub-field">
-            ${''/* G40-576 addendum (John, 2026-10-04, on the A50): "add one √ that
-                  says ..." — the payment-clarity line the app ships in
-                  src/component/yardFlow/InfoSheetContent.js ownPrice() and
-                  modalContent.js (Request !445, merged). Same sentence verbatim,
-                  "your Gopher" kept as the live app words it.
-                  ⚠ It hangs off the OFFER FIELD, not the "Set your offer" radio's ?,
-                  because that radio is inside showBidsOption — bidsOption:
-                  ['delivery','ride'] hides it for Delivery and Ride, and the hourly
-                  branch hides it for Labor/Yard. On the field it renders for EVERY
-                  category whenever payMode==='set'. */}
+            ${''/* The SAME sheet as the radio above, mounted here only when that
+                  radio is absent. Owner 2026-10-04: every category reads the
+                  same sheet, none shows it twice.
+                  ⚠️ Do not drop the !showBidsOption condition: ungated, this
+                  shipped the sentence twice on five categories (measured 2 on
+                  Moving in the prototype flow, 10:03 ET). */}
             <div class="sf-label">${state.payByHour ? 'Your offer to the worker (per hour)' : 'Your offer to the worker'}
-              <button class="info-btn" data-info="Your offer to your Gopher here is 100% of what they will earn for the job, paid directly to them after you confirm the work has been completed.">?</button>
+              ${!showBidsOption ? ownPriceSheet("About your offer to the worker") : ''}
             </div>
             <div class="cost-input-box" style="margin-top:6px;">
               <span class="cib-currency">$</span>
