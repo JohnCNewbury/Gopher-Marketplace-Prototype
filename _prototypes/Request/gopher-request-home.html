@@ -541,6 +541,20 @@ body{background:#dfe4ec;font-family:'DM Sans',-apple-system,system-ui,sans-serif
 .hb-dot{position:absolute;top:3px;right:5px;width:8px;height:8px;border-radius:50%;background:#E5484D;box-shadow:0 0 0 2px var(--sand,#FBF3E4);animation:hbPulse 1.4s ease-in-out infinite;}
 .hb-seg.hb-on .hb-dot{box-shadow:0 0 0 2px var(--navy,#002461);}
 @keyframes hbPulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.3);opacity:.65;}}.hb-view{overflow:hidden;border-radius:16px;touch-action:pan-y;}.hb-track{display:flex;transition:transform .28s ease;}.hb-slide{flex:0 0 100%;min-width:100%;box-sizing:border-box;}.hb-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;}.hb-arrow{width:30px;height:30px;border-radius:50%;border:1px solid var(--line,#EAE3D5);background:var(--card,#fff);color:var(--navy,#002461);font-size:17px;font-weight:900;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;}.hb-arrow:disabled{opacity:.35;cursor:default;}.hb-dots{display:flex;align-items:center;gap:6px;}.hb-dot{width:7px;height:7px;border-radius:50%;background:#d9d2c2;cursor:pointer;transition:width .2s,background .2s;}.hb-dot.on{background:var(--green,#1CB061);width:18px;border-radius:99px;}.hb-empty{text-align:center;padding:24px 18px;background:var(--card,#fff);border:1px dashed var(--line,#EAE3D5);border-radius:16px;}.hb-empty-ic{font-size:24px;}.hb-empty-t{font-family:'Nunito';font-weight:900;font-size:14.5px;color:var(--navy,#002461);margin-top:5px;}.hb-empty-s{font-size:11.5px;color:var(--muted,#8C8675);margin-top:3px;line-height:1.4;}</style>
+<style id="cockpitNav">
+/* Floating cockpit footer (owner 2026-10-04). Approved variant A: the real GO-To mark, no ring.
+   One SVG scaled to the bar width (viewBox 288x82) so it holds at any phone width. */
+.nav.ck{box-shadow:none!important;border:0!important;aspect-ratio:288/69.7;height:auto!important;width:auto!important;padding:0!important;background:none!important;display:block!important;filter:drop-shadow(0 8px 10px rgba(7,26,69,.32));z-index:20;}
+.nav.ck-abs{position:absolute!important;left:12px!important;right:12px!important;bottom:10px!important;}
+.nav.ck svg.navbg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+.nav.ck .fb{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#fff;font-family:'Nunito';font-weight:700;font-size:12px;cursor:pointer;width:15.3%;top:38.3%;padding:0;}
+.nav.ck .fb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;}
+.nav.ck .fb.on{color:#3FE07F;}
+.nav.ck .fb.on svg{fill:currentColor;stroke:none;}
+.nav.ck .fbgo{position:absolute;left:39.4%;top:9.5%;width:21.25%;height:46.8%;border-radius:24px;background:none;border:none;cursor:pointer;padding:0;font-size:0;color:transparent;}
+#phone{position:relative;}
+#scroll,.mi-list{padding-bottom:128px!important;}
+</style>
 </head>
 <body><script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script><style>html.embedded,html.embedded body{padding:0;margin:0;min-height:0;background:var(--paper);}html.embedded #phone{position:absolute;inset:0;width:auto;height:auto;max-width:none;max-height:none;border-radius:0;box-shadow:none;}</style>
 <div id="phone">
@@ -663,13 +677,7 @@ body{background:#dfe4ec;font-family:'DM Sans',-apple-system,system-ui,sans-serif
   </div>
 
   <!-- bottom nav -->
-  <div class="nav">
-    <button class="nv g40nv" data-gnav="home"><svg class="g40ic" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg>home</button>
-    <button class="nv g40nv" data-gnav="inbox" style="position:relative;"><svg class="g40ic" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12 7.6L3 21l1.9-6A8.4 8.4 0 1 1 21 11.5z"/></svg>inbox<span id="reqInboxBadge" style="display:none;position:absolute;top:-1px;right:calc(50% - 22px);min-width:16px;height:16px;border-radius:8px;background:#D64545;color:#fff;font-size:10px;font-weight:900;font-family:'Nunito';align-items:center;justify-content:center;padding:0 4px;box-shadow:0 0 0 2px #fff;">1</span></button>
-    <button class="nv c g40nv" data-gnav="go"><span class="cc"><svg viewBox="0 0 32 32"><rect x="11.5" y="5" width="9" height="22" rx="3.5"/><rect x="5" y="11.5" width="22" height="9" rx="3.5"/></svg></span>GO</button>
-    <button class="nv g40nv" data-gnav="refer"><svg class="g40ic" viewBox="0 0 24 24"><path d="M12 4.5l2.2 4.6 5 .4-3.8 3.3 1.2 4.9-4.6-2.7-4.6 2.7 1.2-4.9L4.8 9.5l5-.4z"/></svg>refer</button>
-    <button class="nv g40nv" data-gnav="help"><svg class="g40ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.6a2.4 2.4 0 0 1 4.6 1c0 1.6-2.2 2-2.2 3.2"/><circle cx="12" cy="16.6" r=".7"/></svg>help</button>
-  </div>
+  <div class="nav ck ck-abs"><svg class="navbg" viewBox="0 0 288 69.7" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="fbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12306B"/><stop offset="1" stop-color="#071A45"/></linearGradient></defs><path d="M24.2,18.7 H104.05 Q109.58,18.7 109.58,22.44 A19.98 19.98 0 0 0 129.55,42.93 H158.45 A19.98 19.98 0 0 0 178.43,22.44 Q178.43,18.7 183.95,18.7 H263.8 A24.2 24.2 0 0 1 263.8,67.1 H24.2 A24.2 24.2 0 0 1 24.2,18.7 Z" fill="url(#fbar)" stroke="rgba(150,180,235,0.40)" stroke-width="0.6"/><image href="../../assets/img/go-mark.svg" x="113.4" y="6.63" width="61.2" height="32.64"/></svg><button class="fb on" data-gnav="home" style="left:3.82%;" aria-current="page"><svg viewBox="0 0 24 24"><path d="M12 3 2.5 11.5H5V20h5.2v-5.6h3.6V20H19v-8.5h2.5z"/></svg>Home</button><button class="fb" data-gnav="inbox" style="left:21.18%;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12 7.6L3 21l1.9-6A8.4 8.4 0 1 1 21 11.5z"/></svg>Inbox<span id="reqInboxBadge" style="display:none;position:absolute;top:-4px;right:6px;min-width:16px;height:16px;border-radius:8px;background:#D64545;color:#fff;font-size:10px;font-weight:900;font-family:'Nunito';align-items:center;justify-content:center;padding:0 4px;box-shadow:0 0 0 2px #fff;">1</span></button><button class="fbgo" data-gnav="go" aria-label="GO"></button><button class="fb" data-gnav="refer" style="left:63.54%;"><svg viewBox="0 0 24 24"><path d="M12 4.5l2.2 4.6 5 .4-3.8 3.3 1.2 4.9-4.6-2.7-4.6 2.7 1.2-4.9L4.8 9.5l5-.4z"/></svg>Refer</button><button class="fb" data-gnav="help" style="left:80.90%;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.6a2.4 2.4 0 0 1 4.6 1c0 1.6-2.2 2-2.2 3.2"/><circle cx="12" cy="16.6" r=".7"/></svg>Help</button></div>
 </div>
 
 <script>

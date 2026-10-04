@@ -4256,7 +4256,39 @@ function handle(e){ /* generic handler for IMPORTED frames only */
  else toast('“'+(t||kind)+'” on <b>'+(BYID[current]?BYID[current].label:current)+'</b> isn’t linked yet — tell me where it should go.');
 }
 
-const G40_FOOTER_CSS = `.nav .g40nv{color:#c3cee3;font-family:'Nunito';font-weight:800;font-size:12.5px;justify-content:flex-end;}.nav .g40nv.c{color:#33D975;gap:6px;}.nav .g40nv.c .cc svg{stroke:none;}.nav .g40nv.c .cc svg rect{fill:#002461;stroke:none;}.nav .g40nv .g40ic{width:21px;height:21px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;margin-bottom:1px;}.nav .g40nv[aria-current=page]{color:#33D975;}.tab.on{background:#002461;color:#fff;}`;
+const G40_FOOTER_CSS = `.nav .g40nv{color:#c3cee3;font-family:'Nunito';font-weight:800;font-size:12.5px;justify-content:flex-end;}.nav .g40nv.c{color:#33D975;gap:6px;}.nav .g40nv.c .cc svg{stroke:none;}.nav .g40nv.c .cc svg rect{fill:#002461;stroke:none;}.nav .g40nv .g40ic{width:21px;height:21px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;margin-bottom:1px;}.nav .g40nv[aria-current=page]{color:#33D975;}.tab.on{background:#002461;color:#fff;}.nav.ck{box-shadow:none!important;border:0!important;aspect-ratio:288/69.7;height:auto!important;width:auto!important;padding:0!important;background:none!important;display:block!important;filter:drop-shadow(0 8px 10px rgba(7,26,69,.32));z-index:20;}.nav.ck-abs{position:absolute!important;left:12px!important;right:12px!important;bottom:10px!important;}.nav.ck-flow{position:relative!important;flex:0 0 auto!important;margin:0 12px 8px!important;}.nav.ck-sticky{position:sticky!important;bottom:8px!important;flex:0 0 auto!important;margin:0 12px!important;}.nav.ck svg.navbg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;}.nav.ck .fb{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#fff;font-family:'Nunito';font-weight:700;font-size:12px;cursor:pointer;width:15.3%;top:38.3%;padding:0;}.nav.ck .fb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;}.nav.ck .fb.on{color:#3FE07F;}.nav.ck .fb.on svg{fill:currentColor;stroke:none;}.nav.ck .fbgo{position:absolute;left:39.4%;top:9.5%;width:21.25%;height:46.8%;border-radius:24px;background:none;border:none;cursor:pointer;padding:0;font-size:0;color:transparent;}`;
+
+/* Floating cockpit footer (owner 2026-10-04): approved variant A, the real GO-To mark, no ring.
+   Every Go screen carries its own copy of the five-button footer (inside FRAMES and the native screens), so it is
+   restyled here at the one point every shadow root is built, rather than editing each copy. The buttons keep their
+   data-gnav values and the `nv` class, so the existing routing and the generic nav handler behave exactly as before. */
+const __CK_BAR='<svg class="navbg" viewBox="0 0 288 69.7" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="fbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12306B"/><stop offset="1" stop-color="#071A45"/></linearGradient></defs><path d="M24.2,18.7 H104.05 Q109.58,18.7 109.58,22.44 A19.98 19.98 0 0 0 129.55,42.93 H158.45 A19.98 19.98 0 0 0 178.43,22.44 Q178.43,18.7 183.95,18.7 H263.8 A24.2 24.2 0 0 1 263.8,67.1 H24.2 A24.2 24.2 0 0 1 24.2,18.7 Z" fill="url(#fbar)" stroke="rgba(150,180,235,0.40)" stroke-width="0.6"/><image href="../../assets/img/go-mark.svg" x="113.4" y="6.63" width="61.2" height="32.64"/></svg>';
+const __CK_ICON={home:'<svg viewBox="0 0 24 24"><path d="M12 3 2.5 11.5H5V20h5.2v-5.6h3.6V20H19v-8.5h2.5z"/></svg>',inbox:'<svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12 7.6L3 21l1.9-6A8.4 8.4 0 1 1 21 11.5z"/></svg>',refer:'<svg viewBox="0 0 24 24"><path d="M12 4.5l2.2 4.6 5 .4-3.8 3.3 1.2 4.9-4.6-2.7-4.6 2.7 1.2-4.9L4.8 9.5l5-.4z"/></svg>',help:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.6a2.4 2.4 0 0 1 4.6 1c0 1.6-2.2 2-2.2 3.2"/><circle cx="12" cy="16.6" r=".7"/></svg>'};
+const __CK_POS={home:'3.82%',inbox:'21.18%',refer:'63.54%',help:'80.90%'}, __CK_LBL={home:'Home',inbox:'Inbox',refer:'Refer',help:'Help'};
+function __cockpitNav(sr){
+  const run=function(){
+    sr.querySelectorAll('.nav:not(.ck)').forEach(function(nav){
+      const old={}; let cur=null;
+      nav.querySelectorAll('[data-gnav]').forEach(function(b){ const k=b.getAttribute('data-gnav'); old[k]=b; if(b.getAttribute('aria-current')==='page'||b.classList.contains('on')) cur=k; });
+      if(!(old.home&&old.inbox&&old.go&&old.refer&&old.help)) return;
+      const pos=getComputedStyle(nav).position; const mode=pos==='absolute'?'ck-abs':(pos==='sticky'?'ck-sticky':'ck-flow');
+      const keep=Array.prototype.filter.call(old.inbox.children,function(c){ return c.tagName!=='svg'&&c.tagName!=='SVG'; });
+      nav.className='nav ck '+mode;
+      nav.innerHTML=__CK_BAR;
+      ['home','inbox'].forEach(function(k){ nav.appendChild(__ckBtn(k,cur)); });
+      const go=document.createElement('div'); go.className='nv fbgo'; go.setAttribute('data-gnav','go'); go.setAttribute('aria-label','GO'); go.textContent='GO'; nav.appendChild(go);
+      ['refer','help'].forEach(function(k){ nav.appendChild(__ckBtn(k,cur)); });
+      const ib=nav.querySelector('[data-gnav="inbox"]'); keep.forEach(function(c){ ib.appendChild(c); });
+    });
+  };
+  run();
+  try{ new MutationObserver(run).observe(sr,{childList:true,subtree:true}); }catch(_){}
+}
+function __ckBtn(k,cur){
+  const b=document.createElement('div'); b.className='nv fb'+(k===cur?' on':''); b.setAttribute('data-gnav',k); b.style.left=__CK_POS[k];
+  if(k===cur) b.setAttribute('aria-current','page');
+  b.innerHTML=__CK_ICON[k]+__CK_LBL[k]; return b;
+}
 // Deals launch gate (Raleigh DMA only) — same flag as the Request app; the split-screen
 // "Deals" toggle sets it (localStorage 'gopherDealsLive', default LIVE) and reboots the phone.
 function __dealsLive(){ try{ return localStorage.getItem('gopherDealsLive')!=='0'; }catch(_){ return true; } }
@@ -4458,7 +4490,7 @@ function load(id,isBack){
  else { const f=FRAMES[id]||{css:'',html:'<div style="padding:40px;font-family:sans-serif">Screen not provided.</div>'};
         sr.innerHTML='<style>'+FORM_FONT_RESET+f.css+'</style>'+f.html; sr.addEventListener('click',handle); decorateImported(sr,id); if(id==='requests'){try{goPaintSumm(sr);goPaintRecentArea(sr);}catch(_){}} if(id==='deals'&&window.initDeals){try{window.initDeals(sr);}catch(e){}} if(id==='home'){try{renderSPTile(sr);}catch(_){}}
  if(id==='home'){try{const _ws=sr.querySelector('.wsr .wt .s'); if(_ws&&state.work){const n=state.work.cats.length,t=state.work.tier,rr=state.work.radii||[];const rad=t==='elite'?((rr[0]||0)+' mi delivery \u00b7 '+((rr[1]||rr[0])||0)+' mi labor'):((rr[0]||0)+' mi radius');_ws.textContent=n+(n===1?' category':' categories')+' \u00b7 '+rad;}}catch(e){}} }
- {var _g40fs=document.createElement('style');_g40fs.textContent=G40_FOOTER_CSS;sr.appendChild(_g40fs);}
+ {var _g40fs=document.createElement('style');_g40fs.textContent=G40_FOOTER_CSS;sr.appendChild(_g40fs);try{__cockpitNav(sr);}catch(_){}}
  // Deals launch gate: outside the Raleigh DMA the home Deals section (ad inventory) is removed
  // entirely — takes its featured deal, category rail, and "View all" (all deals-handoff
  // entry points) with it. Applied to any rendered screen that carries a .sec.z-deals block.

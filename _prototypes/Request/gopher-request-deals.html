@@ -366,7 +366,21 @@ html.embedded,html.embedded body{padding:0;margin:0;min-height:0;background:#FBF
 .ov-scroll.is-web .portal{margin:0;border-left:0;border-right:0;border-bottom:0;border-radius:0;flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
 .ov-scroll.is-web .portal-live{flex:1 1 auto;height:auto;min-height:0;}
 .svc-pic .lp-img,.dd-logo .lp-img,.tile .lp-img,.portal-logo .lp-img{width:100%;height:100%;object-fit:cover;display:block;}
-</style></head>
+</style><style id="cockpitNav">
+/* Floating cockpit footer (owner 2026-10-04). Approved variant A: the real GO-To mark, no ring.
+   One SVG scaled to the bar width (viewBox 288x82) so it holds at any phone width. */
+.nav.ck{box-shadow:none!important;border:0!important;aspect-ratio:288/69.7;height:auto!important;width:auto!important;padding:0!important;background:none!important;display:block!important;filter:drop-shadow(0 8px 10px rgba(7,26,69,.32));z-index:20;}
+.nav.ck-abs{position:absolute!important;left:12px!important;right:12px!important;bottom:10px!important;}
+.nav.ck svg.navbg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+.nav.ck .fb{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#fff;font-family:'Nunito';font-weight:700;font-size:12px;cursor:pointer;width:15.3%;top:38.3%;padding:0;}
+.nav.ck .fb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;}
+.nav.ck .fb.on{color:#3FE07F;}
+.nav.ck .fb.on svg{fill:currentColor;stroke:none;}
+.nav.ck .fbgo{position:absolute;left:39.4%;top:9.5%;width:21.25%;height:46.8%;border-radius:24px;background:none;border:none;cursor:pointer;padding:0;font-size:0;color:transparent;}
+#phone{position:relative;}
+#scroll,.mi-list{padding-bottom:128px!important;}
+</style>
+</head>
 <body><script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script><div id="phone">
   <div class="status"><span>9:41</span><span class="r">▟ ⃝ ▮</span></div>
   <div id="scroll">
@@ -424,13 +438,7 @@ html.embedded,html.embedded body{padding:0;margin:0;min-height:0;background:#FBF
   <div class="sheet-back" id="sheetBack" data-close="sheet"></div>
   <div class="sheet" id="sheet"></div>
 
-  <div class="nav">
-    <button class="nv" data-nav="Home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Home</span></button>
-    <button class="nv" data-goto2="activity"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Activity</span></button>
-    <button class="nv c" data-nav="Request"><span class="cc"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><span>Request</span></button>
-    <button class="nv" data-nav="Refer"><svg viewBox="0 0 24 24"><path d="M12 4l2.3 4.7L19.5 9l-3.7 3.6.9 5.1L12 15.3 7.3 17.7l.9-5.1L4.5 9l5.2-.3z"/></svg><span>Refer</span></button>
-    <button class="nv" data-goto2="account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>Account</span></button>
-  </div>
+  <div class="nav ck ck-abs"><svg class="navbg" viewBox="0 0 288 69.7" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="fbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12306B"/><stop offset="1" stop-color="#071A45"/></linearGradient></defs><path d="M24.2,18.7 H104.05 Q109.58,18.7 109.58,22.44 A19.98 19.98 0 0 0 129.55,42.93 H158.45 A19.98 19.98 0 0 0 178.43,22.44 Q178.43,18.7 183.95,18.7 H263.8 A24.2 24.2 0 0 1 263.8,67.1 H24.2 A24.2 24.2 0 0 1 24.2,18.7 Z" fill="url(#fbar)" stroke="rgba(150,180,235,0.40)" stroke-width="0.6"/><image href="../../assets/img/go-mark.svg" x="113.4" y="6.63" width="61.2" height="32.64"/></svg><button class="fb" data-gnav="home" style="left:3.82%;"><svg viewBox="0 0 24 24"><path d="M12 3 2.5 11.5H5V20h5.2v-5.6h3.6V20H19v-8.5h2.5z"/></svg>Home</button><button class="fb" data-gnav="inbox" style="left:21.18%;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12 7.6L3 21l1.9-6A8.4 8.4 0 1 1 21 11.5z"/></svg>Inbox</button><button class="fbgo" data-gnav="go" aria-label="GO"></button><button class="fb" data-gnav="refer" style="left:63.54%;"><svg viewBox="0 0 24 24"><path d="M12 4.5l2.2 4.6 5 .4-3.8 3.3 1.2 4.9-4.6-2.7-4.6 2.7 1.2-4.9L4.8 9.5l5-.4z"/></svg>Refer</button><button class="fb" data-gnav="help" style="left:80.90%;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.6a2.4 2.4 0 0 1 4.6 1c0 1.6-2.2 2-2.2 3.2"/><circle cx="12" cy="16.6" r=".7"/></svg>Help</button></div>
 </div>
 
 <script>
@@ -1100,4 +1108,5 @@ document.addEventListener('input',function(e){
   if(v!==t.value) t.value=v;
 });
 </script>
+<script>/* Footer routing (floating cockpit). Same map the inbox page uses. */document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-gnav]');if(!t)return;var M={home:'gopher-request-home.html',inbox:'gopher-request-inbox.html',go:'gopher-request-flow.html',refer:'gopher-request-refer.html',help:'gopher-request-help.html'};var g=t.getAttribute('data-gnav');var p=M[g];if(p){if(window.__navHook){try{window.__navHook(p);}catch(_){}}else if(g!=='help'){location.href=p;}}});</script>
 </body></html>
