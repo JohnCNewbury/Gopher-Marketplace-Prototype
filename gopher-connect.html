@@ -20796,10 +20796,22 @@ const PAY_BADGES = {
         const worker = (crew && crewName) ? (crew.find(w => w.name === crewName) || crew[0])
                      : (pending ? { name: pending.name, photo: pending.photo || '' }
                      : (r.live ? r.live.worker : { name: r.worker, photo:'' }));
+        /* ⛔ A PURGED thread must never come back. The product tells the
+           user "Delete permanently? This cannot be undone." — and then tapping
+           Message on the request rebuilt the whole conversation from r.thread,
+           composer and all, while the list still said "Nothing deleted" and the
+           badge read zero. Two clicks to undo an undoable-never.
+           The Gopher relationship survives a purge; the MESSAGE HISTORY does
+           not. So a purged thread still opens — you can still message your
+           Gopher — it just opens EMPTY. Soft-deleted threads are untouched
+           here: they still live in the Deleted tab and are the user's to
+           restore. Found 2026-10-03 by the launch behaviour audit, reproduced
+           on Connect and fixed on both surfaces. */
+        const wasPurged = !!(dashState.inboxPurged && dashState.inboxPurged[activeId]);
         // Per-worker thread lives at r.threads[workerName]; single-worker at r.thread.
-        const thread = crewName
+        const thread = wasPurged ? [] : (crewName
           ? ((r.threads && r.threads[crewName]) || [])
-          : (r.thread || []);
+          : (r.thread || []));
         activeThread = {
           id: activeId, worker,
           title: r.title, thread, last: thread[thread.length-1] || null,
@@ -20990,6 +21002,15 @@ const PAY_BADGES = {
     // keep the thread scrolled to the latest message
     const scroller = document.getElementById('inboxThreadScroll');
     if(scroller) scroller.scrollTop = scroller.scrollHeight;
+    /* ⛔ The badge self-heals on every paint of this list. It used to be
+       updated only by the paths that MUTATE threads, so any path that removed
+       a request WITHOUT going through them left the count stranded: cancel a
+       request, or recover from a Gopher cancellation, and its conversation
+       vanished while the sidebar kept counting it — for the rest of the
+       session, because opening the Inbox did not recompute it either. The
+       empty-state branch above already did this; the populated branch did not.
+       Found 2026-10-03 by the launch behaviour audit. */
+    updateInboxBadge();
   }
 
   // Send a customer message into a user-started request's thread, then fire a
@@ -23484,6 +23505,11 @@ const PAY_BADGES = {
     renderKpiCounts();
     renderActiveRequests();
     renderPrevRequests();
+    /* Cancelling SPLICES the request, and inbox threads are derived from
+       DASH_DATA.activeRequests — so a conversation the user had with that
+       worker disappears and the sidebar count has to follow. Its sibling
+       __deleteDashboardRequest already did this; this one did not. */
+    updateInboxBadge();
     return true;
   };
 
@@ -26602,6 +26628,11 @@ const PAY_BADGES = {
       if(typeof renderActiveRequests === 'function') renderActiveRequests();
       if(typeof renderKpiCounts === 'function') renderKpiCounts();
       if(typeof renderPrevRequests === 'function') renderPrevRequests();
+      /* This flow SPLICES a request out of DASH_DATA.activeRequests, and inbox
+         threads are derived from that array — so the conversation disappears
+         and the sidebar count must follow. Guarded because this runs in a
+         separate IIFE from updateInboxBadge. */
+      if(typeof updateInboxBadge === 'function') updateInboxBadge();
     }
 
     // ── State ───────────────────────────────────────────────────────────────

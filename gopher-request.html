@@ -21279,9 +21279,21 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
         const worker = crew
           ? ((crewName && crew.find(w => w.name === crewName)) || crew[0])
           : ((r.live && r.live.worker) || { name: r.worker, photo:'', tier:'' });
-        const thread = crewName
+        /* ⛔ A PURGED thread must never come back. The product tells the
+           user "Delete permanently? This cannot be undone." — and then tapping
+           Message on the request rebuilt the whole conversation from r.thread,
+           composer and all, while the list still said "Nothing deleted" and the
+           badge read zero. Two clicks to undo an undoable-never.
+           The Gopher relationship survives a purge; the MESSAGE HISTORY does
+           not. So a purged thread still opens — you can still message your
+           Gopher — it just opens EMPTY. Soft-deleted threads are untouched
+           here: they still live in the Deleted tab and are the user's to
+           restore. Found 2026-10-03 by the launch behaviour audit, reproduced
+           on Connect and fixed on both surfaces. */
+        const wasPurged = !!(dashState.inboxPurged && dashState.inboxPurged[activeId]);
+        const thread = wasPurged ? [] : (crewName
           ? ((r.threads && r.threads[crewName]) || [])
-          : (r.thread || []);
+          : (r.thread || []));
         activeThread = {
           id: activeId,
           worker,
@@ -21512,7 +21524,20 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
           .filter(Boolean);
         if(!picked.length) return;
         dashState.gopherRels = dashState.gopherRels || {};
-        picked.forEach(g => { dashState.gopherRels[g.name] = 'favorite'; });
+        /* ⛔ gopherRels is NOT the MY Gophers store. MyGophers.all() reads
+           DASH_DATA.myGophers; gopherRels only drives the heart icon and the
+           "✓ In MY Gophers" lock on this card. Writing it alone made this
+           button LIE: a toast said "added", the row locked, and MY Gophers
+           listed nothing new while its badge did not move. The comment above
+           claimed this was "the same store ... so MY Gophers has ONE add path"
+           — it never was. Write the real store too, then repaint it, or the
+           two surfaces disagree permanently and the user cannot retry because
+           the row says it already worked. Found 2026-10-03. */
+        picked.forEach(g => {
+          dashState.gopherRels[g.name] = 'favorite';
+          MyGophers.add({ name:g.name, rating:g.rating, tier:g.tier, badge:g.tier, photo:g.photo });
+        });
+        if(typeof renderGophers === 'function') renderGophers();
         const names = picked.map(g => g.name);
         const said = names.length === 1 ? (names[0] + ' added to MY Gophers.')
                    : (names.length + ' Gophers added to MY Gophers.');
@@ -21567,7 +21592,14 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       dashState.gopherRels = dashState.gopherRels || {};
       const relName = t.worker.name;
       relFav.addEventListener('click', () => {
-        dashState.gopherRels[relName] = (dashState.gopherRels[relName] === 'favorite') ? 'none' : 'favorite';
+        const nowFav = dashState.gopherRels[relName] !== 'favorite';
+        dashState.gopherRels[relName] = nowFav ? 'favorite' : 'none';
+        /* Same defect as the recommendation button above: this control's own
+           title says "Add to MY Gophers", so it has to write the store MY
+           Gophers actually reads, not only the icon state. */
+        if(nowFav) MyGophers.add({ name:relName, tier:(tw && tw.tier) || '', photo:(tw && tw.photo) || '' });
+        else       MyGophers.remove(relName);
+        if(typeof renderGophers === 'function') renderGophers();
         renderInbox();
       });
       relBlock.addEventListener('click', () => {
