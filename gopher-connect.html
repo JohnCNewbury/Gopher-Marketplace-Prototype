@@ -11913,6 +11913,13 @@ const PAY_BADGES = {
 
     // Page 6 — Pick-Up Location
     noSpecificPickup: false,
+    /* G40-577 / G40-578, owner ruled "Yes" for Connect on 2026-10-04: free-text
+       Unit/Apt, one per address. Plain strings, NOT members of the stops arrays
+       and deliberately NOT category-scoped -- a unit number belongs to the
+       BUILDING the requester typed, so switching category must not drop the
+       "4B" from an address still on screen. Mirrors gopher-request.html. */
+    pickupUnit: '',
+    destUnit: '',
     pickupStairs: 0,
     pickupStops: [''],
 
@@ -12344,7 +12351,14 @@ const PAY_BADGES = {
     pickupSection:    ['home','labor','junk','yard','other'],         // Delivery, Moving, Ride only
     noSpecificPickup: ['home','labor','junk','yard','ride','other'],  // Delivery, Moving only
     pickupStairs:     ['delivery','home','labor','junk','yard','ride','other'], // Moving only
-    destStairs:       ['delivery','home','yard','ride'],              // Moving, Labor, Junk, Other only
+    destStairs:       ['delivery','home','junk','yard','ride'],       // Moving, Labor, Other only
+                                                                      /* Junk removed 2026-10-04. Owner, picking "Drop it on the web too":
+                                                                         "Web, Connect and prototype match the app: no stairs question on
+                                                                         Junk. Junk sends total_stair_flight 0 everywhere, as the app does."
+                                                                         The payload half is already satisfied -- the builder reads
+                                                                         `isVisible('destStairs') ? state.destStairs : 0`, so hiding the field
+                                                                         IS what sends 0. destStairs is also category-scoped, so a value set
+                                                                         on Moving cannot survive a switch to Junk. */
     serviceElevator:  ['delivery','home','labor','junk','yard','ride','other'], // Moving only
     multiStop:        ['moving','home','labor','junk','yard','other'], // Delivery + Ride
     // ──── Step 5 Worker pay ────
@@ -12394,6 +12408,16 @@ const PAY_BADGES = {
     const h = ASAP_HOURS[state.category] || 1;
     return h === 1 ? '<b>1 hour</b>' : ('about <b>' + h + ' hours</b>');
   }
+
+  /* ── Categories that ask for a Unit/Apt # ──────────────────────────────────
+     Same three as gopher-request.html; the two lists must move together. Named
+     for the FIELD it gates rather than for "completed flow": those are different
+     questions that agree today, and conflating them is how one symbol comes to
+     mean two things. (Connect has no isCompletedFlow() at all -- the owner ruled
+     its worker-choice treatment deliberately different -- so the separation is
+     load-bearing here, not decorative.) */
+  const UNIT_CATEGORIES = ['moving', 'junk', 'labor', 'home'];
+  const asksForUnit = () => UNIT_CATEGORIES.indexOf(state.category) !== -1;
 
   const isVisible = (field) => !FIELD_HIDDEN_FOR[field].includes(state.category);
   // Whether "Request bids" is genuinely available for the CURRENT state — the same
@@ -12546,7 +12570,17 @@ const PAY_BADGES = {
         <div class="toggle-row">
           <button class="toggle-switch ${state.hazardous?'on':''}" data-toggle="hazardous"></button>
           <span class="tr-label">Includes hazardous material
-            <button class="info-btn" data-info="Flammable, corrosive, etc — requires specialized worker. May include extra fee for worker to dispose.">?</button>
+            ${''/* G40-577: the prototype's wording, matched verbatim, same as
+                  gopher-request.html -- the three surfaces must say the same
+                  thing about a safety question. */}
+            <span class="info-tip" onclick="event.stopPropagation()">
+              <button class="info-btn" aria-label="About hazardous material">?</button>
+              <div class="info-popover" role="tooltip">
+                <h5>Hazardous material</h5>
+                <p>Flammable, corrosive, or otherwise hazardous items need a specialized worker.</p>
+                <p class="emphasis">May include an extra fee for safe disposal.</p>
+              </div>
+            </span>
           </span>
         </div>
         ` : ''}
@@ -13062,7 +13096,7 @@ const PAY_BADGES = {
           `<div class="review-row"><span class="rl">Pick-up Address ${i+1}</span><span class="rv" style="text-align:right;max-width:60%;">${addr}</span></div>`
         ).join('');
       }
-      return `<div class="review-row"><span class="rl">Pick-up</span><span class="rv" style="text-align:right;max-width:60%;">${state.pickupStops[0]}</span></div>`;
+      return `<div class="review-row"><span class="rl">Pick-up</span><span class="rv" style="text-align:right;max-width:60%;">${addrWithUnit(state.pickupStops[0], 'pickupUnit')}</span></div>`;
     })();
     const dropoffRows = (() => {
       if(state.dropoffStops.length > 1) {
@@ -13070,7 +13104,7 @@ const PAY_BADGES = {
           `<div class="review-row"><span class="rl">Drop-off Address ${i+1}</span><span class="rv" style="text-align:right;max-width:60%;">${addr}</span></div>`
         ).join('');
       }
-      return `<div class="review-row"><span class="rl">Destination</span><span class="rv" style="text-align:right;max-width:60%;">${state.dropoffStops[0]}</span></div>`;
+      return `<div class="review-row"><span class="rl">Destination</span><span class="rv" style="text-align:right;max-width:60%;">${addrWithUnit(state.dropoffStops[0], 'destUnit')}</span></div>`;
     })();
     // Access (stairs + service elevator) collected on the Locations step. These
     // were being dropped from Review entirely — surface them so the customer can
@@ -13373,6 +13407,21 @@ const PAY_BADGES = {
           `Once accepted, you can <b>text or call your worker</b> directly, and <b>track route progress in real time</b> when applicable.`,
           `When the request is completed, you'll be prompted to <b>confirm on your end</b> before final billing.`
         ];
+        /* ── The crew line (owner, verified on his phone, 2026-10-04) ────────
+           Whenever 2+ Gophers are requested, say plainly that ONE Gopher
+           accepts and brings the rest, so a single acceptance is not read as a
+           partial fill. Identical to the line in gopher-request.html; the two
+           must be changed together.
+
+           ⚠️ Keyed on the CREW CONTROL being in play, not on a category list:
+           isVisible('workerSetup') && moreThanOneWorker && numWorkers>1. That
+           is what "whenever 2+ Gophers are requested" means, and it stays
+           correct for Yard, Moving, Junk and Labor without naming them. */
+        const crewN = parseInt(state.numWorkers, 10) || 1;
+        if(isVisible('workerSetup') && state.moreThanOneWorker && crewN > 1){
+          wteSteps.splice(1, 0,
+            `One Gopher accepts your request and agrees to show up with all <b>${crewN}</b> Gophers needed.`);
+        }
         // Need ASAP requests expire — be explicit up front. The window is
         // PER CATEGORY: see ASAP_HOURS / asapWindowText().
         if(state.scheduleType==='now') wteSteps.splice(1,0,
@@ -13710,9 +13759,32 @@ const PAY_BADGES = {
           ${pickupExpanded ? `Pickup stops (${pickups.length})` : 'Pickup address'}
         </label>
         ${renderStops}
+        ${(state.category === 'moving' && !pickupExpanded) ? renderUnitInput('pickup') : ''}
         ${footer}
       </div>
     `;
+  }
+
+  /* A second input directly under its address, same card. No visible label --
+     the placeholder carries it and the aria-label says WHICH address, since two
+     identical placeholders on one step are otherwise indistinguishable to a
+     screen reader. Free text, never gates Continue. Built from this surface's
+     own .field-input / .fi-value. */
+  function renderUnitInput(kind){
+    const key = kind === 'pickup' ? 'pickupUnit' : 'destUnit';
+    const who = kind === 'pickup' ? 'Pick-up' : 'Destination';
+    return `
+      <div class="field-input" style="margin-top:8px;">
+        <input class="fi-value" type="text" value="${(state[key]||'').replace(/"/g,'&quot;')}"
+               data-field="${key}" placeholder="Unit/Apt #" aria-label="${who} Unit/Apt #" autocomplete="off">
+      </div>`;
+  }
+
+  /* The address as the requester should READ it. ⚠️ Display only -- the stored
+     record keeps the raw address, because it feeds the coverage geocode. */
+  function addrWithUnit(addr, unitKey){
+    const u = (state[unitKey] || '').trim();
+    return (addr || '') + (u ? ', Unit/Apt ' + u : '');
   }
 
   function renderMultiAddressBlock_dropoff(){
@@ -13762,6 +13834,7 @@ const PAY_BADGES = {
           ${dropoffExpanded ? `Drop-off stops (${dropoffs.length})` : 'Destination address'}
         </label>
         ${renderStops}
+        ${(asksForUnit() && !dropoffExpanded) ? renderUnitInput('dest') : ''}
         ${(isVisible('pickupSection') && !state.noSpecificPickup) ? `<div class="trip-distance" style="margin-top:10px;">🛣 Estimated trip distance: <strong id="tripDistanceVal">${state.tripDistance}</strong></div>` : ''}
         ${footer}
       </div>
@@ -14018,6 +14091,12 @@ const PAY_BADGES = {
     // ─── Editable text fields (description, cost of items, pay amount) ───
     // Update state on input WITHOUT a full re-render so the field keeps focus
     // while typing. Values are picked up when the review step renders.
+    /* Unit/Apt: writes state WITHOUT a re-render, so focus survives mid-"4B".
+       No generic [data-field] binding exists on this surface. */
+    $content.querySelectorAll('input[data-field="pickupUnit"], input[data-field="destUnit"]').forEach(el => {
+      el.addEventListener('input', () => { state[el.getAttribute('data-field')] = el.value; });
+    });
+
     const $desc = $content.querySelector('#descriptionInput');
     if($desc){
       $desc.addEventListener('input', () => {

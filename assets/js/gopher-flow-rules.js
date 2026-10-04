@@ -54,7 +54,7 @@
     bidsOption:           ['delivery', 'ride'],
     deliveryType:         ['home', 'junk', 'labor', 'moving', 'other', 'ride', 'yard'],
     describe:             ['ride'],
-    destStairs:           ['delivery', 'home', 'ride', 'yard'],
+    destStairs:           ['delivery', 'home', 'junk', 'ride', 'yard'],
     hazardous:            ['delivery', 'home', 'labor', 'moving', 'other', 'ride', 'yard'],
     itemInfo:             ['delivery', 'home', 'labor', 'other', 'ride', 'yard'],
     laborMgmt:            ['delivery', 'home', 'ride'],
@@ -63,22 +63,62 @@
     pickupSection:        ['home', 'junk', 'labor', 'other', 'yard'],
     pickupStairs:         ['delivery', 'home', 'junk', 'labor', 'other', 'ride', 'yard'],
     riderInfo:            ['delivery', 'home', 'junk', 'labor', 'moving', 'other', 'yard'],
-    serviceElevator:      ['delivery', 'home', 'junk', 'labor', 'other', 'ride', 'yard'],
-    workerSelectChoice:   ['home', 'labor', 'moving', 'other', 'yard'],
+    /* ⚠️ BOTH ENTRIES CORRECTED 2026-10-04 (G40-576 Moving package). Each one
+       had drifted to CONNECT's value while this table claims to be Request's,
+       so `request` failed section 6 of run_parity_harness.py on both. Read the
+       list as HIDDEN-FOR: that inversion is easy to misread, and it did get
+       misread — `workerSelectChoice` naming `moving` looks like "Moving has
+       First Available" and means the opposite, that Moving gets no choice at
+       all. MV-03 is enforced elsewhere: Moving coerces workerSelection off
+       'first' (myN > 0 ? 'my' : 'select'), so it has the choice WITHOUT First
+       Available. Both facts hold at once. */
+    serviceElevator:      ['delivery', 'home', 'junk', 'labor', 'moving', 'other', 'ride', 'yard'],
+    /* 'labor' left on 2026-10-04 (G40-578) and 'home' the same day (G40-579):
+       both now show the two-option Gopher choice. 'junk' joined destStairs the same day (JR-34) -- owner:
+       "Web, Connect and prototype match the app: no stairs question on Junk.
+       Junk sends total_stair_flight 0 everywhere, as the app does." */
+    workerSelectChoice:   ['other', 'yard'],
     workerSetup:          ['delivery', 'home', 'ride']
   };
 
   /* ── Surface overrides ─────────────────────────────────────────────────────
-     Connect is a different product and legitimately differs. Exactly one field
-     does so today.
+     Connect is a different product and legitimately differs. Three fields do
+     so today.
 
      `multiStop` is BUILT IN BOTH web surfaces — each has six isVisible call
      sites — but Request hides it for all eight categories, so in Request it is a
      finished feature switched off, not a missing one. Connect enables it for
-     Delivery and Ride. Treat a change here as a product decision, not a tidy-up. */
+     Delivery and Ride. Treat a change here as a product decision, not a tidy-up.
+
+     `serviceElevator` and `workerSelectChoice` became overrides on 2026-10-04,
+     when the baseline above was corrected to Request's values. Both are real
+     product differences, not drift:
+       • the service elevator is a CONNECT feature and not a Request one (owner,
+         G40-576 MV-11), so Connect shows it for Moving and Request never shows
+         it at all;
+       • Connect's worker control has no "Prioritize MY Gophers" row, so the
+         Request choice does not translate. ⛔ RULED 2026-10-04, and SETTLED
+         rather than pending: the owner — "connect doesn't have that because
+         they have a unique option to only send to that group." The absence is
+         DELIBERATE. Connect routes favourites through its own eligibleWorkers
+         "only send to that group" control, which is stronger than
+         prioritisation — it RESTRICTS the send rather than ordering it. So
+         Connect keeps hiding workerSelectChoice for BOTH 'moving' and 'labor',
+         permanently. This is not a parity gap to be closed later. */
   var SURFACE_OVERRIDES = {
     connect: {
-      multiStop:            ['home', 'junk', 'labor', 'moving', 'other', 'yard']
+      multiStop:            ['home', 'junk', 'labor', 'moving', 'other', 'yard'],
+      serviceElevator:      ['delivery', 'home', 'junk', 'labor', 'other', 'ride', 'yard'],
+      workerSelectChoice:   ['home', 'labor', 'moving', 'other', 'yard']
+      /* ⚠️ Connect keeps BOTH 'labor' and 'moving' hidden, and this is a finding
+         rather than lag. Connect's control offers exactly two options --
+         "First available worker" and "I'll select my worker(s)" -- and has NO
+         "Prioritize MY Gopher(s)" row at all; Connect routes favourites through
+         its separate eligibleWorkers block. So the owner's "two options, no
+         First Available" cannot translate here: dropping First Available would
+         leave ONE option, which is not a choice. Read from Connect's own
+         markup, not inferred from Request. Parked with the owner together with
+         Connect's Moving -- one ruling covers both. Revisit when he answers. */
     }
   };
 

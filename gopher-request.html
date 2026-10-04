@@ -4341,6 +4341,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
 
   /* Hourly wage breakdown rows under the cost input */
+  /* G40-578: the one-accepter note under the hourly wage breakdown. Sits with
+     the summary it qualifies, not in the fee area -- it explains the ARITHMETIC
+     above it, not a charge. */
+  .wage-note {
+    margin:8px 2px 0;
+    font-family:'DM Sans',sans-serif; font-size:11.5px; line-height:1.45;
+    color:var(--muted);
+  }
   .wage-summary {
     margin-top:10px;
     background:rgba(51,217,117,0.06);
@@ -13024,7 +13032,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   const DESCRIBE_HINT = {
     delivery: 'Please be as descriptive as possible. Tell your worker exactly what needs to be delivered or purchased.',
     moving:   'Please be as descriptive as possible. Tell your worker exactly what needs to be moved — the items, the rooms, anything heavy or fragile, and whether a truck is needed.',
-    home:     'Please be as descriptive as possible. Tell your worker exactly what needs to be done, where, and anything they should bring.',
+    /* G40-579: the owner's own example, concrete rather than an instruction.
+       ⚠ &quot; IS LOAD-BEARING. This string is interpolated straight into
+       placeholder="${describeHint()}", so a raw " in '55" TV' would close the
+       attribute early and spill the rest of the sentence into the markup. */
+    home:     'e.g. Mount a 55&quot; TV on drywall and hide the cables',
     labor:    'Please be as descriptive as possible. Tell your worker exactly what the job involves — the work, the site, and any equipment needed.',
     junk:     'Please be as descriptive as possible. Tell your worker exactly what needs to be hauled away — the items and roughly how much there is.',
     yard:     'Please be as descriptive as possible. Tell your worker exactly what needs to be done in the yard, and any equipment needed.',
@@ -13296,7 +13308,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
 
     home: {
-      icon:'🧹', name:'Home / Office Services', tag:'Services',
+      icon:'🧹', name:'Home Services', tag:'Services',
       detailsTitle:'What service do you need?',
       detailsSub:'Cleaning, organization, installs — pick what fits and we\'ll handle the rest.',
       fields:[
@@ -13797,6 +13809,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
     // Page 6 — Pick-Up Location
     noSpecificPickup: false,
+    /* G40-577 / G40-578: free-text Unit/Apt, one per address. Plain strings, NOT
+       members of pickupStops/dropoffStops (those are the address arrays) and
+       deliberately NOT in CATEGORY_SCOPED_KEYS -- a unit number belongs to the
+       BUILDING the requester typed, so switching category must not silently
+       drop the "4B" from an address that is still on screen. */
+    pickupUnit: '',
+    destUnit: '',
     pickupStairs: 0,
     serviceElevatorPickup: false,     // Moving only — access to a service elevator at pick-up
     pickupStops: [''],
@@ -14152,7 +14171,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
        category with NO First Available — the live app has never had it — so the
        `first` row is suppressed for Moving in renderStep3() and render()
        coerces any stale 'first' away. The rest still force 'select'. */
-    workerSelectChoice: ['home','labor','yard','other'],
+    workerSelectChoice: ['yard','other'],                             // + Labor (G40-578) and Home Services (G40-579), 2026-10-04: both now show the two-option Gopher choice
     // ──── Step 4 Location-section visibility ────
     pickupSection:    ['home','labor','junk','yard','other'],         // Delivery, Moving, Ride only
     noSpecificPickup: ['home','labor','junk','yard','ride','other'],  // Delivery, Moving only
@@ -14166,7 +14185,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
        for EVERY category, which is how it leaves Request without deleting the
        state (the payload snapshot already zeroes it when not visible). */
     serviceElevator:  ['delivery','moving','home','labor','junk','yard','ride','other'], // Connect-only: never shown
-    destStairs:       ['delivery','home','yard','ride'],              // Moving, Labor, Junk, Other only
+    destStairs:       ['delivery','home','junk','yard','ride'],       // Moving, Labor, Other only -- Junk removed 2026-10-04 (JR-34, ruled NO stairs for Junk)
     multiStop:        ['delivery','moving','home','labor','junk','yard','ride','other'], // Request: single pickup + single destination only (no multi-stop)
     // ──── Step 5 Worker pay ────
     aiPaySuggest: ['home','labor','yard','other'],   // Delivery + Ride + Junk (junk = volume-tier model, owner 2026-07-19)
@@ -14175,6 +14194,34 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // one-line edit here instead of an inline check.
     bidsOption: ['delivery','ride'],
   };
+  /* ── Completed flows ───────────────────────────────────────────────────────
+     Categories the owner has signed off as COMPLETE, in order: Moving
+     (G40-576, 2026-10-03), Junk Removal (G40-577) and Hourly / Day Labor
+     (G40-578), both 2026-10-04. They share the finished treatment: the
+     two-option Gopher choice with NO First Available, and "Gopher" rather than
+     "worker" in the labels the owner reviewed.
+
+     ⚠️ Adding a key here is a PRODUCT statement, not a tidy-up -- it asserts the
+     owner has called that flow complete. Yard is deliberately absent: it is a
+     crew category and gets the shared crew line, but its flow has not been
+     signed off. Each entry replaced a literal `state.category === 'moving'`
+     test; keeping them as one named set is what stops the next category from
+     having to find all of them again. */
+  /* 'home' joined 2026-10-04 (G40-579), the owner moving it to Done after
+     "All pass, merge 449". */
+  const COMPLETED_FLOW = ['moving', 'junk', 'labor', 'home'];
+  const isCompletedFlow = () => COMPLETED_FLOW.indexOf(state.category) !== -1;
+
+  /* ── Categories that ask for a Unit/Apt # ──────────────────────────────────
+     ⚠️ A SEPARATE LIST ON PURPOSE, even though it holds the same three keys as
+     COMPLETED_FLOW today. "This flow is signed off" and "this category has an
+     address worth a unit number" are different questions that happen to agree
+     right now. Gating the field on isCompletedFlow() would mean the next
+     category marked complete silently grows a Unit/Apt box nobody asked for --
+     which is exactly how `mv` came to mean two things and deleted Labor's
+     hourly toggle when it was widened (2026-10-04). Keep them apart. */
+  const UNIT_CATEGORIES = ['moving', 'junk', 'labor', 'home'];
+  const asksForUnit = () => UNIT_CATEGORIES.indexOf(state.category) !== -1;
   /* ── How long a Need ASAP request stays live ───────────────────────────────
      ⛔ THIS WAS WRONG FOR FIVE OF THE EIGHT CATEGORIES until 2026-10-04. The
      sentence below hard-coded "1 hour" for everyone, so a Junk, Moving, Yard,
@@ -14883,7 +14930,21 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         <div class="toggle-row">
           <button class="toggle-switch ${state.hazardous?'on':''}" data-toggle="hazardous"></button>
           <span class="tr-label">Includes hazardous material
-            <button class="info-btn" title="Flammable, corrosive, etc — requires specialized worker. May include extra fee for worker to dispose.">?</button>
+            ${''/* G40-577: the prototype's wording, matched verbatim --
+                  _prototypes/Request/gopher-request-flow.html, infoTip('haz',...).
+                  The web's own version said the same thing in note form
+                  ("Flammable, corrosive, etc — requires specialized worker"),
+                  which is not what a requester reads on the app. Promoted from a
+                  bare one-line tooltip to the web's rich popover so the fee line
+                  can carry the same emphasis the prototype gives it. */}
+            <span class="info-tip" onclick="event.stopPropagation()">
+              <button class="info-btn" aria-label="About hazardous material">?</button>
+              <div class="info-popover" role="tooltip">
+                <h5>Hazardous material</h5>
+                <p>Flammable, corrosive, or otherwise hazardous items need a specialized worker.</p>
+                <p class="emphasis">May include an extra fee for safe disposal.</p>
+              </div>
+            </span>
           </span>
         </div>
         ` : ''}
@@ -14914,8 +14975,19 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
              the other categories have not been released by the 909 desk and a
              blanket worker->Gopher rename would change screens that are still
              mid-pass. */}
-      ${(() => { const mv = state.category === 'moving';
-                 const unit = mv ? 'Gopher' : 'worker'; return `
+      ${(() => { const mv = isCompletedFlow();          // VOCABULARY only -- "Gopher" vs "worker"
+                 const unit = mv ? 'Gopher' : 'worker';
+                 /* ⚠️ MOVING-ONLY, AND NOT THE SAME QUESTION AS `mv`. MV-05 /
+                    spec v3.19 INV-9 is a ruling about MOVING, not about
+                    finished flows: owner 2026-10-03, "no Hourly for moving ...
+                    That is a Connect feature." Labor's whole point is the
+                    hourly option (G40-578), and Junk keeps it too. These two
+                    tests were one literal `category === 'moving'` until
+                    2026-10-04; generalising that one symbol to every completed
+                    flow silently deleted Labor's hourly toggle and its "# of
+                    hours needed" field. Caught by driving the flow, not by
+                    reading it. Keep them separate. */
+                 const noHourly = state.category === 'moving'; return `
       <div class="step-section">
         <div class="step-section-title">${sstIco('👷')}${mv ? 'Gopher setup' : 'Worker setup'}</div>
         <div class="toggle-row">
@@ -14936,14 +15008,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
              <div class="sf-note">You&rsquo;ll select <b>one</b> ${unit} &mdash; they&rsquo;re responsible for bringing the additional ${unit}${state.numWorkers>2?'s':''}.</div>
           </div>
         ` : ''}
-        ${''/* MV-05 / spec v3.19 INV-9: Moving has NO pay-by-the-hour in Request.
-              Owner 2026-10-03: "no Hourly for moving ... That is a Connect feature." */}
-        ${mv ? '' : `
+        ${''/* MV-05 / spec v3.19 INV-9: MOVING has no pay-by-the-hour in Request. */}
+        ${noHourly ? '' : `
         <div class="toggle-row">
           <button class="toggle-switch ${state.payByHour?'on':''}" data-toggle="payByHour"></button>
-          <span class="tr-label">Pay by the hour</span>
+          <span class="tr-label">${mv ? 'Pay by the hour instead' : 'Pay by the hour'}</span>
         </div>`}
-        ${(!mv && state.payByHour) ? `
+        ${(!noHourly && state.payByHour) ? `
           <div class="sub-field">
             <div class="sf-label"># of hours needed</div>
             <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
@@ -14966,13 +15037,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         ${''/* The count must describe what is actually RENDERED — Moving drops one
               option, so a hard-coded "3 of 3" would claim one the user cannot see. */}
         ${(() => {
-          const mvSel = state.category === 'moving';
+          const mvSel = isCompletedFlow();
           const total = mvSel ? 2 : 3;
           const avail = (mvSel ? 1 : 2) + (myUnlocked ? 1 : 0);
           return `<div class="step-section-title">${sstIco('🎯')}How do you want to select your ${mvSel ? 'Gopher' : 'worker'}? (${avail} of ${total} options available)</div>`;
         })()}
         <div class="radio-group rg-stack">
-          ${state.category === 'moving' ? '' : `
+          ${isCompletedFlow() ? '' : `
           <div class="radio-row ${state.workerSelection==='first'?'selected':''}" data-radio="workerSelection" data-val="first">
             <span class="radio-dot"></span>
             <span class="rr-label">First available worker — fastest match</span>
@@ -14989,7 +15060,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
                 sheet will describe a control that no longer exists. */}
           <div class="radio-row ${state.workerSelection==='select'?'selected':''}" data-radio="workerSelection" data-val="select">
             <span class="radio-dot"></span>
-            <span class="rr-label">${state.category === 'moving' ? `I'll select my worker
+            <span class="rr-label">${isCompletedFlow() ? `I'll select my worker
               <span class="info-tip" onclick="event.stopPropagation()">
                 <button class="info-btn" aria-label="About I'll select my worker">?</button>
                 <div class="info-popover" role="tooltip">
@@ -15003,7 +15074,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           ${myUnlocked ? `
           <div class="radio-row ${state.workerSelection==='my'?'selected':''}" data-radio="workerSelection" data-val="my">
             <span class="radio-dot"></span>
-            <span class="rr-label">${state.category === 'moving' ? `Prioritize MY Gopher(s)
+            <span class="rr-label">${isCompletedFlow() ? `Prioritize MY Gopher(s)
               <span class="info-tip" onclick="event.stopPropagation()">
                 <button class="info-btn" aria-label="About Prioritize MY Gophers">?</button>
                 <div class="info-popover" role="tooltip">
@@ -15199,7 +15270,9 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
                   ⚠️ Do not drop the !showBidsOption condition: ungated, this
                   shipped the sentence twice on five categories (measured 2 on
                   Moving, 10:03 ET). */}
-            <div class="sf-label">${state.payByHour ? 'Your offer to the worker (per hour)' : 'Your offer to the worker'}
+            <div class="sf-label">${isCompletedFlow()
+                ? (state.payByHour ? 'Your hourly offer to your Gopher' : 'Your offer to your Gopher')
+                : (state.payByHour ? 'Your offer to the worker (per hour)' : 'Your offer to the worker')}
               ${!showBidsOption ? ownPriceSheet("About your offer to the worker") : ''}
             </div>
             <div class="cost-input-box" style="margin-top:6px;">
@@ -15215,17 +15288,24 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
               const workers = state.moreThanOneWorker ? (parseInt(state.numWorkers, 10) || 1) : 1;
               const perWorker = (rate * hours).toFixed(2);
               const combined  = (rate * hours * workers).toFixed(2);
+              const done = isCompletedFlow();          // signed-off flows say "Gopher"
+              const unit = done ? 'Gopher' : 'worker';
               return `
                 <div class="wage-summary">
                   <div class="wage-row">
-                    <span class="wage-label">Per worker wage</span>
+                    <span class="wage-label">Per ${unit} wage</span>
                     <span class="wage-value">$${perWorker} <small>(${hours} hr${hours!==1?'s':''} × $${rate.toFixed(2)})</small></span>
                   </div>
                   <div class="wage-row total">
-                    <span class="wage-label">Combined total wages cost</span>
-                    <span class="wage-value">$${combined} <small>(${workers} worker${workers!==1?'s':''} × $${perWorker})</small></span>
+                    <span class="wage-label">${done ? 'Combined wages' : 'Combined total wages cost'}</span>
+                    <span class="wage-value">$${combined} <small>(${workers} ${unit}${workers!==1?'s':''} × $${perWorker})</small></span>
                   </div>
                 </div>
+                ${''/* G40-578: the breakdown multiplies a rate by hours by heads, which
+                      reads like several separate hires. One Gopher accepts and is
+                      responsible for bringing the rest, so say so right under the
+                      arithmetic rather than leave the requester to infer it. */}
+                ${done ? `<p class="wage-note">This breakdown is to help you budget. Only one Gopher accepts your request, and they&rsquo;re responsible for the other Gophers requested.</p>` : ''}
               `;
             })() : ''}
             ${/* Hidden in hourly mode (owner, 2026-08-26): the iQ model prices a
@@ -15396,7 +15476,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           `<div class="review-row"><span class="rl">Pick-up Address ${i+1}</span><span class="rv" style="text-align:right;max-width:60%;">${addr}</span></div>`
         ).join('');
       }
-      return `<div class="review-row"><span class="rl">Pick-up</span><span class="rv" style="text-align:right;max-width:60%;">${state.pickupStops[0]}</span></div>`;
+      return `<div class="review-row"><span class="rl">Pick-up</span><span class="rv" style="text-align:right;max-width:60%;">${addrWithUnit(state.pickupStops[0], 'pickupUnit')}</span></div>`;
     })();
     const dropoffRows = (() => {
       if(state.dropoffStops.length > 1) {
@@ -15404,7 +15484,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           `<div class="review-row"><span class="rl">Drop-off Address ${i+1}</span><span class="rv" style="text-align:right;max-width:60%;">${addr}</span></div>`
         ).join('');
       }
-      return `<div class="review-row"><span class="rl">Destination</span><span class="rv" style="text-align:right;max-width:60%;">${state.dropoffStops[0]}</span></div>`;
+      return `<div class="review-row"><span class="rl">Destination</span><span class="rv" style="text-align:right;max-width:60%;">${addrWithUnit(state.dropoffStops[0], 'destUnit')}</span></div>`;
     })();
     // Access detail (stairs / service elevator) entered on Step 4. Shown only
     // when the field is offered for this category AND the customer entered
@@ -15422,7 +15502,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     const dropoffAccessRow = (isVisible('destStairs') && (state.destStairs>0 || state.serviceElevatorDest))
       ? `<div class="review-row"><span class="rl">Destination access</span><span class="rv" style="text-align:right;max-width:60%;">${accessLine(state.destStairs, state.serviceElevatorDest)}</span></div>`
       : '';
-    const workerInfoStr = `${state.moreThanOneWorker ? state.numWorkers : 1} worker${state.moreThanOneWorker?'s':''}${state.payByHour ? ` · ${state.numHours}hr` : ''}`;
+    /* G40-578: on a signed-off flow this reads "2 Gophers · 4 hrs" -- the unit
+       the owner reviewed, and a SPACED "hrs" rather than "4hr", which ran into
+       the count beside it. Unfinished categories keep the old string. */
+    const wiDone  = isCompletedFlow();
+    const wiCount = state.moreThanOneWorker ? (parseInt(state.numWorkers, 10) || 1) : 1;
+    const wiUnit  = wiDone ? 'Gopher' : 'worker';
+    const wiHours = parseInt(state.numHours, 10) || 1;
+    const workerInfoStr = `${wiCount} ${wiUnit}${wiCount !== 1 ? 's' : ''}${state.payByHour ? ` · ${wiHours} hr${wiHours !== 1 ? 's' : ''}` : ''}`;
     const itemInfoStr = `${state.itemCount} item${state.itemCount>1?'s':''}${state.multipleItems?' · mixed':''}${state.hazardous?' · ⚠ hazmat':''}`;
 
     // ── Live cost calculation ──
@@ -15459,7 +15546,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         ${isVisible('addPic') && state.picThumbs.length > 0 ? `<div class="review-row"><span class="rl">Pics</span><span class="rv"><div class="review-thumbs">${state.picThumbs.map((t,i)=>`<div class="review-thumb"><img src="${t.src}" alt="pic ${i+1}"></div>`).join('')}</div></span></div>` : ''}
         ${state.category === 'delivery' ? `<div class="review-row"><span class="rl">Delivery type</span><span class="rv">${state.ageRestricted?'Age-restricted · ':''}${state.itemsPurchased?'Purchase needed':'Items in hand'}</span></div>` : ''}
         ${isVisible('riderInfo') ? `<div class="review-row"><span class="rl">Rider info</span><span class="rv">${state.numRiders} rider${state.numRiders!=='1'?'s':''} · ${state.numBags} bag${state.numBags!=='1'?'s':''}</span></div>` : ''}
-        ${isVisible('workerSetup') ? `<div class="review-row"><span class="rl">${state.category === 'moving' ? 'Gopher info' : 'Worker info'}</span><span class="rv">${workerInfoStr}</span></div>` : ''}
+        ${isVisible('workerSetup') ? `<div class="review-row"><span class="rl">${isCompletedFlow() ? 'Gopher info' : 'Worker info'}</span><span class="rv">${workerInfoStr}</span></div>` : ''}
         ${isVisible('itemInfo') ? `<div class="review-row"><span class="rl">Item info</span><span class="rv">${itemInfoStr}</span></div>` : ''}
         ${isVisible('pickupSection') ? pickupRows : ''}
         ${isVisible('pickupSection') ? pickupAccessRow : ''}
@@ -15470,7 +15557,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         <div class="review-row">
           ${''/* MOVING: "Your offer to your Gopher", and NO ? — master doc Step 6
                 row, which marks the Request fee as the only ? on this screen. */}
-          <span class="rl">${state.category === 'moving' ? 'Your offer to your Gopher' : ('Your offer to the worker' + (workerCount > 1 ? 's' : ''))}${state.category !== 'moving' && workerCount > 1 && !bidsMode ? `
+          ${''/* G40-578 / JR: a completed flow shows the offer row with NO ?. The
+                split-across-workers popover stays for the categories that have
+                not been signed off, where the multi-worker arithmetic is still
+                the thing people ask about. */}
+          <span class="rl">${isCompletedFlow() ? 'Your offer to your Gopher' : ('Your offer to the worker' + (workerCount > 1 ? 's' : ''))}${!isCompletedFlow() && workerCount > 1 && !bidsMode ? `
             <span class="info-tip fee-tip" onclick="event.stopPropagation()">
               <button class="info-btn" aria-label="How payment is split across workers">?</button>
               <div class="info-popover fee-popover" role="tooltip">
@@ -15596,6 +15687,23 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           `Once accepted, you can <b>text or call your worker</b> directly, and <b>track route progress in real time</b> when applicable.`,
           `When the request is completed, you'll be prompted to <b>confirm on your end</b> before final billing.`
         ];
+        /* ── The crew line (owner, verified on his phone, 2026-10-04) ────────
+           Whenever 2+ Gophers are requested, say plainly that ONE Gopher
+           accepts and brings the rest. Without it the requester reasonably
+           expects several separate acceptances, and then reads a single
+           acceptance as a partial fill.
+
+           ⚠️ It is keyed on the CREW CONTROL being in play, not on a category
+           list: isVisible('workerSetup') && moreThanOneWorker && numWorkers>1.
+           That is what "whenever 2+ Gophers are requested" actually means, and
+           it stays correct for Yard, Moving, Junk and Labor without naming
+           them -- and for any later category that gains the crew card. With 1
+           Gopher the line is not shown. Custom Task has no crew. */
+        const crewN = parseInt(state.numWorkers, 10) || 1;
+        if(isVisible('workerSetup') && state.moreThanOneWorker && crewN > 1){
+          wteSteps.splice(1, 0,
+            `One Gopher accepts your request and agrees to show up with all <b>${crewN}</b> Gophers needed.`);
+        }
         // Need ASAP requests expire — be explicit up front. The window is
         // PER CATEGORY: see ASAP_HOURS / asapWindowText().
         if(state.scheduleType==='now') wteSteps.splice(1,0,
@@ -15753,7 +15861,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
               after render. With JS unavailable the span is empty, so the
               fallback is handled by rendering the text into it immediately
               when the helper cannot run. */}
-        <p>${(state.category === 'moving' && !isServiceDeal && !haFirst)
+        <p>${(isCompletedFlow() && !isServiceDeal && !haFirst)
               ? `<span class="s7-typed" data-typeline="Looking for your Gopher\u2026"></span>`
               : (isServiceDeal && prov ? ('Connected with ' + _esc(prov.name) + ' \u2014 they accepted your deal.')
                  : (haFirst ? (haLabel + ' has first dibs\u2026') : 'Currently looking for your worker\u2026'))} · Request Order <strong>#${reqNum}</strong></p>
@@ -15898,9 +16006,35 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           ${pickupExpanded ? `Pickup stops (${pickups.length})` : 'Pickup address'}
         </label>
         ${renderStops}
+        ${(state.category === 'moving' && !pickupExpanded) ? renderUnitInput('pickup') : ''}
         ${footer}
       </div>
     `;
+  }
+
+  /* ── Unit / Apt # ──────────────────────────────────────────────────────────
+     A second input directly under its address, in the same card. No visible
+     label -- the placeholder carries it and the aria-label says WHICH address,
+     since two identical placeholders on one step are otherwise indistinguishable
+     to a screen reader. Free text: no validation, not required, never gates
+     Continue. Matched to the prototype's shape, but built from the web's own
+     .field-input / .fi-value markup rather than pasting the prototype's
+     .addr-block / .addr-input, which do not exist on this surface. */
+  function renderUnitInput(kind){
+    const key = kind === 'pickup' ? 'pickupUnit' : 'destUnit';
+    const who = kind === 'pickup' ? 'Pick-up' : 'Destination';
+    return `
+      <div class="field-input" style="margin-top:8px;">
+        <input class="fi-value" type="text" value="${(state[key]||'').replace(/"/g,'&quot;')}"
+               data-field="${key}" placeholder="Unit/Apt #" aria-label="${who} Unit/Apt #" autocomplete="off">
+      </div>`;
+  }
+
+  /* The address string as the requester should READ it: the unit is a suffix on
+     the same line, never its own review row. */
+  function addrWithUnit(addr, unitKey){
+    const u = (state[unitKey] || '').trim();
+    return (addr || '') + (u ? ', Unit/Apt ' + u : '');
   }
 
   function renderMultiAddressBlock_dropoff(){
@@ -15947,6 +16081,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           ${dropoffExpanded ? `Drop-off stops (${dropoffs.length})` : 'Destination address'}
         </label>
         ${renderStops}
+        ${''/* Moving, Junk and Labor, via UNIT_CATEGORIES -- deliberately NOT
+              isCompletedFlow(), which holds the same keys today but answers a
+              different question. Suppressed on a multi-stop drop-off: one unit
+              box under several addresses cannot say which it belongs to. */}
+        ${(asksForUnit() && !dropoffExpanded) ? renderUnitInput('dest') : ''}
         ${(isVisible('pickupSection') && !state.noSpecificPickup) ? `<div class="trip-distance" style="margin-top:10px;">🛣 Estimated trip distance: <strong id="tripDistanceVal">${state.tripDistance}</strong></div>` : ''}
         ${footer}
       </div>
@@ -16082,7 +16221,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // the user must select their worker, so force that selection.
     if(!isVisible('workerSelectChoice')) {
       state.workerSelection = 'select';
-    } else if(state.category === 'moving' && state.workerSelection === 'first'){
+    } else if(isCompletedFlow() && state.workerSelection === 'first'){
       /* Moving shows no First Available, and 'first' is the app-wide default, so
          a Moving request would otherwise open on an option it does not display:
          a radio group with nothing selected.
@@ -16268,6 +16407,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     });
 
     // ─── Editable text fields (description, cost of items, pay amount) ───
+    /* Unit/Apt: same no-re-render pattern as the description below -- a
+       re-render on every keystroke would drop focus mid-"4B". There is no
+       generic [data-field] binding on this surface; every field is wired by
+       hand, so these are too. No validation and no gate: the value is read when
+       the review step renders. */
+    $content.querySelectorAll('input[data-field="pickupUnit"], input[data-field="destUnit"]').forEach(el => {
+      el.addEventListener('input', () => { state[el.getAttribute('data-field')] = el.value; });
+    });
+
     // Update state on input WITHOUT a full re-render so the field keeps focus
     // while typing. Values are picked up when the review step renders.
     const $desc = $content.querySelector('#descriptionInput');
