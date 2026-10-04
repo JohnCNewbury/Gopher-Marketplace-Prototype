@@ -5340,7 +5340,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .dash-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
   .dash-content {
     padding:28px 32px;
-    max-width:1180px;
+    /* ⛔ UNCAPPED 2026-10-04, matching gopher-request.html. At 1180px the home
+       cards stopped short of the right edge while Request's filled it — the
+       visible half of "Connect still shows the old one". ⚠️ This governs EVERY
+       section, not just home, exactly as it does on Request. */
+    max-width:none;
   }
   .dash-section { display:none; animation:fadeStep 0.25s ease; }
   .dash-section.active { display:block; }
@@ -5767,6 +5771,68 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:inline-block;
   }
   .choose-sub[hidden] { display:none; }   /* [hidden] loses to display:inline-block */
+  /* ⛔ LIVE-REQUEST STRIP on the home screen — ported from gopher-request.html
+     2026-10-04 (owner: "The one we screen configured for Request yesterday
+     needs the same thing"). Connect already carried the .choose-sub[hidden]
+     rule this design needs, so half the groundwork was here and the strip
+     itself was simply never brought across.
+
+     ⛔ Realistic ceiling is a handful of concurrent requests. An earlier
+     Request mock built a segmented switcher, carousel and pagination for
+     volume that does not exist and was rejected. Do not rebuild it.
+     --lava / --corn are NOT declared in this file; the literals below match
+     .req-status.status-dispute's own #c44257, as on Request. */
+  .hlive { margin:0 0 18px; }
+  .hlive-card {
+    display:flex; align-items:stretch; overflow:hidden;
+    background:#fff; border:1px solid #e9e3d4; border-radius:15px;
+    box-shadow:0 2px 10px rgba(0,36,97,.06);
+  }
+  .hlive-card.has-attention {
+    border-color:#C44257;
+    box-shadow:0 0 0 1.4px #C44257, 0 4px 14px -3px rgba(196,66,87,.3);
+  }
+  .hlive-body {
+    flex:1; min-width:0; padding:15px 17px; display:flex; align-items:center; gap:13px;
+    background:none; border:0; text-align:left; cursor:pointer; font:inherit; color:inherit;
+  }
+  .hlive-ico {
+    width:42px; height:42px; border-radius:13px; background:#e8f5ee; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; font-size:18px;
+  }
+  .hlive-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; align-items:flex-start; }
+  .hlive-pill {
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:10px; letter-spacing:.8px;
+    text-transform:uppercase; padding:3px 9px; border-radius:14px;
+    background:var(--green); color:var(--ink-on-green);
+  }
+  .hlive-pill.at  { background:#C44257; color:#fff; }
+  .hlive-pill.sch { background:#BADBFC; color:var(--navy); }
+  .hlive-ttl {
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:15px; line-height:1.2;
+    max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .hlive-sub {
+    font-size:12px; color:var(--muted); line-height:1.35;
+    max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .hlive-sub.hot { color:#C44257; font-weight:700; }
+  .hlive-amt { font-family:'Nunito',sans-serif; font-weight:900; font-size:15px; white-space:nowrap; }
+  .hlive-turn {
+    width:46px; flex:0 0 auto; border:0; background:#f4f0e6; color:var(--navy); cursor:pointer;
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:19px;
+    display:flex; align-items:center; justify-content:center; transition:background .15s;
+  }
+  .hlive-turn:hover { background:#ece6d8; }
+  .hlive-turn:focus-visible { outline:2px solid var(--green); outline-offset:-3px; }
+  .hlive-turn.l { border-right:1px solid #e9e3d4; }
+  .hlive-turn.r { border-left:1px solid #e9e3d4; }
+  /* the attention clause inside the headline */
+  .choose-ask em { font-style:normal; color:#C44257; }
+  @media (max-width:760px){
+    .hlive-amt { display:none; }
+    .hlive-turn { width:38px; }
+  }
   .choose-two { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   .choose-card {
     position:relative; overflow:hidden; text-align:left; cursor:pointer; border:0;
@@ -10533,8 +10599,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
       <section class="dash-section" data-section="choose">
         <div class="choose-stage">
-          <h2 class="choose-ask">So, how can we help your business today?</h2>
-          <p class="choose-sub">Two ways to go from here.</p>
+          <!-- The headline is a TEMPLATE driven by renderHomeLive(): it reads
+               "So, how can we help your business today?" with nothing live, and
+               "You have N current requests, M need attention" otherwise. -->
+          <h2 class="choose-ask" id="ccChooseAsk">So, how can we help your business today?</h2>
+          <p class="choose-sub" id="ccChooseSub">Two ways to go from here.</p>
+          <!-- Live-request container. Empty and hidden when nothing is live, so
+               the two cards sit exactly where they did before this landed. -->
+          <div class="hlive" id="ccHomeLive" hidden></div>
           <div class="choose-two">
             <button type="button" class="choose-card svc" data-choose="services">
               <!-- ⚠️ Owner 2026-10-03 REVERSED his 2026-10-01 ruling here. It read:
@@ -17042,7 +17114,115 @@ const PAY_BADGES = {
     if(navBadge) navBadge.textContent = all.length;
   }
 
+  /* ⛔ HOME LIVE STRIP — ported from gopher-request.html 2026-10-04.
+     Owner, on the Request version: "I dont have realtime AI for this. You need
+     to be thinking SCALE." Nothing is written per-request and nothing assumes a
+     name exists.
+
+     ⚠️ TWO DELIBERATE DIFFERENCES FROM THE REQUEST ORIGINAL:
+     1. The empty-state headline keeps CONNECT's wording ("...your business
+        today?"), not Request's. Same strip, different audience.
+     2. Request picks the scheduled pill via statusBucket(), which DOES NOT
+        EXIST in this file (0 occurrences). Connect's records carry
+        status:'scheduled' directly, so this reads the status instead of
+        importing a helper for one branch. Verified against the store: the
+        four live statuses here are in-progress, interested, pending and
+        scheduled. */
+  var HOME_LIVE_IX = 0;
+
+  // Attention sorts to index 0 so you always land on the one that wants you.
+  // Array.prototype.sort is stable, so the store's own order survives inside
+  // each group — this re-orders, it does not shuffle.
+  function homeLiveList(){
+    var all = (typeof DASH_DATA === 'object' && DASH_DATA && DASH_DATA.activeRequests)
+      ? DASH_DATA.activeRequests.slice() : [];
+    all.sort(function(a,b){ return (b.needsAttention?1:0) - (a.needsAttention?1:0); });
+    return all;
+  }
+
+  /* n = live requests, a = how many of them want something. Both plurals are
+     computed, never hard-coded, and the attention clause disappears entirely
+     at a === 0 rather than reading "0 need attention". */
+  function homeLiveHeadline(n, a){
+    if(!n) return 'So, how can we help your business today?';
+    return 'You have ' + n + (n === 1 ? ' current request' : ' current requests')
+      + (a ? ', <em>' + a + (a === 1 ? ' needs' : ' need') + ' attention</em>' : '');
+  }
+
+  function renderHomeLive(){
+    var host = document.getElementById('ccHomeLive');
+    if(!host) return;
+    var list = homeLiveList();
+    var n    = list.length;
+    var attn = list.filter(function(r){ return r.needsAttention; }).length;
+
+    var ask = document.getElementById('ccChooseAsk');
+    var sub = document.getElementById('ccChooseSub');
+    if(ask) ask.innerHTML = homeLiveHeadline(n, attn);
+    // "Two ways to go from here" is the EMPTY state's sub-head. Under
+    // "You have 2 current requests" it reads as a non-sequitur.
+    if(sub) sub.hidden = n > 0;
+
+    if(!n){ host.hidden = true; host.innerHTML = ''; return; }
+    host.hidden = false;
+
+    // The store can shrink under us (a request completes, or is deleted while
+    // the detail page is open), so clamp rather than render undefined.
+    if(HOME_LIVE_IX > n - 1) HOME_LIVE_IX = 0;
+    if(HOME_LIVE_IX < 0)     HOME_LIVE_IX = 0;
+    var r = list[HOME_LIVE_IX];
+
+    var pillCls = r.needsAttention ? ' at' : (r.status === 'scheduled' ? ' sch' : '');
+    var pillTxt = r.needsAttention ? 'Needs you' : (r.statusLabel || '');
+    /* ⚠️ This store carries only a needsAttention BOOLEAN — no attention TYPE,
+       so there is no honest way to say which moment this is. Same limitation as
+       Request's; see docs/handoff/attention-labels-2026-10-03.md. Generic copy
+       rather than invented per request. */
+    var subTxt  = r.needsAttention
+      ? 'Open this request \u2014 it needs your response'
+      : [r.worker, r.when].filter(Boolean).join(' \u00b7 ');
+
+    var left  = HOME_LIVE_IX > 0
+      ? '<button type="button" class="hlive-turn l" data-hlive-turn="-1" aria-label="Previous request">\u2039</button>' : '';
+    var right = HOME_LIVE_IX < n - 1
+      ? '<button type="button" class="hlive-turn r" data-hlive-turn="1" aria-label="Next request">\u203a</button>' : '';
+
+    host.innerHTML =
+      '<div class="hlive-card' + (r.needsAttention ? ' has-attention' : '') + '">'
+      +   left
+      +   '<button type="button" class="hlive-body" data-hlive-open="' + r.id + '">'
+      +     '<span class="hlive-ico">' + (r.icon || '\ud83d\udccb') + '</span>'
+      +     '<span class="hlive-tx">'
+      +       (pillTxt ? '<span class="hlive-pill' + pillCls + '">' + pillTxt + '</span>' : '')
+      +       '<span class="hlive-ttl">' + (r.title || ('Request #' + r.id)) + '</span>'
+      +       (subTxt ? '<span class="hlive-sub' + (r.needsAttention ? ' hot' : '') + '">' + subTxt + '</span>' : '')
+      +     '</span>'
+      +     (r.amount ? '<span class="hlive-amt">' + r.amount + '</span>' : '')
+      +   '</button>'
+      +   right
+      + '</div>';
+
+    // Delegated once, because the container is re-rendered on every store
+    // change and per-node listeners would stack up.
+    if(!host.dataset.wired){
+      host.dataset.wired = '1';
+      host.addEventListener('click', function(e){
+        var turn = e.target.closest('[data-hlive-turn]');
+        if(turn){ HOME_LIVE_IX += parseInt(turn.dataset.hliveTurn, 10); renderHomeLive(); return; }
+        var open = e.target.closest('[data-hlive-open]');
+        if(open){
+          dashState.requestDetailId = open.dataset.hliveOpen;
+          renderRequestDetail();
+          showSection('request-detail');
+        }
+      });
+    }
+  }
+
   function renderActiveRequests(){
+    // The home strip reads the same store, so it re-renders on every change
+    // here rather than needing its own call site at each mutation.
+    if(typeof renderHomeLive === 'function') renderHomeLive();
     const list = getFilteredRequests();
     const headingMap = {
       all:'All requests', pending:'Pending Requests',
