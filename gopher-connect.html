@@ -21466,7 +21466,33 @@ const PAY_BADGES = {
   // COMPLETED bucket only — a GO-To can only be built from a request that
   // actually finished, so cancelled/expired records aren't findable here.
   function findPrevById(id){
-    return DASH_DATA.previousRequests.find(x => x.id === id) || null;
+    /* ⛔ 2026-10-04 (owner: "fix Request Again on cancelled and expired rows").
+       This searched previousRequests ONLY — but the History list defaults to the
+       "all" tab, and PREV_TAB_DATA.all concatenates previousRequests +
+       expiredRequests + cancelledRequests. So every Request Again button on a
+       cancelled or expired row looked up an id that was not in previousRequests,
+       got null, and its handler returned SILENTLY. A visible, enabled button
+       that did nothing at all.
+
+       MEASURED BEFORE THE FIX by clicking all 17 rows: 12 completed opened the
+       MY Gophers picker, all 5 cancelled/expired did nothing — a clean split on
+       the bucket, which is what pointed at the lookup rather than the handler.
+       The detail panel's own button worked the whole time because it closes over
+       the record instead of looking it up, which is why this hid so long.
+
+       These are the rows a requester most wants to re-run: the top one reads
+       "No workers accepted within the scheduled window".
+
+       ⚠️ SAFE FOR THE OTHER CALLER. findPrevById is also used by the GO-To
+       editor, and a GO-To sends on ONE TAP with no review — so widening this
+       lookup must not let a GO-To be built from a record that carries no
+       breakdown/worker. It cannot: data-prev-fav is gated on `done` in the card
+       list, and the cancelled/expired branch of the detail panel does not render
+       that button at all. Checked both before widening rather than after. */
+    return DASH_DATA.previousRequests.find(x => x.id === id)
+        || (DASH_DATA.expiredRequests   || []).find(x => x.id === id)
+        || (DASH_DATA.cancelledRequests || []).find(x => x.id === id)
+        || null;
   }
 
   // Categories the flow can map back (see RA_CAT_MAP in the flow scope)
