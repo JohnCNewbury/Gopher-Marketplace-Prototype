@@ -1854,18 +1854,30 @@
   .dashboard { display:none; position:fixed; inset:0; background:#eef1f7; grid-template-columns:262px 1fr; font-family:'Nunito',sans-serif; color:var(--text); }
   .dashboard.open { display:grid; }
 
-  /* ⛔ GOPHER'S BLUE. Owner 2026-10-03, after seeing three options side by side:
-     "I'm still struggling with the 2 different blues with the sidebar and the
-     request card."
+  /* ⛔ GOPHER'S BLUE IS FLAT #002461 — Midnight Blue, no gradient.
+     Owner 2026-10-04: "Go with flat", then "fix the Deals sidebar too". This is
+     the THIRD dashboard; Request and Connect were flattened earlier the same day
+     (06e6ca0). All three now carry one blue, and it is the same hex the Go
+     prototype uses for --navy — identical, not an approximation.
 
-     He was right and the cause was measurable. The home card is
-     linear-gradient(150deg,#053a75,#002461) — it LANDS ON MIDNIGHT BLUE
-     #002461, the brand colour. The sidebar was #1a2a5e → #0f1a3d, and NEITHER
-     stop is in the palette. They looked different because they were different,
-     and only one of them was the brand.
+     ⚠️ THE NOTE THAT STOOD HERE WAS STALE IN ALL THREE FILES. It said the
+     sidebar deliberately carried "the card's own ramp",
+     linear-gradient(150deg,#053a75,#002461), so the two biggest surfaces
+     matched. THAT CARD RAMP NO LONGER EXISTS — the home cards went white with
+     Sand logo panels on 2026-10-03/04, and #053a75 now appears in this file ONLY
+     on this one rule. Checked by grep before editing rather than trusting the
+     note. The 10-03 ruling it records is not overturned, it is satisfied more
+     completely: one flat brand value beats two ramps that merely agree.
 
-     This is now the card's own ramp, so the two biggest surfaces on the screen
-     are the same blue. White on #002461 is 14.74:1.
+     Why flat and not a darker ramp: a flat value is a TOKEN — app, web, email
+     and the deck all carry one string. A two-stop gradient has to be
+     re-expressed in every medium that cannot render one, which is how the
+     non-palette #053a75 got loose in the first place. Contrast did NOT decide
+     it: white clears AA on all three candidates (11.24 / 14.74 / 16.95:1).
+
+     ⚠️ #053a75 was never in the palette — a more saturated azure — and it sat at
+     the TOP of the sidebar, behind the logo and the primary nav, while the brand
+     colour was pushed down to the footer links.
 
      ⚠️ The two rejected options are recorded so they are not re-proposed:
        · Card in Shamrock — the Deals card beside it carries its merchant
@@ -1875,7 +1887,7 @@
        · Sidebar in Shamrock — legible (navy on Shamrock is 7.95:1) but the nav
          badges are Shamrock pills: on a Shamrock sidebar that is 1.00:1. They
          do not fade, they vanish, leaving a floating numeral. */
-  .dash-sidebar { background:linear-gradient(180deg,#053a75 0%,#002461 100%); color:#fff; display:flex; flex-direction:column; padding:18px 14px; overflow-y:auto; }
+  .dash-sidebar { background:#002461; color:#fff; display:flex; flex-direction:column; padding:18px 14px; overflow-y:auto; }
   .dash-sidebar-head { background:#fff; border-radius:18px; padding:16px 18px 14px; margin-bottom:16px; box-shadow:0 4px 14px rgba(0,0,0,0.18); min-height:122px; box-sizing:border-box; /* uniform platform card (owner, 2026-07-23) */ }
   .dash-logo-text { display:flex; align-items:center; gap:9px; }
   .dlt-mark { width:34px; height:34px; border-radius:9px; background:var(--green); display:flex; align-items:center; justify-content:center; font-family:'Nunito'; font-weight:900; font-size:19px; color:#fff; box-shadow:0 2px 6px rgba(51,217,117,.3); flex-shrink:0; }

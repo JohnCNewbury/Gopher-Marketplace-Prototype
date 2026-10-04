@@ -9650,11 +9650,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     transition:all 0.15s;
   }
   .prev-detail-cta:hover { background:var(--navy-mid); }
-  /* 1-click re-request: green "Request NOW ⚡" (instant, always Need ASAP) sits
-     beside the navy "Request again w/ edits" (prefill → Review). */
   .prev-detail-ctas { display:flex; gap:10px; }
   .prev-detail-block { border-bottom:none; padding-bottom:0; margin-top:4px; }
   .prev-detail-ctas .prev-detail-cta { flex:1 1 0; width:auto; }
+  /* ⛔ .cta-now IS STILL LIVE — do not delete it with the button. The green
+     "Request again NOW ⚡️" CTA it was written for was removed 2026-10-04, but
+     the GO-To editor's "Review my GO-To →" carries the same class and would
+     silently drop to the navy default without this. I removed it once on a grep
+     for "\.cta-now", which matches the SELECTOR and never the class= usage, and
+     caught it only on the leftover sweep. Grep the bare token, not the dotted
+     form, before deleting any class. */
   .prev-detail-cta.cta-now { background:var(--green); color:var(--ink-on-green); box-shadow:0 6px 18px rgba(51,217,117,0.30); }
   .prev-detail-cta.cta-now:hover { background:var(--green-dark); }
   @media (max-width:560px){ .prev-detail-ctas { flex-direction:column; } }
@@ -26921,8 +26926,18 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
           </div>
           ${r.reason ? `<div class="prev-detail-reason"><b>Why:</b> ${r.reason}</div>` : ''}
           <div class="prev-detail-ctas">
-            <button class="prev-detail-cta cta-now" data-prev-now="${r.id}">Request again NOW ⚡️</button>
-            <button class="prev-detail-cta" data-prev-again="${r.id}">Request again w/ edits</button>
+            ${''/* ⛔ "Request again NOW ⚡️" REMOVED 2026-10-04 (owner: "Remove").
+                  It rendered ONLY on this cancelled/expired branch, and these
+                  records carry no `breakdown` — so the one-tap had no price to
+                  re-send and ALWAYS fell through to Review with $0.00 and a
+                  DISABLED Submit. Measured on the live site, not reasoned: it
+                  never did what its label said, on every row it appeared on.
+                  The principle was already written one file over, at the history
+                  card handler: "The one-tap send is what a GO-To is for."
+                  ⚠️ window.__startRequestAgainNow STAYS — GO-To's own one-tap
+                  send calls it (with payKey on Connect). Only this entry point
+                  went. */}
+            <button class="prev-detail-cta" data-prev-again="${r.id}">Request Again</button>
           </div>
         </div>`;
     }
@@ -26957,8 +26972,6 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     // passed so the fast-start can map its category/details/pay.
     const again = panel.querySelector('[data-prev-again]');
     if(again) again.addEventListener('click', () => openRaFastModal(r));
-    const nowBtn = panel.querySelector('[data-prev-now]');
-    if(nowBtn) nowBtn.addEventListener('click', () => launchRaNow(r));
 
     /* Create a GO-To, from the detail view's sticky bar — the same entry point
        the history card uses, so the intro still gates the first one. */
@@ -27042,22 +27055,6 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     moveFlowToDash();
     if(typeof window.__startRequestAgainFast === 'function'){
       window.__startRequestAgainFast(prev, selected);
-    }
-    showSection('new-request');
-    const dashMain = document.querySelector('.dash-main');
-    if(dashMain) dashMain.scrollTo({ top:0, behavior:'instant' });
-  }
-
-  // Request NOW ⚡ — instant re-submit: no MY-Gophers picker, no Review step. Routes
-  // back to the same worker as last time when they're one of MY Gophers (i.e. exactly
-  // as it went out before); the flow lands straight on the submitted confirmation.
-  function launchRaNow(prev){
-    moveFlowToDash();
-    const myNames = gatherMyGophers().map(g => g.name);
-    const prior = String((prev && prev.worker) || '').trim();
-    const selected = (prior && myNames.indexOf(prior) !== -1) ? [prior] : [];
-    if(typeof window.__startRequestAgainNow === 'function'){
-      window.__startRequestAgainNow(prev, selected);
     }
     showSection('new-request');
     const dashMain = document.querySelector('.dash-main');

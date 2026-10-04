@@ -7553,11 +7553,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     transition:all 0.15s;
   }
   .prev-detail-cta:hover { background:var(--navy-mid); }
-  /* 1-click re-request: green "Request NOW ⚡" (instant, always Need ASAP) sits
-     beside the navy "Request again w/ edits" (prefill → Review). */
   .prev-detail-ctas { display:flex; gap:10px; }
   .prev-detail-block { border-bottom:none; padding-bottom:0; margin-top:4px; }
   .prev-detail-ctas .prev-detail-cta { flex:1 1 0; width:auto; }
+  /* ⛔ .cta-now IS STILL LIVE — do not delete it with the button. The green
+     "Request again NOW ⚡️" CTA it was written for was removed 2026-10-04, but
+     the GO-To editor's "Review my GO-To →" carries the same class and would
+     silently drop to the navy default without this. I removed it once on a grep
+     for "\.cta-now", which matches the SELECTOR and never the class= usage, and
+     caught it only on the leftover sweep. Grep the bare token, not the dotted
+     form, before deleting any class. */
   .prev-detail-cta.cta-now { background:var(--green); color:var(--ink-on-green); box-shadow:0 6px 18px rgba(51,217,117,0.30); }
   .prev-detail-cta.cta-now:hover { background:var(--green-dark); }
   @media (max-width:560px){ .prev-detail-ctas { flex-direction:column; } }
@@ -22333,8 +22338,18 @@ const PAY_BADGES = {
           </div>
           ${r.reason ? `<div class="prev-detail-reason"><b>Why:</b> ${r.reason}</div>` : ''}
           <div class="prev-detail-ctas">
-            <button class="prev-detail-cta cta-now" data-prev-now="${r.id}">Request again NOW ⚡️</button>
-            <button class="prev-detail-cta" data-prev-again="${r.id}">Request again w/ edits</button>
+            ${''/* ⛔ "Request again NOW ⚡️" REMOVED 2026-10-04 (owner: "Remove").
+                  It rendered ONLY on this cancelled/expired branch, and these
+                  records carry no `breakdown` — so the one-tap had no price to
+                  re-send and ALWAYS fell through to Review with $0.00 and a
+                  DISABLED Submit. Measured on the live site, not reasoned: it
+                  never did what its label said, on every row it appeared on.
+                  The principle was already written one file over, at the history
+                  card handler: "The one-tap send is what a GO-To is for."
+                  ⚠️ window.__startRequestAgainNow STAYS — GO-To's own one-tap
+                  send calls it (with payKey on Connect). Only this entry point
+                  went. */}
+            <button class="prev-detail-cta" data-prev-again="${r.id}">Request Again</button>
           </div>
         </div>`;
     }
@@ -22366,18 +22381,6 @@ const PAY_BADGES = {
        where that Gopher's card lives. A real destination beats a dead link. */
     const profBtn = panel.querySelector('[data-prev-profile]');
     if(profBtn) profBtn.addEventListener('click', () => { closePrevDetail(); showSection('gophers'); });
-    const nowBtn = panel.querySelector('[data-prev-now]');
-    if(nowBtn) nowBtn.addEventListener('click', () => {
-      // Request NOW ⚡: no picker, no Review — send it exactly as it went out before,
-      // routed back to the same worker when they're one of MY Gophers, timing = ASAP.
-      const names = (DASH_DATA.myGophers || []).map(g => (g && g.name) || g);
-      const prior = String((r && r.worker) || '').trim();
-      const sel = (prior && names.indexOf(prior) !== -1) ? [prior] : [];
-      moveFlowMockupToDashboard();
-      if(typeof window.__startRequestAgainNow === 'function'){ window.__startRequestAgainNow(r, sel); }
-      showSection('new-request');
-    });
-
     const editPanel = document.getElementById('goToEditPanel');
     if(editPanel) editPanel.hidden = true;
     listPanel.hidden = true;
