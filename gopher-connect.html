@@ -11469,6 +11469,14 @@ const PAY_BADGES = {
     },
 
     home: {
+      /* ⛔ "Home / Office Services" HERE, "Home Services" ON REQUEST. Owner,
+         2026-10-04, asked directly: keep Office on Connect. The consumer app
+         dropped it (G40-579) and Request follows the app; Connect sells to
+         businesses, where Office is part of what the category IS.
+         Do NOT make them agree -- see gopher-request.html's matching note.
+         The same shape as the fee noun on the offer line: Request says
+         "Request fees", Connect says "Connect fees", and tidying either pair
+         into one string reintroduces a real bug. */
       icon:'🧹', name:'Home / Office Services', tag:'Services',
       detailsTitle:'What service do you need?',
       detailsSub:'Cleaning, organization, installs — pick what fits and we\'ll handle the rest.',
@@ -23369,7 +23377,7 @@ const PAY_BADGES = {
   const HIRE_AGAIN_CATS = [
     ['delivery','Delivery / Courier','assets/img/px-5025668-400x300.webp'],
     ['moving','Moving','assets/img/px-7464687-400x300.webp'],
-    ['home','Home / Office','assets/img/px-8005368-400x300.webp'],
+    ['home','Home / Office','assets/img/px-8005368-400x300.webp'],   /* Office kept deliberately -- owner 2026-10-04; see the CATEGORIES note above */
     ['labor','Day Labor','assets/img/connect-img.webp'],
     ['junk','Junk Removal','assets/img/connect-junk-removal.webp'],
     ['yard','Yard / Outdoor','assets/img/connect-img-2.webp'],
