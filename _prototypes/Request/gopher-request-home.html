@@ -677,7 +677,7 @@ body{background:#dfe4ec;font-family:'DM Sans',-apple-system,system-ui,sans-serif
   </div>
 
   <!-- bottom nav -->
-  <div class="nav ck ck-abs"><svg class="navbg" viewBox="0 0 288 69.7" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="fbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12306B"/><stop offset="1" stop-color="#071A45"/></linearGradient></defs><path d="M24.2,18.7 H104.05 Q109.58,18.7 109.58,22.44 A19.98 19.98 0 0 0 129.55,42.93 H158.45 A19.98 19.98 0 0 0 178.43,22.44 Q178.43,18.7 183.95,18.7 H263.8 A24.2 24.2 0 0 1 263.8,67.1 H24.2 A24.2 24.2 0 0 1 24.2,18.7 Z" fill="url(#fbar)" stroke="rgba(150,180,235,0.40)" stroke-width="0.6"/><image href="../../assets/img/go-mark.svg" x="113.4" y="6.63" width="61.2" height="32.64"/></svg><button class="fb on" data-gnav="home" style="left:3.82%;" aria-current="page"><svg viewBox="0 0 24 24"><path d="M12 3 2.5 11.5H5V20h5.2v-5.6h3.6V20H19v-8.5h2.5z"/></svg>Home</button><button class="fb" data-gnav="inbox" style="left:21.18%;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12 7.6L3 21l1.9-6A8.4 8.4 0 1 1 21 11.5z"/></svg>Inbox<span id="reqInboxBadge" style="display:none;position:absolute;top:-4px;right:6px;min-width:16px;height:16px;border-radius:8px;background:#D64545;color:#fff;font-size:10px;font-weight:900;font-family:'Nunito';align-items:center;justify-content:center;padding:0 4px;box-shadow:0 0 0 2px #fff;">1</span></button><button class="fbgo" data-gnav="go" aria-label="GO"></button><button class="fb" data-gnav="refer" style="left:63.54%;"><svg viewBox="0 0 24 24"><path d="M12 4.5l2.2 4.6 5 .4-3.8 3.3 1.2 4.9-4.6-2.7-4.6 2.7 1.2-4.9L4.8 9.5l5-.4z"/></svg>Refer</button><button class="fb" data-gnav="help" style="left:80.90%;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.6a2.4 2.4 0 0 1 4.6 1c0 1.6-2.2 2-2.2 3.2"/><circle cx="12" cy="16.6" r=".7"/></svg>Help</button></div>
+  <div class="nav ck ck-abs"><svg class="navbg" viewBox="0 0 288 69.7" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="fbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12306B"/><stop offset="1" stop-color="#071A45"/></linearGradient></defs><path d="M24.2,18.7 H104.05 Q109.58,18.7 109.58,22.44 A19.98 19.98 0 0 0 129.55,42.93 H158.45 A19.98 19.98 0 0 0 178.43,22.44 Q178.43,18.7 183.95,18.7 H263.8 A24.2 24.2 0 0 1 263.8,67.1 H24.2 A24.2 24.2 0 0 1 24.2,18.7 Z" fill="url(#fbar)" stroke="rgba(150,180,235,0.40)" stroke-width="0.6"/><image href="../../assets/img/go-mark.svg" x="113.4" y="6.63" width="61.2" height="32.64"/></svg><button class="fb" data-gnav="account" style="left:3.82%;"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>Account</button><button class="fb" data-gnav="inbox" style="left:21.18%;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12 7.6L3 21l1.9-6A8.4 8.4 0 1 1 21 11.5z"/></svg>Inbox<span id="reqInboxBadge" style="display:none;position:absolute;top:-4px;right:6px;min-width:16px;height:16px;border-radius:8px;background:#D64545;color:#fff;font-size:10px;font-weight:900;font-family:'Nunito';align-items:center;justify-content:center;padding:0 4px;box-shadow:0 0 0 2px #fff;">1</span></button><button class="fbgo" data-gnav="go" aria-label="Go" aria-current="page"></button><button class="fb" data-gnav="refer" style="left:63.54%;"><svg viewBox="0 0 24 24"><path d="M12 4.5l2.2 4.6 5 .4-3.8 3.3 1.2 4.9-4.6-2.7-4.6 2.7 1.2-4.9L4.8 9.5l5-.4z"/></svg>Refer</button><button class="fb" data-gnav="more" style="left:80.90%;"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>More</button></div>
 </div>
 
 <script>
@@ -1322,7 +1322,7 @@ function openBidsList(order){
         +'<button data-bid-act="deny" data-bid-i="'+i+'" style="flex:0.85;border:1.5px solid #C44257;background:#fff;color:#C44257;border-radius:10px;padding:9px;font-family:Nunito;font-weight:800;font-size:12.5px;cursor:pointer;">Deny</button>'
       +'</div></div>';
   }
-  var o=gSheet('Workers interested', '<div id="bidsBody"></div>');
+  var o=gSheet('Gophers Interested', '<div id="bidsBody"></div>');
   function renderBody(){
     var rr=GReq.get(order); var list=(rr&&rr.bidsList)||[];
     var active=sortList(list.filter(function(b){return b.status!=='denied';}));
@@ -2132,16 +2132,16 @@ document.addEventListener('click',function(e){ var t=e.target.closest&&e.target.
   var withMsgs=(GReq.all()||[]).filter(function(r){return (r.messages&&r.messages.length);});
   if(withMsgs.length){ e.preventDefault(); e.stopPropagation(); withMsgs.sort(function(a,b){return (b.unread||0)-(a.unread||0);}); openInboxThread(withMsgs[0].order); }
 }, true);
-// Every footer button is active. home = back to top; GO = start a new request; refer = share sheet;
-// help = Help Center; inbox with no messages = a friendly empty state (the capture handler above opens a
-// thread when there IS one). (Functions documented for all footer buttons.)
+// Every footer button is active (G40-590: Account · Inbox · Go · Refer · More, no Help button). account = the Account sheet;
+// go = the Home screen (back to top, since this IS Home); refer = the refer page; more = the More sheet (which carries
+// Help Center); inbox with no messages = a friendly empty state (the capture handler above opens a thread when there IS one).
 document.addEventListener('click',function(e){
   var t=e.target.closest&&e.target.closest('[data-gnav]'); if(!t) return;
   var k=t.getAttribute('data-gnav');
-  if(k==='home'){ var ph=$('#phone'); if(ph&&ph.scrollTo) ph.scrollTo({top:0,behavior:'smooth'}); else if(ph) ph.scrollTop=0; return; }
-  if(k==='go'){ gotoURL('gopher-request-flow.html'); return; }
+  if(k==='account'){ openAccount(); return; }
+  if(k==='go'){ var ph=$('#phone'); if(ph&&ph.scrollTo) ph.scrollTo({top:0,behavior:'smooth'}); else if(ph) ph.scrollTop=0; return; }
   if(k==='refer'){ gotoURL('gopher-request-refer.html'); return; }
-  if(k==='help'){ openHelpCenter(); return; }
+  if(k==='more'){ openMore(); return; }
   if(k==='inbox'){ gotoURL('gopher-request-inbox.html'); return; }
 });
 function openReferSheet(){
@@ -2227,7 +2227,7 @@ function openDetails(order){
   // Same completed gap as the subtitle above - see the note there.
   var stat=r.stage==='active'?'In progress':(r.stage==='scheduled'?'Scheduled':(r.stage==='completed'?(r.confirmed?'Completed':'Completed · confirm to release payment'):(r.stage==='accepted'?'Gopher accepted':'Finding Gophers near you')));
   var row=function(l,v){ return (v!=null&&v!=='')?'<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #f0eef2;font-family:\'DM Sans\',sans-serif;font-size:13px;"><span style="color:#8a94a3;font-weight:600;flex:0 0 auto;">'+l+'</span><span style="color:#002461;font-weight:700;text-align:right;max-width:62%;">'+v+'</span></div>':''; };
-  var wc=+r.workers||1;
+  var wc=+r.workers||1, gph=['moving','junk','labor','home','ride','other'].indexOf(r.cat)>=0;   // the completed categories say "Gopher", never "worker" (909 desk, 2026-10-04)
   var html='<div style="margin-top:4px;">'
     +row('Order','#'+r.order)
     +row('Status', stat)
@@ -2237,21 +2237,21 @@ function openDetails(order){
     +(r.deliveryType?row('Delivery type', esc(r.deliveryType)):'')
     +(r.riders>0?row('Riders', r.riders):'')
     +(r.bags>0?row('Large bags', r.bags):'')   /* Need a Ride only, only when above 0 (NR-05 / NR-20) */
-    +((wc>1||r.payByHour)?row('Worker info', wc+' worker'+(wc>1?'s':'')+(r.payByHour?' \u00b7 '+(r.numHours||1)+'hr':'')):'')
+    +((wc>1||r.payByHour)?row(gph?'Gopher info':'Worker info', wc+(gph?' Gopher':' worker')+(wc>1?'s':'')+(r.payByHour?' \u00b7 '+(r.numHours||1)+'hr':'')):'')
     +(hasPickup?row('Pick-up', esc(r.pickup)):'')
     +row(hasPickup?'Destination':'Location', esc(r.dropoff||'\u2014'))
-    +(r.dist?row('Distance', esc(r.dist)+(/mi/i.test(r.dist)?'':' mi')):'')
+    +((r.dist && hasPickup)?row('Distance', esc(r.dist)+(/mi/i.test(r.dist)?'':' mi')):'')   /* a trip distance means nothing on a single-location job (Junk, Home, Labor, Yard, Custom Task) */
    /* Access details — same facts the worker sees, so the two sides never disagree. */
    +(function(){var L=[];var ps=+r.pickupStairs||0,ds=+r.destStairs||0;
      if(ps) L.push(ps+' flight'+(ps>1?'s':'')+' at pick-up'+(r.serviceElevatorPickup?' (service elevator available)':''));
      if(ds) L.push(ds+' flight'+(ds>1?'s':'')+' at destination'+(r.serviceElevatorDest?' (service elevator available)':''));
      return L.length?row('Stairs', L.join('<br>')):''; })()
     +'<div style="height:10px;"></div>'
-    +row(wc>1?'Payment to workers':'Worker takes home', bids?'Pending bids':(money((+r.pay||0)*wc)+(wc>1?' <span style="color:#8a94a3;font-weight:600;">('+wc+' × '+money(r.pay)+')</span>':'')))
+    +row(wc>1?(gph?'Payment to Gophers':'Payment to workers'):(gph?'Gopher takes home':'Worker takes home'), bids?'Pending bids':(money((+r.pay||0)*wc)+(wc>1?' <span style="color:#8a94a3;font-weight:600;">('+wc+' × '+money(r.pay)+')</span>':'')))
     +((+r.cost>0)?row('Cost of items', money(r.cost)):'')
     +row('Total', bids?'TBD after bid':(r.amount||money((+r.pay||0)+(+r.cost||0))))
     +'</div>';
-  gSheet('Request details', html+(r.hired?'<div class="gs-hint">Hired: '+esc(r.hired)+'</div>':'<div class="gs-hint">We\u2019ll notify you the moment a Gopher accepts.</div>')+__reqCancelAffordance(r)+__reqReportAffordance(r));
+  gSheet('Request details', html+(r.hired?'<div class="gs-hint">Hired: '+esc(r.hired)+'</div>':((r.attention&&r.attention.label)?'<div class="gs-hint"><b>'+esc(r.attention.label)+'</b></div>':r.stage==='accepted'?'<div class="gs-hint"><b>'+(r.accepted||1)+' Gopher'+((r.accepted||1)!==1?'s':'')+'</b> accepted \u2014 ready to review</div>':'<div class="gs-hint">We\u2019ll notify you the moment a Gopher accepts.</div>'))   /* A Gopher who has accepted (or countered) is shown in the card's own words; the sheet used to say "Gopher accepted" and then promise to notify when one accepts. */+__reqCancelAffordance(r)+__reqReportAffordance(r));
 }
 // Deals launch gate (Raleigh DMA only) \u2014 same flag the home Deals section honors.
 function __dealsLive(){ try{ return localStorage.getItem('gopherDealsLive')!=='0'; }catch(_){ return true; } }
@@ -2319,6 +2319,10 @@ document.addEventListener('click',function(e){
     if(k==='website'){ try{window.open('https://gophergo.io','_blank','noopener');}catch(_){} toast('Opening gophergo.io \u2192'); return; }
     if(k==='blog'){ try{window.open('https://gophergo.io/blog','_blank','noopener');}catch(_){} toast('Opening the Gopher blog \u2192'); return; }
     if(k==='contact'){ toast('Connecting you to support\u2026'); return; }
+    if(k==='services'){ try{window.open('https://www.gophergo.io/services','_blank','noopener');}catch(_){} toast('Opening gophergo.io/services \u2192'); return; }
+    if(k==='becomegopher'){ try{window.open('https://gophergo.io/become-a-gopher','_blank','noopener');}catch(_){} toast('Opening Become A Gopher \u2192'); return; }
+    if(k==='blocked'){ openBlocked(); return; }
+    if(k==='delete'){ gClose(); openDeleteAccount(); return; }
   }
   var faq=e.target.closest('[data-faq]'); if(faq){ faq.classList.toggle('open'); return; }
   var hcs=e.target.closest('.hc-send'); if(hcs){ var sh=hcs.closest('.sheet'); var m=sh&&sh.querySelector('.hc-msg'); if(m&&!m.value.trim()){ try{if(window.toast)toast('Add a short message first');}catch(_){}; return; } var tp=sh&&sh.querySelector('.hc-topic'); try{if(window.toast)toast('Message sent'+(tp?(' · '+tp.value):'')+' — we’ll be in touch');}catch(_){}; if(m)m.value=''; return; }
@@ -2815,6 +2819,24 @@ function openPayments(){
 }
 function openNotifSettings(){ gSheet('Notification settings','<div class="gs-list" style="margin-top:6px;"><div class="gs-li">Request updates \u2014 <b>On</b></div><div class="gs-li">Deals near me \u2014 <b>On</b></div><div class="gs-li">Rewards & referrals \u2014 <b>On</b></div><div class="gs-li">Product news \u2014 Off</div></div>'); }
 function openAccount(){ gSheet('Account','<div class="pts-hero" style="background:var(--navy);"><div class="pts-n" style="font-size:22px;">John Newbury</div><div class="pts-l">Signed in \u00B7 TrustShield pending</div></div><div class="gs-list" style="margin-top:12px;"><div class="gs-li" data-goto="profile"><b>My Profile</b></div><div class="gs-li" data-goto="addresses"><b>Saved addresses</b></div><div class="gs-li" data-goto="payments"><b>Payment methods</b></div><div class="gs-li" data-goto="notifsettings"><b>Notification settings</b></div><div class="gs-li" data-goto="history"><b>Request History</b></div><div class="gs-li" data-goto="help"><b>Help Center</b></div><div class="gs-li" data-goto="terms"><b>Terms & Privacy</b></div></div><div class="gs-hint"><span class="gs-link" data-goto="signout">Sign out</span></div>'); }
+/* More — mirrors the live Request app's More screen ("More Stuff", src/json/requester/more.json): Services Offered, Social Media
+   Links, MY Gophers, Blocked Gophers, Gopher Website, Become A Gopher, Terms & Conditions, Contact Us, Sign Out, Delete Account.
+   Plus one Help Center row, because the footer no longer has a Help button (G40-590). */
+function openMore(){
+  var row=function(k,l){ return '<div class="gs-li" data-goto="'+k+'"><b>'+l+'</b></div>'; };
+  gSheet('More Stuff','<div class="gs-list" style="margin-top:6px;">'
+    +row('services','Services Offered')+row('social','Social Media Links')+row('mygophers','MY Gophers')+row('blocked','Blocked Gophers')
+    +row('website','Gopher Website')+row('becomegopher','Become A Gopher')+row('terms','Terms &amp; Conditions')
+    +row('hc-contact','Contact Us')+row('help','Help Center')
+    +'</div><div class="gs-list" style="margin-top:12px;">'+row('signout','Sign Out')+'<div class="gs-li" data-goto="delete" style="color:#C44257;"><b>Delete Account</b></div></div>');
+}
+function openBlocked(){ gSheet('Blocked Gophers','<div style="text-align:center;color:#8a94a3;font-family:\'DM Sans\',sans-serif;font-size:12.5px;line-height:1.55;padding:24px 12px;">No blocked Gophers.<br>If you block a Gopher after a request, they\u2019ll never be matched to you again \u2014 and you can manage the list here.</div>'); }
+function openDeleteAccount(){
+  var o=gModal('<h3 class="gm-h">Delete your account?</h3><p class="gm-p">This permanently removes your Gopher account, saved addresses and payment methods. Active requests must be completed or cancelled first. This is a demo \u2014 nothing is deleted.</p>'
+    +'<button class="gm-del" style="width:100%;margin-top:12px;padding:13px;border:0;border-radius:12px;background:#C44257;color:#fff;font-family:Nunito;font-weight:800;font-size:14px;cursor:pointer;">Delete account</button>'
+    +'<button class="gm-close" style="width:100%;margin-top:9px;padding:11px;border:1.5px solid #e2ddd0;background:#fff;color:#5b6472;border-radius:12px;font-family:Nunito;font-weight:800;font-size:13px;cursor:pointer;">Cancel</button>');
+  var d=o.querySelector('.gm-del'); if(d) d.onclick=function(){ try{ var c=o.querySelector('.gm-close'); if(c) c.click(); }catch(_){} toast('Account deletion requested (demo \u2014 nothing was deleted)'); };
+}
 function openActivity(){ var act=''; if(typeof PEND!=='undefined' && PEND){ act='<div class="gs-sech">Active</div><div class="gs-list"><div class="gs-li"><b>'+PEND.title+'</b> \u00B7 '+(PEND.amount||'')+'<br>'+(PEND.stage==='matched'?('Matched with '+PEND.hired):'Finding a Gopher\u2026')+' \u00B7 <span class="gs-link" data-pending-action="track">Track</span></div></div>'; } else { act='<div class="gs-sech">Active</div><p class="gs-sub">No active request right now.</p>'; } gSheet('Activity', act+'<div class="gs-sech">Past requests</div><div class="gs-list"><div class="gs-li"><b>Grocery + pharmacy run</b> \u00B7 $24.91 \u00B7 Completed \u00B7 5\u2605<br><span class="gs-link" data-goto="flow">Request again \u2192</span></div><div class="gs-li"><b>Lawn mowing</b> \u00B7 $45 \u00B7 Completed \u00B7 5\u2605</div><div class="gs-li">Furniture moving \u00B7 Cancelled</div></div>'); }
 document.addEventListener('click',function(e){
   var g=e.target.closest('[data-goto]'); if(g){ var k=g.dataset.goto;
@@ -2835,7 +2857,7 @@ document.addEventListener('click',function(e){
   }
   var ad=e.target.closest('[data-addr]'); if(ad){ var v=ad.dataset.addr; var loc=document.querySelector('.loc'); if(loc){ var t=v==='current'?'Apex, NC 27502':v.split(',').slice(-2).join(',').trim(); } gClose(); toast('Location updated'); return; }
 });
-(function(){ try{ var sp=new URLSearchParams(location.search).get('sheet'); if(sp==='account') setTimeout(openAccount,60); else if(sp==='activity') setTimeout(openActivity,60); }catch(_){} })();
+(function(){ try{ var sp=new URLSearchParams(location.search).get('sheet'); if(sp==='account') setTimeout(openAccount,60); else if(sp==='more') setTimeout(openMore,60); else if(sp==='activity') setTimeout(openActivity,60); }catch(_){} })();
 
 /* ===== app-shell embed shim: when inside the Gopher Request simulator, escalate the
    Account/Activity tabs (placeholder stubs here) up to the shell. No effect standalone. ===== */
@@ -3120,18 +3142,18 @@ document.addEventListener('click',function(e){
     html+='<div class="rd-sum"><span class="rd-pending">PENDING</span>'
       +'<div class="rd-sum-t">'+REQ.icon+' '+REQ.title+' \u00b7 '+REQ.note+'</div>'
       +'<div class="rd-sum-m">'+REQ.order+' \u00b7 '+money(TOTAL)+' total \u00b7 Just now \u00b7 awaiting your selection</div>'
-      +'<div class="rd-sum-w">'+(interested.length+considered.length)+' worker'+((interested.length+considered.length)!==1?'s':'')+' interested</div></div>';
+      +'<div class="rd-sum-w">'+(interested.length+considered.length)+' Gopher'+((interested.length+considered.length)!==1?'s':'')+' interested</div></div>';
     // hire approved
     if(hired.length){
-      html+='<div class="rd-sec">Hire Approved <span class="rd-count">Lead worker</span></div>';
+      html+='<div class="rd-sec">Hire Approved <span class="rd-count">Lead Gopher</span></div>';
       hired.forEach(function(w){ html+=workerRow(w,'hired'); });
-      html+='<div class="rd-bank"><div class="rd-bank-l"><div class="rd-bank-hd">Lead worker hired \u00b7 crew of '+REQUESTED+'</div>'
+      html+='<div class="rd-bank"><div class="rd-bank-l"><div class="rd-bank-hd">Lead Gopher hired \u00b7 crew of '+REQUESTED+'</div>'
         +'<div class="rd-bank-amt">'+money(adj)+'</div>'
-        +'<div class="rd-bank-sub">You pay your lead worker the full amount \u2014 they bring and pay the rest of the crew.</div></div>'
+        +'<div class="rd-bank-sub">You pay your lead Gopher the full amount \u2014 they bring and pay the rest of the crew.</div></div>'
         +'<button class="rd-start" data-rd="start">Start Job \u2192</button></div>';
     }
     // workers interested
-    html+='<div class="rd-sec muted">Workers Interested <span class="rd-count">'+interested.length+'</span></div>';
+    html+='<div class="rd-sec muted">Gophers Interested <span class="rd-count">'+interested.length+'</span></div>';
     if(interested.length){
       html+='<div class="rd-sort"><span class="rd-sort-l">SORT BY</span>'
         +'<button class="rd-sortc'+(sortBy==='dist'?' on':'')+'" data-rd="sort" data-k="dist">Distance \u2191 Low to high</button>'
@@ -3168,7 +3190,7 @@ document.addEventListener('click',function(e){
     var html='<div class="rd-sum">'
       +'<span class="rd-statuspill'+(done?' done':'')+'">'+(done?'COMPLETED':'IN PROGRESS')+'</span>'
       +'<div class="rd-sum-t">'+REQ.icon+' '+REQ.title+' \u00b7 '+REQ.note+'</div>'
-      +'<div class="rd-sum-m">'+REQ.order+' \u00b7 '+money(paid)+' total \u00b7 lead worker on the job \u00b7 crew of '+REQUESTED+'</div>'
+      +'<div class="rd-sum-m">'+REQ.order+' \u00b7 '+money(paid)+' total \u00b7 lead Gopher on the job \u00b7 crew of '+REQUESTED+'</div>'
       +'<div class="rd-prog"><div class="rd-prog-bar"><i style="width:'+pct+'%"></i></div><span>'+pct+'%</span></div></div>';
     html+='<button class="rd-live" data-rd="live">\uD83D\uDCE1 View Live Activity</button>';
     /* Owner 7/28: keep the original "Your Crew" heading. The COUNT that used to sit
@@ -3323,7 +3345,7 @@ html+='<div class="rd-sec">Your Crew</div>';
       // REQUESTED says. The hire is the LEAD, responsible for bringing AND paying the rest.
       // Individually hiring >1 is CONNECT-only (laborManagement 'individually'). REQUESTED
       // stays as crew size and drives labels/pricing only.
-      if(by('hired').length>=1){ toast('You hire one worker \u2014 remove them to pick someone else.'); return; }
+      if(by('hired').length>=1){ toast('You hire one Gopher \u2014 remove them to pick someone else.'); return; }
       w.state='hired'; w.just=false; toast('Hired '+w.name);
     }
     else if(act==='consider'){ w.state='considered'; w.just=false; toast('Moved '+w.name+' to Considered'); }
@@ -3335,7 +3357,7 @@ html+='<div class="rd-sec">Your Crew</div>';
   });
   // ---- Start-Job confirmation modals (mirror web pop-ups, fitted to phone) ----
   function closeModal(){ modal.classList.remove('open'); modal.innerHTML=''; }
-  function doStart(){ var n=by('hired').length; closeModal(); started=true; view='active'; liveStart(); render(); if(window.__onJobStarted){ try{window.__onJobStarted();}catch(_){ } } toast(n?'Job started with your lead worker \u2014 great pick!':'Job started'); }
+  function doStart(){ var n=by('hired').length; closeModal(); started=true; view='active'; liveStart(); render(); if(window.__onJobStarted){ try{window.__onJobStarted();}catch(_){ } } toast(n?'Job started with your lead Gopher \u2014 great pick!':'Job started'); }
   function showStartConfirm(){
     // REQUEST HIRE RULE (owner 7/28): "1 worker accepted on ALL requests is max with every
     // request" — so starting early is MOOT in Request. There is no partial-crew state to warn
@@ -3345,8 +3367,8 @@ html+='<div class="rd-sec">Your Crew</div>';
     // unreachable and is deleted rather than reworded.
     modal.innerHTML='<div class="rdm-card"><button class="rdm-x" data-rdm="close" aria-label="Close">\u00D7</button>'
       +'<div class="rdm-ic go">\uD83D\uDE80</div>'
-      +'<h3 class="rdm-h">Your lead worker is selected!</h3>'
-      +'<p class="rdm-p">Please select Start Job so we can move your request into your Dashboard. There you can communicate with your lead worker and track the progress by tapping View Live Activity in the Request Details section.</p>'
+      +'<h3 class="rdm-h">Your lead Gopher is selected!</h3>'
+      +'<p class="rdm-p">Please select Start Job so we can move your request into your Dashboard. There you can communicate with your lead Gopher and track the progress by tapping View Live Activity in the Request Details section.</p>'
       +'<div class="rdm-acts"><button class="rdm-btn primary" data-rdm="go">Start Job</button></div></div>';
     modal.classList.add('open');
   }

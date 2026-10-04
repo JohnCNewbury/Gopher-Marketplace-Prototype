@@ -1396,7 +1396,10 @@ const esc = (s)=> String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 
 const STEP_TITLES = ['Pick a service','Job details','Worker info','Locations','Worker pay','Review','Submitted'];
 
-function workerCount(){ return state.moreThanOneWorker ? (parseInt(state.numWorkers,10)||1) : 1; }
+/* Crew size counts ONLY where the crew control exists. `moreThanOneWorker` is not category-scoped, so a crew of 3 set on Labor
+   survived a Change-service to Delivery / Home / Ride, where the control is hidden: one delivery was priced for three workers
+   ($130.67) with no way to see or undo it. (Logic sweep, 2026-10-04.) */
+function workerCount(){ return (state.moreThanOneWorker && isVisible('workerSetup')) ? (parseInt(state.numWorkers,10)||1) : 1; }
 function perWorkerPay(){ const r=toNum(state.payAmount); return state.payByHour ? r*(parseInt(state.numHours,10)||1) : r; }
 function workerPayTotal(){ return perWorkerPay()*workerCount(); }
 // Bids stay available for >1-worker requests — the single bidder is responsible for paying the WHOLE
@@ -1614,7 +1617,7 @@ function renderStep2(){
       <div class="toggle-row">
         <button class="toggle-switch ${state.hazardous?'on':''}" data-toggle="hazardous"></button>
         <span class="tr-label">Includes hazardous material
-          ${infoTip('haz','Hazardous material',['Flammable, corrosive, or otherwise hazardous items need a specialized worker.'],'May include an extra fee for safe disposal.')}
+          ${infoTip('haz','Hazardous material',[gwd('Flammable, corrosive, or otherwise hazardous items need a specialized worker.')],'May include an extra fee for safe disposal.')}
         </span>
       </div>`:''}
     </div>`;
@@ -1639,10 +1642,15 @@ const NO_FIRST_CATS=['moving','junk','labor','home'];   // Need a Ride is in GOP
 function noFirst(){ return NO_FIRST_CATS.indexOf(state.category)>=0; }
 function pickUnitOn(){ return state.category==='moving' || state.category==='ride'; }   // Unit/Apt # under the pick-up address
 function isGoph(){ return GOPHER_CATS.indexOf(state.category)>=0; }
+/* WORDING ONLY: the completed categories, now including Custom Task (G40-573 is done), say "Gopher" — everything behavioural still keys off isGoph(). */
+function isGophW(){ return isGoph() || state.category==='other'; }
 /* Need ASAP stays open about 6 hours for the SERVICE categories (Home Services, Moving, Junk Removal, Yard Project,
    Hourly / Day Labor — backend SERVICE_ORDERS, create.js ~530) and 1 hour for Delivery, Need a Ride and Custom Task / Other. */
 const SERVICE_CATS=['home','moving','junk','yard','labor'];
 function asapHours(){ return SERVICE_CATS.indexOf(state.category)>=0 ? 6 : 1; }
+/* The completed categories speak "Gopher", never "worker" (the 909 desk's standing rule, 2026-10-04; John's Step 3 label "I'll select my
+   worker" and Labor's "Pay by the hour instead" are the only exceptions and are written out in full below, not passed through this). */
+function gwd(s){ return isGophW() ? String(s).replace(/\bworkers\b/g,'Gophers').replace(/\bworker\b/g,'Gopher').replace(/\bWorkers\b/g,'Gophers').replace(/\bWorker\b/g,'Gopher') : s; }
 function sstI(ico){ return isGoph() ? '' : '<span class="sst-ico">'+ico+'</span>'; }
 function infoTip(id,title,paras,emphasis){
   const open = state.openInfo===id;
@@ -1664,7 +1672,7 @@ function renderStep3(){
 
   if(isVisible('workerSetup')){
     any=true;
-    const mv=isGoph(), noHr=(state.category==='moving'||state.category==='junk'), unit=mv?'Gopher':'worker';   // Moving + Junk: no hourly (Connect feature)
+    const mv=isGophW(), noHr=(state.category==='moving'||state.category==='junk'), unit=mv?'Gopher':'worker';   // Moving + Junk: no hourly (Connect feature)
     h+=`<div class="step-section">
       <div class="sst">${sstI(svgIco('worker'))}${mv?'Gopher setup':'Worker setup'}</div>
       <div class="toggle-row">
@@ -1752,7 +1760,7 @@ function renderStep4(){
         <span class="tr-label">${state.category==='moving' ? 'Single-location move' : 'Pickup location is flexible'}
           ${state.category==='moving'
             ? infoTip('nsp','Single-location move',['Just need moving help at <b>ONE</b> address? Slide this on.','Your Gopher helps on-site — loading, unloading, rearranging — and will NOT travel between two locations.','Enter the move address under Destination below.'])
-            : infoTip('nsp','No specific pick-up',['Either the worker can purchase your items anywhere they\'re available, or there\'s no actual pick-up spot for this request.'])}
+            : infoTip('nsp','No specific pick-up',[gwd('Either the worker can purchase your items anywhere they\'re available, or there\'s no actual pick-up spot for this request.')])}
         </span>
       </div>`:''}
       ${state.noSpecificPickup && isVisible('noSpecificPickup') ? `
@@ -1834,7 +1842,7 @@ function renderStep5(){
      $60 whole-job threshold. Moving and Junk are the overlap categories — priced
      model AND an hourly option — so this is reachable, not theoretical. */
   const lowOffer = !state.payByHour && state.payMode==='set' && oneWorkerPay>0 && lowThresh>0 && oneWorkerPay < lowThresh && !state.lowOfferAck;
-  const gw=isGoph()?'Gopher':'worker';
+  const gw=isGophW()?'Gopher':'worker';
   let h=`<div class="step-head"><h3>How would you like to pay your ${gw}?</h3>
     </div>
     <div class="radio-group">
@@ -1855,7 +1863,7 @@ function renderStep5(){
             and Ride, and the hourly branch hides it for Labor/Yard — the field
             carries the FULL sheet (OWN_PRICE_SHEET). Where the radio exists it
             carries the sheet instead, so a category never shows two ?s. */}
-      <div class="sf-label">${isGoph() ? (state.payByHour?'Your hourly offer to your Gopher':'Your offer to your Gopher') : (state.payByHour?'Your hourly offer to the worker':'Your offer to the worker')}
+      <div class="sf-label">${isGophW() ? (state.payByHour?'Your hourly offer to your Gopher':'Your offer to your Gopher') : (state.payByHour?'Your hourly offer to the worker':'Your offer to the worker')}
         ${!showBids ? infoTip('earn',ownTitle(),OWN_PRICE_SHEET) : ''}
       </div>
       <div class="cost-input-box"><span class="ci-currency">$</span>
@@ -1895,7 +1903,7 @@ function renderWageSummary(rate){
   }
   const per=(rate*hours).toFixed(2), comb=(rate*hours*w).toFixed(2);
   return `<div class="wage-summary">
-    <div class="wage-row"><span class="wage-label">Per worker wage</span><span class="wage-value">$${per} <small>(${hours} hr${hours!==1?'s':''} × $${rate.toFixed(2)})</small></span></div>
+    <div class="wage-row"><span class="wage-label">${isGophW()?'Per Gopher wage':'Per worker wage'}</span><span class="wage-value">$${per} <small>(${hours} hr${hours!==1?'s':''} × $${rate.toFixed(2)})</small></span></div>
     <div class="wage-row total"><span class="wage-label">Combined wages</span><span class="wage-value">$${comb} <small>(${w} × $${per})</small></span></div>
   </div>`;
 }
@@ -2034,7 +2042,7 @@ function renderStep6(){
   if(isVisible('addPic') && state.picThumbs.length) rows+=`<div class="review-row"><span class="rl">Pics</span><span class="rv"><div class="review-thumbs">${state.picThumbs.map(t=>`<div class="review-thumb">${t}</div>`).join('')}</div></span></div>`;
   if(state.category==='delivery') rows+=`<div class="review-row"><span class="rl">Delivery type</span><span class="rv">${state.ageRestricted?'Age-restricted · ':''}${state.itemsPurchased?'Purchase needed':'Items in hand'}</span></div>`;
   if(isVisible('riderInfo')) rows+=`<div class="review-row"><span class="rl">Riders</span><span class="rv">${(parseInt(state.numRiders,10)||1)} rider${(parseInt(state.numRiders,10)||1)===1?'':'s'}</span></div><div class="review-row"><span class="rl">Large bags</span><span class="rv">${state.numBags}</span></div>`;
-  if(isVisible('workerSetup')) rows+=`<div class="review-row"><span class="rl">${isGoph()?'Gopher info':'Worker info'}</span><span class="rv">${wCount} ${isGoph()?'Gopher':'worker'}${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`;
+  if(isVisible('workerSetup')) rows+=`<div class="review-row"><span class="rl">${isGophW()?'Gopher info':'Worker info'}</span><span class="rv">${wCount} ${isGophW()?'Gopher':'worker'}${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`;
   if(isVisible('itemInfo')) rows+=`<div class="review-row"><span class="rl">Item info</span><span class="rv">${state.itemCount} item${state.itemCount>1?'s':''}${state.multipleItems?' · mixed':''}${state.hazardous?' · hazmat':''}</span></div>`;
   if(isVisible('pickupSection')){
     rows+= state.noSpecificPickup
@@ -2053,7 +2061,7 @@ function renderStep6(){
   if(showCost) rows+=`<div class="review-row"><span class="rl">Cost of items</span><span class="rv">${fmt(costNum)}</span></div>`;
 
   // Payment to your worker(s) (single row; per-worker math lives in the info button)
-  rows+=`<div class="review-row earn"><span class="rl">${isGoph() ? 'Your offer to your Gopher' : ((wCount===1?'Your offer to the worker':'Your offer to the workers') + ' ' + workerPayTip(bids,wCount,perW,wPay))}</span>
+  rows+=`<div class="review-row earn"><span class="rl">${isGophW() ? 'Your offer to your Gopher' : ((wCount===1?'Your offer to the worker':'Your offer to the workers') + ' ' + workerPayTip(bids,wCount,perW,wPay))}</span>
     <span class="rv">${bids?'Pending bids':fmt(wPay)}</span></div>`;
 
   // Request fee with breakdown popover
@@ -2120,10 +2128,10 @@ function renderStep6(){
     // Need ASAP requests expire — be explicit up front (1-hour broadcast window).
     if(state.scheduleType==='now') wteSteps.splice(1,0,
       `<b>Need ASAP</b> requests stay live for ${asapHours()>1?'about ':''}<b>${asapHours()} hour${asapHours()>1?'s':''}</b> — if no worker accepts in that time, the request <b>expires</b>. You're never charged for an expired request, and you can resubmit anytime.`);
-    if(isGoph()) for(let i=0;i<wteSteps.length;i++) wteSteps[i]=wteSteps[i].replace(/workers/g,'Gophers').replace(/worker/g,'Gopher');
+    if(isGophW()) for(let i=0;i<wteSteps.length;i++) wteSteps[i]=wteSteps[i].replace(/workers/g,'Gophers').replace(/worker/g,'Gopher');
     const wteSub = bids
-      ? `A quick rundown of how bidding and the worker handoff work — so there are no surprises.`
-      : `A quick rundown of how billing and the worker handoff work — so there are no surprises.`;
+      ? gwd(`A quick rundown of how bidding and the worker handoff work — so there are no surprises.`)
+      : gwd(`A quick rundown of how billing and the worker handoff work — so there are no surprises.`);
     h+=`<div class="sse-block wte-block ${state.wteOpen?'open':''}" style="margin-top:18px;">
       <div class="sse-head" data-action="toggle-wte">
         <span class="sse-brain" style="display:flex;align-items:center;justify-content:center;font-size:22px;">🧾</span>
@@ -2205,7 +2213,7 @@ function reviewFeeTip(fee,cog,bids){
     <button class="info-btn" aria-label="Request fee breakdown">?</button>
     <span class="info-popover fee-popover"><h5>Request fee breakdown</h5>
       <div class="fee-items">
-        <div class="fee-item"><span>Offer to worker</span><span>${bids?'Pending':fmt(offerWorker)}</span></div>
+        <div class="fee-item"><span>${isGophW()?'Offer to your Gopher':'Offer to worker'}</span><span>${bids?'Pending':fmt(offerWorker)}</span></div>
         ${costItems>0?`<div class="fee-item"><span>Cost of items</span><span>${fmt(costItems)}</span></div>`:''}
         <div class="fee-item"><span>Gopher Fee</span><span>${fmt(fee.fullGopherFee)}</span></div>
         ${fee.fullAgeFee?`<div class="fee-item"><span>Age-Restricted Fee</span><span>${fmt(fee.fullAgeFee)}</span></div>`:''}
@@ -2215,7 +2223,7 @@ function reviewFeeTip(fee,cog,bids){
         ${fee.promo?`<div class="fee-item fee-item-promo"><span>${fee.promo.label} (${fee.promo.desc})</span><span>−${fmt(fee.promoDiscount)}</span></div>`:''}
         <div class="fee-item fee-item-total"><span>Total Cost</span><span>${bids?'TBD':fmt(fee.gmvTotal)}</span></div>
       </div>
-      <p class="fee-note">The 8% instant transfer is charged on the full request (offer + items + fees) and triggers your worker’s instant payout once the job is complete. Promo codes take their percentage off the entire fee bundle — Gopher Fee, any age-restricted fee, and the instant transfer; TrustShield takes a flat $1 off. Discounts never reduce your offer or item costs.</p>
+      <p class="fee-note">${gwd('The 8% instant transfer is charged on the full request (offer + items + fees) and triggers your worker’s instant payout once the job is complete.')} Promo codes take their percentage off the entire fee bundle — Gopher Fee, any age-restricted fee, and the instant transfer; TrustShield takes a flat $1 off. Discounts never reduce your offer or item costs.</p>
     </span></span>`;
 }
 function renderPromo(){
@@ -2237,11 +2245,11 @@ function renderSSE(){
   return `<div class="sse-block ${state.sseOpen?'open':''}${assertive?' attn-pulse':''}">
     <div class="sse-head" data-action="toggle-sse">
       <span class="sse-brain"><img src="${GOPHER_IQ_SRC}" alt="Gopher iQ"></span>
-      <div class="sse-head-text"><h4>${allClear?'Gopher iQ reviewed your request 👍':'Want a second set of eyes?'}</h4><p>${allClear?"Everything looks good, neighbor — a worker will know exactly what you're asking for.":'Let Gopher review your request and suggest anything worth adding.'}</p></div>
+      <div class="sse-head-text"><h4>${allClear?'Gopher iQ reviewed your request 👍':'Want a second set of eyes?'}</h4><p>${allClear?gwd("Everything looks good, neighbor — a worker will know exactly what you're asking for."):'Let Gopher review your request and suggest anything worth adding.'}</p></div>
       <span class="sse-chev">${state.sseOpen?'▲':'▼'}</span>
     </div>
     ${state.sseOpen?`<div class="sse-body">
-      ${allClear?`<div class="sse-affirm">✓ Everything looks good, neighbor. Gopher iQ feels a worker would be clear on what you're asking for.</div>`:`
+      ${allClear?`<div class="sse-affirm">✓ Everything looks good, neighbor. ${gwd('Gopher iQ feels a worker would be clear on what you\'re asking for.')}</div>`:`
       ${thin?`<div class="sse-flag">Your description looks a little brief — adding detail helps Gophers decide if they're the right fit.</div>`:''}
       ${ageMiss?`<div class="sse-flag">Most age-restricted items can't be purchased in advance. If you <b>do</b> need items purchased, jump to <b>Job details</b> and enter the cost.</div>`:''}
       <p class="sse-intro">${adv.intro}</p>
@@ -2249,9 +2257,9 @@ function renderSSE(){
       <p class="sse-cta">Left something out? Jump straight to a section to refine it:</p>
       <div class="sse-jumps">
         <button class="sse-jump" data-jump="2">Job details →</button>
-        ${(isVisible('workerSetup')||isVisible('workerSelectChoice'))?`<button class="sse-jump" data-jump="3">Worker info →</button>`:''}
+        ${(isVisible('workerSetup')||isVisible('workerSelectChoice'))?`<button class="sse-jump" data-jump="3">${isGophW()?'Gopher info':'Worker info'} →</button>`:''}
         <button class="sse-jump" data-jump="4">Locations →</button>
-        <button class="sse-jump" data-jump="5">Worker pay →</button>
+        <button class="sse-jump" data-jump="5">${isGophW()?'Gopher pay':'Worker pay'} →</button>
       </div>
       <p class="sse-fine">Gopher's suggestions are general guidance for the <b>${(CATEGORIES[state.category]||{}).name||'selected'}</b> category — you know your job best.</p>
       `}
@@ -2271,14 +2279,14 @@ function renderStep7(){
   const costNum=(state.itemsPurchased && state.category==='delivery') ? currentItemCost() : 0;
   // Full detail rows — the submitted summary shows everything the requester entered (not an abbreviation).
   const wCount=workerCount();
-  const hasPickup=!state.noSpecificPickup && !!pickupAddr().trim();
+  const hasPickup=isVisible('pickupSection') && !state.noSpecificPickup && !!pickupAddr().trim();   // Junk/Home/Labor/Yard/Other never ask for a pick-up; the default address must not surface as one on the submitted summary
   const desc=(state.description||'').trim();
   const deliveryType=(state.category==='delivery')?((state.ageRestricted?'Age-restricted · ':'')+(state.itemsPurchased?'Purchase needed':'Items in hand')):'';
   const detailRows=
     (desc?`<div class="review-row"><span class="rl">Details</span><span class="rv" style="max-width:60%;text-align:right;">${esc(desc)}</span></div>`:'')
     +(deliveryType?`<div class="review-row"><span class="rl">Delivery type</span><span class="rv">${deliveryType}</span></div>`:'')
     +(isVisible('riderInfo')?`<div class="review-row"><span class="rl">Riders</span><span class="rv">${parseInt(state.numRiders,10)||1}</span></div>`+((parseInt(state.numBags,10)||0)>0?`<div class="review-row"><span class="rl">Large bags</span><span class="rv">${parseInt(state.numBags,10)}</span></div>`:''):'')
-    +((wCount>1||state.payByHour)?`<div class="review-row"><span class="rl">${isGoph()?'Gopher info':'Worker info'}</span><span class="rv">${wCount} ${isGoph()?'Gopher':'worker'}${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`:'')
+    +((wCount>1||state.payByHour)?`<div class="review-row"><span class="rl">${isGophW()?'Gopher info':'Worker info'}</span><span class="rv">${wCount} ${isGophW()?'Gopher':'worker'}${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`:'')
     +(hasPickup?`<div class="review-row"><span class="rl">Pick-up</span><span class="rv" style="max-width:60%;text-align:right;">${esc(pickupAddr())}${(pickUnitOn()&&state.pickupUnit)?', Unit/Apt '+esc(state.pickupUnit):''}</span></div>`:'')
     +`<div class="review-row"><span class="rl">${hasPickup?'Destination':'Location'}</span><span class="rv" style="max-width:60%;text-align:right;">${esc(dropoffAddr()||'—')}${(isGoph()&&state.destUnit)?', Unit/Apt '+esc(state.destUnit):''}</span></div>`;
   const interested = 2 + Math.floor(Math.random()*4);
@@ -2302,14 +2310,14 @@ function renderStep7(){
     <div class="check-circle"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg></div>
     <h4>${haFirst ? 'Request sent!' : 'Request submitted!'}</h4>
     <p>${haFirst ? (haLabel + ' has first dibs…')
-      : `<span style="position:relative;display:inline-block;"><span style="visibility:hidden;">Looking for your ${isGoph()?'Gopher':'worker'}…</span><span data-typetext="Looking for your ${isGoph()?'Gopher':'worker'}…" style="position:absolute;left:0;top:0;white-space:nowrap;"></span></span>`} Order <strong>#GR-00001</strong></p>
+      : `<span style="position:relative;display:inline-block;"><span style="visibility:hidden;">Looking for your ${isGophW()?'Gopher':'worker'}…</span><span data-typetext="Looking for your ${isGophW()?'Gopher':'worker'}…" style="position:absolute;left:0;top:0;white-space:nowrap;"></span></span>`} Order <strong>#GR-00001</strong></p>
   </div>
   <div class="review-card">
     <div class="review-row"><span class="rl">Status</span><span class="rv" style="color:var(--green);">Submitted · ${expires}</span></div>
     <div class="review-row"><span class="rl">Timing</span><span class="rv">${timing}</span></div>
     <div class="review-row"><span class="rl">Category</span><span class="rv">${c.name}</span></div>
     ${detailRows}
-    <div class="review-row earn"><span class="rl">Worker takes home</span><span class="rv">${bids?'Pending bids':fmt(workerPayTotal())}</span></div>
+    <div class="review-row earn"><span class="rl">${isGophW()?'Gopher takes home':'Worker takes home'}</span><span class="rv">${bids?'Pending bids':fmt(workerPayTotal())}</span></div>
     ${costNum>0?`<div class="review-row"><span class="rl">Cost of items</span><span class="rv">${fmt(costNum)}</span></div>`:''}
     <div class="review-row"><span class="rl">Request fee</span><span class="rv">${bids?'TBD':fmt(fee.requestFee)}</span></div>
     <div class="review-row total"><span class="rl">Total</span><span class="rv">${bids?'TBD after bid':fmt(fee.gmvTotal)}</span></div>
@@ -2319,7 +2327,7 @@ function renderStep7(){
     <div class="si-text"><h5>${haLabel} ${haNames.length>1?'have':'has'} first dibs</h5><p>${haLabel} will be alerted to your request immediately. If they accept, the job is theirs. We'll also broadcast your request to other workers if ${haSubject} not available.</p></div>
   </div>` : `<div class="si-band">
     <span class="si-ico">${svgIco('users')}</span>
-    <div class="si-text"><h5>${interested} worker${interested!==1?'s':''} already interested</h5><p>Review profiles, hire, or consider workers from your dashboard.</p></div>
+    <div class="si-text"><h5>${interested} ${isGophW()?'Gopher':'worker'}${interested!==1?'s':''} already interested</h5><p>Review profiles, hire, or consider ${isGophW()?'Gophers':'workers'} from your dashboard.</p></div>
   </div>`}
   ${''/* DEMO sim bars — web parity (76a3b9c / f48e261). Both modals have REAL triggers
        that this prototype cannot receive: expiredInterestedWorkers fires at the EXPIRY
@@ -2327,7 +2335,7 @@ function renderStep7(){
        approved (production also texts them then), and paymentNotAuthorized fires on a
        backend Stripe auth-failure event. Web uses the same sim-bar pattern for the same
        reason. Tagged DEMO so nobody mistakes them for product surface. */}
-  ${state.demo ? `` : `<div class="g40-simbar"><span class="g40-simtag">DEMO</span><span class="g40-simnote">Request expires with workers accepted and none approved — production also texts you.</span><button type="button" class="g40-simbtn" data-action="sim-expiry">Simulate expiry</button></div>
+  ${state.demo ? `` : `<div class="g40-simbar"><span class="g40-simtag">DEMO</span><span class="g40-simnote">Request expires with ${isGophW()?'Gophers':'workers'} accepted and none approved — production also texts you.</span><button type="button" class="g40-simbtn" data-action="sim-expiry">Simulate expiry</button></div>
   <div class="g40-simbar"><span class="g40-simtag">DEMO</span><span class="g40-simnote">Bank declined the charge after a Gopher accepted.</span><button type="button" class="g40-simbtn" data-action="sim-paydecline">Simulate decline</button></div>`}
   ${state.demo ? `` : `<button class="si-btn" data-action="see-workers">Track it on your home screen →</button>
   <div class="matched-actions">
@@ -2401,7 +2409,7 @@ function renderStep7(){
     paymentNotAuthorized:function(){return rqModal(h('Update your card to keep this request')+p('A Gopher accepted, but your bank didn’t authorize the payment. Update your card in the next <b>5 minutes</b> and we’ll reassign it to them. If they’re no longer available, we’ll rebroadcast to nearby Gophers immediately.')+b1('Update payment'));},
     pickupSameAsDropoff:function(){return rqModal(h('Pick-up and drop-off are the same')+p('If you don’t have a preferred pickup spot, slide <b>“Gopher can purchase from anywhere.”</b> (Moving at one location? Slide the pick-up toggle to <b>“Single-location move.”</b>)')+b1('Got it'));},
     selectedGopherBusy:function(){return rqModal(h('That Gopher is on another job')+p('The Gopher you’re accepting is currently on an active request, and Standard Gophers can only take one at a time. Message them to ask when they’ll finish, or choose another Gopher.')+b1('Message the Gopher')+b2('Choose another Gopher'));},
-    expiredInterestedWorkers:function(){return rqModal(h('Your request expired — workers are interested')+p('Your request expired, but you have workers interested in helping. View them to keep going, or cancel if you no longer need it.')+b1('View interested workers')+b2('Cancel request'));},
+    expiredInterestedWorkers:function(){return rqModal(h(gwd('Your request expired — workers are interested'))+p(gwd('Your request expired, but you have workers interested in helping. View them to keep going, or cancel if you no longer need it.'))+b1(gwd('View interested workers'))+b2('Cancel request'));},
     duplicateRequest:function(){return rqModal(h('You already have this request out')+p('You currently have a nearly identical request broadcasting. Posting it again sends two of the same job to Gophers and splits their attention. Continue only if you truly need a second.')+b1('Continue — post anyway')+b2('Keep the one I have'));}
   };
   window.__g40ReqMenu=function(){
@@ -2549,9 +2557,9 @@ function stepGate(){
   // offer is a REAL bids job (payMode 'bids' AND the category allows bids) — anything else
   // needs a positive amount. Checked at the pay step AND re-checked at submit as a backstop
   // (stepGate only sees the current step, so a stale $0 could otherwise slip through review).
-  if(state.step===5 && !(state.payMode==='bids' && bidsAllowed()) && !(toNum(state.payAmount)>0)) return {ok:false,sel:'#payAmountInput',msg:'Enter how much you\'d like to pay your worker.'};
+  if(state.step===5 && !(state.payMode==='bids' && bidsAllowed()) && !(toNum(state.payAmount)>0)) return {ok:false,sel:'#payAmountInput',msg:gwd('Enter how much you\'d like to pay your worker.')};
   if(state.step===6 && !(state.payMode==='bids' && bidsAllowed()) && !(perWorkerPay()>0))
-    return {ok:false,sel:null,msg:'Your worker\'s pay can\'t be $0 — go back to Worker pay and set an offer.',tone:'alert'};
+    return {ok:false,sel:null,msg:gwd('Your worker\'s pay can\'t be $0 — go back to Worker pay and set an offer.'),tone:'alert'};
   /* SCHEDULED REQUESTS NEED A TIME — added 2026-08-25, mirroring the module's
      scheduleTime gate. Sits BEFORE the waiver deliberately: that ordering is a decision
      on the web surfaces (a missing time is an upstream data fault, the waiver is a
@@ -2721,7 +2729,7 @@ function openAgePurchaseModal(){
     ov.innerHTML='<div role="dialog" aria-modal="true" style="background:#fff;width:100%;max-width:340px;border-radius:22px;padding:24px 22px;text-align:center;box-shadow:0 24px 60px rgba(0,18,55,.5);font-family:Nunito,sans-serif;">'
       +'<div style="font-size:30px;line-height:1;margin-bottom:8px;">🧭</div>'
       +'<h4 style="font-weight:900;font-size:19px;color:#002461;margin:0 0 8px;">This looks like a '+e(r.suggestedLabel)+' job</h4>'
-      +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5b6472;line-height:1.5;margin:0 0 18px;">Requests in the wrong category may not reach the right workers — workers filter available jobs by category. Switch to <b>'+e(r.suggestedLabel)+'</b>?</p>'
+      +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5b6472;line-height:1.5;margin:0 0 18px;">'+gwd('Requests in the wrong category may not reach the right workers — workers filter available jobs by category.')+' Switch to <b>'+e(r.suggestedLabel)+'</b>?</p>'
       +'<button class="js-catsw-yes" style="width:100%;border:0;background:#1CB061;color:#fff;border-radius:13px;padding:14px;font-family:Nunito;font-weight:900;font-size:14px;cursor:pointer;">Switch to '+e(r.suggestedLabel)+'</button>'
       +'<button class="js-catsw-no" style="width:100%;margin-top:12px;border:1.5px solid #dfe3ec;background:transparent;color:#002461;border-radius:13px;padding:14px;font-family:Nunito;font-weight:900;font-size:14px;cursor:pointer;">Keep as '+e(selectedLabel)+'</button>'
     +'</div>';
