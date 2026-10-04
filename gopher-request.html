@@ -7358,9 +7358,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:flex; align-items:center; justify-content:center;
     font-family:'Nunito'; font-weight:800; font-size:13px;
   }
+  /* ⛔ ONE WIDTH FOR EVERY SECTION (owner 2026-10-04). This was 1180px with a
+     single :has() exception that widened ONLY the new-request screen, so the
+     canvas jumped 81px on every click and Home — the front door — was the one
+     that looked inset. Measured: Home's right edge 1377 vs New Request's 1458.
+     The exception's own comment said "making a request is the primary screen",
+     which stopped being true when the two cards became the home screen. */
   .dash-content {
     padding:28px 32px;
-    max-width:1180px;
+    max-width:none;
   }
   .dash-section { display:none; animation:fadeStep 0.25s ease; }
   .dash-section.active { display:block; }
@@ -8513,10 +8519,19 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .choose-card .cc-brand { border:1px solid #EADFC8; }   /* same edge on both chips now */
   .choose-card .cc-brand-logo { height:26px; width:auto; display:block; }
 
+  /* Owner 2026-10-04: the home cards read "disproportionately smaller and weaker"
+     than every other screen. 140px -> 240px gives the card real presence without
+     stretching it: the card still sizes to its CONTENT, so .cc-btn's
+     margin-top:auto has no slack to turn into dead white space inside the card.
+     ⚠️ This element carries BOTH .cc-media and .cc-quads — they are the same
+     node, not parent and child. Setting height here and height:100% on .cc-quads
+     makes two rules fight over one box; the 100% then resolves against an auto
+     parent and the card balloons to content height. Set it ONCE, here. */
   .choose-card .cc-media {
-    position:relative; display:grid; gap:4px; width:100%; height:140px;
+    position:relative; display:grid; gap:4px; width:100%; height:240px;
     border-radius:12px; overflow:hidden; margin-bottom:4px;
   }
+  @media (max-width:760px){ .choose-card .cc-media { height:170px; } }
   /* ⛔ minmax(0,1fr), NOT 1fr. `1fr` is minmax(AUTO,1fr), so a track floors at the
      intrinsic size of its content — images computed 201px rows inside a 140px box
      and the second row overflowed out of view. */
@@ -8542,7 +8557,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     -webkit-mask-image:linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
             mask-image:linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
   }
-  .cc-mq-track { display:flex; align-items:center; gap:26px; padding:0 14px; will-change:transform; }
+  /* height:100% is load-bearing: without a definite height on the track, the
+     percentage max-height on the logos below cannot resolve and they fall back
+     to their intrinsic size, overflowing the band. */
+  .cc-mq-track { display:flex; align-items:center; gap:26px; padding:0 14px; will-change:transform; height:100%; }
   /* ⛔ Owner 2026-10-02 (slide 5): "There should have never been a white
      background to each logo." The marks sit DIRECTLY on the green, exactly like
      .logo-item on gopher-customer-deals.html — no chip, no radius, no padding.
@@ -8550,7 +8568,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .cc-mq-track img {
     /* The reference fills ~80% of its strip's height (68px logo in an 84px row);
        34px in a 66px row read as half-size and muddy. */
-    height:auto; width:auto; max-height:46px; max-width:112px;
+    /* Owner 2026-10-04: "increase the size of the merchant icons to fill the
+       extra green space". Was a fixed 46px, which stayed put while the band grew
+       from 66px to 116px and left the logos marooned in green. A PERCENTAGE
+       tracks the band at any height — 74% keeps the ~80% proportion the note
+       above describes while leaving room for the taller logos not to touch. */
+    height:auto; width:auto; max-height:74%; max-width:170px;
     object-fit:contain; display:block; flex:0 0 auto; opacity:.95;
   }
   /* The track holds the logo run TWICE, so translating by exactly -50% lands on an
@@ -8822,13 +8845,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .dash-section[data-rqsec="new-request"] .flow-mockup .mockup-progress {
     border-radius:20px 20px 0 0;
   }
-  /* v76 — making a request is the primary screen: let it fill the full main
-     column with symmetric gutters instead of the left-aligned 1180px cap.
-     The :has() only matches while new-request is the active section, so every
-     other section keeps the cap. */
-  .dash-content:has(.dash-section[data-rqsec="new-request"].active) {
-    max-width:none;
-  }
+  /* The v76 :has() exception that widened only new-request was REMOVED on
+     2026-10-04 — .dash-content above is now uncapped for every section, so the
+     exception was redundant and its premise ("making a request is the primary
+     screen") no longer holds. Deleted rather than left as a no-op, because a
+     dead rule carrying a retired premise is how the next reader gets misled. */
   .dash-flow-host {
     /* Container that receives the moved flow-mockup */
     min-height:200px;
