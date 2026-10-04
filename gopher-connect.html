@@ -1039,6 +1039,33 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
   /* ─── Personal info edit modal — canonical Gopher profile form ─── */
   .gc-modal.pe-modal { max-width:600px; text-align:left; padding:26px 26px 22px; max-height:90vh; overflow-y:auto; }
+  /* ── Personal info: the actions sit one level down ─────────────────────────
+     ⚠️ #peFormView is a VIEW WRAPPER, not a layout div -- the modal swaps
+     between the form and the OTP step by showing one child or the other. It is
+     a direct child of .gr-modal, so the `>` rules above stop at it and never
+     reach Save changes / Cancel inside. The markup is indented as though the
+     buttons were direct children, which is why this read as already covered.
+
+     MEASURED before the fix, at 375x812: modal 731px, scrolls internally, and
+     the last action was NOT in view -- a requester had to scroll past the whole
+     form to find Save. That is the case the owner's 2026-10-03 rule exists for.
+
+     ⚠️ PIN THE ROW, NOT EACH BUTTON. My first attempt made both buttons
+     `position:sticky; bottom:0` and they pinned to the SAME point -- measured a
+     30px overlap, Cancel sitting on top of Save. Two sticky siblings at bottom:0
+     stack, they do not form a bar. One wrapper pins; the buttons flow inside it,
+     exactly as .idsub-actions already does.
+
+     ⚠️ .pe-danger (Close account) deliberately stays OUTSIDE this row and is not
+     pinned. It scrolls away behind the bar, preserving the owner's 2026-09-29
+     note that Delete must stay separate so it "cannot be hit by reflex". */
+  .gc-modal > #peFormView > .pe-actions {
+    position:sticky; bottom:0; z-index:2;
+    background:#fff; background-clip:padding-box;
+    padding-top:8px; margin-top:4px;
+    box-shadow:0 -10px 14px -10px rgba(0,0,0,0.18);
+  }
+
   .pe-modal h4 { margin-bottom:4px; }
   .pe-modal .gc-modal-sub { margin-bottom:14px; }
   .pe-grid { display:grid; grid-template-columns:1fr 1fr; gap:13px 14px; }
@@ -8999,8 +9026,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         <div class="pe-field full"><label>Referred by</label><input type="text" id="peReferredBy" value="Demo Referrer" disabled></div>
       </div>
       <p class="pe-status" id="peStatus">No changes yet.</p>
-      <button type="button" class="gc-modal-btn" id="peSave" disabled>Save changes</button>
-      <button type="button" class="gc-modal-btn-text" id="peCancel">Cancel</button>
+      <div class="pe-actions">
+        <button type="button" class="gc-modal-btn" id="peSave" disabled>Save changes</button>
+        <button type="button" class="gc-modal-btn-text" id="peCancel">Cancel</button>
+      </div>
     </div>
 
     <div id="peOtpView" hidden>
