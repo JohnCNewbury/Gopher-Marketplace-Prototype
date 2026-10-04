@@ -15178,7 +15178,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
               <span class="cib-currency">$</span>
               <input type="text" inputmode="decimal" class="cost-amount-input" id="payAmountInput" data-field="payAmount" value="${state.payAmount.replace(/^\$/,'')}" placeholder="0.00" aria-label="Your offer to the worker">
             </div>
-            <div style="font-family:'DM Sans';font-size:12px;color:var(--muted);margin-top:6px;">Exact amount worker(s) will receive once the job is completed — request fees calculated at review.</div>
+            ${''/* ⛔ OFFER-FIELD LINE — keep these THREE in sync: gopher-request.html, gopher-connect.html and _prototypes/Request/gopher-request-flow.html. Owner 2026-10-04. They had drifted into three different sentences; two of them never stated the 100% point at all, and Connect's named the WRONG FEE. "each" is load-bearing: the offer is PER WORKER (workerPayNum = perWorkerPay * workerCount), so a 3-worker job pays the offer three times. The fee noun is surface-specific — Request Fee here, Connect Fee on Connect. */}
+            <div style="font-family:'DM Sans';font-size:12px;color:var(--muted);margin-top:6px;">Exact amount each Gopher takes home — 100% of your offer. Request fees are shown at review.</div>
             ${state.payByHour ? (() => {
               // Compute per-worker wage and combined total based on hours × $/hr × workers
               const rate = parseFloat(state.payAmount.replace(/[^\d.]/g,'')) || 0;

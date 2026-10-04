@@ -1831,7 +1831,7 @@ function renderStep5(){
       </div>
       <div class="cost-input-box"><span class="ci-currency">$</span>
         <input type="text" inputmode="decimal" class="cost-amount-input" id="payAmountInput" data-field="payAmount" value="${esc(state.payAmount.replace(/^\$/,''))}" placeholder="0.00" aria-label="Your offer to the worker"></div>
-      <div class="sf-hint">Exact amount your worker takes home — 100% of your offer. Request fees are shown at review.</div>
+      <div class="sf-hint">Exact amount each Gopher takes home — 100% of your offer. Request fees are shown at review.</div>
       ${state.payByHour ? `<div id="wageSummaryWrap">${renderWageSummary(rate)}</div>` : ''}
       ${lowOffer ? `<div class="low-offer">${svgIco('warning')}<p>That's on the low side for ${({ride:'a ride',delivery:'a delivery',moving:'a move',junk:'a junk-removal job'})[state.category]||'a job'} like this. A fair offer gets accepted faster — but you can send it as-is.</p></div>
         <div style="text-align:right;margin-top:8px;"><button class="ts-promo-btn" style="background:#f1f3f8;color:var(--navy);" data-action="ack-low">Send as-is</button></div>`:''}
