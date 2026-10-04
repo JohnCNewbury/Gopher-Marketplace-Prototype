@@ -12320,6 +12320,47 @@ const PAY_BADGES = {
     // so onboarding a new category is a single-table edit, like every other field.
     bidsOption:   ['delivery','ride'],
   };
+  /* ── How long a Need ASAP request stays live ───────────────────────────────
+     ⛔ THIS WAS WRONG FOR FIVE OF THE EIGHT CATEGORIES until 2026-10-04. The
+     sentence below hard-coded "1 hour" for everyone, so a Junk, Moving, Yard,
+     Home Services or Labor requester was told their request expired in an hour
+     when the backend keeps it live for six. Live on both dashboards.
+
+     Figures verified by the 909 desk at backend origin/production 40357551, not
+     inherited: create.js:530-533 sets preferred_delivery_time = 60, then 360
+     when SERVICE_ORDERS[category_type]; constants/index.js:586-592 defines
+     SERVICE_ORDERS as 'Home Services', 'Moving', 'Junk Removal',
+     'Yard Project', 'Hourly / Day Labor'.
+
+     ⚠️ KEYED ON THE CATEGORY KEY, NEVER ON THE DISPLAY NAME. The backend keys
+     by category_type string, and matching those by substring is a trap this
+     project has already been bitten by -- "Junk Removal" contains "mov", so any
+     test like name.includes('mov') classifies a junk haul as a move. All eight
+     keys are listed explicitly; a missing key falls back to 1 hour, the
+     conservative figure, because over-promising how long a request stays live
+     is the harmful direction. */
+  const ASAP_HOURS = {
+    home: 6, moving: 6, junk: 6, yard: 6, labor: 6,   // backend SERVICE_ORDERS -> 360 min
+    delivery: 1, ride: 1, other: 1                     // everything else -> 60 min
+  };
+  /* "about 6 hours" / "1 hour" -- the app's own wording for the services case
+     (HL-14 / HS-16, verified on the owner's phone). The hedge belongs only on
+     the 6, which is a broadcast window rather than a promise. */
+  /* The same window as asapWindowText(), worded for the submitted card's
+     "expires in …" clause. ⛔ TWO SITES STATE THIS WINDOW and the first fix
+     only changed one: the What to expect sentence AND this card line. Both
+     read from ASAP_HOURS. If a third appears, it reads from there too --
+     never hard-code the number again. */
+  function asapExpiresText(){
+    const h = ASAP_HOURS[state.category] || 1;
+    return h === 1 ? 'expires in 1 hour' : ('expires in about ' + h + ' hours');
+  }
+
+  function asapWindowText(){
+    const h = ASAP_HOURS[state.category] || 1;
+    return h === 1 ? '<b>1 hour</b>' : ('about <b>' + h + ' hours</b>');
+  }
+
   const isVisible = (field) => !FIELD_HIDDEN_FOR[field].includes(state.category);
   // Whether "Request bids" is genuinely available for the CURRENT state — the same
   // rule that shows/hides the Step-5 bids radio (category table + multi-worker
@@ -13297,9 +13338,10 @@ const PAY_BADGES = {
           `Once accepted, you can <b>text or call your worker</b> directly, and <b>track route progress in real time</b> when applicable.`,
           `When the request is completed, you'll be prompted to <b>confirm on your end</b> before final billing.`
         ];
-        // Need ASAP requests expire — be explicit up front (1-hour broadcast window).
+        // Need ASAP requests expire — be explicit up front. The window is
+        // PER CATEGORY: see ASAP_HOURS / asapWindowText().
         if(state.scheduleType==='now') wteSteps.splice(1,0,
-          `<b>Need ASAP</b> requests stay live for <b>1 hour</b> — if no worker accepts in that time, the request <b>expires</b>. You're never charged for an expired request, and you can resubmit anytime.`);
+          `<b>Need ASAP</b> requests stay live for ${asapWindowText()} — if no worker accepts in that time, the request <b>expires</b>. You're never charged for an expired request, and you can resubmit anytime.`);
         const wteSub = bidsMode
           ? `A quick rundown of how bidding and the worker handoff work — so there are no surprises.`
           : `A quick rundown of how billing and the worker handoff work — so there are no surprises.`;
@@ -13374,7 +13416,7 @@ const PAY_BADGES = {
     const reqNum = 'GC-00001';
     // Build the expiration label from the chosen schedule mode
     const expiresStr = state.scheduleType === 'now'
-      ? 'expires in 1 hour'
+      ? asapExpiresText()
       : state.scheduleType === 'flexible'
         ? (state.flexibleWindow==='24hr' ? 'expires in 24 hrs'
            : state.flexibleWindow==='week' ? 'expires in 7 days'
