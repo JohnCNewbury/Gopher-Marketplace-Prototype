@@ -4992,7 +4992,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .dashboard {
     display:none;
     position:fixed; inset:0;
-    background:#f5f7fb;
+    /* ⛔ SAND, not grey. Owner 2026-10-03: "The gray just doesn't seem to fit."
+       #FBF3E4 is the brand's warm neutral ground (guide §3.1). The cool grey it
+       replaces was not in the palette at all. */
+    background:#FBF3E4;
     z-index:9000;
     grid-template-columns:229px 1fr;   /* owner 2026-10-02: matches Request (was 260) */
     /* The white bar runs the full width, so it is a grid ROW above both the
@@ -5004,7 +5007,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     color:var(--text);
   }
   .dashboard.open { display:grid; }
-  body.dashboard-mode { background:#f5f7fb; }
+  body.dashboard-mode { background:#FBF3E4; }   /* must match .dashboard above */
 
   /* ─── Sidebar ─── */
   .dash-topbar  { grid-area:topbar; }
@@ -5254,7 +5257,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     z-index:5;
   }
   .dash-greeting {
-    font-family:'DM Sans'; font-size:12px; color:var(--muted);
+    /* #5a6270, not var(--muted): on Sand, --muted drops to 4.38:1, under AA. */
+    font-family:'DM Sans'; font-size:12px; color:#5a6270;
     font-weight:500;
   }
   /* Owner 2026-10-03: "the 'Welcome back' is ONLY on the home screen." It is a
@@ -5707,7 +5711,18 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     font-family:'Nunito',sans-serif; font-weight:900; font-size:30px; line-height:1.15;
     margin:0 0 4px; letter-spacing:-.4px; color:var(--navy);
   }
-  .choose-sub { margin:0 0 18px; font-size:14px; color:var(--muted); }
+  /* The page's ONE Caveat accent (guide: Terracotta, about -2deg, one per page).
+     ⚠️ KNOWN: Terracotta on Sand is 2.83:1, under the 3:1 large-text bar. It was
+     already failing on the old grey (2.91:1) — Sand makes it marginally worse, it
+     does not create it. Owner has seen the number and approved the look; the open
+     options are to treat it as decorative, approve a darker Terracotta for TEXT
+     the way Pine was approved for green, or keep Caveat off Sand grounds. */
+  .choose-sub {
+    margin:2px 0 16px; font-family:'Caveat',cursive; font-weight:700;
+    font-size:21px; color:#D97757; transform:rotate(-2deg);
+    display:inline-block;
+  }
+  .choose-sub[hidden] { display:none; }   /* [hidden] loses to display:inline-block */
   .choose-two { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   .choose-card {
     position:relative; overflow:hidden; text-align:left; cursor:pointer; border:0;
@@ -5721,9 +5736,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .choose-card:hover, .choose-card:focus-visible {
     transform:translateY(-5px); box-shadow:0 18px 44px rgba(0,36,97,.18); outline:none;
   }
-  .choose-card.svc   { background:linear-gradient(150deg,#053a75 0%, #002461 60%); }
-  .choose-card.deals { background:linear-gradient(135deg,#FFFBF3 0%,#FBF3E4 55%,#F6E9D0 100%);
-                       border:1.5px solid #EAD9B6; }
+  /* ⛔ BOTH CARDS WHITE on the Sand canvas (owner 2026-10-03, from his own mock).
+     Why white and not "keep deals warm": the Deals card's middle gradient stop
+     WAS #FBF3E4 — literally the new canvas colour — so on Sand it dissolved into
+     the ground at 1.0 contrast. White separates both cards cleanly and moves the
+     warmth to the logo chips, where it reads as an accent instead of a near-miss. */
+  .choose-card.svc,
+  .choose-card.deals { background:#ffffff; border:1px solid #EADFC8; }
   /* The decorative corner circle was removed from both cards (owner 2026-10-01).
      Rules deleted with it so nothing re-adds it by reusing the class. */
   /* Home screen = not yet activated: hide both sidebar CTAs. Owner ruling
@@ -5810,10 +5829,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   /* Both cards lead with their own mark, centred (owner 2026-10-01). */
   .choose-card .cc-brand {
     position:relative; display:flex; align-items:center; justify-content:center;
-    background:#fff; border-radius:10px; padding:7px 14px; margin:0 auto 14px;
+    /* Sand chip, TOP LEFT. ⚠️ margin was `0 auto 14px` (centred) under the owner's
+       2026-10-01 ruling; he reversed it on 2026-10-03 and the comment on the
+       markup was updated with it. The mark still needs a LIGHT ground because its
+       wordmark is navy — Sand qualifies, white is no longer required. */
+    background:#FBF3E4; border-radius:10px; padding:7px 14px; margin:0 0 14px;
     width:max-content; max-width:100%;
   }
-  .choose-card.deals .cc-brand { border:1px solid #EAD9B6; }
+  .choose-card .cc-brand { border:1px solid #EADFC8; }   /* same edge on both chips now */
   .choose-card .cc-brand-logo { height:26px; width:auto; display:block; }
 
   .choose-card .cc-media {
@@ -5824,7 +5847,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      intrinsic size of its content — images computed 201px rows inside a 140px box
      and the second row overflowed out of view. */
   .choose-card .cc-quads { grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(0,1fr); }
-  .choose-card .cc-quad { position:relative; overflow:hidden; background:rgba(255,255,255,.07); }
+  /* ⛔ WAS rgba(255,255,255,.07) — a 7% WHITE wash, invisible scaffolding that only
+     ever read on the NAVY card. On a white card it is white-on-white and the 2x2
+     media frame DISAPPEARS until the video paints a frame. Same shape as the step
+     chips: a rule that set only a background and inherited the rest from a ground
+     that has now changed underneath it. */
+  .choose-card .cc-quad { position:relative; overflow:hidden; background:#F1EADC; }
   .choose-card .cc-quad video { width:100%; height:100%; object-fit:cover; display:block; }
 
   /* ── merchant marquee ── two rows, opposite directions ── */
@@ -5906,7 +5934,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
   .choose-card .cc-h {
     position:relative; font-family:'Nunito',sans-serif; font-weight:900;
-    font-size:23px; margin:14px 0 7px; color:#fff;
+    /* was #fff — tuned for the navy card. Both cards are white now. */
+    font-size:23px; margin:14px 0 7px; color:#002461;
   }
   .choose-card.deals .cc-h { color:#002461; }
   /* Owner 2026-10-01: the copy runs END TO END against the media above it, so no
@@ -5915,7 +5944,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .choose-card .cc-s {
     position:relative; font-size:14px; line-height:1.5; max-width:none;
     margin-bottom:22px;   /* the minimum breathing room under the sub-copy */
-    color:rgba(255,255,255,.78);
+    /* was rgba(255,255,255,.78) — white-on-navy. Deals keeps its warmer brown. */
+    color:#424242;
   }
   .choose-card.deals .cc-s { color:#6b5a38; }
   .choose-card .cc-tag {
@@ -10431,9 +10461,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           <p class="choose-sub">Two ways to go from here.</p>
           <div class="choose-two">
             <button type="button" class="choose-card svc" data-choose="services">
-              <!-- Owner 2026-10-01: the Request logo is CENTRED at the top of the
-                   card, on its white chip — the mark needs a light ground because
-                   its wordmark is navy (see the sidebar note). -->
+              <!-- ⚠️ Owner 2026-10-03 REVERSED his 2026-10-01 ruling here. It read:
+                   "the Request logo is CENTRED at the top of the card, on its white
+                   chip". It is now TOP LEFT on a SAND chip. The reason the old note
+                   gave still holds and is why the chip exists at all — the wordmark
+                   is navy, so the mark needs a LIGHT ground. Sand qualifies; white
+                   is no longer required. See .cc-brand. -->
               <span class="cc-brand"><img class="cc-brand-logo" src="assets/img/gopher-connect-logo.svg" alt="Gopher Connect"></span>
               <span class="cc-media cc-quads" id="chooseSvcQuads" aria-hidden="true">
                 <span class="cc-quad"></span><span class="cc-quad"></span>
