@@ -574,7 +574,7 @@ function wireLive(scope){
   }, 8000);
 }
 function domainOf(u){ try{ return String(u).replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*$/,''); }catch(e){ return u; } }
-const REQ_NAME={home:'Home / Office',junk:'Junk Removal',yard:'Yard / Outdoor',moving:'Moving',labor:'Hourly / Day Labor',delivery:'Delivery'};
+const REQ_NAME={home:'Home Services',junk:'Junk Removal',yard:'Yard / Outdoor',moving:'Moving',labor:'Hourly / Day Labor',delivery:'Delivery'};
 const GOPHER_FEE={delivery:0.99,home:4.99,junk:3.99,yard:3.99,moving:3.99,labor:2.99};
 function initials(n){return n.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');}
 function money(n){return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}

@@ -958,13 +958,13 @@ const CATEGORIES = {
     ex:'Couch haul · garage cleanout · debris' },
   moving:{ name:'Moving', tag:'Relocation', ph:"e.g. Move a 2-bedroom apartment — mostly boxes plus a couch and bed frame",
     ex:'Load a U-Haul · heavy furniture · dorm move' },
-  home:{ name:'Home / Office Services', tag:'Services', ph:'e.g. Mount a 55" TV on drywall and hide the cables',
+  home:{ name:'Home Services', tag:'Services', ph:'e.g. Mount a 55" TV on drywall and hide the cables',
     ex:'Mount a TV · assemble furniture · deep clean' },
   labor:{ name:'Hourly / Day Labor', tag:'Labor', ph:"e.g. Need 2 people for 3 hours to load a truck for an event",
     ex:'Extra hands · event setup · load materials' },
   yard:{ name:'Yard / Outdoor Projects', tag:'Outdoor', ph:"e.g. Mow, edge, and bag leaves for a quarter-acre back yard",
     ex:'Mow & edge · leaf cleanup · mulch' },
-  ride:{ name:'Ride Sharing', tag:'Ride', ph:'',
+  ride:{ name:'Need a Ride', noun:'ride', tag:'Ride', ph:'',
     ex:'Airport run · appointment · ride home' },
   other:{ name:'Custom Task', tag:'Custom', ph:"e.g. Wait at my place for a delivery 2–4pm and assemble a grill",
     ex:'Pet sitting · tire change · wait for a delivery' }
@@ -1069,18 +1069,19 @@ const REVIEW_ADVICE = {
     'Flag anything <b>fragile, heavy, or perishable</b> so your Gopher shows up ready for it.',
     'If someone needs to be home to receive it, drop in a <b>contact number or a drop-off window</b>.'] },
   moving:{ intro:"Moves go sideways when help arrives under-equipped. For a smooth day, you'll usually want:", points:[
-    '<b>More than one Gopher</b> for anything bigger than a studio — heavy furniture needs a pair of hands.',
+    '<b>More than one Gopher</b> for anything bigger than a studio — heavy furniture needs a pair of hands, at least.',
     'A <b>truck or trailer</b> sized to your place — or note clearly that you\'re providing one.',
     'The <b>right gear</b>: dollies, straps, blankets, and tools for anything that comes apart.',
-    'Call out <b>stairs, elevators, long walks, or tight doorways</b> at both ends.'] },
+    'Call out <b>stairs, elevators, long walks, or tight doorways</b> at both ends.',
+    'Mention <b>specialty items</b> — a piano, a safe, a fridge — so nobody\'s surprised at the curb.'] },
   home:{ intro:"Home and office jobs run best when the scope is clear up front. Double-check:", points:[
-    'Describe the <b>task in plain terms</b> — "mount a 55\" TV on drywall" beats "hang some stuff."',
+    'Describe the <b>task in plain terms</b> — "mount a 55" TV on drywall" beats "hang some stuff."',
     'Note whether <b>tools, parts, or materials</b> are provided, or if your Gopher should bring them.',
     'If the work is <b>licensed or regulated</b> (electrical, plumbing, gas), look for a <b>Gopher Pro</b>.',
-    'Add a <b>photo</b> — the fastest way for the right person to say "yep, I\'ve got this."'] },
-  labor:{ intro:"Hourly and day-labor jobs hinge on knowing what the day looks like. Spell out:", points:[
-    '<b>How many hours</b> and <b>how many people</b> you think it\'ll take — it sets expectations.',
-    'The <b>kind of work</b> — lifting, loading, setup, teardown — so the right Gopher raises a hand.',
+    'Add a <b>photo</b> — it\'s the fastest way for the right person to say "yep, I\'ve got this."'] },
+  labor:{ intro:"Hourly and day-labor jobs hinge on knowing what the day actually looks like. Spell out:", points:[
+    '<b>How many hours</b> and <b>how many people</b> you think it\'ll take — be honest, it sets expectations.',
+    'The <b>kind of work</b> — lifting, loading, setup, teardown — so the right Gopher raises their hand.',
     'Any <b>physical demands</b> (stairs, heavy items, heat) so nobody\'s caught off guard.',
     'Whether <b>tools or equipment</b> are on-site or need to come along.'] },
   junk:{ intro:"Hauling jobs come down to volume and access. Worth confirming before you post:", points:[
@@ -1116,12 +1117,12 @@ const FIELD_HIDDEN_FOR = {
   itemInfo:['delivery','home','labor','yard','ride','other'],
   hazardous:['delivery','moving','home','labor','yard','ride','other'],
   workerSetup:['delivery','home','ride'],
-  workerSelectChoice:['home','labor','yard','other'],   /* Moving SHOWS it (owner 2026-10-03, G40-576 package): two options, no First Available */
+  workerSelectChoice:['yard','other'],   /* Moving SHOWS it (owner 2026-10-03, G40-576 package): two options, no First Available */
   pickupSection:['home','labor','junk','yard','other'],
   noSpecificPickup:['home','labor','junk','yard','ride','other'],
   pickupStairs:['delivery','home','labor','junk','yard','ride','other'],
   serviceElevator:['delivery','moving','home','labor','junk','yard','ride','other'],   /* Connect-only: never shown in Request (owner 2026-10-03, G40-576 package) */
-  destStairs:['delivery','home','yard','ride'],
+  destStairs:['delivery','junk','home','yard','ride'],   /* Junk: no stairs — JR-34 ruled (owner 2026-10-03; live Junk sends total_stair_flight 0) */
   /* ⚠️ POLARITY: this table is FIELD_HIDDEN_FOR — every array lists the categories a field is
      HIDDEN for. isVisible(f) = !FIELD_HIDDEN_FOR[f].includes(category). So REMOVING a category
      from an array TURNS THE FIELD ON for it. The old comment here named the VISIBLE set
@@ -1308,7 +1309,7 @@ function makeInitialState(){
     // Step 4 — locations
     noSpecificPickup:false, pickupStairs:0, serviceElevatorPickup:false,
     pickupStops:['218 Fayetteville St, Raleigh, NC'],   // canonical ARRAY shape (multi-stop capable) — parity with web
-    destStairs:0, serviceElevatorDest:false,
+    destStairs:0, serviceElevatorDest:false, pickupUnit:'', destUnit:'',
     dropoffStops:['4101 NC-55, Apex, NC'], tripDistance:'14.2 mi',
     // Step 5 — pay
     payMode:'set', payAmount:'', lowOfferAck:false,
@@ -1505,7 +1506,7 @@ function arIdentityControl(){
 function tsPromo(){ return arIdentityControl(); }
 function renderStep2(){
   const c=CATEGORIES[state.category];
-  let h=`<div class="step-head"><h3>Tell us about your ${c.name.toLowerCase()} request</h3>
+  let h=`<div class="step-head"><h3>Tell us about your ${c.noun||c.name.toLowerCase()} request</h3>
     </div>`;
 
   // Page 1 — Describe
@@ -1576,14 +1577,18 @@ function renderStep2(){
     h+=`<div class="step-section">
       <div class="sst">${sstI(svgIco('users'))}Rider info</div>
       <div class="field-row split">
-        <div><label class="flabel"># of riders</label>
-          <select class="field-select" data-select="numRiders">${['1','2','3','4','5','6'].map(n=>`<option ${n===state.numRiders?'selected':''}>${n}</option>`).join('')}</select></div>
+        <div><label class="flabel">Number of riders</label>
+          <div class="field-counter" style="margin-top:2px;">
+            <button class="counter-btn" data-counter="dec-riders" ${(parseInt(state.numRiders,10)||1)<=1?'disabled':''}>−</button>
+            <span class="counter-val">${parseInt(state.numRiders,10)||1}</span>
+            <button class="counter-btn" data-counter="inc-riders" ${(parseInt(state.numRiders,10)||1)>=6?'disabled':''}>+</button>
+          </div></div>
         <div><label class="flabel"># of large bags</label>
           <select class="field-select" data-select="numBags">${['0','1','2','3','4','5','6'].map(n=>`<option ${n===state.numBags?'selected':''}>${n}</option>`).join('')}</select></div>
       </div>
       <div class="field-block"><label class="flabel">Special instructions for driver</label>
         <input class="field-input" data-field="specialInstructions" value="${esc(state.specialInstructions)}" placeholder="e.g. ring the front desk on arrival"></div>
-      ${tsPromo()}
+      ${''/* NO TrustShield "Verified — ID on file" banner on a ride's Step 2 (G40-580 package). */}
     </div>`;
   }
 
@@ -1627,7 +1632,18 @@ function renderPics(){
 }
 /* Moving ships with NO card-title icons yet ("we dont need all the icons yet" — owner 2026-10-02, carried into the
    909 desk's G40-576 package). Per-category suppression, not a deletion: every other category keeps its icon. */
-function sstI(ico){ return state.category==='moving' ? '' : '<span class="sst-ico">'+ico+'</span>'; }
+/* The categories already on the new flow (G40-576 Moving, G40-577 Junk Removal, G40-578 Hourly / Day Labor, G40-579 Home Services, G40-580 Need a Ride): they speak "Gopher",
+   show the two-option Gopher choice with NO First Available, and ship without card-title icons. Yard joins when its package lands. */
+const GOPHER_CATS=['moving','junk','labor','home','ride'];
+const NO_FIRST_CATS=['moving','junk','labor','home'];   // Need a Ride is in GOPHER_CATS but keeps First Available (G40-580)
+function noFirst(){ return NO_FIRST_CATS.indexOf(state.category)>=0; }
+function pickUnitOn(){ return state.category==='moving' || state.category==='ride'; }   // Unit/Apt # under the pick-up address
+function isGoph(){ return GOPHER_CATS.indexOf(state.category)>=0; }
+/* Need ASAP stays open about 6 hours for the SERVICE categories (Home Services, Moving, Junk Removal, Yard Project,
+   Hourly / Day Labor — backend SERVICE_ORDERS, create.js ~530) and 1 hour for Delivery, Need a Ride and Custom Task / Other. */
+const SERVICE_CATS=['home','moving','junk','yard','labor'];
+function asapHours(){ return SERVICE_CATS.indexOf(state.category)>=0 ? 6 : 1; }
+function sstI(ico){ return isGoph() ? '' : '<span class="sst-ico">'+ico+'</span>'; }
 function infoTip(id,title,paras,emphasis){
   const open = state.openInfo===id;
   return `<span class="info-tip ${open?'open':''}" data-info="${id}">
@@ -1648,7 +1664,7 @@ function renderStep3(){
 
   if(isVisible('workerSetup')){
     any=true;
-    const mv=state.category==='moving', unit=mv?'Gopher':'worker';
+    const mv=isGoph(), noHr=(state.category==='moving'||state.category==='junk'), unit=mv?'Gopher':'worker';   // Moving + Junk: no hourly (Connect feature)
     h+=`<div class="step-section">
       <div class="sst">${sstI(svgIco('worker'))}${mv?'Gopher setup':'Worker setup'}</div>
       <div class="toggle-row">
@@ -1666,11 +1682,11 @@ function renderStep3(){
           </div>
           <div style="font-family:'DM Sans';font-size:11.5px;line-height:1.45;color:var(--muted-cool);margin-top:8px;">You&rsquo;ll select <b style="color:var(--navy);font-weight:700;">one</b> ${unit} &mdash; they&rsquo;re responsible for bringing the additional ${unit}${state.numWorkers>2?'s':''}.</div>
           </div>`:''}
-      ${mv ? '' : `<div class="toggle-row">
+      ${noHr ? '' : `<div class="toggle-row">
         <button class="toggle-switch ${state.payByHour?'on':''}" data-toggle="payByHour"></button>
-        <span class="tr-label">Pay by the hour</span>
+        <span class="tr-label">${state.category==='labor'?'Pay by the hour instead':'Pay by the hour'}</span>
       </div>`}
-      ${(!mv && state.payByHour) ? `
+      ${(!noHr && state.payByHour) ? `
         <div class="sub-field"><div class="sf-label"># of hours needed</div>
           <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
             <div class="field-counter">
@@ -1684,25 +1700,27 @@ function renderStep3(){
 
   if(isVisible('workerSelectChoice')){
     any=true;
-    /* MOVING (G40-576 package): "I'll select my worker" and "Prioritize MY Gopher(s)", each a PLAIN label with a ?,
-       NO First Available. ? copy is the merged app's, src/component/yardFlow/InfoSheetContent.js smg() and favGopher(),
-       verbatim, with the two option labels below substituted for the app's {select} / {priority} slots.
+    /* The new-flow categories show PLAIN labels with a ?; ? copy is the merged app's InfoSheetContent.js (first / smg /
+       favGopher) verbatim, with the option labels below substituted for the app's {select} / {priority} slots.
+       Moving, Junk, Labor and Home drop First Available (two options); Need a Ride keeps it, as the DEFAULT (three).
        ⚠️ COUPLED: the favGopher sheet names the select option by its label, so change these labels together.
-       The prototype requester has no MY Gophers, so the second option stays the locked row. */
-    const mvSel = state.category==='moving';
-    const SEL_LBL = "I'll select my worker", PRI_LBL = "Prioritize MY Gopher(s)";
+       The prototype requester has no MY Gophers, so the last option stays the locked row. */
+    const gp = isGoph(), twoOpt = noFirst();
+    const FIRST_LBL = 'First Available', SEL_LBL = "I'll select my worker", PRI_LBL = "Prioritize MY Gopher(s)";
     h+=`<div class="step-section">
-      <div class="sst">${sstI(svgIco('target'))}How do you want to select your ${mvSel?'Gopher':'worker'}? (${mvSel?'1 of 2':'2 of 3'} options available)</div>
+      <div class="sst">${sstI(svgIco('target'))}How do you want to select your ${gp?'Gopher':'worker'}? (${twoOpt?'1 of 2':'2 of 3'} options available)</div>
       <div class="radio-group">
-        ${mvSel ? '' : `<div class="radio-row ${state.workerSelection==='first'?'selected':''}" data-radio="workerSelection" data-val="first">
-          <span class="radio-dot"></span><span class="rr-label">First available worker — fastest match</span></div>`}
+        ${twoOpt ? '' : `<div class="radio-row ${state.workerSelection==='first'?'selected':''}" data-radio="workerSelection" data-val="first">
+          <span class="radio-dot"></span><span class="rr-label">${gp ? FIRST_LBL + infoTip('wfirst', FIRST_LBL, [
+            'When selecting <b>First Available</b>, the first Gopher to accept your request is off to the races to get what you need done!',
+            'This option requires little to no engagement on your part.']) : 'First available worker — fastest match'}</span></div>`}
         <div class="radio-row ${state.workerSelection==='select'?'selected':''}" data-radio="workerSelection" data-val="select">
-          <span class="radio-dot"></span><span class="rr-label">${mvSel ? SEL_LBL + infoTip('wsel', SEL_LBL, [
+          <span class="radio-dot"></span><span class="rr-label">${gp ? SEL_LBL + infoTip('wsel', SEL_LBL, [
             'When choosing <b>'+SEL_LBL+'</b>, each Gopher interested will create an alert in the app for you.',
             'You can see their rating, reviews and job history before making your selection!',
             'This option requires some engagement during the selection process.']) : "I'll select my worker — review ratings, reviews and job history before selecting"}</span></div>
         <div class="radio-row ghost" aria-disabled="true">
-          <span class="radio-dot"></span><span class="rr-label">${mvSel ? PRI_LBL + infoTip('wpri', PRI_LBL, [
+          <span class="radio-dot"></span><span class="rr-label">${gp ? PRI_LBL + infoTip('wpri', PRI_LBL, [
             'When selecting <b>'+PRI_LBL+'</b>, each favorite you select will be notified of your request.',
             'If none of your MY Gophers have accepted within about a minute, all other Gophers in the area will see your request and you will be able to choose the same way as '+SEL_LBL+'.',
             'This option requires some engagement during the selection process, yet only if your MY Gopher is unavailable.']) : "Prioritize MY Gophers — we'll notify your favs first"}
@@ -1743,6 +1761,7 @@ function renderStep4(){
       ` : `
         <div class="addr-block"><span class="addr-pin">${svgIco('location')}</span>
           <input class="addr-input" data-field="pickupStops" value="${esc(pickupAddr())}" placeholder="Add pick-up address"></div>
+        ${pickUnitOn() ? `<div class="addr-block" style="margin-top:8px;"><input class="addr-input" data-field="pickupUnit" value="${esc(state.pickupUnit||'')}" placeholder="Unit/Apt #" aria-label="Pick-up Unit/Apt #"></div>` : ''}
         ${isVisible('pickupStairs') ? `
         <div class="toggle-row spaced" style="margin-top:11px;">
           <span class="tr-label">Flights of stairs at pick-up</span>
@@ -1764,6 +1783,7 @@ function renderStep4(){
     <div class="sst">${sstI(svgIco('flag'))}Destination</div>
     <div class="addr-block"><span class="addr-pin">${svgIco('flag')}</span>
       <input class="addr-input" data-field="dropoffStops" value="${esc(dropoffAddr())}" placeholder="Add destination address"></div>
+    ${isGoph() ? `<div class="addr-block" style="margin-top:8px;"><input class="addr-input" data-field="destUnit" value="${esc(state.destUnit||'')}" placeholder="Unit/Apt #" aria-label="Destination Unit/Apt #"></div>` : ''}
     ${isVisible('destStairs') ? `
     <div class="toggle-row spaced" style="margin-top:11px;">
       <span class="tr-label">Flights of stairs at destination</span>
@@ -1789,6 +1809,15 @@ function renderStep4(){
 /* The app's "Set your own price" sheet (src/component/yardFlow/InfoSheetContent.js ownPrice()), verbatim, all points
    including the 100% line. ONE copy, rendered by exactly one ?: on the "Set your offer" radio when that radio exists,
    otherwise on the offer field. Never both (owner 2026-10-04: "The full sheet, on the offer field"; "Never two ?s"). */
+/* The app's pay-option names, shared by every step flow (owner 2026-10-04 via the 909 desk, "copy what's built"):
+   "Set your own price" / "Allow Gophers to bid on your job". They appear wherever the bids option exists (every
+   category but Delivery and Ride); the own-price sheet carries the same name where the radio is absent. */
+function ownTitle(){ return 'Set your own price'; }
+const BID_SHEET_APP=[
+  'Selecting this option allows Gophers to bid on your request for the amount they think is fair.',
+  'They will see the full details of your request and can make you an offer.',
+  'You can approve or decline the offers as they come in.',
+  "When bids come in, select View Profile to view the Gopher's ratings, reviews and job history to help make your selection."];
 const OWN_PRICE_SHEET=[
   'Selecting this option allows you to set whatever price you think is fair.',
   'For certain requests, we may suggest a minimum based on the average accepted offers for that category.',
@@ -1805,14 +1834,14 @@ function renderStep5(){
      $60 whole-job threshold. Moving and Junk are the overlap categories — priced
      model AND an hourly option — so this is reachable, not theoretical. */
   const lowOffer = !state.payByHour && state.payMode==='set' && oneWorkerPay>0 && lowThresh>0 && oneWorkerPay < lowThresh && !state.lowOfferAck;
-  let h=`<div class="step-head"><h3>How would you like to pay your worker?</h3>
+  const gw=isGoph()?'Gopher':'worker';
+  let h=`<div class="step-head"><h3>How would you like to pay your ${gw}?</h3>
     </div>
     <div class="radio-group">
       ${showBids ? `
       <div class="radio-row ${state.payMode==='set'?'selected':''}" data-radio="payMode" data-val="set">
-        <span class="radio-dot"></span><span class="rr-label">Set your offer
-          <span style="color:var(--muted-cool);font-weight:500;font-size:11px;">(any request)</span>
-          ${infoTip('own','Set your offer',OWN_PRICE_SHEET)}</span></div>` : ''}`;
+        <span class="radio-dot"></span><span class="rr-label">${ownTitle()}
+          ${infoTip('own',ownTitle(),OWN_PRICE_SHEET)}</span></div>` : ''}`;
 
   if(state.payMode==='set'){
     h+=`<div class="sub-field" style="background:#fff;border-color:#e4e8f0;">
@@ -1826,13 +1855,13 @@ function renderStep5(){
             and Ride, and the hourly branch hides it for Labor/Yard — the field
             carries the FULL sheet (OWN_PRICE_SHEET). Where the radio exists it
             carries the sheet instead, so a category never shows two ?s. */}
-      <div class="sf-label">${state.payByHour?'Your hourly offer to the worker':'Your offer to the worker'}
-        ${!showBids ? infoTip('earn','Set your offer',OWN_PRICE_SHEET) : ''}
+      <div class="sf-label">${isGoph() ? (state.payByHour?'Your hourly offer to your Gopher':'Your offer to your Gopher') : (state.payByHour?'Your hourly offer to the worker':'Your offer to the worker')}
+        ${!showBids ? infoTip('earn',ownTitle(),OWN_PRICE_SHEET) : ''}
       </div>
       <div class="cost-input-box"><span class="ci-currency">$</span>
-        <input type="text" inputmode="decimal" class="cost-amount-input" id="payAmountInput" data-field="payAmount" value="${esc(state.payAmount.replace(/^\$/,''))}" placeholder="0.00" aria-label="Your offer to the worker"></div>
+        <input type="text" inputmode="decimal" class="cost-amount-input" id="payAmountInput" data-field="payAmount" value="${esc(state.payAmount.replace(/^\$/,''))}" placeholder="0.00" aria-label="Your offer to your ${gw}"></div>
       <div class="sf-hint">Exact amount each Gopher takes home — 100% of your offer. Request fees are shown at review.</div>
-      ${state.payByHour ? `<div id="wageSummaryWrap">${renderWageSummary(rate)}</div>` : ''}
+      ${wageSummaryOn() ? `<div id="wageSummaryWrap">${renderWageSummary(rate)}</div>` : ''}
       ${lowOffer ? `<div class="low-offer">${svgIco('warning')}<p>That's on the low side for ${({ride:'a ride',delivery:'a delivery',moving:'a move',junk:'a junk-removal job'})[state.category]||'a job'} like this. A fair offer gets accepted faster — but you can send it as-is.</p></div>
         <div style="text-align:right;margin-top:8px;"><button class="ts-promo-btn" style="background:#f1f3f8;color:var(--navy);" data-action="ack-low">Send as-is</button></div>`:''}
       ${''/* ⛔ HIDDEN IN HOURLY MODE (owner, 2026-08-26 — web parity, 0a249c7): the iQ
@@ -1845,14 +1874,25 @@ function renderStep5(){
 
   if(showBids){
     h+=`<div class="radio-row ${state.payMode==='bids'?'selected':''}" data-radio="payMode" data-val="bids">
-      <span class="radio-dot"></span><span class="rr-label">Request bids
-        ${infoTip('bids','Request bids',['Local workers send their offers and you pick the best one. Great when you\'re not sure of a fair price.'])}</span></div>`;
+      <span class="radio-dot"></span><span class="rr-label">Allow Gophers to bid on your job
+        ${infoTip('bids','Allow Gophers to bid on your job',BID_SHEET_APP)}</span></div>`;
   }
   h+=`</div>`;
   return h;
 }
+/* Hourly breakdown (any category) and, for the Gopher categories, the by-the-job "Combined wages" line when 2+ Gophers. */
+function wageSummaryOn(){ return state.payByHour || (isGoph() && workerCount()>1); }
 function renderWageSummary(rate){
   const hours=parseInt(state.numHours,10)||1, w=workerCount();
+  if(isGoph()){
+    const unitPay = state.payByHour ? rate*hours : rate;
+    const per=unitPay.toFixed(2), comb=(unitPay*w).toFixed(2);
+    return `<div class="wage-summary">
+      ${state.payByHour ? `<div class="wage-row"><span class="wage-label">Per Gopher wage</span><span class="wage-value">$${per} <small>(${hours} hr${hours!==1?'s':''} × $${rate.toFixed(2)})</small></span></div>` : ''}
+      ${(state.payByHour || w>1) ? `<div class="wage-row ${state.payByHour?'total':''}"><span class="wage-label">Combined wages</span><span class="wage-value">$${comb} <small>(${w} × $${per})</small></span></div>` : ''}
+      ${(state.payByHour && w>1) ? `<div style="font-family:'DM Sans';font-size:11.5px;line-height:1.45;color:var(--muted-cool);margin-top:8px;">This breakdown is to help you budget. Only one Gopher accepts your request, and they&rsquo;re responsible for the other Gophers requested.</div>` : ''}
+    </div>`;
+  }
   const per=(rate*hours).toFixed(2), comb=(rate*hours*w).toFixed(2);
   return `<div class="wage-summary">
     <div class="wage-row"><span class="wage-label">Per worker wage</span><span class="wage-value">$${per} <small>(${hours} hr${hours!==1?'s':''} × $${rate.toFixed(2)})</small></span></div>
@@ -1993,23 +2033,27 @@ function renderStep6(){
   if(isVisible('describe') && state.description.trim()) rows+=`<div class="review-row"><span class="rl">Description</span><span class="rv" style="max-width:62%;">${esc(state.description)}</span></div>`;
   if(isVisible('addPic') && state.picThumbs.length) rows+=`<div class="review-row"><span class="rl">Pics</span><span class="rv"><div class="review-thumbs">${state.picThumbs.map(t=>`<div class="review-thumb">${t}</div>`).join('')}</div></span></div>`;
   if(state.category==='delivery') rows+=`<div class="review-row"><span class="rl">Delivery type</span><span class="rv">${state.ageRestricted?'Age-restricted · ':''}${state.itemsPurchased?'Purchase needed':'Items in hand'}</span></div>`;
-  if(isVisible('riderInfo')) rows+=`<div class="review-row"><span class="rl">Rider info</span><span class="rv">${state.numRiders} rider${state.numRiders!=='1'?'s':''} · ${state.numBags} bag${state.numBags!=='1'?'s':''}</span></div>`;
-  if(isVisible('workerSetup')) rows+=`<div class="review-row"><span class="rl">${state.category==='moving'?'Gopher info':'Worker info'}</span><span class="rv">${wCount} worker${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`;
+  if(isVisible('riderInfo')) rows+=`<div class="review-row"><span class="rl">Riders</span><span class="rv">${(parseInt(state.numRiders,10)||1)} rider${(parseInt(state.numRiders,10)||1)===1?'':'s'}</span></div><div class="review-row"><span class="rl">Large bags</span><span class="rv">${state.numBags}</span></div>`;
+  if(isVisible('workerSetup')) rows+=`<div class="review-row"><span class="rl">${isGoph()?'Gopher info':'Worker info'}</span><span class="rv">${wCount} ${isGoph()?'Gopher':'worker'}${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`;
   if(isVisible('itemInfo')) rows+=`<div class="review-row"><span class="rl">Item info</span><span class="rv">${state.itemCount} item${state.itemCount>1?'s':''}${state.multipleItems?' · mixed':''}${state.hazardous?' · hazmat':''}</span></div>`;
   if(isVisible('pickupSection')){
     rows+= state.noSpecificPickup
       ? `<div class="review-row"><span class="rl">Pick-up</span><span class="rv">Any location</span></div>`
-      : `<div class="review-row"><span class="rl">Pick-up</span><span class="rv" style="max-width:62%;">${esc(pickupAddr())}</span></div>`;
+      : `<div class="review-row"><span class="rl">Pick-up</span><span class="rv" style="max-width:62%;">${esc(pickupAddr())}${(pickUnitOn()&&state.pickupUnit)?', Unit/Apt '+esc(state.pickupUnit):''}</span></div>`;
     if(isVisible('pickupStairs') && !state.noSpecificPickup && (state.pickupStairs>0||state.serviceElevatorPickup))
       rows+=`<div class="review-row"><span class="rl">Pick-up access</span><span class="rv" style="max-width:62%;">${accessLine(state.pickupStairs,state.serviceElevatorPickup)}</span></div>`;
   }
-  rows+=`<div class="review-row"><span class="rl">Destination</span><span class="rv" style="max-width:62%;">${esc(dropoffAddr())}</span></div>`;
+  rows+=`<div class="review-row"><span class="rl">Destination</span><span class="rv" style="max-width:62%;">${esc(dropoffAddr())}${(isGoph()&&state.destUnit)?', Unit/Apt '+esc(state.destUnit):''}</span></div>`;
   if(isVisible('destStairs') && (state.destStairs>0||state.serviceElevatorDest))
     rows+=`<div class="review-row"><span class="rl">Destination access</span><span class="rv" style="max-width:62%;">${accessLine(state.destStairs,state.serviceElevatorDest)}</span></div>`;
+  if(isVisible('riderInfo')){   // Need a Ride: Trip distance, then Special instructions (G40-580 package order)
+    rows+=`<div class="review-row"><span class="rl">Trip Distance</span><span class="rv">${esc(state.tripDistance)}</span></div>`;
+    if(state.specialInstructions.trim()) rows+=`<div class="review-row"><span class="rl">Special instructions</span><span class="rv" style="max-width:62%;">${esc(state.specialInstructions)}</span></div>`;   // only when typed, as the app does
+  }
   if(showCost) rows+=`<div class="review-row"><span class="rl">Cost of items</span><span class="rv">${fmt(costNum)}</span></div>`;
 
   // Payment to your worker(s) (single row; per-worker math lives in the info button)
-  rows+=`<div class="review-row earn"><span class="rl">${state.category==='moving' ? 'Your offer to your Gopher' : ((wCount===1?'Your offer to the worker':'Your offer to the workers') + ' ' + workerPayTip(bids,wCount,perW,wPay))}</span>
+  rows+=`<div class="review-row earn"><span class="rl">${isGoph() ? 'Your offer to your Gopher' : ((wCount===1?'Your offer to the worker':'Your offer to the workers') + ' ' + workerPayTip(bids,wCount,perW,wPay))}</span>
     <span class="rv">${bids?'Pending bids':fmt(wPay)}</span></div>`;
 
   // Request fee with breakdown popover
@@ -2067,9 +2111,16 @@ function renderStep6(){
       `Once accepted, you can <b>text or call your worker</b> directly and <b>track progress in real time</b> when applicable.`,
       `When the job is done, you'll <b>confirm on your end</b> and rate your worker before final billing.`
     ];
+    // The crew line (owner 2026-10-04, verified on John's phone): shared by EVERY crew category, shown only with 2+ Gophers,
+    // and it sits before the "Once accepted…" line. Custom Task has no crew.
+    if(['yard','moving','junk','labor'].indexOf(state.category)>=0 && wCount>1){
+      const at=wteSteps.findIndex(s=>/^Once accepted/.test(s.replace(/<[^>]+>/g,'')));
+      wteSteps.splice(at<0?wteSteps.length:at,0,`One Gopher accepts your request and agrees to show up with all ${wCount} Gophers needed.`);
+    }
     // Need ASAP requests expire — be explicit up front (1-hour broadcast window).
     if(state.scheduleType==='now') wteSteps.splice(1,0,
-      `<b>Need ASAP</b> requests stay live for <b>1 hour</b> — if no worker accepts in that time, the request <b>expires</b>. You're never charged for an expired request, and you can resubmit anytime.`);
+      `<b>Need ASAP</b> requests stay live for ${asapHours()>1?'about ':''}<b>${asapHours()} hour${asapHours()>1?'s':''}</b> — if no worker accepts in that time, the request <b>expires</b>. You're never charged for an expired request, and you can resubmit anytime.`);
+    if(isGoph()) for(let i=0;i<wteSteps.length;i++) wteSteps[i]=wteSteps[i].replace(/workers/g,'Gophers').replace(/worker/g,'Gopher');
     const wteSub = bids
       ? `A quick rundown of how bidding and the worker handoff work — so there are no surprises.`
       : `A quick rundown of how billing and the worker handoff work — so there are no surprises.`;
@@ -2175,6 +2226,7 @@ function renderPromo(){
   return `<span class="promo-entry"><input class="promo-input ${state.promoError?'promo-input-error':''}" placeholder="Code" value="${esc(state.promoCode||'')}" data-promo><button class="promo-apply" data-action="apply-promo">Apply</button></span>${state.promoError?`<span class="promo-hint">That code isn't valid</span>`:''}`;
 }
 function renderSSE(){
+  if(state.category==='ride') return '';   // no second set of eyes on a ride (G40-580 package)
   const adv=REVIEW_ADVICE[state.category]||REVIEW_ADVICE.other;
   const thin = isVisible('describe') && (state.description.trim().length<25);
   const ageMiss = state.category==='delivery' && state.ageRestricted && !state.itemsPurchased;
@@ -2225,9 +2277,10 @@ function renderStep7(){
   const detailRows=
     (desc?`<div class="review-row"><span class="rl">Details</span><span class="rv" style="max-width:60%;text-align:right;">${esc(desc)}</span></div>`:'')
     +(deliveryType?`<div class="review-row"><span class="rl">Delivery type</span><span class="rv">${deliveryType}</span></div>`:'')
-    +((wCount>1||state.payByHour)?`<div class="review-row"><span class="rl">Worker info</span><span class="rv">${wCount} worker${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`:'')
-    +(hasPickup?`<div class="review-row"><span class="rl">Pick-up</span><span class="rv" style="max-width:60%;text-align:right;">${esc(pickupAddr())}</span></div>`:'')
-    +`<div class="review-row"><span class="rl">${hasPickup?'Destination':'Location'}</span><span class="rv" style="max-width:60%;text-align:right;">${esc(dropoffAddr()||'—')}</span></div>`;
+    +(isVisible('riderInfo')?`<div class="review-row"><span class="rl">Riders</span><span class="rv">${parseInt(state.numRiders,10)||1}</span></div>`+((parseInt(state.numBags,10)||0)>0?`<div class="review-row"><span class="rl">Large bags</span><span class="rv">${parseInt(state.numBags,10)}</span></div>`:''):'')
+    +((wCount>1||state.payByHour)?`<div class="review-row"><span class="rl">${isGoph()?'Gopher info':'Worker info'}</span><span class="rv">${wCount} ${isGoph()?'Gopher':'worker'}${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`:'')
+    +(hasPickup?`<div class="review-row"><span class="rl">Pick-up</span><span class="rv" style="max-width:60%;text-align:right;">${esc(pickupAddr())}${(pickUnitOn()&&state.pickupUnit)?', Unit/Apt '+esc(state.pickupUnit):''}</span></div>`:'')
+    +`<div class="review-row"><span class="rl">${hasPickup?'Destination':'Location'}</span><span class="rv" style="max-width:60%;text-align:right;">${esc(dropoffAddr()||'—')}${(isGoph()&&state.destUnit)?', Unit/Apt '+esc(state.destUnit):''}</span></div>`;
   const interested = 2 + Math.floor(Math.random()*4);
   // MY Gophers first-dibs: the request is held for them before it opens to
   // anyone else, so "Looking for your worker…" would be wrong here.
@@ -2241,7 +2294,7 @@ function renderStep7(){
     : state.scheduleType==='flexible'
       ? (state.flexibleWindow==='24hr'?'Within 24 hours':state.flexibleWindow==='week'?'Within a week':'Within 2 weeks')
       : schedLabel();
-  const expires = state.scheduleType==='now' ? 'expires in 1 hour'
+  const expires = state.scheduleType==='now' ? (asapHours()>1 ? 'open about '+asapHours()+' hours' : 'expires in 1 hour')
     : state.scheduleType==='flexible'
       ? (state.flexibleWindow==='24hr'?'expires in 24 hrs':state.flexibleWindow==='week'?'expires in 7 days':'expires in 14 days')
       : `for ${schedLabel()}`;
@@ -2249,7 +2302,7 @@ function renderStep7(){
     <div class="check-circle"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></svg></div>
     <h4>${haFirst ? 'Request sent!' : 'Request submitted!'}</h4>
     <p>${haFirst ? (haLabel + ' has first dibs…')
-      : `<span style="position:relative;display:inline-block;"><span style="visibility:hidden;">Looking for your worker…</span><span data-typetext="Looking for your worker…" style="position:absolute;left:0;top:0;white-space:nowrap;"></span></span>`} Order <strong>#GR-00001</strong></p>
+      : `<span style="position:relative;display:inline-block;"><span style="visibility:hidden;">Looking for your ${isGoph()?'Gopher':'worker'}…</span><span data-typetext="Looking for your ${isGoph()?'Gopher':'worker'}…" style="position:absolute;left:0;top:0;white-space:nowrap;"></span></span>`} Order <strong>#GR-00001</strong></p>
   </div>
   <div class="review-card">
     <div class="review-row"><span class="rl">Status</span><span class="rv" style="color:var(--green);">Submitted · ${expires}</span></div>
@@ -2365,7 +2418,7 @@ function render(){
   // No "how is the worker selected?" choice → the user must select their worker (web parity).
   if(!isVisible('workerSelectChoice')) state.workerSelection='select';
   // Moving shows no First Available; 'first' is the app-wide default (the prototype requester has no MY Gophers, so 'select').
-  else if(state.category==='moving' && state.workerSelection==='first') state.workerSelection='select';
+  else if(noFirst() && state.workerSelection==='first') state.workerSelection='select';
   // Never sit on an auto-hidden empty step (e.g. the category was changed to
   // Home/Office from the context bar while on Worker info) — advance past it.
   if(state.step>1 && state.step<7 && stepIsEmpty(state.step)) state.step=nextVisibleStep(state.step);
@@ -2523,7 +2576,7 @@ function syncFooterGate(){
 // Live-refresh the hourly wage breakdown as the per-hour rate is typed (no re-render).
 function syncWageSummary(){
   const wrap=$('#wageSummaryWrap'); if(!wrap) return;
-  wrap.innerHTML = state.payByHour ? renderWageSummary(toNum(state.payAmount)) : '';
+  wrap.innerHTML = wageSummaryOn() ? renderWageSummary(toNum(state.payAmount)) : '';
 }
 let toastTimer=null;
 function showToast(msg,tone){
@@ -2803,6 +2856,8 @@ document.addEventListener('click',(e)=>{
     if(a==='dec-workers'&&state.numWorkers>2) state.numWorkers--;
     if(a==='inc-hours') state.numHours++;
     if(a==='dec-hours'&&state.numHours>1) state.numHours--;
+    if(a==='inc-riders') state.numRiders=String(Math.min(6,(parseInt(state.numRiders,10)||1)+1));
+    if(a==='dec-riders') state.numRiders=String(Math.max(1,(parseInt(state.numRiders,10)||1)-1));
     if(a==='inc-pickstairs') state.pickupStairs++;
     if(a==='dec-pickstairs'&&state.pickupStairs>0) state.pickupStairs--;
     if(a==='inc-deststairs') state.destStairs++;
@@ -2951,7 +3006,7 @@ return { all:all, save:save,
     // window (within 24h / a week) is an OPEN request that should broadcast to workers now.
     stage:'searching',accepted:0,scheduledForLater:(state.scheduleType==='scheduled'),offerBand:offerBand,
     // Need ASAP expiry (1-hour broadcast window) — the home card counts down from submittedAt.
-    asap:(state.scheduleType==='now'),submittedAt:Date.now(),
+    asap:(state.scheduleType==='now'),asapMins:asapHours()*60,submittedAt:Date.now(),
     cost:cost,pay:pay,pickup:pickup,dropoff:dropoff,
       /* ACCESS DETAILS (owner 2026-08-19): stairs/elevator were CAPTURED at step 4 and then
          dropped on submit — invisible to the requester's own View-details AND to the worker
@@ -2959,7 +3014,7 @@ return { all:all, save:save,
          raises a hand, so it travels with the request. Counters are ints; 0 renders nothing. */
       pickupStairs:(parseInt(state.pickupStairs,10)||0), destStairs:(parseInt(state.destStairs,10)||0),
       serviceElevatorPickup:!!state.serviceElevatorPickup, serviceElevatorDest:!!state.serviceElevatorDest,
-    scope:scope,dist:(state.tripDistance||''),when:when,requestor:'Jamie L.',bids:bids,
+    scope:scope,riders:(isVisible('riderInfo')?(parseInt(state.numRiders,10)||1):0),bags:(isVisible('riderInfo')?(parseInt(state.numBags,10)||0):0),dist:(state.tripDistance||''),when:when,requestor:'Jamie L.',bids:bids,
     // richer detail carried for the crew pill + full "View details" summary
     workers:workers,payByHour:!!state.payByHour,numHours:(parseInt(state.numHours,10)||1),
     // trustShield travels WITH ageRestricted and must never be separated from it: it is

@@ -701,11 +701,11 @@ const ICON={
 };
 const CATS=[
   ['delivery','Delivery / Errand','ERRAND'],['junk','Junk Removal','HAULING'],['moving','Moving','RELOCATION'],
-  ['home','Home / Office','SERVICES'],['labor','Hourly / Day Labor','LABOR'],['yard','Yard / Outdoor','OUTDOOR'],
-  ['ride','Ride Sharing','RIDE'],['other','Other','CUSTOM']
+  ['home','Home Services','SERVICES'],['labor','Hourly / Day Labor','LABOR'],['yard','Yard / Outdoor','OUTDOOR'],
+  ['ride','Need a Ride','RIDE'],['other','Other','CUSTOM']
 ];
-const CAT_POPNAME={delivery:'Delivery / Errand',junk:'Junk Removal',moving:'Moving',home:'Home / Office Services',
-  labor:'Hourly / Day Labor',yard:'Yard / Outdoor Projects',ride:'Ride Sharing',other:'Other'};
+const CAT_POPNAME={delivery:'Delivery / Errand',junk:'Junk Removal',moving:'Moving',home:'Home Services',
+  labor:'Hourly / Day Labor',yard:'Yard / Outdoor Projects',ride:'Need a Ride',other:'Other'};
 const CAT_EXAMPLES={
   delivery:['Beer & liquor run','Groceries dropped off','Pharmacy pickup','Tobacco, vape and nicotine delivery (21+ only)','Takeout delivered'],
   junk:['Haul an old couch','Garage cleanout','Mattress to the dump','Construction debris','Scrap metal pickup'],
@@ -1000,7 +1000,7 @@ const PENDING_GOPHERS=[
   {n:'Marcus K.',tier:'elite+',pro:false,tag:'Available now · 4.9 (508 jobs)'}
 ];
 const pgInits=s=>String(s).split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
-const CATLABEL={delivery:'Delivery',home:'Home Services',junk:'Junk Removal',moving:'Moving',labor:'Labor',yard:'Yard / Outdoor',ride:'Ride Sharing',other:'Other'};
+const CATLABEL={delivery:'Delivery',home:'Home Services',junk:'Junk Removal',moving:'Moving',labor:'Labor',yard:'Yard / Outdoor',ride:'Need a Ride',other:'Other'};
 var PEND=null, acceptTimer=null;
 var uiBucket='active', uiIdx=0; var BLABEL={active:'Active',scheduled:'Scheduled',submitted:'Submitted'};
 function statusBucket(r){
@@ -1075,8 +1075,9 @@ function statusText(r){
  // Submitted (broadcasting) — Need ASAP requests carry the 1-hour expiry ON the card so the
  // window is evident without opening details.
  if((r.stage==='searching'||r.stage==='pending') && r.asap && r.submittedAt){
-  var _left=60-Math.floor((Date.now()-r.submittedAt)/60000);
-  return 'Finding Gophers near you… · <b>'+(_left>0?('expires in '+(_left>=60?'1 hour':_left+' min')):'expired')+'</b>';
+  var _win=r.asapMins||60;   // service categories stay open about 6 hours (flow.html asapHours()); the rest 1 hour
+  var _left=_win-Math.floor((Date.now()-r.submittedAt)/60000);
+  return 'Finding Gophers near you… · <b>'+(_left>0?('expires in '+(_left>=60?(_win>60?('about '+Math.ceil(_left/60)+' hours'):'1 hour'):_left+' min')):'expired')+'</b>';
  }
  return 'Finding Gophers near you…';
 }
@@ -2234,6 +2235,8 @@ function openDetails(order){
     +row('Timing', esc(r.timingLabel||r.when||'ASAP'))
     +(r.description?row('Details', esc(r.description)):'')
     +(r.deliveryType?row('Delivery type', esc(r.deliveryType)):'')
+    +(r.riders>0?row('Riders', r.riders):'')
+    +(r.bags>0?row('Large bags', r.bags):'')   /* Need a Ride only, only when above 0 (NR-05 / NR-20) */
     +((wc>1||r.payByHour)?row('Worker info', wc+' worker'+(wc>1?'s':'')+(r.payByHour?' \u00b7 '+(r.numHours||1)+'hr':'')):'')
     +(hasPickup?row('Pick-up', esc(r.pickup)):'')
     +row(hasPickup?'Destination':'Location', esc(r.dropoff||'\u2014'))
@@ -2437,10 +2440,10 @@ function iqTopicReply(query, audience){
   else if(has('deliver','errand','pick up','pickup','drop','grocery','pharmacy','takeout','bring')) cat='delivery';
   var CAT={ moving:['Moving','loading, hauling, and heavy lifting'],
             junk:['Junk Removal','haul-away of furniture, debris, and cleanouts'],
-            home:['Home / Office Services','mounting, assembly, cleaning, repairs, and handyman work'],
+            home:['Home Services','mounting, assembly, cleaning, repairs, and handyman work'],
             labor:['Hourly / Day Labor','extra hands booked by the hour'],
             yard:['Yard / Outdoor','mowing, leaf and yard cleanup, mulch, and garden work'],
-            ride:['Ride Sharing','getting you where you need to be'],
+            ride:['Need a Ride','getting you where you need to be'],
             delivery:['Delivery / Errand','pickups, drop-offs, grocery and pharmacy runs, and quick errands'] };
   var pricingMsg = worker
     ? "You keep <b>100%</b> of the offer you accept \u2014 the requester\u2019s fees sit on their side. Payout begins when you mark the request complete and the requester confirms (or automatically after 48 hours). Your first 10 payouts use Standard speed; after that you\u2019re upgraded to Instant, and Elite/Elite+/Pro start on Instant."

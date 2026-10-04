@@ -888,7 +888,7 @@ const JOBS={
   {cat:'Yard / Outdoor Projects',posted:'2 hr ago',mode:'bid',scope:'Spread 10 bags mulch + edge beds.',stats:[{i:'pin',t:'3.7 mi',s:'away'},{i:'cal',t:'Sat AM'}],flags:[{t:'Lifting',k:'warn',iq:true}]}
  ],
  'Ride Sharing':[
-  {cat:'Ride Sharing',posted:'5 min ago',mode:'pay',amt:'$38',top:true,scope:'Airport drop to RDU, 1 passenger + 2 bags.',stats:[{i:'pin',t:'0.8 mi',s:'pickup'},{i:'clock',t:'~35 min'},{i:'cal',t:'5:30 PM'}],flags:[{t:'Sedan OK',k:'good'}]},
+  {cat:'Ride Sharing',posted:'5 min ago',mode:'pay',amt:'$38',top:true,scope:'Airport drop to RDU, 1 passenger.',bags:2,stats:[{i:'pin',t:'0.8 mi',s:'pickup'},{i:'clock',t:'~35 min'},{i:'cal',t:'5:30 PM'}],flags:[{t:'Sedan OK',k:'good'}]},
   {cat:'Ride Sharing',posted:'20 min ago',mode:'pay',amt:'$26',scope:'Cross-town round trip, wait time paid.',stats:[{i:'pin',t:'1.5 mi',s:'pickup'},{i:'clock',t:'~1 hr'}],flags:[{t:'Wait paid',k:'neu'}]}
  ],
  'Other':[
@@ -986,7 +986,10 @@ function renderJobCard(j){
     });
     return list;
   };
-  const scope=j.scope?'<div class="jc-scope">'+j.scope+'</div>':'';
+  /* "Number of Bags: N" — rides only, only when above 0 (owner NR-05: "the GO app needs to be updated to include it";
+     mirrors the app's order card DetailBlock, Go !402). */
+  const bagsRow=(j.bags>0)?'<div class="jc-scope"><b>Number of Bags:</b> '+j.bags+'</div>':'';
+  const scope=(j.scope?'<div class="jc-scope">'+j.scope+'</div>':'')+bagsRow;
   const stats=(j.stats&&j.stats.length)?'<div class="jc-stats">'+j.stats.map(jcStat).join('')+'</div>':'';
   // A completed job awaiting the requester's confirm stays on the Active list with a red badge —
   // the requester controls the payout at this point, so the worker must see it's still pending.
@@ -3356,7 +3359,7 @@ business:{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
         +crewNote
         +stepper
         +'<div class="rq-facts">'+facts+'</div>'
-        +'<div class="rq-sec">The task</div><div class="rq-card rq-task"><div class="rq-tt">'+(j.cat||'Request')+(j.biz?(' &middot; '+j.biz):'')+'</div><p>'+(j.scope||'See requester notes after you accept.')+'</p></div>'
+        +'<div class="rq-sec">The task</div><div class="rq-card rq-task"><div class="rq-tt">'+(j.cat||'Request')+(j.biz?(' &middot; '+j.biz):'')+'</div><p>'+(j.scope||'See requester notes after you accept.')+'</p>'+(j.bags>0?'<p><b>Number of Bags:</b> '+j.bags+'</p>':'')+'</div>'
         +'<div class="rq-sec">What&#8217;s required</div><div class="rq-reqs">'+reqs+'</div>'
         +'<div class="rq-sec">Location</div><div class="rq-card rq-loc">'+loc+'</div>'
         +navNote
@@ -4613,7 +4616,7 @@ if(PT){
       deal:!!order.deal, dealMerchant:order.dealMerchant||'',   // Gopher Deal request → card shows the "Gopher Deal" badge (unshaded — this Gopher is Pro)
       scheduled:!!order.scheduled,   // exact-time booking → lands in the Scheduled tab once accepted (until the worker starts it)
       workerSelection:wsel, requesterPicks:requesterPicks,   // 'select'/'my' → accepting = applying, requester approves (not auto-hire)
-      who:order.requestor||'A requester', scope:order.scope||order.title||'New request',
+      who:order.requestor||'A requester', scope:order.scope||order.title||'New request', bags:(parseInt(order.bags,10)||0),
       pickup:order.pickup||'', dropoff:(order.dropoff&&order.dropoff[0])||order.dropoff||'',
       stats:stats, flags:flags };
     if(!JOBS[pcat]) JOBS[pcat]=[];
