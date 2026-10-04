@@ -1728,7 +1728,7 @@ const GO_FAQS=[
       {g:'Support',q:'Why won\u2019t Stripe accept my debit card?',a:'Stripe accepts virtually all US bank debit cards for instant payouts, but cards from online or virtual banks usually don\u2019t qualify. Check Stripe\u2019s supported-banks list.'},
       {g:'Customers',q:'What are your hours?',a:'Gopher requests are available 24/7/365. If there\u2019s a Gopher requested and a Gopher available, we go to work.'},
       {g:'Customers',q:'How much does it cost to use the app?',a:'A Gopher Fee ($0.99\u2013$4.99 by service type) plus an 8% instant-transfer fee; age-restricted adds $1.99 (minus $1 with TrustShield). Your Gopher receives 100% of your offer.'},
-      {g:'Customers',q:'Can I cancel my request after the worker has started?',a:'If it\u2019s marked in-progress you may be charged up to $5; if items were already purchased you may also owe that amount. See the Terms for full details.'},
+      {g:'Customers',q:'Can I cancel my request after your worker has started?',a:'If it\u2019s marked in-progress you may be charged up to $5; if items were already purchased you may also owe that amount. See the Terms for full details.'},
       {g:'Customers',q:'Can I request age-restricted products?',a:'Yes, after agreeing to an age-restricted waiver. You must show a valid ID in person at delivery \u2014 contactless is never allowed, and without ID there\u2019s no refund.'},
       {g:'Customers',q:'How can I see my previous orders?',a:'Go to Account \u2192 Request History to see your completed and cancelled requests.'},
       // Verbatim from the canonical corpus (Final/assets/js/gopher-ai-engine.js, audience "any" \u2014
@@ -1737,7 +1737,7 @@ const GO_FAQS=[
       // questions scored onto "How do I cash out?" (payout timing) and answered confidently wrong.
       // "cash" deliberately keeps its own token in iqCanon \u2014 do not fold it into the pay/payout
       // family, or this entry and the cash-out entry tokenise identically and tie.
-      {g:'Support',q:'Can I pay with cash?',a:'No \u2014 cash isn\u2019t an option. We have to guarantee payment to the worker before a request can be accepted, so all payment runs through the app.'}
+      {g:'Support',q:'Can I pay with cash?',a:'No \u2014 cash isn\u2019t an option. We have to guarantee payment to your worker before a request can be accepted, so all payment runs through the app.'}
 ];
 const IQ_STOP=new Set('the a an to of do i my is it for in on at can how what when where why are be and or if you your with this that get got need want make made have has does will would should could about it i\u2019m im there their they them then than been being was were from into also just one take more most but who which while because very such only even same both each every well per via any some'.split(' '));
 function iqCanon(w){ w=w.replace(/(ing|ed|es|s)$/,''); if(/^(pay|paid|payout|payment|deposit|earn)/.test(w))return 'pay'; if(/^cancel/.test(w))return 'cancel'; if(/^(refund|charge)/.test(w))return 'charge'; if(/^(ride|driv)/.test(w))return 'ride'; return w; }
