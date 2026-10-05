@@ -700,11 +700,11 @@ const ICON={
   moving:'<rect x="3" y="8" width="11" height="9"/><path d="M14 11h3l3 3v3h-6z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>'
 };
 const CATS=[
-  ['delivery','Delivery / Errand','ERRAND'],['junk','Junk Removal','HAULING'],['moving','Moving','RELOCATION'],
+  ['delivery','Delivery','ERRAND'],['junk','Junk Removal','HAULING'],['moving','Moving','RELOCATION'],
   ['home','Home Services','SERVICES'],['labor','Hourly / Day Labor','LABOR'],['yard','Yard / Outdoor','OUTDOOR'],
   ['ride','Need a Ride','RIDE'],['other','Other','CUSTOM']
 ];
-const CAT_POPNAME={delivery:'Delivery / Errand',junk:'Junk Removal',moving:'Moving',home:'Home Services',
+const CAT_POPNAME={delivery:'Delivery',junk:'Junk Removal',moving:'Moving',home:'Home Services',
   labor:'Hourly / Day Labor',yard:'Yard / Outdoor Projects',ride:'Need a Ride',other:'Other'};
 const CAT_EXAMPLES={
   delivery:['Beer & liquor run','Groceries dropped off','Pharmacy pickup','Tobacco, vape and nicotine delivery (21+ only)','Takeout delivered'],
@@ -2227,19 +2227,19 @@ function openDetails(order){
   // Same completed gap as the subtitle above - see the note there.
   var stat=r.stage==='active'?'In progress':(r.stage==='scheduled'?'Scheduled':(r.stage==='completed'?(r.confirmed?'Completed':'Completed · confirm to release payment'):(r.stage==='accepted'?'Gopher accepted':'Finding Gophers near you')));
   var row=function(l,v){ return (v!=null&&v!=='')?'<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #f0eef2;font-family:\'DM Sans\',sans-serif;font-size:13px;"><span style="color:#8a94a3;font-weight:600;flex:0 0 auto;">'+l+'</span><span style="color:#002461;font-weight:700;text-align:right;max-width:62%;">'+v+'</span></div>':''; };
-  var wc=+r.workers||1, gph=['moving','junk','labor','home','ride','other'].indexOf(r.cat)>=0;   // the completed categories say "Gopher", never "worker" (909 desk, 2026-10-04)
+  var wc=+r.workers||1, gph=['moving','junk','labor','home','ride','other','delivery'].indexOf(r.cat)>=0;   // the completed categories say "Gopher", never "worker" (909 desk, 2026-10-04)
   var html='<div style="margin-top:4px;">'
     +row('Order','#'+r.order)
     +row('Status', stat)
     +row('Category', cat)
     +row('Timing', esc(r.timingLabel||r.when||'ASAP'))
     +(r.description?row('Details', esc(r.description)):'')
-    +(r.deliveryType?row('Delivery type', esc(r.deliveryType)):'')
+    +((r.cat==='delivery' && r.ageRestricted)?row('Age-restricted','Yes'):(r.cat!=='delivery' && r.deliveryType)?row('Delivery type', esc(r.deliveryType)):'')   /* Delivery: the age switch is one row, as the app's review reads it */
     +(r.riders>0?row('Riders', r.riders):'')
     +(r.bags>0?row('Large bags', r.bags):'')   /* Need a Ride only, only when above 0 (NR-05 / NR-20) */
     +((wc>1||r.payByHour)?row(gph?'Gopher info':'Worker info', wc+(gph?' Gopher':' worker')+(wc>1?'s':'')+(r.payByHour?' \u00b7 '+(r.numHours||1)+'hr':'')):'')
-    +(hasPickup?row('Pick-up', esc(r.pickup)):'')
-    +row(hasPickup?'Destination':'Location', esc(r.dropoff||'\u2014'))
+    +(hasPickup?row('Pick-up', esc(r.pickup)):(r.anywhere?row('Pick-up','Gopher\u2019s choice'):''))
+    +row((hasPickup||r.anywhere)?'Destination':'Location', esc(r.dropoff||'\u2014'))
     +((r.dist && hasPickup)?row('Distance', esc(r.dist)+(/mi/i.test(r.dist)?'':' mi')):'')   /* a trip distance means nothing on a single-location job (Junk, Home, Labor, Yard, Custom Task) */
    /* Access details — same facts the worker sees, so the two sides never disagree. */
    +(function(){var L=[];var ps=+r.pickupStairs||0,ds=+r.destStairs||0;
@@ -2448,7 +2448,7 @@ function iqTopicReply(query, audience){
             labor:['Hourly / Day Labor','extra hands booked by the hour'],
             yard:['Yard / Outdoor','mowing, leaf and yard cleanup, mulch, and garden work'],
             ride:['Need a Ride','getting you where you need to be'],
-            delivery:['Delivery / Errand','pickups, drop-offs, grocery and pharmacy runs, and quick errands'] };
+            delivery:['Delivery','pickups, drop-offs, grocery and pharmacy runs, and quick errands'] };
   var pricingMsg = worker
     ? "You keep <b>100%</b> of the offer you accept \u2014 the requester\u2019s fees sit on their side. Payout begins when you mark the request complete and the requester confirms (or automatically after 48 hours). Your first 10 payouts use Standard speed; after that you\u2019re upgraded to Instant, and Pro/Pro+ start on Instant."
     : "You set what your Gopher takes home, plus any cost of items they front \u2014 they receive <b>100%</b> of your offer. On top there\u2019s a <b>Gopher Fee</b> ($0.99\u2013$4.99 by service type), an 8% instant-transfer fee, and $1.99 for age-restricted orders (<b>TrustShield</b> takes $1 off).";

@@ -2179,12 +2179,16 @@ onboarding:{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
    <h1>Work Settings &amp; Radius</h1>
    <p class="sub">Pick the categories you'll take, then set how far you'll travel. Nothing is selected yet.</p>
    <div class="sec">Categories</div>
-   <div data-cat="Delivery / Errand">
-     <div class="crow"><span class="cl">Delivery / Errand</span><span class="sw js-main"></span></div>
+   <!-- G40-581: Delivery is ONE category with two sub-categories, as the new Request flow sends them (General Errand / Age-Restricted).
+        The data-cat values are unchanged (job filters read them); only the grouping and the words are new. -->
+   <div class="js-delgrp" style="font-family:'Nunito';font-weight:900;font-size:13px;color:#002461;padding:13px 0 0;">Delivery</div>
+   <div data-cat="Delivery / Errand" style="padding-left:14px;">
+     <div class="crow"><span class="cl">General Delivery</span><span class="sw js-main"></span></div>
    </div>
    <!-- Age-restricted delivery is its OWN category (owner, 2026-07-23) — promoted from the nested sub-row so it reads as a first-class category, matching the web (Final/gopher-go.html). Age-gated in init(): hidden for under-21 gophers, mirroring production retrieve.js. -->
-   <div data-cat="Delivery — Age-Restricted" class="js-arcat">
-     <div class="crow"><span class="cl">Delivery — Age-Restricted <span style="color:#8C8675">(ID required)</span></span><span class="sw on"></span></div>
+   <div data-cat="Delivery — Age-Restricted" class="js-arcat" style="padding-left:14px;">
+     <div class="crow"><span class="cl">Age-Restricted <span style="color:#8C8675">(ID required)</span></span><span class="sw on"></span></div>
+     <div style="font-family:'DM Sans';font-size:11px;line-height:1.4;color:#8C8675;padding:0 0 8px;">Age-restricted jobs go only to Gophers who opt in here.</div>
    </div>
    <div data-cat="Ride Sharing"><div class="crow"><span class="cl">Ride Sharing</span><span class="sw"></span></div><div class="ridepanel js-ridewrap" style="display:none"><div class="rp-h">&#128274; Ride sharing info — saved even if collapsed</div><div class="row2"><div class="field"><label>Vehicle make</label><input value="Chevrolet"></div><div class="field"><label>Model</label><input value="ZR2"></div></div><div class="row2"><div class="field"><label>Year</label><input value="2023"></div><div class="field"><label>Color</label><input value="White"></div><div class="field"><label>Max passengers</label><input value="4"></div></div><div class="field"><label>Licence plate #</label><input value="KFV8652"></div><div class="row2"><div class="field"><label>Driver's license #</label><input value="36658445"></div><div class="field"><label>Issuing state</label><input value="NC"></div></div><div class="sec">Documents</div><div class="up2"><div class="uptile js-up">${DOC}<span>Submit registration</span></div><div class="uptile js-up">${DOC}<span>Submit insurance</span></div></div><div class="sec sec-info">Vehicle photos<button type="button" class="vp-i js-vpinfo" aria-label="About vehicle photos">i</button></div><div class="up2"><div class="uptile js-up" data-photo="front">${CAM}<span>Front &middot; head-on</span></div><div class="uptile js-up" data-photo="rear">${CAM}<span>Rear &middot; plate visible</span></div></div><div class="vpnote js-vpnote">Both photos required for Ride Sharing jobs</div><button type="button" class="rp-save js-rpsave disabled">Save ride sharing info</button><div class="rp-status js-rpstatus"></div></div></div>
    <div data-cat="Home / Office Services"><div class="crow"><span class="cl">Home / Office Services</span><span class="sw"></span></div></div>
@@ -3196,7 +3200,8 @@ business:{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
         : '';
       // location — a destination-only request (e.g. day labor at one site) has NO pick-up: show one row.
       const hasPickup = !!(j.pickup && String(j.pickup).trim());
-      const dropLabel = hasPickup ? 'Drop-off' : 'Location';
+      const anywhere = !!j.anywhere;   // Delivery with "Gopher can purchase from anywhere": the app reads Pick Up Location: Gopher's choice
+      const dropLabel = (hasPickup||anywhere) ? 'Drop-off' : 'Location';
       const pickAddr='1240 Hillsborough St, Raleigh', dropAddr='88 Morgan St, Durham';
       // Navigate (live-app parity): once the worker is ON the job, each revealed address gets a
       // turn-by-turn handoff button. Navigation runs in the phone's maps app; the live location
@@ -3208,7 +3213,8 @@ business:{ html:`<div class="frame"><div class="rib">NEW</div>${SBAR}
         +(rv?pickAddr:'General area &middot; <i>exact address unlocks on accept</i>')+'</div>'+navBtn('pick-up')+'</div>';
       const dropRow = '<div class="rq-locrow"><span class="rq-lp drop">'+dropLabel+'</span><div style="flex:1;">'
         +(rv?dropAddr:'General area &middot; <i>exact address unlocks on accept</i>')+'</div>'+navBtn(dropLabel.toLowerCase())+'</div>';
-      const loc = (hasPickup?pickRow:'')+dropRow;
+      const anyRow = '<div class="rq-locrow"><span class="rq-lp pick">Pick-up</span><div style="flex:1;">Gopher&rsquo;s choice</div></div>';
+      const loc = (hasPickup?pickRow:(anywhere?anyRow:''))+dropRow;
       // Navigating state — visible on the detail so it's evident sharing continues during turn-by-turn.
       const navNote = (canNav && j.navigating)
         ? '<div class="rq-prio" style="background:#eef4ff;border-color:#cdd9f0;"><span class="rq-ri">'+sv(I.pin)+'</span><b>Navigating to the '+String(j.navigating.to||'').toLowerCase()+'</b> &mdash; your live location keeps streaming to '+who+' while you navigate.</div>'
@@ -4658,7 +4664,7 @@ if(PT){
       deal:!!order.deal, dealMerchant:order.dealMerchant||'',   // Gopher Deal request → card shows the "Gopher Deal" badge (unshaded — this Gopher is Pro)
       scheduled:!!order.scheduled,   // exact-time booking → lands in the Scheduled tab once accepted (until the worker starts it)
       workerSelection:wsel, requesterPicks:requesterPicks,   // 'select'/'my' → accepting = applying, requester approves (not auto-hire)
-      who:order.requestor||'A requester', scope:order.scope||order.title||'New request', bags:(parseInt(order.bags,10)||0),
+      who:order.requestor||'A requester', scope:order.scope||order.title||'New request', bags:(parseInt(order.bags,10)||0), anywhere:!!order.anywhere,
       pickup:order.pickup||'', dropoff:(order.dropoff&&order.dropoff[0])||order.dropoff||'',
       stats:stats, flags:flags };
     if(!JOBS[pcat]) JOBS[pcat]=[];

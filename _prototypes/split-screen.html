@@ -119,7 +119,7 @@
       bids:!!r.bids, topOffer:(r.offerBand==='generous'), pay:+r.pay||0, cost:+r.cost||0, workers:+r.workers||1,
       ageRestricted:!!r.ageRestricted, trustShield:!!r.trustShield, deal:!!r.deal, dealMerchant:r.dealMerchant||'',
       pickup:r.pickup||'', dropoff:r.dropoff?[r.dropoff]:[],
-      scope:r.scope||r.title, bags:+r.bags||0, dist:r.dist||'2.4',
+      scope:r.scope||r.title, bags:+r.bags||0, anywhere:!!r.anywhere, dist:r.dist||'2.4',
     /* Access details ride along (owner 2026-08-19) — a worker decides on stairs. */
     pickupStairs:+r.pickupStairs||0, destStairs:+r.destStairs||0,
     serviceElevatorPickup:!!r.serviceElevatorPickup, serviceElevatorDest:!!r.serviceElevatorDest,

@@ -410,6 +410,13 @@ body{
 .idc-done-ico{font-size:38px;}
 .idc-stores{display:flex;gap:9px;justify-content:center;margin-top:13px;}
 .idc-stores img{height:38px;}
+.ts-card{display:flex;align-items:center;gap:11px;border-radius:13px;padding:11px 13px;margin-top:11px;font-family:'Nunito';width:100%;text-align:left;}
+.ts-card.ok{background:var(--green-light);border:1px solid #bfe6cf;}
+.ts-card.add{background:#fff;border:1.5px solid #cfd8ea;cursor:pointer;}
+.ts-card .ts-tx{flex:1;min-width:0;}
+.ts-card .ts-t{font-weight:900;font-size:13.5px;color:var(--navy);}
+.ts-card .ts-s{font-weight:600;font-size:11.5px;color:var(--muted-cool);line-height:1.35;margin-top:1px;}
+.ts-card .ts-go{font-weight:900;font-size:13px;color:var(--green);white-space:nowrap;}
 .ts-verified{display:flex;align-items:center;gap:7px;background:var(--green-light);border:1px solid #bfe6cf;border-radius:13px;padding:11px 13px;margin-top:11px;font-family:'Nunito';font-weight:800;font-size:12px;color:var(--green);}
 .ts-verified svg{width:18px;height:18px;fill:none;stroke:var(--green);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
 
@@ -952,7 +959,7 @@ window.addEventListener('resize', clampOpenPopover);
 
 /* ---- Categories (name, tag, examples, description placeholder) ---- */
 const CATEGORIES = {
-  delivery:{ name:'Delivery / Errand', tag:'Errand', ph:"e.g. Pick up 4 catering trays + drinks from Jasmine's and drop at our office",
+  delivery:{ name:'Delivery', tag:'Errand', ph:"e.g. Pick up 4 catering trays + drinks from Jasmine's and drop at our office",
     ex:'Grocery run · pharmacy pickup · takeout' },
   junk:{ name:'Junk Removal', tag:'Hauling', ph:"e.g. Old sectional couch + a few boxes in the garage, haul it today",
     ex:'Couch haul · garage cleanout · debris' },
@@ -1064,7 +1071,7 @@ const PAY_METHODS = {
 /* ---- "Second set of eyes" advice per category ---- */
 const REVIEW_ADVICE = {
   delivery:{ intro:"For a delivery, a clean handoff is everything. A few things worth a second look:", points:[
-    'Make sure the <b>right vehicle</b> is set — a sedan won\'t swallow a 65" TV or a month of groceries.',
+    'Say <b>how big or heavy</b> it is — a sedan won\'t swallow a 65" TV or a month of groceries.',
     'Add any <b>access details</b>: gate code, apartment number, which door, stairs vs. elevator.',
     'Flag anything <b>fragile, heavy, or perishable</b> so your Gopher shows up ready for it.',
     'If someone needs to be home to receive it, drop in a <b>contact number or a drop-off window</b>.'] },
@@ -1383,6 +1390,9 @@ function customerAgeYears(){
 /* Identity satisfied for an age-restricted order. Mirrors the web host's
    identityVerified(): hasTS || submittedAt || onFile — the badge and a one-off
    submission are equally valid; they differ only in how long they last. */
+/* The app shows the age switch (and runs the keyword block) from the profile's can_request_restricted_items; here that is "21 or older".
+   An unknown date of birth reads as an adult, as the server's getAge does. (G40-581 DL-03/DL-07, D-038 part 2.) */
+function canRequestRestricted(){ const a=customerAgeYears(); return a==null || a>=21; }
 function identitySatisfied(){ return !!(state.trustShield || state.idSubmittedAt || state.savedOnFile); }
 function idOnFileOrSubmitted(){ return !!(state.savedOnFile || state.idSubmittedAt || idVerifiedNow()); }
 
@@ -1480,36 +1490,18 @@ function renderStep1(){
    is required for age-restricted orders), and customerAgeYears() is NOT read for the
    copy any more. Age changes nothing on this surface. */
 function arIdentityControl(){
-  if(state.trustShield) return `<div class="ts-verified">${tsSeal(18)}TrustShield™ Verified — ID on file, nothing to submit for this order.</div>`;
-  /* ⛔ NO AGE BRANCH (owner ruling, 2026-08-25: "there is no distinction with ANY age.
-     ALL users need to submit their identification"). Modelled on the web change in
-     036bc2d, which removed the same fork from Request and Connect.
-     It used to fork on customerAgeYears() < 30 — a boundary that existed only because
-     under-30 once had a TrustShield-only path. Everyone now gets the SAME control, and
-     the two outcomes differ only in HOW LONG the identity lasts:
-       • Submit identification — ONE-TIME, this order only (savedOnFile stays false).
-       • TrustShield          — kept for as long as the badge is carried.
-     That persistence split is enforced in the capture sheet's submit handler by its
-     isTS flag, not here; this function only paints the control.
-     ⚠️ Do not reintroduce an age fork. The 21+ rule is a SEPARATE, still-live gate —
-     nobody under 21 can order age-restricted at all — enforced on the deal categories,
-     not in this banner, and it has no implementation on this surface (verified: zero
-     isMinor / calculateAge / customerAge gating here). */
-  if(idOnFileOrSubmitted()) return `<div class="ar-id-done">
-      <span class="ar-id-check">✅</span>
-      <span class="ar-id-label">ID submitted — pre-cleared for this order</span>
-      <button class="ar-id-update" data-action="id-update">Update</button>
-    </div>`;
-  return `<div class="ar-control">
-    <button class="ar-action" data-action="id-submit">Submit identification</button>
-    <div class="ar-action-note">or <button class="ar-tsbtn" data-action="id-trustshield">+Add Gopher TrustShield™</button></div>
-  </div>`;
+  /* G40-581 (John on the iPhone, 2026-10-04: "Show verified or if not, we need add a button to add"): while the age switch is on, the
+     requester sees ONE of two rows, the same card family. Verified (green): "TrustShield™ Verified — ID on file, nothing to submit for
+     this order." Not verified: "+Add Gopher TrustShield™", which opens the TrustShield capture. There is NO one-time "Submit
+     identification" path: the app has none (the gate that required it is gone with it). */
+  if(state.trustShield) return `<div class="ts-card ok" data-testid="dl-trustshield-verified">${tsSeal(26)}<div class="ts-tx"><div class="ts-t">TrustShield™ Verified</div><div class="ts-s">ID on file — nothing to submit for this order.</div></div></div>`;
+  return `<button type="button" class="ts-card add" data-action="id-trustshield" data-testid="dl-trustshield-add">${tsSeal(26)}<div class="ts-tx"><div class="ts-t">+Add Gopher TrustShield™</div><div class="ts-s">Verify your ID once for age-restricted requests.</div></div><span class="ts-go">Add ›</span></button>`;
 }
 /* Kept as the name the rest of this file already calls. */
 function tsPromo(){ return arIdentityControl(); }
 function renderStep2(){
   const c=CATEGORIES[state.category];
-  let h=`<div class="step-head"><h3>Tell us about your ${c.noun||c.name.toLowerCase()} request</h3>
+  let h=`<div class="step-head"><h3>${state.category==='delivery' ? 'Tell us about your delivery' : 'Tell us about your '+(c.noun||c.name.toLowerCase())+' request'}</h3>
     </div>`;
 
   // Page 1 — Describe
@@ -1521,12 +1513,15 @@ function renderStep2(){
     </div>`;
   }
 
-  // Page 2 — Delivery Type (delivery only)
+  // Page 2 — Delivery type (delivery only). G40-581: the age switch is shown ONLY to a requester who can request restricted items (21+);
+  // turning it on turns the purchase on; the TrustShield row shows in one of two states while it is on. NO special instructions on
+  // Delivery ("that is what the description is for"), no vehicle, no card icons.
   if(state.category==='delivery'){
+    const can21=canRequestRestricted();
     h+=`<div class="step-section">
       <div class="sst">${sstI(svgIco('list'))}Delivery type</div>
-      <div class="toggle-row">
-        <button class="toggle-switch ${state.ageRestricted?'on':''}" data-toggle="ageRestricted" aria-label="Age-restricted items"></button>
+      ${can21 ? `<div class="toggle-row">
+        <button class="toggle-switch ${state.ageRestricted?'on':''}" data-toggle="ageRestricted" aria-label="Age-restricted items" data-testid="dl-age-switch"></button>
         <span class="tr-label">Includes age-restricted items
           ${infoTip('age', 'Age-Restricted Waiver',
             ['By submitting, you confirm you are at least 21 with a valid government ID to present to the Gopher who delivers your order.',
@@ -1534,29 +1529,9 @@ function renderStep2(){
             'Age-restricted deliveries ALWAYS require ID shown in person at drop-off.')}
         </span>
       </div>
-      ${state.ageRestricted ? `
-        ${''/* The yellow "Safe-Guarding & Identity Verification Activated" banner was
-         removed 2026-08-18 (owner: "No need for it"). The information it carried is
-         not lost: the $1.99 age fee shows in the fee breakdown, ID-at-exchange is in
-         the toggle's own waiver tip, and the TrustShield line below still reflects
-         verification state. Don't rebuild it here. */}${tsPromo()}
-        ${''/* The DEMO age chip was REMOVED 2026-08-25 (owner). It existed to switch
-           between the under-30 and 30+ perspectives back when they rendered different
-           controls. They no longer do — "there is no distinction with ANY age" — so the
-           chip toggled a value nothing reads and implied a difference that does not
-           exist. Do not add it back unless age starts branching the UI again. */}
-        <button data-action="demo-ts" style="margin-top:8px;background:#eef0f8;border:1px dashed #c9d2e3;border-radius:8px;padding:6px 10px;font-family:'Nunito';font-weight:800;font-size:11px;color:#3A4D74;cursor:pointer;">DEMO · ${state.trustShield?'TrustShield ON':'TrustShield off'}</button>
-      `:''}
-      ${''/* Inline purchase-nudge banner retired 2026-08-18 (owner): superseded by the
-        web-parity pair — the age toggle now AUTO-ENABLES "purchase needed" (so this
-        state is rare), and turning it back off is caught by the openAgePurchaseModal
-        guardrail at Continue. Pop-ups mirror the web app; don't rebuild the banner. */}
-      ${''/* Inline "This looks age-restricted" banner retired 2026-08-18 (owner):
-        the blocking openAgeKwModal at the Continue gate is the single surface for
-        this confirmation, mirroring the web app. Two surfaces asking the same
-        question let a user answer the weak one and never see the strong one. */}
+      ${state.ageRestricted ? tsPromo() : ''}` : ''}
       <div class="toggle-row">
-        <button class="toggle-switch ${state.itemsPurchased?'on':''}" data-toggle="itemsPurchased" aria-label="Purchase needed"></button>
+        <button class="toggle-switch ${state.itemsPurchased?'on':''}" data-toggle="itemsPurchased" aria-label="Purchase needed" data-testid="dl-purchase-switch"></button>
         <span class="tr-label">This delivery requires a purchase
           ${infoTip('cost','Entering the cost of items',
             ['Enter the total cost of the items your Gopher will purchase — include tax and any fees so the amount is accurate.',
@@ -1568,10 +1543,12 @@ function renderStep2(){
         <div class="sub-field">
           <div class="sf-label">Cost of items needed</div>
           <div class="cost-input-box"><span class="ci-currency">$</span>
-            <input type="text" inputmode="decimal" class="cost-amount-input" id="costOfItemsInput" data-field="costOfItems" value="${esc(state.costOfItems.replace(/^\$/,''))}" placeholder="0.00" autocomplete="off" aria-label="Cost of items">
+            <input type="text" inputmode="decimal" class="cost-amount-input" id="costOfItemsInput" data-field="costOfItems" value="${esc(state.costOfItems.replace(/^\$/,''))}" placeholder="0.00" autocomplete="off" aria-label="Cost of items needed">
           </div>
           <div class="sf-hint">Total cost of the items your Gopher will purchase.</div>
         </div>`:''}
+      <button type="button" data-action="demo-age" style="margin-top:10px;background:#eef0f8;border:1px dashed #c9d2e3;border-radius:8px;padding:6px 10px;font-family:'Nunito';font-weight:800;font-size:11px;color:#3A4D74;cursor:pointer;">DEMO · requester ${can21?'21+ (can request age-restricted)':'under 21 (cannot)'}</button>
+      ${state.ageRestricted && can21 ? `<button type="button" data-action="demo-ts" style="margin:10px 0 0 6px;background:#eef0f8;border:1px dashed #c9d2e3;border-radius:8px;padding:6px 10px;font-family:'Nunito';font-weight:800;font-size:11px;color:#3A4D74;cursor:pointer;">DEMO · ${state.trustShield?'TrustShield ON':'TrustShield off'}</button>` : ''}
     </div>`;
   }
 
@@ -1635,12 +1612,12 @@ function renderPics(){
 }
 /* Moving ships with NO card-title icons yet ("we dont need all the icons yet" — owner 2026-10-02, carried into the
    909 desk's G40-576 package). Per-category suppression, not a deletion: every other category keeps its icon. */
-/* The categories already on the new flow (G40-576 Moving, G40-577 Junk Removal, G40-578 Hourly / Day Labor, G40-579 Home Services, G40-580 Need a Ride): they speak "Gopher",
+/* The categories already on the new flow (G40-576 Moving, G40-577 Junk Removal, G40-578 Hourly / Day Labor, G40-579 Home Services, G40-580 Need a Ride, G40-581 Delivery): they speak "Gopher",
    show the two-option Gopher choice with NO First Available, and ship without card-title icons. Yard joins when its package lands. */
-const GOPHER_CATS=['moving','junk','labor','home','ride'];
+const GOPHER_CATS=['moving','junk','labor','home','ride','delivery'];
 const NO_FIRST_CATS=['moving','junk','labor','home'];   // Need a Ride is in GOPHER_CATS but keeps First Available (G40-580)
 function noFirst(){ return NO_FIRST_CATS.indexOf(state.category)>=0; }
-function pickUnitOn(){ return state.category==='moving' || state.category==='ride'; }   // Unit/Apt # under the pick-up address
+function pickUnitOn(){ return state.category==='moving' || state.category==='ride' || state.category==='delivery'; }   // Unit/Apt # under the pick-up address
 function isGoph(){ return GOPHER_CATS.indexOf(state.category)>=0; }
 /* WORDING ONLY: the completed categories, now including Custom Task (G40-573 is done), say "Gopher" — everything behavioural still keys off isGoph(). */
 function isGophW(){ return isGoph() || state.category==='other'; }
@@ -1757,13 +1734,13 @@ function renderStep4(){
       ${isVisible('noSpecificPickup') ? `
       <div class="toggle-row">
         <button class="toggle-switch ${state.noSpecificPickup?'on':''}" data-toggle="noSpecificPickup"></button>
-        <span class="tr-label">${state.category==='moving' ? 'Single-location move' : 'Pickup location is flexible'}
-          ${state.category==='moving'
+        <span class="tr-label">${state.category==='moving' ? 'Single-location move' : state.category==='delivery' ? 'Gopher can purchase from anywhere' : 'Pickup location is flexible'}
+          ${state.category==='delivery' ? '' : state.category==='moving'
             ? infoTip('nsp','Single-location move',['Just need moving help at <b>ONE</b> address? Slide this on.','Your Gopher helps on-site — loading, unloading, rearranging — and will NOT travel between two locations.','Enter the move address under Destination below.'])
             : infoTip('nsp','No specific pick-up',[gwd('Either the worker can purchase your items anywhere they\'re available, or there\'s no actual pick-up spot for this request.')])}
         </span>
       </div>`:''}
-      ${state.noSpecificPickup && isVisible('noSpecificPickup') ? `
+      ${state.noSpecificPickup && isVisible('noSpecificPickup') && state.category==='delivery' ? '' : state.noSpecificPickup && isVisible('noSpecificPickup') ? `
         <div class="sub-field"><div class="sf-label">${state.category==='moving' ? 'Single-location move' : 'Pick-up flexibility'}</div>
         <div class="sf-value">${state.category==='moving' ? 'Your Gopher helps at ONE address only — loading, unloading, or rearranging items on site. This is not a two-location move. Enter the move address under Destination below.' : "The worker can purchase anywhere your items are available, or there's no fixed pick-up location."}</div></div>
       ` : `
@@ -2040,13 +2017,12 @@ function renderStep6(){
   let rows=`<div class="review-row"><span class="rl">Category</span><span class="rv">${c.name}</span></div>`;
   if(isVisible('describe') && state.description.trim()) rows+=`<div class="review-row"><span class="rl">Description</span><span class="rv" style="max-width:62%;">${esc(state.description)}</span></div>`;
   if(isVisible('addPic') && state.picThumbs.length) rows+=`<div class="review-row"><span class="rl">Pics</span><span class="rv"><div class="review-thumbs">${state.picThumbs.map(t=>`<div class="review-thumb">${t}</div>`).join('')}</div></span></div>`;
-  if(state.category==='delivery') rows+=`<div class="review-row"><span class="rl">Delivery type</span><span class="rv">${state.ageRestricted?'Age-restricted · ':''}${state.itemsPurchased?'Purchase needed':'Items in hand'}</span></div>`;
   if(isVisible('riderInfo')) rows+=`<div class="review-row"><span class="rl">Riders</span><span class="rv">${(parseInt(state.numRiders,10)||1)} rider${(parseInt(state.numRiders,10)||1)===1?'':'s'}</span></div><div class="review-row"><span class="rl">Large bags</span><span class="rv">${state.numBags}</span></div>`;
   if(isVisible('workerSetup')) rows+=`<div class="review-row"><span class="rl">${isGophW()?'Gopher info':'Worker info'}</span><span class="rv">${wCount} ${isGophW()?'Gopher':'worker'}${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`;
   if(isVisible('itemInfo')) rows+=`<div class="review-row"><span class="rl">Item info</span><span class="rv">${state.itemCount} item${state.itemCount>1?'s':''}${state.multipleItems?' · mixed':''}${state.hazardous?' · hazmat':''}</span></div>`;
   if(isVisible('pickupSection')){
     rows+= state.noSpecificPickup
-      ? `<div class="review-row"><span class="rl">Pick-up</span><span class="rv">Any location</span></div>`
+      ? `<div class="review-row"><span class="rl">Pick-up</span><span class="rv">${state.category==='delivery' ? "Gopher\u2019s choice" : 'Any location'}</span></div>`
       : `<div class="review-row"><span class="rl">Pick-up</span><span class="rv" style="max-width:62%;">${esc(pickupAddr())}${(pickUnitOn()&&state.pickupUnit)?', Unit/Apt '+esc(state.pickupUnit):''}</span></div>`;
     if(isVisible('pickupStairs') && !state.noSpecificPickup && (state.pickupStairs>0||state.serviceElevatorPickup))
       rows+=`<div class="review-row"><span class="rl">Pick-up access</span><span class="rv" style="max-width:62%;">${accessLine(state.pickupStairs,state.serviceElevatorPickup)}</span></div>`;
@@ -2058,7 +2034,8 @@ function renderStep6(){
     rows+=`<div class="review-row"><span class="rl">Trip Distance</span><span class="rv">${esc(state.tripDistance)}</span></div>`;
     if(state.specialInstructions.trim()) rows+=`<div class="review-row"><span class="rl">Special instructions</span><span class="rv" style="max-width:62%;">${esc(state.specialInstructions)}</span></div>`;   // only when typed, as the app does
   }
-  if(showCost) rows+=`<div class="review-row"><span class="rl">Cost of items</span><span class="rv">${fmt(costNum)}</span></div>`;
+  if(state.category==='delivery' && state.ageRestricted) rows+=`<div class="review-row"><span class="rl">Age-restricted</span><span class="rv">Yes</span></div>`;   // the age switch, after the addresses (the app's reviewRows)
+  if(showCost) rows+=`<div class="review-row"><span class="rl">${state.category==='delivery' ? 'Cost of goods' : 'Cost of items'}</span><span class="rv">${fmt(costNum)}</span></div>`;
 
   // Payment to your worker(s) (single row; per-worker math lives in the info button)
   rows+=`<div class="review-row earn"><span class="rl">${isGophW() ? 'Your offer to your Gopher' : ((wCount===1?'Your offer to the worker':'Your offer to the workers') + ' ' + workerPayTip(bids,wCount,perW,wPay))}</span>
@@ -2214,7 +2191,7 @@ function reviewFeeTip(fee,cog,bids){
     <span class="info-popover fee-popover"><h5>Request fee breakdown</h5>
       <div class="fee-items">
         <div class="fee-item"><span>${isGophW()?'Offer to your Gopher':'Offer to worker'}</span><span>${bids?'Pending':fmt(offerWorker)}</span></div>
-        ${costItems>0?`<div class="fee-item"><span>Cost of items</span><span>${fmt(costItems)}</span></div>`:''}
+        ${costItems>0?`<div class="fee-item"><span>Cost of goods</span><span>${fmt(costItems)}</span></div>`:''}
         <div class="fee-item"><span>Gopher Fee</span><span>${fmt(fee.fullGopherFee)}</span></div>
         ${fee.fullAgeFee?`<div class="fee-item"><span>Age-Restricted Fee</span><span>${fmt(fee.fullAgeFee)}</span></div>`:''}
         <div class="fee-item"><span>Instant Transfer (8%)</span><span>${bids?'8%':fmt(fee.fullInstantTransfer)}</span></div>
@@ -2281,14 +2258,13 @@ function renderStep7(){
   const wCount=workerCount();
   const hasPickup=isVisible('pickupSection') && !state.noSpecificPickup && !!pickupAddr().trim();   // Junk/Home/Labor/Yard/Other never ask for a pick-up; the default address must not surface as one on the submitted summary
   const desc=(state.description||'').trim();
-  const deliveryType=(state.category==='delivery')?((state.ageRestricted?'Age-restricted · ':'')+(state.itemsPurchased?'Purchase needed':'Items in hand')):'';
   const detailRows=
     (desc?`<div class="review-row"><span class="rl">Details</span><span class="rv" style="max-width:60%;text-align:right;">${esc(desc)}</span></div>`:'')
-    +(deliveryType?`<div class="review-row"><span class="rl">Delivery type</span><span class="rv">${deliveryType}</span></div>`:'')
     +(isVisible('riderInfo')?`<div class="review-row"><span class="rl">Riders</span><span class="rv">${parseInt(state.numRiders,10)||1}</span></div>`+((parseInt(state.numBags,10)||0)>0?`<div class="review-row"><span class="rl">Large bags</span><span class="rv">${parseInt(state.numBags,10)}</span></div>`:''):'')
     +((wCount>1||state.payByHour)?`<div class="review-row"><span class="rl">${isGophW()?'Gopher info':'Worker info'}</span><span class="rv">${wCount} ${isGophW()?'Gopher':'worker'}${wCount>1?'s':''}${state.payByHour?` · ${state.numHours}hr`:''}</span></div>`:'')
+    +((state.category==='delivery' && state.noSpecificPickup)?`<div class="review-row"><span class="rl">Pick-up</span><span class="rv">Gopher\u2019s choice</span></div>`:'')
     +(hasPickup?`<div class="review-row"><span class="rl">Pick-up</span><span class="rv" style="max-width:60%;text-align:right;">${esc(pickupAddr())}${(pickUnitOn()&&state.pickupUnit)?', Unit/Apt '+esc(state.pickupUnit):''}</span></div>`:'')
-    +`<div class="review-row"><span class="rl">${hasPickup?'Destination':'Location'}</span><span class="rv" style="max-width:60%;text-align:right;">${esc(dropoffAddr()||'—')}${(isGoph()&&state.destUnit)?', Unit/Apt '+esc(state.destUnit):''}</span></div>`;
+    +`<div class="review-row"><span class="rl">${(hasPickup||(state.category==='delivery'&&state.noSpecificPickup))?'Destination':'Location'}</span><span class="rv" style="max-width:60%;text-align:right;">${esc(dropoffAddr()||'—')}${(isGoph()&&state.destUnit)?', Unit/Apt '+esc(state.destUnit):''}</span></div>`;
   const interested = 2 + Math.floor(Math.random()*4);
   // MY Gophers first-dibs: the request is held for them before it opens to
   // anyone else, so "Looking for your worker…" would be wrong here.
@@ -2317,8 +2293,9 @@ function renderStep7(){
     <div class="review-row"><span class="rl">Timing</span><span class="rv">${timing}</span></div>
     <div class="review-row"><span class="rl">Category</span><span class="rv">${c.name}</span></div>
     ${detailRows}
+    ${state.category==='delivery' && state.ageRestricted ? `<div class="review-row"><span class="rl">Age-restricted</span><span class="rv">Yes</span></div>` : ''}
     <div class="review-row earn"><span class="rl">${isGophW()?'Gopher takes home':'Worker takes home'}</span><span class="rv">${bids?'Pending bids':fmt(workerPayTotal())}</span></div>
-    ${costNum>0?`<div class="review-row"><span class="rl">Cost of items</span><span class="rv">${fmt(costNum)}</span></div>`:''}
+    ${costNum>0?`<div class="review-row"><span class="rl">${state.category==='delivery'?'Cost of goods':'Cost of items'}</span><span class="rv">${fmt(costNum)}</span></div>`:''}
     <div class="review-row"><span class="rl">Request fee</span><span class="rv">${bids?'TBD':fmt(fee.requestFee)}</span></div>
     <div class="review-row total"><span class="rl">Total</span><span class="rv">${bids?'TBD after bid':fmt(fee.gmvTotal)}</span></div>
   </div>
@@ -2496,24 +2473,12 @@ function stepGate(){
   if(state.step===1 && !state.category) return {ok:false,sel:'.cat-grid',msg:'Pick a service category to continue.'};
   if(state.step===2 && isVisible('describe') && !state.description.trim()) return {ok:false,sel:'#descriptionInput',msg:'Add a description before continuing.'};
   if(state.step===2 && state.itemsPurchased && !(toNum(state.costOfItems)>0)) return {ok:false,sel:'#costOfItemsInput',msg:'Enter the cost of items before continuing.'};
-  if(state.step===2 && !state.ageRestricted && !state.ageKeywordAck && findAgeRestrictedKeyword(state.description))
+  if(state.step===2 && !state.ageRestricted && !(state.ageKeywordAck && state.ageKwText===state.description.trim()) && findAgeRestrictedKeyword(state.description))
     return {ok:false,sel:'.age-kw-banner',msg:'This looks age-restricted — confirm before continuing.',tone:'alert',age:true};   // ALL categories (compliance): age items under Other/Ride/etc. can't bypass the ID/waiver flow
-  /* ⛔⛔ THE IDENTITY GATE IS BACK (owner ruling, 2026-08-25) — this SUPERSEDES the
-     G40-410 removal that stood here on 2026-08-24; that note is kept below rather than
-     deleted, so the reversal stays legible instead of looking like the gate was never
-     touched. Modelled on the web change in 036bc2d.
-     G40-410 removed it for exactly one reason: the third-party ID vendor was being retired, enrolment
-     would stop, and under-30 (who then had no one-off ID path) would have been left
-     unable to order at all. TrustShield now runs INTERNALLY — enrolment never stops —
-     so the reason is gone and the requirement returns, for EVERYONE, no age branch.
-     ⚠️ SCOPE IS NARROW and this condition is what carries it: delivery + ageRestricted
-     only. A normal order is never gated by this.
-     ⚠️ Satisfied by EITHER path — that is the point: a one-time submission
-     (idSubmittedAt) or the persistent badge (trustShield / savedOnFile).
-     Superseded: "G40-410 (owner, 2026-08-24): TrustShield ID gate REMOVED —
-     verification is voluntary. Surface 2 of 3; web surfaces cleared in 77b4617." */
-  if(state.step===2 && state.category==='delivery' && state.ageRestricted && !identitySatisfied())
-    return {ok:false,sel:'.ar-control',msg:'Submit your identification for this age-restricted order to continue.',tone:'alert'};
+  /* THE IDENTITY GATE IS GONE AGAIN (John via the 909 desk, 2026-10-04, G40-581). It stood here from 2026-08-25 and required a one-time
+     "Submit identification" or a TrustShield before an age-restricted delivery could leave Step 2. The app has no such path: an
+     age-restricted delivery goes on, ID is checked in person at the door, and TrustShield is an optional "+Add" row.
+     The Step 2 checks that remain are the app's: the keyword scan (with the under-21 block) and "Attention!" on leaving Step 2. */
   /* Step 4 LOCATIONS — added 2026-08-25 (owner: align the prototype with Request web + Connect).
      This step had NO gate at all: a requester could leave BOTH address fields blank, walk past
      "Locations", and reach Review with the destination rendering as an em-dash. Both web surfaces
@@ -2651,6 +2616,17 @@ function openAgeKwModal(){
   const kw=findAgeRestrictedKeyword(state.description)||'this item';
   const e=(s)=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const old=document.getElementById('ageKwModalOv'); if(old) old.remove();
+  if(!canRequestRestricted()){   // D-038 part 2: a requester who can't request age-restricted items cannot go on while the term is there
+    const bv=document.createElement('div'); bv.id='ageKwModalOv';
+    bv.setAttribute('style','position:fixed;inset:0;z-index:99999;background:rgba(0,18,49,.55);display:flex;align-items:center;justify-content:center;padding:22px;');
+    bv.innerHTML='<div role="dialog" aria-modal="true" style="background:#fff;width:100%;max-width:340px;border-radius:22px;padding:24px 22px;text-align:center;box-shadow:0 24px 60px rgba(0,18,55,.5);font-family:Nunito,sans-serif;">'
+      +'<h4 style="font-weight:900;font-size:19px;color:#c44257;margin:0 0 10px;">This looks age-restricted</h4>'
+      +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5b6472;line-height:1.5;margin:0 0 10px;">Your request mentions <b style="color:#c44257;">&ldquo;'+e(kw)+'&rdquo;</b>, which is commonly an age-restricted item.</p>'
+      +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5b6472;line-height:1.5;margin:0 0 18px;">Age-restricted requests can only be placed by requesters 21 or older with a verified ID. Please edit your request to continue.</p>'
+      +'<button class="js-agekw-edit" style="width:100%;border:0;background:#1CB061;color:#fff;border-radius:13px;padding:14px;font-family:Nunito;font-weight:900;font-size:14px;cursor:pointer;">Edit my request</button></div>';
+    document.body.appendChild(bv); bv.querySelector('.js-agekw-edit').onclick=function(){ bv.remove(); const d=document.getElementById('descriptionInput'); if(d){ try{ d.focus(); }catch(_){} } };
+    return;
+  }
   const ov=document.createElement('div'); ov.id='ageKwModalOv';
   ov.setAttribute('style','position:fixed;inset:0;z-index:99999;background:rgba(0,18,49,.55);display:flex;align-items:center;justify-content:center;padding:22px;');
   ov.innerHTML='<div role="dialog" aria-modal="true" style="background:#fff;width:100%;max-width:340px;border-radius:22px;padding:24px 22px;text-align:center;box-shadow:0 24px 60px rgba(0,18,55,.5);font-family:Nunito,sans-serif;">'
@@ -2667,36 +2643,58 @@ function openAgeKwModal(){
     // keyword modal also enables "purchase needed" — skips a step the user would almost
     // certainly have to do anyway.
     if(!state.itemsPurchased){ state.itemsPurchased=true; state.agePurchaseAck=false; }
-    state.ageKeywordAck=true; ov.remove(); render(); };   // route age-restricted → Delivery
-  ov.querySelector('.js-agekw-no').onclick=function(){ state.ageKeywordAck=true; if(findAgeRestrictedKeyword(state.description)) state.idRequiredAtCompletion=true; ov.remove(); goNext(); };   // no silent bypass: force ID-at-completion
+    state.ageKeywordAck=true; state.ageKwText=state.description.trim(); ov.remove(); render(); };   // route age-restricted → Delivery
+  ov.querySelector('.js-agekw-no').onclick=function(){ state.ageKeywordAck=true; state.ageKwText=state.description.trim(); if(findAgeRestrictedKeyword(state.description)) state.idRequiredAtCompletion=true; ov.remove(); goNext(); };   // no silent bypass: force ID-at-completion
 }
 // Age-restricted "no purchase" guardrail — web-parity modal (copy verbatim from
 // Final/gopher-request.html #agePurchaseOverlay). "Add a purchase amount" turns the
 // purchase toggle on and lands focus in the Cost-of-Items field; "Continue without a
 // purchase" acknowledges for this attempt (plus a session don't-show-again) and resumes.
+/* DL-09: opening Delivery while ANY Delivery request is still out (pending, accepted, picked up, purchased) warns. It never blocks. The words are
+   the app's PendingCategoryRequestModal: "You already have one out" / "Your Delivery request is <status> (#id)." / the description / "If you meant
+   to place a second one, that's fine — it will be charged separately." / View my request / Start a new one anyway. */
+function deliveryOutCheck(){
+  let out=null;
+  try{ out=(window.GReq&&GReq.all()||[]).find(function(r){ return r && r.cat==='delivery' && !r.cancelled && !r.gCancelled && !r.expired
+        && ['searching','accepted','matched','active'].indexOf(r.stage)>=0 && !(r.stage==='active' && r.substage==='completed'); }) || null; }catch(_){ out=null; }
+  if(!out) return false;
+  const e=(s)=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const status = (out.stage==='active' && /pick|purchas/i.test(out.substage||'')) ? 'already on its way' : (out.stage==='active' || out.stage==='matched' || out.hired) ? 'accepted \u2014 a Gopher is on it' : 'waiting for a Gopher';
+  const old=document.getElementById('dlOutOv'); if(old) old.remove();
+  const ov=document.createElement('div'); ov.id='dlOutOv';
+  ov.setAttribute('style','position:fixed;inset:0;z-index:99999;background:rgba(0,18,49,.55);display:flex;align-items:center;justify-content:center;padding:22px;');
+  ov.innerHTML='<div role="dialog" aria-modal="true" style="background:#fff;width:100%;max-width:340px;border-radius:22px;padding:24px 22px;text-align:center;box-shadow:0 24px 60px rgba(0,18,55,.5);font-family:Nunito,sans-serif;">'
+    +'<h4 style="font-weight:900;font-size:19px;color:#002461;margin:0 0 12px;">You already have one out</h4>'
+    +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5C6685;line-height:1.5;margin:0 0 10px;">Your <b>Delivery</b> request is <b>'+status+'</b> <b>(#'+e(out.order)+')</b>.</p>'
+    +(out.description?'<p style="font-family:\'DM Sans\',sans-serif;font-style:italic;font-size:13px;color:#5A5A5A;line-height:1.5;margin:0 0 10px;">\u201c'+e(out.description)+'\u201d</p>':'')
+    +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5C6685;line-height:1.5;margin:0 0 16px;">If you meant to place a second one, that\u2019s fine \u2014 it will be charged separately.</p>'
+    +'<button class="js-dl-view" style="width:100%;border:0;background:#002461;color:#fff;border-radius:999px;padding:14px;font-family:Nunito;font-weight:900;font-size:14px;cursor:pointer;">View my request</button>'
+    +'<button class="js-dl-new" style="width:100%;margin-top:10px;border:0;background:transparent;color:#002461;padding:10px;font-family:Nunito;font-weight:900;font-size:13.5px;cursor:pointer;">Start a new one anyway</button></div>';
+  document.body.appendChild(ov);
+  ov.querySelector('.js-dl-view').onclick=function(){ ov.remove(); try{ if(window.GReq&&GReq.openOrder) GReq.openOrder(out.order); }catch(_){} gotoURL('gopher-request-home.html'); };
+  ov.querySelector('.js-dl-new').onclick=function(){ ov.remove(); };
+  return true;
+}
 function openAgePurchaseModal(){
+  /* G40-581 DL-18: the app's "Attention!" sheet (button.js ~538-620), its words and buttons: Edit Request / Submit. */
   const old=document.getElementById('agePurchaseOv'); if(old) old.remove();
   const ov=document.createElement('div'); ov.id='agePurchaseOv';
   ov.setAttribute('style','position:fixed;inset:0;z-index:99999;background:rgba(0,18,49,.55);display:flex;align-items:center;justify-content:center;padding:22px;');
   ov.innerHTML='<div role="dialog" aria-modal="true" aria-labelledby="agePurchTitle" style="background:#fff;width:100%;max-width:340px;border-radius:22px;padding:24px 22px;text-align:center;box-shadow:0 24px 60px rgba(0,18,55,.5);font-family:Nunito,sans-serif;">'
-    +'<div style="width:56px;height:56px;margin:0 auto 12px;border-radius:50%;background:#fdecec;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1;">\u26a0\ufe0f</div>'
-    +'<h4 id="agePurchTitle" style="font-size:18px;color:#002461;margin:0 0 10px;">Most age-restricted orders need a purchase</h4>'
-    +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5C6685;line-height:1.5;margin:0 0 12px;">You marked this age-restricted but turned off <b>Purchase needed</b>. Almost all age-restricted deliveries require a purchase &mdash; without one, your card is authorized for a lower amount, and if your Gopher needs to add items later, re-authorizing your card can fail and stall your order.</p>'
-    +'<div style="font-family:\'DM Sans\',sans-serif;font-size:12px;color:#a3401f;line-height:1.5;background:#fdecec;border:1px solid #f3c3b2;border-radius:12px;padding:11px 13px;margin:0 0 12px;text-align:left;">Only skip if you truly don\u2019t need anything purchased &mdash; e.g. a prescription pickup or pre-paid alcohol.</div>'
-    +'<label style="display:flex;align-items:center;gap:8px;font-family:\'DM Sans\',sans-serif;font-size:13px;color:#6b7280;margin:2px 0 14px;cursor:pointer;"><input type="checkbox" class="js-agep-dontshow" style="width:16px;height:16px;accent-color:#1CB061;">Don\u2019t show me this again</label>'
-    +'<button class="js-agep-add" style="width:100%;border:0;background:#1CB061;color:#fff;border-radius:13px;padding:14px;font-family:Nunito;font-weight:900;font-size:14px;cursor:pointer;">Add a purchase amount</button>'
-    +'<button class="js-agep-skip" style="width:100%;margin-top:12px;border:1.5px solid #dfe3ec;background:transparent;color:#002461;border-radius:13px;padding:14px;font-family:Nunito;font-weight:900;font-size:14px;cursor:pointer;">Continue without a purchase</button>'
+    +'<h4 id="agePurchTitle" style="font-weight:900;font-size:19px;color:#c44257;margin:0 0 10px;">Attention!</h4>'
+    +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5C6685;line-height:1.5;margin:0 0 10px;">You\u2019ve selected an Age-Restricted Delivery with no items needing to be purchased.</p>'
+    +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5C6685;line-height:1.5;margin:0 0 10px;">Because most all Age-Restricted transactions require a purchase, we wanted to bring it to your attention to avoid potential complications.</p>'
+    +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5C6685;line-height:1.5;margin:0 0 12px;">Please select <b>Edit Request</b> to return to the Request Details section OR select <b>Submit</b> to proceed if no items need to be purchased.</p>'
+    +'<label style="display:flex;align-items:center;gap:8px;font-family:\'DM Sans\',sans-serif;font-size:13px;color:#6b7280;margin:2px 0 14px;cursor:pointer;"><input type="checkbox" class="js-agep-dontshow" style="width:16px;height:16px;accent-color:#1CB061;"> Do not show me this again</label>'
+    +'<button class="js-agep-add" style="width:100%;border:1.5px solid #dfe3ec;background:transparent;color:#002461;border-radius:13px;padding:14px;font-family:Nunito;font-weight:900;font-size:14px;cursor:pointer;">Edit Request</button>'
+    +'<button class="js-agep-skip" style="width:100%;margin-top:12px;border:0;background:#1CB061;color:#fff;border-radius:13px;padding:14px;font-family:Nunito;font-weight:900;font-size:14px;cursor:pointer;">Submit</button>'
     +'</div>';
   document.body.appendChild(ov);
-  ov.querySelector('.js-agep-add').onclick=function(){
-    state.itemsPurchased=true; state.agePurchaseAck=false; ov.remove(); render();
-    const cog=document.getElementById('costOfItemsInput');
-    if(cog){ cog.focus(); try{ cog.select(); }catch(e){} }
-  };
+  ov.querySelector('.js-agep-add').onclick=function(){ ov.remove(); render(); };   // back to Request Details (Step 2), nothing changed
   ov.querySelector('.js-agep-skip').onclick=function(){
     state.agePurchaseAck=true;
     if(ov.querySelector('.js-agep-dontshow').checked) state.agePurchaseDismissed=true;
-    ov.remove(); goNext(); // resume the advance, same as the age-keyword "No" path
+    ov.remove(); goNext(); // resume the advance
   };
 }
 /* Category-mismatch nudge (worker visibility) — parity with the Final Request/Connect
@@ -2825,7 +2823,7 @@ document.addEventListener('click',(e)=>{
 
   // category select — selects only, no auto-advance
   const cat=e.target.closest('[data-cat]');
-  if(cat){ state.category=cat.dataset.cat; state.openCatInfo=null; realignCategoryState(); if(state.payMode==='bids' && !bidsAllowed()) state.payMode='set'; if(state.maxStepReached<1)state.maxStepReached=1; render(); return; }
+  if(cat){ state.category=cat.dataset.cat; state.openCatInfo=null; realignCategoryState(); if(state.payMode==='bids' && !bidsAllowed()) state.payMode='set'; if(state.maxStepReached<1)state.maxStepReached=1; render(); if(state.category==='delivery') deliveryOutCheck(); return; }
   // outside tap closes an open popover (only relevant on step 1)
   if(state.step===1 && state.openCatInfo){ state.openCatInfo=null; render(); return; }
 
@@ -2905,6 +2903,10 @@ document.addEventListener('click',(e)=>{
     case 'id-update':      window.__openIdCapture({}); break;
     case 'id-trustshield': window.__openIdCapture({trustShield:true}); break;
     case 'verify-id':      window.__openIdCapture({}); break;   // legacy hook, same destination
+    case 'demo-age': {   // DEMO: flip the requester between 21+ and under 21 (the age switch and the keyword block depend on it)
+      if(canRequestRestricted()){ state.dob='07-22-2010'; state.ageRestricted=false; state.ageKeywordAck=false; }
+      else { state.dob='07-22-1980'; }
+      render(); break; }
     case 'demo-ts': state.trustShield=!state.trustShield;
       if(state.trustShield){ markIdVerified(true); }
       else { state.idFrontCaptured=false; state.idBackCaptured=false; state.selfieCaptured=false;
@@ -3036,6 +3038,7 @@ return { all:all, save:save,
     // undefined. Identical in shape to the workerSelection bug documented below — a
     // field dropped here, so Go never knew.
     ageRestricted:!!state.ageRestricted,trustShield:!!state.trustShield,itemsPurchased:!!state.itemsPurchased,
+    anywhere:!!(state.category==='delivery' && state.noSpecificPickup),
     deal:!!state.fromDeal,dealMerchant:(state.dealMerchant||''),   // Gopher Deal request → Go card shows the "Gopher Deal" badge
     description:(state.description||'').trim(),deliveryType:deliveryType,timingLabel:timingLabel,hasPickup:!!pickup,
     // How the worker is selected: 'first' (auto-connect on accept) vs 'select' (requester picks from
@@ -3346,6 +3349,7 @@ state.category='delivery';
   // ribbon + demo-signup CTA — wrong for a signed-in requester browsing services.
   if(q.get('step')==='1'){ state.step=1; state.maxStepReached=1; render(); return; }
   if(cat && CATEGORIES[cat]) state.category=cat;
+  if(cat==='delivery' && q.get('from')!=='deal' && q.get('from')!=='again') setTimeout(deliveryOutCheck,0);   // Home's Delivery button lands here: warn if a Delivery is still out
   if(q.get('from')==='deal'){
     state.category = (cat && CATEGORIES[cat]) ? cat : 'delivery';
     if(q.get('age')==='1'){ state.ageRestricted=true; markIdVerified(false); } // identity already resolved in Deals (D-029)
