@@ -12570,6 +12570,7 @@ const PAY_BADGES = {
       ${state.category === 'delivery' ? `
       <div class="step-section">
         <div class="step-section-title"><span class="sst-ico">📋</span>Delivery type</div>
+        ${canSeeAgeRestricted() ? `
         <div class="toggle-row">
           <button class="toggle-switch ${state.ageRestricted?'on':''}" data-toggle="ageRestricted" aria-label="Age-restricted toggle"></button>
           <span class="tr-label">Slide if this delivery includes Age-Restricted Items
@@ -12593,6 +12594,7 @@ const PAY_BADGES = {
             ${ageRestrictedBannerControl()}
           </div>
           ${(window.__hasTrustShield && window.__hasTrustShield()) ? '' : tsPromoMarkup()}
+        ` : ''}
         ` : ''}
         <div class="toggle-row">
           <button class="toggle-switch ${state.itemsPurchased?'on':''}" data-toggle="itemsPurchased" aria-label="Items purchased toggle"></button>
@@ -14064,6 +14066,11 @@ const PAY_BADGES = {
     // Normalize: the "How is the worker selected?" choice is only offered for
     // Delivery/Courier, Junk Removal, and Ride Sharing. For every other category
     // the user must select their worker, so force that selection.
+    /* An under-21 requester must never CARRY ageRestricted -- the payload and the
+       review snapshot read state.ageRestricted directly, so hiding the control is
+       not enough. Mirrors gopher-request.html. */
+    if(state.ageRestricted && !canSeeAgeRestricted()) state.ageRestricted = false;
+
     if(!isVisible('workerSelectChoice')) {
       state.workerSelection = 'select';
     }
@@ -14588,6 +14595,24 @@ const PAY_BADGES = {
     return a;
   }
 
+  /* ⛔ OWNER TRUTH 2026-10-04, verbatim: "No-one under 21 should see anything AR
+     or trustshield related. 21 or older have no AR gates, for any reason. if they
+     had TS, they get $1 off AR. if they don't have AR, regular price."
+     Age decides VISIBILITY and nothing else. Mirrors gopher-request.html; built on
+     both web surfaces the same day because the owner's rule names neither -- it
+     names the requester, and a Connect buyer ordering an age-restricted courier run
+     is the same person under the same law.
+     ⚠ NEVER BUILT HERE EITHER until today: the Delivery-type block was gated on
+     category ALONE, so an under-21 profile saw the slider, its waiver popover, the
+     safeguarding banner and the TrustShield promo.
+     UNKNOWN DOB COUNTS AS NOT ELIGIBLE -- it cannot be shown to be 21+. The seeded
+     profiles all carry a 1970s/90s DOB, so the demo still shows the feature. */
+  const AR_MIN_AGE = 21;
+  function canSeeAgeRestricted(){
+    const a = customerAgeYears();
+    return typeof a === 'number' && a >= AR_MIN_AGE;
+  }
+
   // ── Age-restricted banner control — one render, three branches ──
   //   1) Has TrustShield        → seal, no button (replaces the control).
   //   2) Under 30 / unknown age → "Get TrustShield™" (enrollment required;
@@ -14623,8 +14648,10 @@ const PAY_BADGES = {
      That persistence split is enforced in the submit handler by _idSubIsTS, not
      here; this function only paints the control.
      ⚠️ Do not reintroduce an age fork. The 21+ rule is a SEPARATE, still-live gate:
-     nobody under 21 can order age-restricted at all, enforced on the deal
-     categories, not in this banner. */
+     ⛔ CORRECTED 2026-10-04: this used to say the 21+ rule was "enforced on the deal
+     categories, not in this banner". It was enforced NOWHERE on this surface -- no DOB
+     comparison existed at all. It is now enforced by canSeeAgeRestricted() above and
+     by the coercion in render(). Do not re-delegate it to a file you have not opened. */
   function ageRestrictedBannerControl(){
     if(window.__hasTrustShield && window.__hasTrustShield()){
       return (window.__trustShieldBannerBadge && window.__trustShieldBannerBadge()) || '';
@@ -15224,7 +15251,15 @@ const PAY_BADGES = {
     // routes it to age-restricted Delivery; "No" force-flags ID-at-drop-off.
     if(state.step === 2 && !state.ageKeywordAck && !(state.category === 'delivery' && state.ageRestricted)){
       const kw = findAgeRestrictedKeyword(state.description);
-      if(kw){ if(window.__openAgeKeywordModal) window.__openAgeKeywordModal(kw); return; }
+      if(kw){
+        /* D-038 part 2: under-21 is a DEAD STOP, never the Yes/No confirmation
+           (whose "Yes" would route the order to age-restricted Delivery). */
+        if(!canSeeAgeRestricted()){
+          if(window.G40_REQ) G40_REQ.ageRestrictedNotEligible(kw);
+          return;
+        }
+        if(window.__openAgeKeywordModal) window.__openAgeKeywordModal(kw); return;
+      }
     }
     // ── Category-mismatch nudge (worker visibility) ──
     // After the age gate (which takes precedence): if no age-restricted keyword is
@@ -15682,6 +15717,40 @@ const PAY_BADGES = {
     /* Primary buttons carry grx, so one click runs the action AND closes. */
     function wirePrimary(ov, fn){ if(fn){ var b=ov.querySelector('.gc-modal-btn'); if(b) b.addEventListener('click', fn); } return ov; }
     window.G40_REQ = {
+      /* ⛔ D-038 part 2 (BUILD spec; owner picked "Port the iQ keyword scan" on
+         2026-10-04). A requester who is not 21+ cannot continue while the description
+         names an age-restricted term. The Yes/No confirmation is NOT shown to them:
+         its "Yes" routes the order to age-restricted Delivery, which is exactly the
+         thing they must never be offered (owner: "No-one under 21 should see anything
+         AR or trustshield related"). So they get a dead-stop instead, with no mention
+         of TrustShield and no route to enable it.
+         The term is named because a block with no reason is unactionable -- they have
+         to know WHICH word to remove. */
+      ageRestrictedNotEligible: function(kw){
+        var safe = String(kw == null ? 'that item' : kw)
+                     .replace(/[&<>"]/g, function(c){
+                       return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; });
+        /* ⚠ BUILT INLINE, not via reqModal(): Connect has NO reqModal helper --
+           that is a gopher-request.html-only function. The first version of this
+           method was copied across from Request and threw "reqModal is not defined"
+           the moment it fired. It parsed clean and the object literal built fine;
+           only calling it showed the fault, which is why this was driven and not
+           just diffed. */
+        var ov = document.createElement('div');
+        ov.className = 'gr-modal-overlay';
+        ov.innerHTML = '<div class="gr-modal">'
+          + '<div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">\u26d4</div>'
+          + '<h4>This item can\u2019t be requested</h4>'
+          + '<p class="gr-modal-sub">Your description mentions <b>\u201c' + safe
+          + '\u201d</b>, which is an age-restricted item. Age-restricted items cannot '
+          + 'be requested from this account. Please remove it from your description '
+          + 'to continue.</p>'
+          + '<button type="button" class="gr-modal-btn grx">Got it</button>'
+          + '</div>';
+        ov.addEventListener('click', function(e){
+          if(e.target === ov || e.target.classList.contains('grx')) ov.remove();
+        });
+        document.body.appendChild(ov); ov.hidden = false; return ov; },
       phoneEntered: function(){ return wirePrimary(gcModal('<div class="gc-modal-icon">📵</div><h4>Remove the phone number</h4><p class="gc-modal-sub">For your privacy we don’t broadcast phone numbers. Once your request is submitted you’ll be able to text and/or call your worker in-app. Please edit your message to remove it.</p><button type="button" class="gc-modal-btn grx">Edit my message</button>'+b2('Cancel')), function(){ var d=document.getElementById('descriptionInput'); if(d) d.focus(); }); },
       paymentNotAuthorized: function(){ return wirePrimary(gcModal('<div class="gc-modal-icon">💳</div><h4>Update your card to keep this request</h4><p class="gc-modal-sub">A worker accepted, but your bank didn’t authorize the payment. Update your card in the next <b>5 minutes</b> and we’ll reassign it to them. If they’re no longer available, we’ll rebroadcast immediately.</p><button type="button" class="gc-modal-btn grx">Update payment</button>'), function(){ if(window.__openAddPaymentModal) window.__openAddPaymentModal(); }); },
       pickupSameAsDropoff: function(){ return gcModal('<div class="gc-modal-icon">📍</div><h4>Pick-up and drop-off are the same</h4><p class="gc-modal-sub">If you don’t have a preferred pickup spot, slide <b>“Gopher can purchase from anywhere.”</b> (Moving at one location? Slide the pick-up toggle to <b>“Single-location move.”</b>)</p><button type="button" class="gc-modal-btn grx">Got it</button>'); },

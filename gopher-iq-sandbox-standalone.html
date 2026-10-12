@@ -771,13 +771,7 @@ const STOP=new Set(['the','a','an','to','of','do','i','my','is','it','for','in',
 // outside both STOP and LOWINFO to produce a confident match.
 const LOWINFO=new Set(['you','your','offer','offers','get','got','need','want','make','made','have','has','does','will','would','should','could','about','with','this','that','some','someone','any','please','help','there','here','they','them','use','using','used']);
 // does word w appear in text, exactly OR as a close (typo-tolerant) match? returns 0=exact, 1=fuzzy, null=no
-// CHANGED 2026-10-12 (owner: fix the "ID" bug; the same change as gopher-iq's search/faq-search.js): the search ignored every word
-// under 3 letters, so "do I need an ID" had no content words and returned nothing. SHORT_WORDS is a deliberate allowlist of short
-// words that carry meaning. Short words match WHOLE tokens only ("id" must not match "provide", "paid" or "decide") and never fuzzily.
-const SHORT_WORDS=new Set(['id']);
-const isKeyLen=w=>w.length>=3 || SHORT_WORDS.has(w);
 function wordIn(w, text){
-  if(w.length<3) return text.split(/[^a-z0-9]+/).includes(w) ? 0 : null;
   if(text.includes(w)) return 0;
   // check each token in text for a tight subsequence (1 short gap = likely typo)
   for(const t of text.split(/[^a-z0-9]+/)){
@@ -954,7 +948,7 @@ function scoreRec(query, rec){
   if(!q) return null;
   const Q=rec.q.toLowerCase(), A=(rec.a+' '+(rec.kw||'')).toLowerCase();
   const words=q.split(/\s+/).filter(Boolean);
-  const keyWords=words.filter(w=>isKeyLen(w) && !STOP.has(w));
+  const keyWords=words.filter(w=>w.length>=3 && !STOP.has(w));
 
   // GUARD: if the query has NO meaningful content words (it's all filler like
   // "can", "do you", "offer"), don't manufacture a confident match. This is what
@@ -966,7 +960,7 @@ function scoreRec(query, rec){
   // content words; fall back to keyWords only if needed.
   const terms=contentWords.length?contentWords:(keyWords.length?keyWords:words);
   // synExtra = ONLY the extra words synonyms add (used as a bonus, never a penalty).
-  const synSet=new Set(expandQuery(q).filter(w=>!STOP.has(w)&&isKeyLen(w)));
+  const synSet=new Set(expandQuery(q).filter(w=>!STOP.has(w)&&w.length>=3));
   terms.forEach(w=>synSet.delete(w));
   // synExtra must hold ONLY words a SYNONYMS entry ADDED. expandQuery returns the
   // original query words too, so filler that LOWINFO excluded from terms (help/
@@ -977,10 +971,8 @@ function scoreRec(query, rec){
   let best=Infinity;
 
   // 1. exact phrase — strongest
-  // short queries (e.g. "id") must match a whole token here too, or "id" would hit "provide"/"paid"/"decide"
-  const has=(t)=> q.length<3 ? t.split(/[^a-z0-9]+/).includes(q) : t.includes(q);
-  if(has(Q)) best=Math.min(best, Q.indexOf(q)*0.05);
-  if(has(A)) best=Math.min(best, 9 + A.indexOf(q)*0.02);
+  if(Q.includes(q)) best=Math.min(best, Q.indexOf(q)*0.05);
+  if(A.includes(q)) best=Math.min(best, 9 + A.indexOf(q)*0.02);
 
   // 2. word-coverage in the QUESTION, measured against the user's own words.
   let exactQ=0, fuzzyQ=0;
@@ -1042,10 +1034,6 @@ function hl(str,query){
   const lower=str.toLowerCase();
   // 1) try the full phrase
   let idx=lower.indexOf(q.toLowerCase()), len=q.length;
-  if(len<3){ // 2026-10-12: a short query ("ID") marks a WHOLE word only - never the letters inside "providing" or "decide"
-    const m=new RegExp('(^|[^a-z0-9])'+q.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![a-z0-9])').exec(lower);
-    idx=m?m.index+m[1].length:-1;
-  }
   if(idx===-1){
     // 2) otherwise highlight the first MEANINGFUL word (skip stopwords/filler),
     //    preferring longer content words; never highlight a bare stopword like "can".

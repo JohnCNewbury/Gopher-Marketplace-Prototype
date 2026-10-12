@@ -3782,6 +3782,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .field-textarea:focus { border-color:var(--green); }
   .field-textarea::placeholder { color:#94a0b8; font-style:italic; }
+  /* iQ guidance reads as instructions, so it is darker than a normal
+     placeholder. #707070 is the owner's own value (4.9:1): "much better,
+     readable now". A normal placeholder stays faint. */
+  .field-textarea[data-iq-guidance]::placeholder { color:#707070; font-style:normal; }
 
   /* Add-a-pic chip (Page 1) */
   .field-addpic {
@@ -7358,23 +7362,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   /* Out of the bar and into the content column (owner 2026-10-02, slide 2), so
      it is sized to sit above the page heading rather than beside an avatar. */
-  .dash-greeting {
-    /* #5a6270, not var(--muted): Sand is warmer than the grey it replaced, so
-       --muted #6b7280 fell from 4.51:1 to 4.38:1 — just under AA. This is 5.57:1. */
-    font-family:'DM Sans'; font-size:14px; color:#5a6270;
-    font-weight:600; margin:0 0 2px;
-  }
-  /* Owner 2026-10-03: "the 'Welcome back' is ONLY on the home screen. It doesn't
-     need to be shown anywhere else which allows the new request details container
-     to move up appropriately a little."
-
-     It is a sibling ABOVE every .dash-section, so it was rendering on Request
-     History, Payment info, Refer and the new-request flow as well. Keyed off
-     which section is actually .active rather than a JS-set class, so it cannot
-     fall out of step with whichever path opened the dashboard. :has() is already
-     used elsewhere in this file. */
-  .dashboard .dash-greeting { display:none; }
-  .dashboard:has(.dash-section[data-rqsec="choose"].active) .dash-greeting { display:block; }
+  /* ⛔ .dash-greeting REMOVED 2026-10-12 with the element it styled (owner:
+     "Move the name into the headline like the app"). It carried a contrast note
+     worth keeping if a muted line ever returns on Sand: --muted #6b7280 falls to
+     4.38:1 there, just under AA; #5a6270 is 5.57:1. It also carried the owner's
+     2026-10-03 rule that the greeting showed ONLY on the home screen, which the
+     :has() selector enforced — moot now, since the headline lives inside the
+     choose section already. */
   .dash-topbar-right .dash-avatar-lead {
     /* The topbar circle is the TALLEST thing in the bar, so it — not the padding —
        sets the bar's height. .dash-avatar-lead is 46px and outranks the 36px base
@@ -8474,7 +8468,269 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     .hlive-amt { display:none; }
     .hlive-turn { width:38px; }
   }
+  /* ⛔ .choose-two is retained for the Deals return (see the markup note); nothing
+     uses it while the chooser is out. */
   .choose-two { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+
+  /* ── Home category views (owner 2026-10-11, three views like the app's) ──
+     spot = Spotlight (mirrors the app's "Big cards") — the DEFAULT he picked
+     all  = All at once (mirrors "Doubles") — every category, no scroll
+     list = List with history (mirrors "Row with history") */
+  .hv-head { display:flex; align-items:center; gap:14px; margin:0 0 14px; }
+  .hv-lbl { font-family:'Nunito',sans-serif; font-weight:800; font-size:12px;
+            letter-spacing:1px; text-transform:uppercase; color:var(--navy); }
+  .hv-seg { margin-left:auto; display:flex; gap:4px; background:#fff;
+            border:1px solid #E6DECD; border-radius:12px; padding:4px; }
+  .hv-sb { width:46px; height:34px; border:0; border-radius:9px; background:#F1EADC;
+           cursor:pointer; display:grid; place-items:center; transition:background .16s; }
+  .hv-sb:hover { background:#E7DECB; }
+  .hv-sb[aria-pressed="true"] { background:var(--navy); }
+  .hv-sb:focus-visible { outline:2px solid var(--green-text); outline-offset:2px; }
+  .hv-sb svg { width:19px; height:15px; }
+  .hv-sb svg rect { fill:#9A9382; }
+  .hv-sb[aria-pressed="true"] svg rect { fill:#fff; }
+
+  .hv-grid { display:grid; gap:16px; }
+  .hv-tile { position:relative; border:1px solid #EDE7D9; border-radius:14px; overflow:hidden;
+             background:#fff; cursor:pointer; text-align:left; padding:0; font:inherit;
+             display:flex; flex-direction:column; transition:transform .15s, box-shadow .15s; }
+  .hv-tile:hover { transform:translateY(-2px); box-shadow:0 8px 20px -6px rgba(0,36,97,.18); }
+  .hv-tile:focus-visible { outline:2px solid var(--green-text); outline-offset:2px; }
+  /* ⚠️ The glyph is INTERIM. Emptying this box (tried 2026-10-11) left four wide
+     bands of flat colour that looked worse than the placeholder it replaced, so
+     the mark stays until real photography lands. Only 6 of the 8 categories have
+     a usable image in assets/img today (delivery, labor, junk, yard, ride and
+     hero-moving) — home services and custom task have none, and a half-photographed
+     set looks worse than a consistent one. Replace all eight at once. */
+  .hv-art { display:grid; place-items:center; border-bottom:1px solid rgba(0,36,97,.06); }
+  .hv-nm { font-family:'Nunito',sans-serif; font-weight:900; font-size:14px; color:var(--navy);
+           padding:11px 13px; line-height:1.2; }
+  .hv-ds { font-size:11.5px; color:var(--muted); padding:0 13px 11px; margin-top:-7px; }
+  /* Category art. Each category declares its two ingredients ONCE as custom
+     properties — its gradient and, where one exists, its photograph — and the
+     views compose them. The earlier version declared every gradient twice, which
+     is how `background-image:none` in the list view silently took the gradient
+     out along with the photo.
+     The gradient is the bottom layer, so it is what shows if a photo 404s: a CSS
+     background has no onerror, so the fallback has to be in the stack.
+     Photos are the deliberate consumer set — neighbour-to-neighbour, faces, warm
+     — not the `uc-` commercial shots, which are dark contractor stock and read as
+     a different company on a requester's home screen.
+     ⚠️ Relative paths, exact case: this site is served from a SUBDIRECTORY on
+     case-sensitive Linux, so a leading slash or wrong case 404s live only. */
+  .hv-a-delivery{--grad:linear-gradient(140deg,#CFE6D6,#9FCFB4); --photo:url('assets/img/01-delivery.webp')}
+  .hv-a-junk    {--grad:linear-gradient(140deg,#E2DCC9,#C2B69A); --photo:url('assets/img/05-junk.webp')}
+  .hv-a-moving  {--grad:linear-gradient(140deg,#CBD9EA,#9FB6D4); --photo:url('assets/img/hero-moving.webp')}
+  .hv-a-home    {--grad:linear-gradient(140deg,#D9E3F0,#AFC2DC); --photo:url('assets/img/go101-home-office.webp')}
+  .hv-a-labor   {--grad:linear-gradient(140deg,#E6DAC8,#CBAE8C); --photo:url('assets/img/04-labor.jpg')}
+  .hv-a-yard    {--grad:linear-gradient(140deg,#D4E5CB,#A6CE96); --photo:url('assets/img/06-yard.webp')}
+  .hv-a-ride    {--grad:linear-gradient(140deg,#CFE0EC,#A2C2D9); --photo:url('assets/img/07-ride.webp')}
+  /* Custom Task, added 2026-10-12 on the owner's "need custom pic". It was the
+     one category with no photograph; community.webp is it — a neighbour and a
+     worker with a toolbox shaking hands in a kitchen, 1600x1066, the same warm
+     consumer register as the other seven. NOT go101-other.webp, which exists
+     and looks like the obvious choice: it is a corporate "hands in" stock shot
+     over a desk of charts and a laptop, and at 300x198 it upscales badly in a
+     330px card. Looked at both before choosing. */
+  .hv-a-other   {--grad:linear-gradient(140deg,#E9DCE4,#CBAFC2); --photo:url('assets/img/community.webp')}
+
+  /* Default (Spotlight, All at once): photo over gradient. Custom Task has no
+     --photo, so var() falls back to `none` and its gradient shows alone. */
+  .hv-art{ background-image:var(--photo,none),var(--grad);
+           background-size:cover; background-position:center; background-repeat:no-repeat; }
+
+  /* ⚠️ LIST VIEW DROPS THE PHOTO AND KEEPS THE GLYPH, DELIBERATELY. The list
+     thumbnail is 74x60. A cover-crop of a 620x400 photograph at that size is an
+     unreadable fragment — side by side, Junk Removal and Moving were the same
+     brown smudge. An icon is legible at 74px and a photograph is not, so the
+     photo belongs to the two big views and the glyph to the compact one. The
+     gradient stays, because it is the per-category colour cue.
+     Caught by looking at all eight in a row, not by reasoning about it.
+     The glyph comes from ::before because the markup's own glyph was removed
+     when the photos landed; Custom Task still carries its ✨ inline, so it is
+     the one category with no ::before rule here. */
+  /* ⚠️ REVERSED 2026-10-12 — owner, looking at the glyph version: "need pics for
+     this screen". The glyphs were my call, on the grounds that a cover-crop of a
+     620x400 photograph was mud at 74x60. The owner's answer is the right one and
+     the fix is the SIZE, not the glyph: the thumbnail is now 118x84, where the
+     photographs read. Keeping a rule that loses the argument is how a screen
+     ends up half one idea and half another. */
+
+  /* ── The cell. The tile is a <button>, and a button cannot contain buttons —
+     so the example pills and the iQ pill live in a WRAPPER beside it, not
+     inside it. That is why .hv-cell exists; it is not decoration. ───────── */
+  .hv-cell { position:relative; display:flex; flex-direction:column; min-width:0; }
+  .hv-cell .hv-tile { flex:1 1 auto; }
+  .hv-pills { display:none; }
+  .hv-iq    { display:none; }
+
+  /* ── Spotlight: the "iQ Ideas ▲" pill, bottom-right of the photo.
+     Label, placement and behaviour are the app's (G40-549, canonical master
+     H-06/H-08): the photo goes straight to Step 2, the pill opens a sheet.
+     Big cards only — the app scopes it to the Big view, so List and All at
+     once do not show it. ──────────────────────────────────────────────── */
+  .hv-grid[data-hview="spot"] .hv-iq {
+    display:inline-flex; align-items:center; gap:5px; position:absolute;
+    right:12px; bottom:58px; z-index:2;   /* just above the name strip, so it
+                                             rides the bottom of the PHOTO and
+                                             survives the next art-height change */
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:11.5px; letter-spacing:.2px;
+    color:var(--navy); background:rgba(255,255,255,.94); border:1px solid rgba(0,36,97,.14);
+    border-radius:999px; padding:6px 11px; cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,36,97,.16); transition:background .15s, transform .15s;
+  }
+  .hv-grid[data-hview="spot"] .hv-iq:hover { background:#fff; transform:translateY(-1px); }
+  .hv-grid[data-hview="spot"] .hv-iq:focus-visible { outline:2px solid var(--green-text); outline-offset:2px; }
+
+  /* ── List: a rail of example pills per category (owner 2026-10-12, "pills of
+     examples of requests in that category"). In this view the CELL is the card
+     and the tile inside it is transparent, because the pills have to be real
+     buttons sitting beside the row's own click target. ─────────────────── */
+  .hv-grid[data-hview="list"] .hv-cell {
+    flex-direction:row; align-items:center; gap:14px; flex-wrap:wrap;
+    background:#fff; border:1px solid #EDE7D9; border-radius:14px; padding:12px 16px;
+    transition:box-shadow .15s, transform .15s;
+  }
+  .hv-grid[data-hview="list"] .hv-cell:hover { transform:translateY(-1px); box-shadow:0 8px 20px -6px rgba(0,36,97,.14); }
+  /* 232px here made Delivery's row a 182px outlier against everyone else's 138:
+     its five pills — "Tobacco, vape and nicotine delivery (21+ only)" among them
+     — could not fit beside a name column that wide, so the whole rail wrapped to
+     a second line. 196px lets the longest set sit on one line. Measured, not
+     guessed; and at narrow widths every row wraps together, which reads as
+     responsive rather than as one broken row. */
+  .hv-grid[data-hview="list"] .hv-tile {
+    flex:0 0 auto; background:none; border:0; border-radius:0; box-shadow:none;
+    padding:0; width:auto; min-width:196px;
+  }
+  .hv-grid[data-hview="list"] .hv-tile:hover { transform:none; box-shadow:none; }
+  .hv-grid[data-hview="list"] .hv-pills {
+    display:flex; flex-wrap:wrap; gap:7px; flex:1 1 auto; min-width:0; justify-content:flex-end;
+  }
+  .hv-pill {
+    font-family:'DM Sans',system-ui,sans-serif; font-size:11.5px; color:var(--navy);
+    background:var(--sand,#FBF3E4); border:1px solid #E6DCC6; border-radius:999px;
+    padding:6px 11px; cursor:pointer; white-space:nowrap;
+    transition:background .14s, border-color .14s;
+  }
+  .hv-pill:hover { background:#F4E9D2; border-color:#D9CBAE; }
+  .hv-pill:focus-visible { outline:2px solid var(--green-text); outline-offset:2px; }
+
+  /* ── The "What kind of …?" sheet the iQ pill opens. ──────────────────── */
+  .iqs-ov { position:fixed; inset:0; z-index:9400; background:rgba(0,20,54,.46);
+            display:grid; place-items:center; padding:20px; }
+  .iqs-ov[hidden]{ display:none; }
+  .iqs { background:#fff; border-radius:18px; width:min(560px,100%); max-height:82vh;
+         overflow:auto; box-shadow:0 20px 60px rgba(0,20,54,.3); }
+  .iqs-h { display:flex; align-items:flex-start; gap:12px; padding:20px 22px 6px; }
+  .iqs-h h3 { font-family:'Nunito',sans-serif; font-weight:900; font-size:21px; color:var(--navy);
+              margin:0; flex:1 1 auto; }
+  .iqs-x { background:none; border:0; font-size:22px; line-height:1; color:var(--muted,#8C8675);
+           cursor:pointer; padding:0 2px; }
+  .iqs-sub { padding:0 22px 12px; font-size:13px; color:var(--muted,#8C8675); margin:0; }
+  .iqs-list { padding:4px 14px 16px; display:flex; flex-direction:column; gap:7px; }
+  .iqs-i { text-align:left; font-family:'DM Sans',system-ui,sans-serif; font-size:14.5px;
+           font-weight:600; color:var(--navy); background:#FBF7EF; border:1px solid #EDE7D9;
+           border-radius:12px; padding:13px 15px; cursor:pointer; transition:background .14s, border-color .14s; }
+  .iqs-i:hover { background:var(--sand,#FBF3E4); border-color:#DED2B8; }
+  .iqs-i:focus-visible { outline:2px solid var(--green-text); outline-offset:2px; }
+  .iqs-else { margin-top:3px; background:none; border:0; text-align:left; cursor:pointer;
+              font-family:'Nunito',sans-serif; font-weight:800; font-size:13.5px;
+              color:var(--green-text,#0F7A3F); padding:10px 15px; }
+  .iqs-else:hover { text-decoration:underline; }
+  @media (prefers-reduced-motion:reduce){ .hv-pill,.iqs-i,.hv-iq{transition:none} }
+
+  /* ── "Request again" / "Popular near you" — the home's bottom section. ── */
+  .hra { margin-top:30px; }
+  .hra-h { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:0 2px 12px; }
+  .hra-h h2 { font-family:'Nunito',sans-serif; font-weight:900; font-size:17px; color:var(--navy); margin:0; }
+  .hra-link { background:none; border:0; cursor:pointer; font-family:'Nunito',sans-serif;
+              font-weight:800; font-size:13px; color:var(--green-text,#0F7A3F); padding:2px; }
+  .hra-link:hover { text-decoration:underline; }
+  /* ⚠️ DELIBERATELY NOT A CATEGORY CARD. Owner 2026-10-12: "make the request
+     again cards look entirely different than the category cards. Otherwise it
+     doesnt look right." He was right — four photo-top cards under eight photo-top
+     cards read as twelve categories, not as two different things.
+     So this is a ROW: circular thumbnail, text in the middle, the action on the
+     right, two across instead of four. That is also the app's own shape for it
+     (gh-ra-row in HomeCategories.js — image, title, button, subtitle), so the
+     two surfaces agree rather than diverging to solve the same problem. */
+  .hra-rows { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+  .hra-card { display:flex; flex-direction:row; align-items:center; gap:14px;
+              background:#fff; border:1px solid #EDE7D9; border-radius:14px;
+              padding:12px 14px; min-width:0;
+              transition:box-shadow .15s, transform .15s; }
+  .hra-card:hover { transform:translateY(-1px); box-shadow:0 8px 20px -6px rgba(0,36,97,.14); }
+  /* A CIRCLE, which no category card uses — the clearest single signal that this
+     row is a past request and not somewhere new to start. */
+  .hra-card .hv-art { width:58px; height:58px; border-radius:999px; border-bottom:0;
+                      font-size:0; flex:0 0 auto; }
+  .hra-b { padding:0; display:flex; flex-direction:column; gap:2px; min-width:0; flex:1 1 auto; }
+  .hra-t { font-family:'Nunito',sans-serif; font-weight:800; font-size:14px; color:var(--navy);
+           line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .hra-s { font-size:11.5px; color:var(--muted,#8C8675); }
+  .hra-go { flex:0 0 auto; align-self:center; cursor:pointer;
+            font-family:'Nunito',sans-serif; font-weight:800; font-size:12.5px; color:var(--navy);
+            background:var(--sand,#FBF3E4); border:1px solid #E6DCC6; border-radius:999px; padding:8px 15px;
+            white-space:nowrap; transition:background .14s; }
+  .hra-go:hover { background:#F4E9D2; }
+  .hra-go:focus-visible { outline:2px solid var(--green-text); outline-offset:2px; }
+  .hra-chips { display:flex; flex-wrap:wrap; gap:9px; }
+  .hra-chip { display:inline-flex; align-items:center; gap:9px; cursor:pointer;
+              font-family:'DM Sans',system-ui,sans-serif; font-size:13px; color:var(--navy);
+              background:#fff; border:1px solid #EDE7D9; border-radius:999px; padding:6px 14px 6px 6px;
+              transition:background .14s, border-color .14s; }
+  .hra-chip .hv-art { width:30px; height:30px; border-radius:999px; border-bottom:0; font-size:0; flex:0 0 auto; }
+  .hra-chip:hover { background:var(--sand,#FBF3E4); border-color:#DED2B8; }
+  .hra-chip:focus-visible { outline:2px solid var(--green-text); outline-offset:2px; }
+  @media (max-width:980px){ .hra-rows{grid-template-columns:1fr} }
+
+  /* ⛔ TWO columns, not three. There are EIGHT categories: 3-across leaves the last
+     row half empty (3+3+2), which is the "not fitting" the owner called out. Two
+     divides evenly into four full rows and makes Spotlight genuinely the big view,
+     distinct from All-at-once rather than a slightly larger copy of it. If a ninth
+     category is ever added, check this again — 9 breaks 2 as surely as 8 breaks 3. */
+  /* Spotlight: real cards, not wide strips — owner 2026-10-12, "MUCH bigger…
+     1 card is the size of 2 tall and as wide as 1/2 of 1". So HALF the width
+     (2 columns -> 4) and roughly TWICE the height (116px art -> 248px). The
+     glyph scales with the box or it swims in it. */
+  /* Owner 2026-10-12, twice: "MUCH bigger", then "even bigger". Art 248 -> 330px,
+     card ~294 -> ~380px. Still FOUR across and two rows: eight categories divide
+     by 4 and not by 3, so going wider would put an orphan row back on the home —
+     the thing dropped yesterday. Height is the lever, not the column count.
+     Two rows at 380 + the header still clear 950px without scrolling. */
+  .hv-grid[data-hview="spot"] { grid-template-columns:repeat(4,1fr); }
+  .hv-grid[data-hview="spot"] .hv-art { height:330px; font-size:92px; }
+  .hv-grid[data-hview="spot"] .hv-nm { font-size:16px; padding:15px 16px; }
+
+  /* Owner 2026-10-12, "a little taller". 74 -> 112px. This also fixes the thing
+     flagged on the same screen: at 74px the photographs were letterbox slivers
+     you could not identify. At 112 they read, and the view is still plainly the
+     compact one against Spotlight's 330. */
+  .hv-grid[data-hview="all"] { grid-template-columns:repeat(4,1fr); gap:12px; }
+  .hv-grid[data-hview="all"] .hv-art { height:112px; font-size:34px; }
+  .hv-grid[data-hview="all"] .hv-nm { font-size:13px; padding:10px 12px; }
+
+  /* List rows were 56px tall and read as a thin index rather than a way in —
+     owner 2026-10-12, "this need to be taller". Raised to ~88px: the art box is
+     the lever, with the padding following it. Deliberately set so the row still
+     sits right once .hv-ds carries the one-line description (it is styled and
+     empty until the desk's master supplies the words) — the second line lands
+     inside this height instead of growing the row again. */
+  .hv-grid[data-hview="list"] { grid-template-columns:1fr; gap:10px; }
+  .hv-grid[data-hview="list"] .hv-tile { flex-direction:row; align-items:center; gap:15px; padding:14px 16px; }
+  .hv-grid[data-hview="list"] .hv-art { height:84px; width:118px; border-radius:11px; font-size:29px; flex:0 0 auto; border-bottom:0; }
+  .hv-grid[data-hview="list"] .hv-nm { padding:0; font-size:14.5px; }
+  .hv-grid[data-hview="list"] .hv-ds { padding:0; margin-top:2px; }
+  @media (prefers-reduced-motion:reduce){ .hv-tile{transition:none} .hv-sb{transition:none} }
+  @media (max-width:900px){
+    .hv-grid[data-hview="spot"]{grid-template-columns:repeat(3,1fr)}
+    .hv-grid[data-hview="spot"] .hv-art{height:210px;font-size:66px}
+    .hv-grid[data-hview="all"]{grid-template-columns:repeat(3,1fr)}
+  }
+  @media (max-width:560px){
+    .hv-grid[data-hview="spot"],.hv-grid[data-hview="all"]{grid-template-columns:repeat(2,1fr)}
+    .hv-grid[data-hview="spot"] .hv-art{height:168px;font-size:54px}
+  }
   .choose-card {
     position:relative; overflow:hidden; text-align:left; cursor:pointer; border:0;
     /* owner 2026-10-02 (slide 1): "Buttons can't ever be cramped" — extra room
@@ -13050,7 +13306,19 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     yard:     'Please be as descriptive as possible. Tell your worker exactly what needs to be done in the yard, and any equipment needed.',
     other:    'Please be as descriptive as possible. Tell your worker exactly what you need done.'
   };
-  const describeHint = () => DESCRIBE_HINT[state.category] || state.descriptionPlaceholder;
+  /* An iQ idea tapped on the home screen wins over the category's own hint.
+     ⛔ It is PLACEHOLDER text, never a value — owner 10/5, in the app's own
+     source: "do NOT pre-populate with real text (because that wont give the
+     worker enough info anyways so it will need to by edited) what needs to
+     happen is the description has the example text pre-populated for each
+     option we show, that explains to them what should be written inside."
+     So Step 2 opens EMPTY with the idea's guidance showing through. */
+  const describeHint = () =>
+    (state.iqGuidanceField === 'description' && state.iqGuidance)
+      || DESCRIBE_HINT[state.category] || state.descriptionPlaceholder;
+  const rideHint = () =>
+    (state.iqGuidanceField === 'specialInstructions' && state.iqGuidance)
+      || 'e.g. ring the front desk on arrival';
 
   function getCurrentOfferModel(){
     const isRide = state.category === 'ride';
@@ -14225,7 +14493,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      having to find all of them again. */
   /* 'home' joined 2026-10-04 (G40-579), the owner moving it to Done after
      "All pass, merge 449". */
-  const COMPLETED_FLOW = ['moving', 'junk', 'labor', 'home', 'ride'];
+  const COMPLETED_FLOW = ['moving', 'junk', 'labor', 'home', 'ride', 'delivery'];
   const isCompletedFlow = () => COMPLETED_FLOW.indexOf(state.category) !== -1;
 
   /* ⚠ WORDING ONLY -- do not fold this into COMPLETED_FLOW above.
@@ -14270,7 +14538,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      category marked complete silently grows a Unit/Apt box nobody asked for --
      which is exactly how `mv` came to mean two things and deleted Labor's
      hourly toggle when it was widened (2026-10-04). Keep them apart. */
-  const UNIT_CATEGORIES = ['moving', 'junk', 'labor', 'home', 'ride'];   // ride takes one at BOTH ends
+  const UNIT_CATEGORIES = ['moving', 'junk', 'labor', 'home', 'ride', 'delivery'];   // ride + delivery take one at BOTH ends
+  /* Unit/Apt under the PICK-UP address specifically. UNIT_CATEGORIES above answers
+     "does this category take a Unit/Apt at all" (it gates the DESTINATION one); this
+     answers "at the pick-up end too". Was an inline (moving || ride) check until
+     Delivery joined on 2026-10-04 and needed both ends. */
+  const PICKUP_UNIT = ['moving', 'ride', 'delivery'];
   const asksForUnit = () => UNIT_CATEGORIES.indexOf(state.category) !== -1;
   /* ── How long a Need ASAP request stays live ───────────────────────────────
      ⛔ THIS WAS WRONG FOR FIVE OF THE EIGHT CATEGORIES until 2026-10-04. The
@@ -14378,6 +14651,28 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     return a;
   }
 
+  /* ⛔ OWNER TRUTH 2026-10-04, verbatim: "No-one under 21 should see anything AR
+     or trustshield related. 21 or older have no AR gates, for any reason. if they
+     had TS, they get $1 off AR. if they don't have AR, regular price."
+     So age decides VISIBILITY and nothing else -- a 21+ requester is never gated,
+     and an under-21 requester is never shown the surface at all.
+     ⚠ THIS WAS NEVER BUILT ON THE WEB until today. The owner's note said "or at
+     least that was the rule i made. If that did not happen, a session failed me" --
+     it did not happen. The Delivery-type block was gated on category ALONE, so an
+     under-21 profile saw the age-restricted slider, its waiver popover, the
+     safeguarding banner and the TrustShield promo. The only thing on this surface
+     that ever mentioned 21 was a self-attested "I am 21+" waiver tickbox
+     (~line 20929), which is an attestation, not a check.
+     UNKNOWN DOB COUNTS AS NOT ELIGIBLE: it cannot be shown to be 21+. Safe for the
+     demo because every seeded profile carries a 1970s/80s DOB, so the public page
+     still shows the feature; the only way to reach the unknown branch is a requester
+     who has not given one. */
+  const AR_MIN_AGE = 21;
+  function canSeeAgeRestricted(){
+    const a = customerAgeYears();
+    return typeof a === 'number' && a >= AR_MIN_AGE;
+  }
+
   // ── Age-restricted banner control — one render, three branches ──
   //   1) Has TrustShield        → seal, no button (replaces the control).
   //   2) Under 30 / unknown age → "Get TrustShield™" (enrollment required;
@@ -14395,9 +14690,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
        • TrustShield          — kept for as long as the badge is carried.
      That persistence split is enforced in the submit handler by _idSubIsTS, not
      here; this function only paints the control.
-     ⚠️ Do not reintroduce an age fork. The 21+ rule is a SEPARATE, still-live gate:
-     nobody under 21 can order age-restricted at all, enforced on the deal
-     categories, not in this banner. */
+     ⚠️ Do not reintroduce an age fork HERE -- the 21/30 TrustShield fork is gone
+     for good (owner 2026-10-04: "21 or older have no AR gates, for any reason").
+     ⛔ CORRECTED 2026-10-04: this used to say the 21+ rule was "enforced on the deal
+     categories, not in this banner". It was enforced NOWHERE on this surface -- there
+     was no DOB comparison at all, only a self-attested waiver tickbox. It is now
+     enforced by canSeeAgeRestricted() above, which hides the whole Delivery-type
+     age-restricted block, and by the coercion in render(). Do not re-delegate it to
+     a file you have not opened. */
   function ageRestrictedBannerControl(){
     if(window.__hasTrustShield && window.__hasTrustShield()){
       return (window.__trustShieldBannerBadge && window.__trustShieldBannerBadge()) || '';
@@ -14876,7 +15176,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       ${isVisible('describe') ? `
       <div class="step-section">
         <div class="step-section-title">${sstIco('✏️')}Describe what you need</div>
-        <textarea class="field-textarea" id="descriptionInput" data-field="description" placeholder="${describeHint()}" rows="3">${state.description}</textarea>
+        <textarea class="field-textarea" id="descriptionInput" data-field="description" placeholder="${describeHint()}" rows="3"${state.iqGuidanceField === 'description' && state.iqGuidance ? ' data-iq-guidance="true"' : ''}>${state.description}</textarea>
         ${isVisible('addPic') ? (
           state.picThumbs.length === 0
             ? `<button class="field-addpic" data-action="add-pic">
@@ -14902,6 +15202,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       ${state.category === 'delivery' ? `
       <div class="step-section">
         <div class="step-section-title">${sstIco('📋')}Delivery type</div>
+        ${canSeeAgeRestricted() ? `
         <div class="toggle-row">
           <button class="toggle-switch ${state.ageRestricted?'on':''}" data-toggle="ageRestricted" aria-label="Age-restricted toggle"></button>
           <span class="tr-label">Slide if this delivery includes Age-restricted items
@@ -14925,6 +15226,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
             ${ageRestrictedBannerControl()}
           </div>
           ${(window.__hasTrustShield && window.__hasTrustShield()) ? '' : tsPromoMarkup()}
+        ` : ''}
         ` : ''}
         <div class="toggle-row">
           <button class="toggle-switch ${state.itemsPurchased?'on':''}" data-toggle="itemsPurchased" aria-label="Items purchased toggle"></button>
@@ -14980,8 +15282,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
                 tagName DIV, isContentEditable false. Now a real textarea, bound
                 like #descriptionInput. */}
           <textarea class="field-textarea" id="specialInstructionsInput" data-field="specialInstructions"
-                    style="min-height:42px;" rows="2"
-                    placeholder="e.g. ring the front desk on arrival">${escText(state.specialInstructions)}</textarea>
+                    style="min-height:42px;" rows="2"${state.iqGuidanceField === 'specialInstructions' && state.iqGuidance ? ' data-iq-guidance="true"' : ''}
+                    placeholder="${escText(rideHint())}">${escText(state.specialInstructions)}</textarea>
         </div>
         ${''/* G40-580: no TrustShield banner on a ride. The promo stays on the
               delivery age-restricted path above, where it buys the requester
@@ -15243,15 +15545,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         ${isVisible('noSpecificPickup') ? `
         <div class="toggle-row">
           <button class="toggle-switch ${state.noSpecificPickup?'on':''}" data-toggle="noSpecificPickup"></button>
-          <span class="tr-label">${state.category === 'moving' ? 'Single-location move' : 'Pickup location is flexible'}
-            <button class="info-btn" title="${state.category === 'moving' ? 'Just need moving help at ONE address? Slide this on. Your Gopher helps on-site — loading, unloading, rearranging — and will NOT travel between two locations.' : 'Either the worker can make the purchase anywhere that has your items OR there is not an actual pick up location for this request.'}">?</button>
+          <span class="tr-label">${state.category === 'moving' ? 'Single-location move' : 'Gopher can purchase from anywhere'}
+            <button class="info-btn" title="${state.category === 'moving' ? 'Just need moving help at ONE address? Slide this on. Your Gopher helps on-site — loading, unloading, rearranging — and will NOT travel between two locations.' : 'Either your Gopher can make the purchase anywhere that has your items OR there is not an actual pick up location for this request.'}">?</button>
           </span>
         </div>
         ` : ''}
         ${state.noSpecificPickup && isVisible('noSpecificPickup') ? `
           <div class="sub-field">
             <div class="sf-label">${state.category === 'moving' ? 'Single-location move' : 'Pick-up flexibility'}</div>
-            <div class="sf-value">${state.category === 'moving' ? 'Your Gopher helps at ONE address only — loading, unloading, or rearranging items on site. This is not a two-location move. Enter the move address under Destination below.' : "Either the worker can make the purchase anywhere that has your items, or there's no actual pick-up location for this request."}</div>
+            <div class="sf-value">${state.category === 'moving' ? 'Your Gopher helps at ONE address only — loading, unloading, or rearranging items on site. This is not a two-location move. Enter the move address under Destination below.' : "Either your Gopher can make the purchase anywhere that has your items, or there's no actual pick-up location for this request."}</div>
           </div>
         ` : `
           ${renderMultiAddressBlock_pickup()}
@@ -15568,7 +15870,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // Build per-stop pickup / drop-off rows (one row each when single, numbered rows when multi)
     const pickupRows = (() => {
       if(state.noSpecificPickup) {
-        return `<div class="review-row"><span class="rl">Pick-up</span><span class="rv">Any location</span></div>`;
+        /* DISPLAY ONLY. The snapshot keeps the 'Any location' sentinel -- renderRecap
+           and the map both test `snap.pickup === 'Any location'` to spot a
+           Gopher's-choice pickup, so renaming the stored value would break both. */
+        return `<div class="review-row"><span class="rl">Pick-up</span><span class="rv">Gopher&rsquo;s choice</span></div>`;
       }
       if(state.pickupStops.length > 1) {
         return state.pickupStops.map((addr, i) =>
@@ -16125,7 +16430,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           ${pickupExpanded ? `Pickup stops (${pickups.length})` : 'Pickup address'}
         </label>
         ${renderStops}
-        ${((state.category === 'moving' || state.category === 'ride') && !pickupExpanded) ? renderUnitInput('pickup') : ''}
+        ${(PICKUP_UNIT.indexOf(state.category) !== -1 && !pickupExpanded) ? renderUnitInput('pickup') : ''}
         ${footer}
       </div>
     `;
@@ -16343,6 +16648,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // Normalize: the "How is the worker selected?" choice is only offered for
     // Delivery/Courier, Junk Removal, and Ride Sharing. For every other category
     // the user must select their worker, so force that selection.
+    /* An under-21 requester must never CARRY ageRestricted, even if the flag was set
+       before their DOB was known or came back on a restored draft. Coerced here and
+       not merely hidden in renderStep2, because the payload and the review snapshot
+       read state.ageRestricted directly and would otherwise ship a true that nobody
+       could see or turn off. */
+    if(state.ageRestricted && !canSeeAgeRestricted()) state.ageRestricted = false;
+
     if(!isVisible('workerSelectChoice')) {
       state.workerSelection = 'select';
     } else if(hidesFirstAvailable() && state.workerSelection === 'first'){
@@ -17105,6 +17417,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     if(state.step === 2 && !state.ageKeywordAck && !(state.category === 'delivery' && state.ageRestricted)){
       const kw = findAgeRestrictedKeyword(state.description);
       if(kw){
+        /* D-038 part 2: under-21 is a DEAD STOP, never the Yes/No confirmation.
+           ageKeywordAck is deliberately NOT set, so it blocks on every attempt
+           until the term is removed -- an ack would let one dismissal through. */
+        if(!canSeeAgeRestricted()){
+          if(window.G40_REQ) G40_REQ.ageRestrictedNotEligible(kw);
+          return;
+        }
         // Block Continue only if the confirmation actually opened; if the modal
         // is somehow unavailable, don't trap the user — acknowledge and proceed.
         if(window.__openAgeKeywordModal && window.__openAgeKeywordModal(kw)) return;
@@ -17231,6 +17550,27 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     function wirePrimary(ov, fn){ if(fn){ var b=ov.querySelector('.gr-modal-btn'); if(b) b.addEventListener('click', fn); } return ov; }
     function openAddPay(){ if(window.__openAddPaymentModal) window.__openAddPaymentModal(); }
     window.G40_REQ = {
+      /* ⛔ D-038 part 2 (BUILD spec; owner picked "Port the iQ keyword scan" on
+         2026-10-04). A requester who is not 21+ cannot continue while the description
+         names an age-restricted term. The Yes/No confirmation is NOT shown to them:
+         its "Yes" routes the order to age-restricted Delivery, which is exactly the
+         thing they must never be offered (owner: "No-one under 21 should see anything
+         AR or trustshield related"). So they get a dead-stop instead, with no mention
+         of TrustShield and no route to enable it.
+         The term is named because a block with no reason is unactionable -- they have
+         to know WHICH word to remove. */
+      ageRestrictedNotEligible: function(kw){
+        var safe = String(kw == null ? 'that item' : kw)
+                     .replace(/[&<>"]/g, function(c){
+                       return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; });
+        return reqModal('<div class="gr-modal-icon gr-modal-icon-warn" '
+          + 'style="font-size:26px;line-height:1;">\u26d4</div>'
+          + '<h4>This item can\u2019t be requested</h4>'
+          + '<p class="gr-modal-sub">Your description mentions <b>\u201c' + safe
+          + '\u201d</b>, which is an age-restricted item. Age-restricted items '
+          + 'cannot be requested from this account. Please remove it from your '
+          + 'description to continue.</p>'
+          + '<button type="button" class="gr-modal-btn grx">Got it</button>'); },
       phoneEntered: function(){ return wirePrimary(reqModal('<div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">📵</div><h4>Remove the phone number</h4><p class="gr-modal-sub">For your privacy we don’t broadcast phone numbers. Once your request is submitted you’ll be able to text and/or call your Gopher in-app. Please edit your message to remove it.</p><button type="button" class="gr-modal-btn grx">Edit my message</button>'+b2('Cancel')), function(){ var d=document.getElementById('descriptionInput'); if(d) d.focus(); }); },
       paymentNotAuthorized: function(){ return wirePrimary(reqModal('<div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">💳</div><h4>Update your card to keep this request</h4><p class="gr-modal-sub">A Gopher accepted, but your bank didn’t authorize the payment. Update your card in the next <b>5 minutes</b> and we’ll reassign it to them. If they’re no longer available, we’ll rebroadcast to nearby Gophers immediately.</p><button type="button" class="gr-modal-btn grx">Update payment</button>'), openAddPay); },
       pickupSameAsDropoff: function(){ return reqModal('<div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">📍</div><h4>Pick-up and drop-off are the same</h4><p class="gr-modal-sub">If you don’t have a preferred pickup spot, slide <b>“Gopher can purchase from anywhere.”</b> (Moving at one location? Slide the pick-up toggle to <b>“Single-location move.”</b>)</p><button type="button" class="gr-modal-btn grx">Got it</button>'); },
@@ -17259,10 +17599,20 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   // Used by the homepage AI search "Start a request" suggestions. Resets the
   // flow, selects the category, advances to Step 2 (Job details), and makes the
   // flow visible (scrolls it into view). Returns true on success.
-  window.__startRequestWithCategory = function(catKey){
+  window.__startRequestWithCategory = function(catKey, idea){
     if(!CATEGORIES[catKey]) return false;
     resetFlowState();
     state.category = catKey;
+    /* An iQ idea tapped on the home screen travels as GUIDANCE, never as text.
+       Need a Ride has no description box, so its line goes to the special
+       instructions — the app's guidanceField(), same rule. */
+    if(idea && window.HOME_IDEAS && window.HOME_IDEAS[catKey]){
+      const hit = window.HOME_IDEAS[catKey].find(function(x){ return x[0] === idea; });
+      if(hit){
+        state.iqGuidance = hit[1];
+        state.iqGuidanceField = (catKey === 'ride') ? 'specialInstructions' : 'description';
+      }
+    }
     state.step = 2;                 // skip "pick a service" — already chosen
     if(state.maxStepReached < 2) state.maxStepReached = 2;
     render();
@@ -17276,28 +17626,34 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   //      jump straight to Review (step 6) with all earlier steps unlocked for
   //      edits. The dashboard's modal handler calls this, then hosts + shows the
   //      flow (navigation helpers live in the dashboard closure, not here). ----
+  /* History rows carry the OLDER display labels ("Handyman", "Day Labor",
+     "Yard Work"); the flow keys on 'home' / 'labor' / 'yard'. One mapping,
+     exported, because two copies of this WILL drift — and the ordering below
+     is load-bearing, not stylistic.
+     ⛔ junk MUST be tested before moving: "Junk Removal" contains "mov"
+     (re-MOV-al), so the moving test matched it first and every junk haul
+     re-requested as a MOVE. Verified against all nine category labels.
+     Was local to __startRequestAgainFast until 2026-10-12, when the home
+     screen's Request again rail needed the same answer for its thumbnails. */
+  window.__mapHistoryCategory = function(label){
+    const c = String(label || '').toLowerCase();
+    if(c.indexOf('deliv') !== -1) return 'delivery';
+    if(c.indexOf('day labor') !== -1 || c.indexOf('labor') !== -1) return 'labor';
+    if(c.indexOf('home') !== -1 || c.indexOf('handy') !== -1) return 'home';
+    if(c.indexOf('junk') !== -1) return 'junk';
+    if(c.indexOf('mov') !== -1) return 'moving';
+    if(c.indexOf('yard') !== -1) return 'yard';
+    if(c.indexOf('ride') !== -1) return 'ride';
+    return 'other';
+  };
+
   window.__startRequestAgainFast = function(prev, selected){
     if(!prev) return false;
     selected = Array.isArray(selected) ? selected : [];
     resetFlowState();
 
     // Map the previous request's category label to this flow's category key.
-    const mapCat = (label) => {
-      const c = String(label || '').toLowerCase();
-      if(c.indexOf('deliv') !== -1) return 'delivery';
-      if(c.indexOf('day labor') !== -1 || c.indexOf('labor') !== -1) return 'labor';
-      if(c.indexOf('home') !== -1 || c.indexOf('handy') !== -1) return 'home';
-      /* ⛔ junk MUST be tested before moving: "Junk Removal" contains "mov"
-         (re-MOV-al), so the moving test matched it first and every junk haul
-         re-requested as a MOVE. Pre-existing and already reachable on COMPLETED
-         rows — found while fixing the cancelled/expired lookup above, not caused
-         by it. Verified against all nine category labels, not just this one. */
-      if(c.indexOf('junk') !== -1) return 'junk';
-      if(c.indexOf('mov') !== -1) return 'moving';
-      if(c.indexOf('yard') !== -1) return 'yard';
-      if(c.indexOf('ride') !== -1) return 'ride';
-      return 'other';
-    };
+    const mapCat = window.__mapHistoryCategory;
     state.category = mapCat(prev.category);
 
     // Description / details from history.
@@ -18057,13 +18413,7 @@ const STOP=new Set(['the','a','an','to','of','do','i','my','is','it','for','in',
 // outside both STOP and LOWINFO to produce a confident match.
 const LOWINFO=new Set(['you','your','offer','offers','get','got','need','want','make','made','have','has','does','will','would','should','could','about','with','this','that','some','someone','any','please','help','there','here','they','them','use','using','used']);
 // does word w appear in text, exactly OR as a close (typo-tolerant) match? returns 0=exact, 1=fuzzy, null=no
-// CHANGED 2026-10-12 (owner: fix the "ID" bug; the same change as gopher-iq's search/faq-search.js): the search ignored every word
-// under 3 letters, so "do I need an ID" had no content words and returned nothing. SHORT_WORDS is a deliberate allowlist of short
-// words that carry meaning. Short words match WHOLE tokens only ("id" must not match "provide", "paid" or "decide") and never fuzzily.
-const SHORT_WORDS=new Set(['id']);
-const isKeyLen=w=>w.length>=3 || SHORT_WORDS.has(w);
 function wordIn(w, text){
-  if(w.length<3) return text.split(/[^a-z0-9]+/).includes(w) ? 0 : null;
   if(text.includes(w)) return 0;
   // check each token in text for a tight subsequence (1 short gap = likely typo)
   for(const t of text.split(/[^a-z0-9]+/)){
@@ -18246,7 +18596,7 @@ function scoreRec(query, rec){
   if(!q) return null;
   const Q=rec.q.toLowerCase(), A=(rec.a+' '+(rec.kw||'')).toLowerCase();
   const words=q.split(/\s+/).filter(Boolean);
-  const keyWords=words.filter(w=>isKeyLen(w) && !STOP.has(w));
+  const keyWords=words.filter(w=>w.length>=3 && !STOP.has(w));
 
   // GUARD: if the query has NO meaningful content words (it's all filler like
   // "can", "do you", "offer"), don't manufacture a confident match. This is what
@@ -18258,7 +18608,7 @@ function scoreRec(query, rec){
   // content words; fall back to keyWords only if needed.
   const terms=contentWords.length?contentWords:(keyWords.length?keyWords:words);
   // synExtra = ONLY the extra words synonyms add (used as a bonus, never a penalty).
-  const synSet=new Set(expandQuery(q).filter(w=>!STOP.has(w)&&isKeyLen(w)));
+  const synSet=new Set(expandQuery(q).filter(w=>!STOP.has(w)&&w.length>=3));
   terms.forEach(w=>synSet.delete(w));
   // synExtra must hold ONLY words a SYNONYMS entry ADDED. expandQuery returns the
   // original query words too, so filler that LOWINFO excluded from terms (help/
@@ -18269,10 +18619,8 @@ function scoreRec(query, rec){
   let best=Infinity;
 
   // 1. exact phrase — strongest
-  // short queries (e.g. "id") must match a whole token here too, or "id" would hit "provide"/"paid"/"decide"
-  const has=(t)=> q.length<3 ? t.split(/[^a-z0-9]+/).includes(q) : t.includes(q);
-  if(has(Q)) best=Math.min(best, Q.indexOf(q)*0.05);
-  if(has(A)) best=Math.min(best, 9 + A.indexOf(q)*0.02);
+  if(Q.includes(q)) best=Math.min(best, Q.indexOf(q)*0.05);
+  if(A.includes(q)) best=Math.min(best, 9 + A.indexOf(q)*0.02);
 
   // 2. word-coverage in the QUESTION, measured against the user's own words.
   let exactQ=0, fuzzyQ=0;
@@ -18334,10 +18682,6 @@ function hl(str,query){
   const lower=str.toLowerCase();
   // 1) try the full phrase
   let idx=lower.indexOf(q.toLowerCase()), len=q.length;
-  if(len<3){ // 2026-10-12: a short query ("ID") marks a WHOLE word only - never the letters inside "providing" or "decide"
-    const m=new RegExp('(^|[^a-z0-9])'+q.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![a-z0-9])').exec(lower);
-    idx=m?m.index+m[1].length:-1;
-  }
   if(idx===-1){
     // 2) otherwise highlight the first MEANINGFUL word (skip stopwords/filler),
     //    preferring longer content words; never highlight a bare stopword like "can".
@@ -21115,13 +21459,13 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       <!-- Owner 2026-10-01: Deals gets its own sidebar entry under + New Request,
            carrying the same gold SPONSORED PICKS treatment as the home card. It
            routes through the same handler, so the eligibility gate still runs. -->
-      <button type="button" class="dash-sidebar-deals gopher-deals-btn" id="rqSidebarDeals" data-choose="deals">
-        <!-- Owner 2026-10-02 (slide 4): one label, matching the card's exactly.
-             The SPONSORED PICKS sub-line went with the pill he struck out — it is
-             what made this button two cramped lines of washed-out type, and the
-             card CTA he approved has never carried it. -->
-        <span class="dsd-main">View Local Deals</span>
-      </button>
+        <!-- ⛔ Sidebar "View Local Deals" REMOVED 2026-10-11 (owner: "we leave
+             deals out entirely right now. Just like the live apps."). This and the
+             home card were the only two ways into Deals from the dashboard; the
+             panel behind them is intact and hidden. gopher-deals.html itself stays
+             live and is linked from 36 pages including the public top nav, so
+             nothing is orphaned by removing these two. -->
+
     <nav class="dash-nav">
       <!-- Owner 2026-10-02: Home returns to the two-pathway choice screen.
            Before this there was NO route back to it — only a page reload —
@@ -21228,7 +21572,10 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       <!-- Owner 2026-10-02 (slide 2): "Move Welcome back… to space between bottom
            of header bar and 'So, how can we…'". It sat inside the header bar
            beside the avatar; both moved in the same pass. -->
-      <div class="dash-greeting" id="rqDashGreeting">Welcome back, Jamie 👋</div>
+      <!-- ⛔ "Welcome back, <first> 👋" REMOVED 2026-10-12 (owner: "Move the name
+           into the headline like the app"). The app has no greeting line — it
+           carries the name inside the empty-state headline instead, which
+           homeLiveHeadline() now does. Nothing else read this element. -->
 
       <!-- ── CHOOSE: the dashboard's home screen ──────────────────────────────
            Owner 2026-09-30, slide 2: "I want the initially home screen of the
@@ -21240,46 +21587,130 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
            #pathTabDeals — so this adds a front door, not a third surface. -->
       <section class="dash-section active" data-rqsec="choose">
         <div class="choose-stage">
-          <!-- The headline is a TEMPLATE driven by renderHomeLive(): it reads
-               "So, how can we help you today?" with nothing live, and
-               "You have N current requests, M need attention" otherwise. -->
-          <h2 class="choose-ask" id="rqChooseAsk">So, how can we help you today?</h2>
-          <p class="choose-sub" id="rqChooseSub">Two ways to go from here.</p>
+          <!-- The headline is a TEMPLATE driven by renderHomeLive(): with nothing
+               live it reads "What can we help you with today, <first>?" (the app's
+               line, owner ruling 10/4), and "You have N current requests, M need
+               attention" otherwise. The literal below is only what ships before
+               the first render; it carries no name, because at that point we do
+               not have one. -->
+          <h2 class="choose-ask" id="rqChooseAsk">What can we help you with today?</h2>
+          <!-- ⛔ "Two ways to go from here." DROPPED 2026-10-11. It described the
+               two-card chooser, and there is one way now. renderHomeLive() guards
+               this element with if(sub), so its absence is safe; the empty-state
+               headline carries the screen on its own. -->
           <!-- Live-request container. Empty and hidden when nothing is live, so
                the two cards sit exactly where they do today. -->
           <div class="hlive" id="rqHomeLive" hidden></div>
-          <div class="choose-two">
-            <button type="button" class="choose-card svc" data-choose="services">
-              <!-- ⚠️ Owner 2026-10-03 REVERSED his 2026-10-01 ruling here. It read:
-                   "the Request logo is CENTRED at the top of the card, on its white
-                   chip". It is now TOP LEFT on a SAND chip. The reason the old note
-                   gave still holds and is why the chip exists at all — the wordmark
-                   is navy, so the mark needs a LIGHT ground. Sand qualifies; white
-                   is no longer required. See .cc-brand. -->
-              <span class="cc-brand"><img class="cc-brand-logo" src="assets/img/gopher-request-logo.svg" alt="Gopher Request"></span>
-              <span class="cc-media cc-quads" id="chooseSvcQuads" aria-hidden="true">
-                <span class="cc-quad"></span><span class="cc-quad"></span>
-                <span class="cc-quad"></span><span class="cc-quad"></span>
-              </span>
-              <span class="cc-h">Get connected to a great local worker</span>
-              <span class="cc-s">Delivery, moving, junk removal, home services, day labor, rides and more.</span>
-              <span class="cc-btn cc-btn-green">+ Make a request</span>
-            </button>
-            <button type="button" class="choose-card deals" data-choose="deals">
-              <span class="cc-brand"><img class="cc-brand-logo" src="assets/img/gopher-deals-logo.svg" alt="Gopher Deals"></span>
-              <!-- Two marquee rows of real merchant marks, running in OPPOSITE
-                   directions (owner 2026-10-01: "Top scrolling →, bottom
-                   scrolling ←"). Each row's track is duplicated so the loop has
-                   no seam; the copy is aria-hidden to keep it out of the a11y
-                   tree twice. -->
-              <span class="cc-media cc-marquee" aria-hidden="true">
-                <span class="cc-mq-row cc-mq-ltr"><span class="cc-mq-track" data-mq="a"></span></span>
-                <span class="cc-mq-row cc-mq-rtl"><span class="cc-mq-track" data-mq="b"></span></span>
-              </span>
-              <span class="cc-h">View hot local deals near you</span>
-              <span class="cc-s">Buy from the merchant direct &mdash; a Gopher brings it the last mile.</span>
-              <span class="cc-btn cc-btn-gold gopher-deals-btn">View Local Deals</span>
-            </button>
+          <!-- ⛔ THE TWO-CARD CHOOSER IS GONE (owner 2026-10-11). It was
+               "Get connected to a great local worker" beside "View hot local deals
+               near you". Two reasons, both his:
+                 1. "we leave deals out entirely right now. Just like the live apps."
+                    Deals ships AFTER Request. The Deals card was gated on
+                    isDealsEligible() and, for anyone ineligible, opened a COMING-SOON
+                    overlay — half the home chooser existed to say "not yet".
+                 2. The remaining card was an extra step. The app puts categories on
+                    the home and opens the flow already on job details; this now does
+                    the same, via __startRequestWithCategory(), which sets the category
+                    and jumps to step 2.
+               ⚠️ The Deals PANEL (#dashDealsHost) and its machinery are deliberately
+               LEFT IN PLACE, hidden and unreachable. Only the two doors were removed —
+               this card and the sidebar button — so Deals comes back by restoring them
+               rather than by rebuilding the panel. Do not delete the panel.
+               ⚠️ Category names come from CATEGORIES in this file. "Home Services" is
+               correct HERE and "Home / Office Services" is correct on Connect — owner
+               ruled the split twice on 2026-10-04 (G40-579). Do not harmonise them. -->
+          <div class="hv-head">
+            <span class="hv-lbl">Start a request</span>
+            <div class="hv-seg" role="group" aria-label="Choose how categories look">
+              <button type="button" class="hv-sb" data-hview="list" aria-pressed="false" aria-label="List with history" title="List with history">
+                <svg viewBox="0 0 24 18" aria-hidden="true"><rect x="1" y="1" width="9" height="7" rx="1.6"/><rect x="1" y="10" width="9" height="7" rx="1.6" opacity=".55"/><rect x="12.5" y="2" width="10.5" height="2.4" rx="1.2" opacity=".8"/><rect x="12.5" y="7.8" width="10.5" height="2.4" rx="1.2" opacity=".55"/><rect x="12.5" y="13.6" width="7" height="2.4" rx="1.2" opacity=".4"/></svg>
+              </button>
+              <button type="button" class="hv-sb" data-hview="spot" aria-pressed="true" aria-label="Spotlight" title="Spotlight">
+                <svg viewBox="0 0 24 18" aria-hidden="true"><rect x="1" y="1" width="14" height="16" rx="2"/><rect x="17" y="1" width="6" height="16" rx="2" opacity=".5"/></svg>
+              </button>
+              <button type="button" class="hv-sb" data-hview="all" aria-pressed="false" aria-label="All at once" title="All at once">
+                <svg viewBox="0 0 24 18" aria-hidden="true"><rect x="1" y="1" width="6.5" height="7" rx="1.4"/><rect x="9" y="1" width="6.5" height="7" rx="1.4"/><rect x="17" y="1" width="6" height="7" rx="1.4"/><rect x="1" y="10" width="6.5" height="7" rx="1.4" opacity=".6"/><rect x="9" y="10" width="6.5" height="7" rx="1.4" opacity=".6"/><rect x="17" y="10" width="6" height="7" rx="1.4" opacity=".6"/></svg>
+              </button>
+            </div>
+          </div>
+          <!-- ⚠️ TILES CARRY NO SUB-COPY YET, ON PURPOSE. The app shows a one-liner
+               under each name ("Groceries, takeout, pharmacy"). Those words are the
+               app's and are not in this file, so inventing them here would put copy
+               in front of requesters that nobody approved. Port them from the desk's
+               canonical master and drop them into .hv-ds. -->
+          <div class="hv-grid" id="rqHomeCats" data-hview="spot">
+              <div class="hv-cell">
+                <button type="button" class="hv-tile" data-homecat="delivery">
+                  <span class="hv-art hv-a-delivery" aria-hidden="true"></span>
+                  <span class="hv-nm">Delivery / Errand</span>
+                </button>
+                <button type="button" class="hv-iq" data-iq="delivery" aria-haspopup="dialog">iQ Ideas ▲</button>
+                <div class="hv-pills" data-pills="delivery"></div>
+              </div>
+              <div class="hv-cell">
+                <button type="button" class="hv-tile" data-homecat="junk">
+                  <span class="hv-art hv-a-junk" aria-hidden="true"></span>
+                  <span class="hv-nm">Junk Removal</span>
+                </button>
+                <button type="button" class="hv-iq" data-iq="junk" aria-haspopup="dialog">iQ Ideas ▲</button>
+                <div class="hv-pills" data-pills="junk"></div>
+              </div>
+              <div class="hv-cell">
+                <button type="button" class="hv-tile" data-homecat="moving">
+                  <span class="hv-art hv-a-moving" aria-hidden="true"></span>
+                  <span class="hv-nm">Moving</span>
+                </button>
+                <button type="button" class="hv-iq" data-iq="moving" aria-haspopup="dialog">iQ Ideas ▲</button>
+                <div class="hv-pills" data-pills="moving"></div>
+              </div>
+              <div class="hv-cell">
+                <button type="button" class="hv-tile" data-homecat="home">
+                  <span class="hv-art hv-a-home" aria-hidden="true"></span>
+                  <span class="hv-nm">Home Services</span>
+                </button>
+                <button type="button" class="hv-iq" data-iq="home" aria-haspopup="dialog">iQ Ideas ▲</button>
+                <div class="hv-pills" data-pills="home"></div>
+              </div>
+              <div class="hv-cell">
+                <button type="button" class="hv-tile" data-homecat="labor">
+                  <span class="hv-art hv-a-labor" aria-hidden="true"></span>
+                  <span class="hv-nm">Hourly / Day Labor</span>
+                </button>
+                <button type="button" class="hv-iq" data-iq="labor" aria-haspopup="dialog">iQ Ideas ▲</button>
+                <div class="hv-pills" data-pills="labor"></div>
+              </div>
+              <div class="hv-cell">
+                <button type="button" class="hv-tile" data-homecat="yard">
+                  <span class="hv-art hv-a-yard" aria-hidden="true"></span>
+                  <span class="hv-nm">Yard / Outdoor Projects</span>
+                </button>
+                <button type="button" class="hv-iq" data-iq="yard" aria-haspopup="dialog">iQ Ideas ▲</button>
+                <div class="hv-pills" data-pills="yard"></div>
+              </div>
+              <div class="hv-cell">
+                <button type="button" class="hv-tile" data-homecat="ride">
+                  <span class="hv-art hv-a-ride" aria-hidden="true"></span>
+                  <span class="hv-nm">Need a Ride</span>
+                </button>
+                <button type="button" class="hv-iq" data-iq="ride" aria-haspopup="dialog">iQ Ideas ▲</button>
+                <div class="hv-pills" data-pills="ride"></div>
+              </div>
+              <div class="hv-cell">
+                <button type="button" class="hv-tile" data-homecat="other">
+                  <span class="hv-art hv-a-other" aria-hidden="true"></span>
+                  <span class="hv-nm">Custom Task</span>
+                </button>
+                <button type="button" class="hv-iq" data-iq="other" aria-haspopup="dialog">iQ Ideas ▲</button>
+                <div class="hv-pills" data-pills="other"></div>
+              </div>
+          </div>
+
+          <!-- Request again — the home's bottom section (owner 2026-10-12: "the
+               bottom section has 4 most recent completed requests similar to
+               live apps"). Filled from DASH_DATA.previousRequests; falls back to
+               the app's "Popular near you" chips when there is no history.
+               Hidden until the script decides which of the two it is. -->
+          <div class="hra" id="rqHomeAgain" hidden></div>
           </div>
         </div>
       </section>
@@ -21690,6 +22121,339 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       setRequestPath('new');
     }
   });
+
+
+  /* ── iQ Ideas (owner 2026-10-12: "iQ badge here that opens up with examples
+     just like the live app", and "pills of examples of requests in that
+     category") ────────────────────────────────────────────────────────────
+     ⛔ THIS COPY IS NOT MINE AND MUST NOT BE EDITED HERE. It is ported verbatim
+     from the live Request app, src/component/home/iqIdeas.js at
+     origin/production bca7d23b4, generated rather than retyped so no word
+     drifts. Five ideas per category, each paired with the guidance it puts in
+     the Step 2 box. If the app's list changes, re-port it; do not hand-edit.
+
+     The app's own note records WHY each line asks only what the flow does not
+     already ask (John, 10/5): never addresses, timing, price, purchase/cost,
+     riders or bags, item counts, # of Gophers or hours, or stairs — "BOTH
+     passengers and luggage are inputs we ask for so that would be redundant
+     and creating EXTRA work for the customer when our experience goal for
+     customers is 'easy to use'". "Beer & liquor run" is the owner's own line.
+
+     Keyed by the WEB's category keys; the app keys by stored category name
+     (Delivery, Junk Removal, Moving, Home Services, Hourly / Day Labor,
+     Yard Project, Need a Ride, Other). */
+  window.HOME_IDEAS = {
+    delivery: [
+      ['Beer & liquor run',
+       'Explain here what specific brand, size and quantity of alcohol you want purchased.'],
+      ['Groceries dropped off',
+       'Explain here your grocery list (brands and sizes) and what your Gopher should do if something is out of stock.'],
+      ['Pharmacy pickup',
+       'Explain here the name the prescription is under and anything else to grab while there.'],
+      ['Tobacco, vape and nicotine delivery (21+ only)',
+       'Explain here the specific brand, type, flavor and quantity you want purchased.'],
+      ['Takeout delivered',
+       'Explain here the name the order is under and the order number, if you have one.'],
+    ],
+    junk: [
+      ['Haul an old couch',
+       'Explain here the couch size and type (sleeper, sectional) and where it sits in the home.'],
+      ['Garage cleanout',
+       'Explain here what kinds of items are going and anything that should stay.'],
+      ['Mattress to the dump',
+       'Explain here the mattress size and whether a box spring or bed frame goes too.'],
+      ['Construction debris',
+       'Explain here what the debris is (drywall, wood, tile) and whether it is bagged or loose.'],
+      ['Scrap metal pickup',
+       'Explain here what the metal items are and whether anything needs to be taken apart first.'],
+    ],
+    moving: [
+      ['Load or unload a U-Haul',
+       'Explain here the truck size and the heaviest items going in or out.'],
+      ['Move heavy furniture',
+       'Explain here which pieces, roughly how heavy, and any tight spots like narrow doorways.'],
+      ['Whole-apartment move',
+       'Explain here the apartment size, whether there is an elevator, and any oversized items.'],
+      ['Dorm move-out',
+       'Explain here what is going (boxes, mini fridge, furniture) and whether there is an elevator.'],
+      ['Rearrange a room',
+       'Explain here which room, what needs to move, and how you would like it set up.'],
+    ],
+    home: [
+      ['Mount a TV',
+       'Explain here the TV size, the wall type (drywall, brick), and whether you have the mount.'],
+      ['Assemble furniture',
+       'Explain here what needs assembling (the brand and item if you know it) and whether you have the tools.'],
+      ['Fix a leaky faucet',
+       'Explain here where the faucet is, how bad the leak is, and whether you have the parts.'],
+      ['Hang shelves & art',
+       'Explain here how many pieces, the wall type, and whether you have the hardware.'],
+      ['Deep clean',
+       'Explain here which rooms, the size of the home, and anything that needs extra attention.'],
+    ],
+    labor: [
+      ['An extra set of hands',
+       'Explain here what the job is and anything your Gopher should bring.'],
+      ['Event setup & teardown',
+       'Explain here the type of event and what needs setting up and taking down.'],
+      ['Load / haul materials',
+       'Explain here what the materials are, roughly how heavy, and where they go on site.'],
+      ['Warehouse help',
+       'Explain here the tasks and any heavy lifting or equipment involved.'],
+      ['General cleanup',
+       'Explain here what needs cleaning up, how big the area is, and where the debris should go.'],
+    ],
+    yard: [
+      ['Mow & edge the lawn',
+       'Explain here the size of the yard, front and/or back, and whether a mower is available.'],
+      ['Leaf & yard cleanup',
+       'Explain here how big the area is, front and/or back, and whether leaves are bagged or hauled away.'],
+      ['Trim hedges & bushes',
+       'Explain here how many hedges or bushes, roughly how tall, and what to do with the clippings.'],
+      ['Pressure wash',
+       'Explain here what needs washing (driveway, deck, siding), roughly how big, and whether a washer is available.'],
+      ['Spread mulch',
+       'Explain here how much mulch, whether it is already on site, and which beds.'],
+    ],
+    ride: [
+      ['Ride to the airport',
+       'Explain here your airline or terminal and anything your Gopher should know at pick-up.'],
+      ['Doctor appointment',
+       'Explain here which entrance to use and any help needed getting in or out of the car.'],
+      ['Late-night ride home',
+       'Explain here exactly where you will be waiting and anything that helps your Gopher spot you.'],
+      ['Senior transportation',
+       'Explain here any help needed getting in and out of the car and any walker or wheelchair coming along.'],
+      ['Wait & return trip',
+       'Explain here about how long your Gopher should wait and where to meet for the return.'],
+    ],
+    other: [
+      ['Pet sitting',
+       'Explain here what pets, for how long, and what care they need (feeding, walks, meds).'],
+      ['Change a tire',
+       'Explain here the vehicle and whether you have a spare and a jack.'],
+      ['Stereo install',
+       'Explain here the vehicle or room and the equipment being installed.'],
+      ['Wait for a delivery',
+       'Explain here the delivery window and what to do when it arrives.'],
+      ['Assemble a grill',
+       'Explain here the grill brand and model, and whether you have the tools.'],
+    ],
+  };
+  /* "What kind of delivery?" — the app's IDEAS_NOUN. */
+  window.HOME_IDEAS_NOUN = { delivery:'delivery', junk:'junk removal', moving:'move', home:'home service', labor:'labor job', yard:'yard project', ride:'ride', other:'custom task' };
+
+  /* ── Home category views + tiles (owner 2026-10-11) ──────────────────────
+     Three views, mirroring the app's: Spotlight (default, his pick), All at
+     once, and List with history. The chosen view is a per-viewer convenience,
+     so it lives in localStorage — wrapped, because a private window or blocked
+     site data makes the accessor throw rather than return empty. */
+  (function(){
+    const grid = document.getElementById('rqHomeCats');
+    if(!grid) return;
+    const segs = Array.prototype.slice.call(document.querySelectorAll('.hv-sb'));
+    const VIEWS = ['spot','all','list'];
+
+    function setView(v, remember){
+      if(VIEWS.indexOf(v) === -1) v = 'spot';
+      grid.setAttribute('data-hview', v);
+      segs.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.hview === v)); });
+      if(remember){ try { localStorage.setItem('rqHomeView', v); } catch(e){} }
+    }
+    let saved = null;
+    try { saved = localStorage.getItem('rqHomeView'); } catch(e){}
+    setView(saved || 'spot', false);
+
+    segs.forEach(function(b){
+      b.addEventListener('click', function(){ setView(b.dataset.hview, true); });
+    });
+
+    /* A tile opens the flow ALREADY ON JOB DETAILS, which is what the app does —
+       __startRequestWithCategory sets the category and jumps to step 2. The three
+       lines before it are the same ones the old "services" card ran: without
+       moveFlowToDash() the flow node is still parented to the marketing page and
+       the section renders empty (the 2026-10-03 defect the owner reported). */
+    /* One way in for all three entry points — the photo, an example pill and an
+       idea in the sheet. `idea` is the idea's NAME; the flow looks up its
+       guidance and shows it as placeholder text. A tapped example never fills
+       real text (owner 10/5). */
+    function start(catKey, idea){
+      showSection('new-request');
+      moveFlowToDash();
+      setRequestPath('new');
+      if(typeof window.__startRequestWithCategory === 'function'){
+        window.__startRequestWithCategory(catKey, idea);
+      }
+    }
+
+    const esc = function(s){ return String(s == null ? '' : s)
+      .replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+
+    /* Fill the per-category example rails from HOME_IDEAS, so the forty labels
+       live in ONE place and the markup carries none of them. */
+    const IDEAS = window.HOME_IDEAS || {};
+    Array.prototype.forEach.call(grid.querySelectorAll('[data-pills]'), function(rail){
+      const list = IDEAS[rail.dataset.pills] || [];
+      rail.innerHTML = list.map(function(pair){
+        return '<button type="button" class="hv-pill" data-idea="' + esc(pair[0]) + '">'
+             + esc(pair[0]) + '</button>';
+      }).join('');
+    });
+
+    grid.addEventListener('click', function(e){
+      /* A pill or the iQ pill sits INSIDE the cell but is its own control, so
+         each returns before the row's own handler can also fire. */
+      const pill = e.target.closest('.hv-pill');
+      if(pill){
+        e.preventDefault(); e.stopPropagation();
+        const cell = pill.closest('.hv-cell');
+        const tl = cell && cell.querySelector('[data-homecat]');
+        if(tl) start(tl.dataset.homecat, pill.dataset.idea);
+        return;
+      }
+      const iq = e.target.closest('.hv-iq');
+      if(iq){ e.preventDefault(); e.stopPropagation(); openIdeas(iq.dataset.iq); return; }
+
+      const tile = e.target.closest('[data-homecat]');
+      if(!tile) return;
+      start(tile.dataset.homecat);
+    });
+
+    /* ── "What kind of …?" — the app's iQ Ideas sheet (canonical master H-06 /
+       H-08): five ideas plus "Something else →", which simply opens Step 2 with
+       no guidance. Built once, reused for every category. ───────────────── */
+    let ov = null;
+    function buildSheet(){
+      ov = document.createElement('div');
+      ov.className = 'iqs-ov'; ov.hidden = true;
+      ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true');
+      ov.innerHTML =
+        '<div class="iqs">'
+        + '<div class="iqs-h"><h3 data-iqs-title></h3>'
+        + '<button type="button" class="iqs-x" aria-label="Close">\u00D7</button></div>'
+        + '<p class="iqs-sub">Pick one and we\u2019ll show you what to write \u2014 '
+        + 'nothing is filled in for you.</p>'
+        + '<div class="iqs-list" data-iqs-list></div>'
+        + '</div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function(e){
+        if(e.target === ov || e.target.closest('.iqs-x')) return closeIdeas();
+        const it = e.target.closest('[data-iqs-idea]');
+        if(it){ const cat = ov.dataset.cat; closeIdeas(); start(cat, it.dataset.iqsIdea || undefined); }
+      });
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape' && ov && !ov.hidden) closeIdeas();
+      });
+    }
+    function openIdeas(catKey){
+      const list = IDEAS[catKey] || [];
+      if(!list.length) return start(catKey);
+      if(!ov) buildSheet();
+      ov.dataset.cat = catKey;
+      const noun = (window.HOME_IDEAS_NOUN || {})[catKey] || 'request';
+      ov.querySelector('[data-iqs-title]').textContent = 'What kind of ' + noun + '?';
+      ov.querySelector('[data-iqs-list]').innerHTML =
+        list.map(function(pair){
+          return '<button type="button" class="iqs-i" data-iqs-idea="' + esc(pair[0]) + '">'
+               + esc(pair[0]) + '</button>';
+        }).join('')
+        + '<button type="button" class="iqs-else" data-iqs-idea="">Something else \u2192</button>';
+      ov.hidden = false;
+      const first = ov.querySelector('.iqs-i'); if(first) first.focus();
+    }
+    function closeIdeas(){ if(ov) ov.hidden = true; }
+
+    /* ── Request again — the bottom section (owner 2026-10-12: "the bottom
+       section has 4 most recent completed requests similar to live apps").
+       The app shows the last THREE (lastCompleted(3)); the web shows FOUR, as
+       asked, which is also what the wider grid wants. Falls back to the app's
+       "Popular near you" chips when there is no history, exactly as the app
+       does — POPULAR is ported from src/component/home/homeNav.js at
+       origin/production bca7d23b4, and every chip label is one of the same
+       forty iQ ideas, so the two never disagree. ─────────────────────────── */
+    const POPULAR = [
+      ['delivery','Groceries dropped off'], ['junk','Haul an old couch'],
+      ['home','Mount a TV'],                ['moving','Load or unload a U-Haul'],
+      ['yard','Mow & edge the lawn'],       ['ride','Ride to the airport'],
+      ['labor','Event setup & teardown']
+    ];
+
+    const againEl = document.getElementById('rqHomeAgain');
+
+    /* "Completed May 14 · Priya N." — the app's completedOn(). The web's rows
+       carry date as M/D/YY strings, so they are formatted here rather than
+       parsed as ISO. */
+    function completedOn(r){
+      const d = new Date(r.completedAt || r.date);
+      const when = isNaN(d.getTime())
+        ? String(r.date || '')
+        : d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+      const who = String(r.worker || '').trim();
+      return ['Completed', when].filter(Boolean).join(' ') + (who ? ' \u00B7 ' + who : '');
+    }
+
+    function renderAgain(){
+      if(!againEl) return;
+      const mapCat = window.__mapHistoryCategory || function(){ return 'other'; };
+      /* ⚠️ `typeof DASH_DATA !== 'undefined'` DOES NOT GUARD THIS. DASH_DATA is a
+         `const` declared further down this same closure, so while this runs it
+         is in the temporal dead zone — and typeof throws a ReferenceError on a
+         TDZ binding, unlike on an undeclared name. The guard reads as safe and
+         is not; it threw "Cannot access 'DASH_DATA' before initialization" and
+         left the section hidden. try/catch is the only guard that works here. */
+      let prev = [];
+      try { prev = DASH_DATA.previousRequests || []; } catch(e){ prev = []; }
+      const rows = prev.slice(0, 4);
+
+      if(rows.length){
+        againEl.innerHTML =
+          '<div class="hra-h"><h2>Request again</h2>'
+          + '<button type="button" class="hra-link" data-hra-history>Request History \u203A</button></div>'
+          + '<div class="hra-rows">' + rows.map(function(r, i){
+              const k = mapCat(r.category);
+              return '<div class="hra-card">'
+                + '<span class="hv-art hv-a-' + k + '" aria-hidden="true"></span>'
+                + '<div class="hra-b">'
+                +   '<div class="hra-t" title="' + esc(r.type || r.category) + '">'
+                +     esc(r.type || r.category) + '</div>'
+                +   '<div class="hra-s">' + esc(completedOn(r)) + '</div>'
+                + '</div>'
+                + '<button type="button" class="hra-go" data-hra-again="' + i + '">Request again</button>'
+                + '</div>';
+            }).join('') + '</div>';
+      } else {
+        againEl.innerHTML =
+          '<div class="hra-h"><h2>Popular near you</h2></div>'
+          + '<div class="hra-chips">' + POPULAR.map(function(pair){
+              return '<button type="button" class="hra-chip" data-hra-pop="' + esc(pair[0]) + '"'
+                + ' data-hra-idea="' + esc(pair[1]) + '">'
+                + '<span class="hv-art hv-a-' + pair[0] + '" aria-hidden="true"></span>'
+                + esc(pair[1]) + '</button>';
+            }).join('') + '</div>';
+      }
+      againEl.hidden = false;
+
+      againEl.onclick = function(e){
+        const pop = e.target.closest('[data-hra-pop]');
+        if(pop){ start(pop.dataset.hraPop, pop.dataset.hraIdea); return; }
+        const hist = e.target.closest('[data-hra-history]');
+        if(hist){ showSection('history'); return; }
+        const go = e.target.closest('[data-hra-again]');
+        if(!go) return;
+        /* Reuse the dashboard's own Request-again path — the MY Gophers
+           checklist, or straight to Review when there are none. Building a
+           second route to the same place is how the two drift. */
+        const r = rows[Number(go.dataset.hraAgain)];
+        if(r && typeof openRaFastModal === 'function') openRaFastModal(r);
+      };
+    }
+    /* Deferred to a macrotask: this IIFE runs inside rqDashboardInit(), which is
+       reached BEFORE the `const DASH_DATA` below it has initialised. A timeout
+       lets the whole synchronous block finish first, so the history is really
+       there. Re-exported so a later data change can refresh the rail. */
+    window.__renderHomeAgain = renderAgain;
+    setTimeout(renderAgain, 0);
+  })();
 
   const SECTION_TITLES = {
     choose:'', home:'Dashboard overview', previous:'Request History', inbox:'Inbox',
@@ -23747,11 +24511,34 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     return all;
   }
 
+  /* The requester's first name, for the empty-state headline. '' when we do not
+     know it yet, which is the case the app handles by dropping the name. */
+  function homeFirstName(){
+    var n = '';
+    try { n = (DASH_DATA && DASH_DATA.profile && DASH_DATA.profile.name) || ''; } catch(e){ n = ''; }
+    n = String(n).trim().split(/\s+/)[0] || '';
+    return (n && n.toLowerCase() !== 'a') ? n : '';
+  }
+
   /* n = live requests, a = how many of them want something. Both plurals are
      computed, never hard-coded, and the attention clause disappears entirely
-     at a === 0 rather than reading "0 need attention". */
+     at a === 0 rather than reading "0 need attention".
+
+     ⛔ THE EMPTY-STATE LINE IS THE APP'S, WORD FOR WORD, and it is an owner
+     ruling: "What can we help you with today, John?" (John, 18:48 ET 10/4,
+     recorded in the app's src/component/home/HomeScreen.js). Owner 2026-10-12:
+     "Move the name into the headline like the app." The app drops the name
+     when it does not have one, and so does this — same two forms, same file.
+     The separate "Welcome back, <first> 👋" greeting was REMOVED in the same
+     change: the app has no greeting line, and keeping both would say the name
+     twice. Only the EMPTY state carries the name; the live-requests line below
+     is a different sentence and is unchanged. */
   function homeLiveHeadline(n, a){
-    if(!n) return 'So, how can we help you today?';
+    if(!n){
+      var f = homeFirstName();
+      return f ? 'What can we help you with today, ' + f + '?'
+               : 'What can we help you with today?';
+    }
     return 'You have ' + n + (n === 1 ? ' current request' : ' current requests')
       + (a ? ', <em>' + a + (a === 1 ? ' needs' : ' need') + ' attention</em>' : '');
   }
@@ -27659,7 +28446,6 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     // Populate identity fields
     const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
     set('rqDashUserName', name);
-    set('rqDashGreeting', 'Welcome back, ' + first + ' 👋');
     set('rqDashAvatar', initials(name) || 'GR');
     set('rqPhAvatar', initials(name) || 'GR');
     // If the user added a profile photo at signup, show it in both avatars

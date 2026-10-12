@@ -223,7 +223,30 @@
      fixing. Adopting this changes ONE observable behaviour on Connect — which
      message appears when both fail at once — and nothing else. */
   var SURFACE_GATES = {
-    /* ⛔⛔ 'identity' IS BACK ON THE WEB SURFACES — owner ruling 2026-08-25.
+    /* ⛔⛔ 'identity' IS OFF ALL THREE MODELLED SURFACES — owner ruling 2026-10-04.
+       This SUPERSEDES the 2026-08-25 restoration quoted below. Owner, with the server
+       403 and the submit-time refusal in front of him: "No block, match the app", and
+       then "TrustShield is optional". The app's delivery.js stepProblem has no identity
+       check, so the client gate was the web pair's own invention by this date.
+       ⭐ WHY THIS IS NOT THE 2026-08-23 MISTAKE REPEATED. That removal was made because
+       enrolment was about to stop, and it was reversed once TrustShield went internal.
+       This one rests on a different fact: trust_shield_required() (create.js:512,
+       update.js:848) only refuses when the requester is under TRUSTSHIELD_MIN_AGE
+       (default 30). The gate's `when` here has NO age branch, so it was refusing
+       requesters the backend would have accepted -- broader than the control it was
+       standing in for, which is the opposite of the dead-end it was meant to prevent.
+       ⚠️ WHAT THIS RULING DOES NOT FIX, and whoever revisits this must not assume it
+       did: the server still refuses under-30 unverified requesters at submit. On the
+       WEB that is unreachable -- these dashboards never POST an order, so there is no
+       403 to show (verified 2026-10-04: submitRequestAndCapture() writes to DASH_DATA
+       and the only fetches on the page are /api/analyze-upload and /api/feedback).
+       In the APP it IS reachable, and a refusal with no surfaced sentence renders as
+       nothing. That is an app-side concern, flagged to the owner, not a reason to put
+       this gate back.
+       The rule DEFINITION stays in the catalogue above, unreferenced, exactly as the
+       2026-08-23 removal left it -- the barcode work re-enables it later.
+       Superseded text follows.
+       ⛔⛔ 'identity' IS BACK ON THE WEB SURFACES — owner ruling 2026-08-25.
        This SUPERSEDES the 2026-08-23 G40-410 removal quoted below. That removal
        existed for exactly one reason: the third-party ID vendor was being retired, so enrolment would
        stop and under-30 (who then had no one-off path) would be left unable to
@@ -254,10 +277,10 @@
        reached through the category + the ageRestricted slider, a different mechanism
        from the app's can_request_restricted_items. Zero A/R orders from under-21
        requesters in 2025 or 2026 — do not "tidy" that away with this. */
-    request: ['category', 'description', 'costOfItems', 'identity',
+    request: ['category', 'description', 'costOfItems',
               'pickupAddress', 'dropoffAddress', 'addressesDiffer',
               'workerPay', 'workerPaySubmit', 'scheduleTime', 'waiver'],
-    connect: ['category', 'description', 'costOfItems', 'identity',
+    connect: ['category', 'description', 'costOfItems',
               'pickupAddress', 'dropoffAddress', 'addressesDiffer',
               'workerPay', 'workerPaySubmit', 'scheduleTime', 'waiver'],
     /* ⛔ THE PROTOTYPE NO LONGER DIVERGES. It used to lack addresses-differ and
@@ -270,7 +293,7 @@
        only surface running the age-keyword scan from stepGate, so it carries
        'ageKeyword' and they do not. Listed rather than inherited — an omission anyone
        can see beats an absence nobody notices. Step-6 order matches Request's. */
-    prototype: ['category', 'description', 'costOfItems', 'ageKeyword', 'identity',
+    prototype: ['category', 'description', 'costOfItems', 'ageKeyword',
                 'pickupAddress', 'dropoffAddress', 'addressesDiffer',
                 'workerPay', 'workerPaySubmit', 'scheduleTime', 'waiver']
   };
@@ -395,9 +418,12 @@
        All three modelled surfaces are asserted to CARRY the gate. Surface 3, the live
        apps, is not modelled here; it ships via a store release. */
     ['request', 'connect', 'prototype'].forEach(function (surface) {
-      if (SURFACE_GATES[surface].indexOf('identity') === -1) {
-        problems.push(surface + ' is MISSING the identity gate, which the owner made '
-          + 'mandatory for age-restricted orders on 2026-08-25 (TrustShield is internal now)');
+      if (SURFACE_GATES[surface].indexOf('identity') !== -1) {
+        problems.push(surface + ' CARRIES the identity gate, which the owner removed on '
+          + '2026-10-04 ("No block, match the app" / "TrustShield is optional"). The '
+          + 'server-side trust_shield_required() is the control, and it only applies '
+          + 'under TRUSTSHIELD_MIN_AGE -- a client gate with no age branch refuses '
+          + 'requesters the backend accepts');
       }
     });
 
