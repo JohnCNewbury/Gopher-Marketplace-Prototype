@@ -82,7 +82,7 @@ a{color:var(--green-dark);}
   position:sticky;top:66px;align-self:start;
   height:calc(100vh - 66px);
   overflow-y:auto;overscroll-behavior:contain;
-  padding:26px 16px 60px 22px;
+  padding:26px 16px 0 22px;
   border-right:1px solid var(--line);
 }
 .sidebar::-webkit-scrollbar{width:8px;}
@@ -112,7 +112,12 @@ a{color:var(--green-dark);}
   border-left-color:var(--green);font-weight:800;
 }
 .side-nav a.active .num{background:var(--green);color:#fff;}
-.side-help{margin:26px 6px 0;padding:14px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:var(--card-shadow);}
+/* "Still stuck?" is pinned to the bottom of the menu's own scroll area, so a
+   menu taller than the window can never push it under the page footer (same
+   fix as the Request 101, owner-reported 2026-10-13). The strip below it hides
+   links scrolling past in the 14px gap. */
+.side-help{position:sticky;bottom:14px;z-index:2;margin:26px 6px 0;padding:14px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:var(--card-shadow);}
+.side-help::after{content:"";position:absolute;left:-10px;right:-10px;top:calc(100% + 1px);height:15px;background:var(--sand);}
 .side-help h4{font-size:13px;margin-bottom:5px;}
 .side-help p{font-size:12px;color:var(--muted);margin:0 0 10px;}
 .side-help a{display:inline-block;font-family:'Nunito';font-weight:800;font-size:12px;color:var(--green-dark);text-decoration:none;}
@@ -328,6 +333,36 @@ body.nav-open .sections-fab{opacity:0;pointer-events:none;}
     font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;box-shadow:0 8px 24px rgba(0,36,97,.4);cursor:pointer;}
   .sections-fab svg{width:16px;height:16px;}
 }
+
+/* ── Real app screens (101 refresh, 2026-10-13) ─────────────────────
+   Every screenshot is the live Gopher Go app (production 2a47ed71d)
+   running on made-up demo data — no real customers, workers or jobs.
+   How they were made, and the code audit behind every claim, are recorded in
+   the private gopher-dev-handoff repo: evidence/101-guides-refresh/README.md. */
+.shots{display:flex;flex-wrap:wrap;gap:22px;margin-top:22px;align-items:flex-start;}
+.shot{margin:0;width:228px;flex:none;}
+.shot .phone{position:relative;border-radius:30px;padding:7px;background:#0d1b3d;box-shadow:0 18px 40px rgba(0,36,97,.20);}
+.shot .phone img{display:block;width:100%;height:auto;aspect-ratio:540/1169;border-radius:23px;background:#fbf7ef;}
+.shot figcaption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.4;padding:0 4px;}
+.shot figcaption b{color:var(--navy);font-family:'Nunito';font-weight:800;}
+@media (max-width:640px){
+  .shots{justify-content:center;gap:18px;}
+  .shot{width:min(74vw,250px);}
+}
+
+/* store badges in the hero */
+.store-badges{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px;}
+.store-badges img{height:44px;width:auto;display:block;}
+
+/* small inline UI labels — the words exactly as the app shows them */
+.ui{font-family:'Nunito';font-weight:800;color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:7px;padding:1px 7px;white-space:nowrap;font-size:.94em;}
+.pill-demo{display:inline-block;font-family:'Nunito';font-weight:900;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:2px 9px;vertical-align:1px;}
+.pill-demo.g{background:#dff7e8;color:#127a45;}
+.pill-demo.s{background:#eceae4;color:#6b7280;}
+
+/* two tier cards (Gopher Pro, Gopher Pro+) */
+.tier-cards.two{grid-template-columns:repeat(2,1fr);max-width:470px;}
+@media (max-width:980px){ .tier-cards.two{grid-template-columns:repeat(2,1fr);} }
 </style>
 </head>
 <body>
@@ -346,18 +381,21 @@ body.nav-open .sections-fab{opacity:0;pointer-events:none;}
     <div class="side-group">Getting started</div>
     <ul class="side-nav">
       <li><a href="#welcome">Welcome</a></li>
-      <li><a href="#signin">Sign in &amp; create account</a></li>
-      <li><a href="#profile">Complete your profile</a></li>
-      <li><a href="#payout">Set up your payout account</a></li>
+      <li><a href="#signin">Sign in</a></li>
+      <li><a href="#signup">Create your account</a></li>
+      <li><a href="#setup">Set up to work</a></li>
+      <li><a href="#tour">Find your way around</a></li>
+      <li><a href="#profile">Your profile</a></li>
+      <li><a href="#payout">Payout account</a></li>
       <li><a href="#settings">Work settings &amp; radius</a></li>
     </ul>
 
     <div class="side-group">Taking a job</div>
     <ul class="side-nav">
       <li><a href="#step1"><span class="num">1</span> Read the job feed</a></li>
-      <li><a href="#step2"><span class="num">2</span> Icons &amp; alerts</a></li>
+      <li><a href="#step2"><span class="num">2</span> What the labels mean</a></li>
       <li><a href="#step3"><span class="num">3</span> Job timing</a></li>
-      <li><a href="#step4"><span class="num">4</span> Offer types</a></li>
+      <li><a href="#step4"><span class="num">4</span> What you'll make</a></li>
       <li><a href="#step5"><span class="num">5</span> Question, counter &amp; accept</a></li>
       <li><a href="#step6"><span class="num">6</span> On the job</a></li>
       <li><a href="#step7"><span class="num">7</span> Update &amp; complete</a></li>
@@ -368,22 +406,23 @@ body.nav-open .sections-fab{opacity:0;pointer-events:none;}
       <li><a href="#payouts">Payouts &amp; speed</a></li>
       <li><a href="#costadj">Cost adjustments</a></li>
       <li><a href="#age">Age-restricted deliveries</a></li>
-      <li><a href="#rate">Rate &amp; become a favorite</a></li>
-      <li><a href="#refer">Refer yourself</a></li>
+      <li><a href="#disputes">Disputes</a></li>
+      <li><a href="#rate">Rating &amp; MY Gophers</a></li>
+      <li><a href="#history">Request History</a></li>
     </ul>
 
     <div class="side-group">Earn more &amp; good to know</div>
     <ul class="side-nav">
-      <li><a href="#tiers">Elite, Elite+ &amp; Pro</a></li>
-      <li><a href="#offer-deals">Offer a Service-Provider Deal</a></li>
-      <li><a href="#active">Stay active &amp; in good standing</a></li>
+      <li><a href="#tiers">Gopher Pro &amp; Pro+</a></li>
+      <li><a href="#refer">Refer Gopher</a></li>
+      <li><a href="#active">Cancelling &amp; good standing</a></li>
       <li><a href="#rules">Safety &amp; the rules</a></li>
-      <li><a href="#help">Need help?</a></li>
+      <li><a href="#help">Help &amp; your account</a></li>
     </ul>
 
     <div class="side-help">
       <h4>Still stuck?</h4>
-      <p>The Help Center lives under <b>More Stuff</b> in the app.</p>
+      <p>In the app, tap <b>More → Help Center → Message Support</b>.</p>
       <a href="mailto:support@gophergo.io">support@gophergo.io →</a>
     </div>
   </aside>
@@ -395,138 +434,206 @@ body.nav-open .sections-fab{opacity:0;pointer-events:none;}
     <section class="hero" id="welcome">
       <span class="scribble">welcome to</span>
       <h1>Gopher Go, <em>made simple.</em></h1>
-      <p class="lede">This is your step-by-step guide to earning on Gopher Go — the worker hub built with every worker in mind. Bring your skillset, set up once, and let the jobs come to you. You decide what to take, the customer pays you directly, and we make sure the money lands fast.</p>
+      <p class="lede">This is your step-by-step guide to earning on Gopher Go, the app for local workers. Set up once, choose the work you want, and take only the jobs that suit you. Customers pay through Gopher, and your pay goes straight to your debit card.</p>
       <div class="hero-meta">
-        <span class="chip">💸 <b>You keep 100%</b> — we don't take a cut</span>
-        <span class="chip">🧭 Free to <b>sign up, view &amp; accept</b></span>
-        <span class="chip">🙋 <b>You decide</b> — every job is optional</span>
+        <span class="chip">💸 You keep <b>100%</b>. No fees, no cut</span>
+        <span class="chip">🧭 <b>Free</b> to join and find work</span>
+        <span class="chip">🙋 Every job is <b>your choice</b></span>
+      </div>
+      <div class="store-badges">
+        <a href="https://apps.apple.com/us/app/gopher-go/id1438128905"><img src="assets/img/badge-app-store.webp" alt="Download Gopher Go on the App Store"></a>
+        <a href="https://play.google.com/store/apps/details?id=io.gophergoapp.go"><img src="assets/img/badge-google-play.webp" alt="Get Gopher Go on Google Play"></a>
       </div>
       <div class="note info" style="margin-top:26px;">
         <span class="nico">🧭</span>
-        <div><span class="h">How to use this page</span>First you'll set up your account (<b>5 quick sections</b>), then every job follows the same <b>7-step rhythm</b> — read it, take it, do it, get paid. Use the menu on the left to jump to anything, anytime. Everything here also lives in the in-app <b>Help Center</b> under <b>More Stuff</b>.</div>
+        <div><span class="h">How to use this page</span>First you create your account and set up to work. After that, every job follows the same <b>7 steps</b>: read it, take it, do it, get paid. Use the menu on the left to jump anywhere. Every screenshot here is the real Gopher Go app; the people, places and jobs in them are made up.</div>
       </div>
     </section>
 
     <!-- SIGN IN -->
     <section class="section" id="signin">
       <span class="eyebrow">Getting started</span>
-      <h2>Sign in or create your account</h2>
-      <p>Gopher Go is an app-only, passwordless experience — nothing to memorize. You sign in with a one-time code sent to your phone.</p>
+      <h2>Sign in</h2>
+      <p>Gopher is passwordless, so there's nothing to remember. You sign in with your mobile number and a 6-digit code we text you. New workers start on the same screen.</p>
       <ol class="brand">
-        <li>Download <b>Gopher Go</b> (free) and tap <b>Sign in with phone</b>.</li>
-        <li>Enter your number and tap <b>Send Code</b>.</li>
-        <li>Type the 6-digit code we text you. That's it — you're in.</li>
+        <li>Open Gopher Go. Under <b>Sign in or sign up with your number</b>, enter your 10-digit mobile number.</li>
+        <li>Tick <b>I agree to the SMS disclaimer &amp; Terms.</b> and tap <span class="ui">Send verification code</span>.</li>
+        <li>On <b>Check your texts.</b>, enter the 6-digit code and tap <span class="ui">Verify Code</span>. If you've been here before, you land on Home. If the number is new, sign-up starts (see the next section).</li>
       </ol>
-      <h3>New here?</h3>
-      <p>Tap <b>Create an account</b> and add your name, phone, email, address, and date of birth. We'll verify your phone and email with the same quick code step.</p>
-      <div class="note tip"><span class="nico">↗</span><div><span class="h">Were you referred? Add their code</span>If another Gopher (or a friend already on the app) brought you here, there's an optional <b>"Referral Info"</b> step during sign-up — enter the <b>Gopher ID of whoever referred you</b> and you'll see their name pop up to confirm. It's optional and skippable, but adding it is how they get credit for referring you. Arrived by scanning someone's QR or link? It's filled in for you — just confirm.</div></div>
-      <div class="note tip"><span class="nico">✓</span><div><span class="h">Use your legal first &amp; last name</span>This has to match the name on your bank account or it'll break your payout setup. Your <b>name, birthday, and phone number can't be changed</b> once saved, so double-check before tapping save. Email, address, and bio you can update anytime.</div></div>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/signin.webp" alt="Gopher Go sign-in screen: Built for Workers, Built to be Better, a phone field, the SMS disclaimer checkbox and the Send verification code button" loading="lazy"></div><figcaption><b>Sign in</b> with your number</figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/code.webp" alt="Check your texts screen with six boxes for the code, a resend countdown and the Verify Code button" loading="lazy"></div><figcaption><b>Check your texts.</b> Enter the code</figcaption></figure>
+      </div>
+      <div class="note info"><span class="nico">💬</span><div><span class="h">Code didn't arrive?</span>You can ask for a new one after 60 seconds: the countdown turns into <b>Tap to resend</b>. If it still doesn't come, tap <b>Still not receiving? Please tap here for help</b>. Gopher doesn't accept pre-paid or VoIP numbers.</div></div>
+      <div class="note tip"><span class="nico">📱</span><div><span class="h">Got a new phone number?</span>Tap <b>Have a new number?</b> on the sign-in screen to move your account yourself. We send a code to the email on your account, ask for your date of birth, then text a code to your new number.</div></div>
+    </section>
+
+    <!-- SIGN UP -->
+    <section class="section" id="signup">
+      <span class="eyebrow">Getting started</span>
+      <h2>Create your account</h2>
+      <p>There's no separate sign-up button. A new number goes straight into a short set-up, one question per screen, counted <b>Step 1 of 8</b> to <b>Step 8 of 8</b>:</p>
+      <ol class="brand">
+        <li><b>Your name.</b> Use your legal name. It's also used to verify your identity with Stripe when you set up your payouts.</li>
+        <li><b>Your birthday.</b> You need to be at least 16 to join. If you're 16 or 17, a parent or guardian has to accept the Terms for you and co-sign your payout account (<a href="gopher-terms-of-service.html">Terms of Service §9</a>).</li>
+        <li><b>Your email</b>, typed twice.</li>
+        <li><b>Your address.</b> Tap <b>Use my current location</b> or enter it.</li>
+        <li><b>How did you discover Gopher?</b> If someone referred you, choose <b>Referral</b> and enter their <b>Gopher ID</b> in <b>Referrer ID (optional)</b>. If you joined from someone's invite, it's filled in for you.</li>
+        <li><b>Your photo.</b> This one is required. Customers see it when you accept their request, so they know who's coming.</li>
+        <li><b>Look good?</b> Check everything and tap <span class="ui">Confirm Account →</span>.</li>
+        <li><b>Check your email.</b> Enter the code we email you.</li>
+      </ol>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/signup-name.webp" alt="Sign-up Step 1 of 8: What's your name? with first and last name fields and a Who sees your name? note" loading="lazy"></div><figcaption><b>Step 1 of 8:</b> your name</figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/signup-photo.webp" alt="Sign-up Step 6 of 8: Smile! Add a photo, with Take a photo and Choose from camera roll" loading="lazy"></div><figcaption><b>Step 6 of 8:</b> your photo</figcaption></figure>
+      </div>
+      <div class="note warn"><span class="nico">✍️</span><div><span class="h">Double-check your name and birthday</span>Your name, birthday and sign-in number are locked once your account is created. Email, address and how you found Gopher can be edited any time in My Profile. If your name or birthday needs fixing, email <a href="mailto:support@gophergo.io">support@gophergo.io</a>.</div></div>
+    </section>
+
+    <!-- SET UP TO WORK -->
+    <section class="section" id="setup">
+      <span class="eyebrow">Getting started</span>
+      <h2>Set up to work</h2>
+      <p>One Gopher account works in both apps, so the next screen says <b>You're set up for both apps.</b> Before you can see or take requests in Gopher Go, there are six more steps, counted <b>Set up to work · 1 of 6</b> to <b>6 of 6</b>:</p>
+      <ol class="brand">
+        <li><b>Skills bio</b> <span class="pill-demo s">Recommended</span>. What you do, your years of experience and the tools you bring. A preview shows how customers see you.</li>
+        <li><b>Ride share info</b> <span class="pill-demo s">Optional</span>. Only if you want to give rides: your car and driver details, plus your insurance carrier and policy number. Rides stay locked in your work choices until this is done.</li>
+        <li><b>Register a business</b> <span class="pill-demo s">Optional</span>. If you work as a business: your business name, logo and details.</li>
+        <li><b>Work preferences</b> <span class="pill-demo g">Required</span>. The kinds of work you want (see <a href="#settings">Work settings &amp; radius</a>).</li>
+        <li><b>Payout account</b> <span class="pill-demo g">Required</span>. Your details for Stripe, then your debit card (see <a href="#payout">Payout account</a>).</li>
+        <li><b>Best practices</b> <span class="pill-demo g">Required</span>. Eleven short rules. Tick each one, then tap <span class="ui">Understood &amp; Ready To Go!</span>.</li>
+      </ol>
+      <p>Last, <b>Almost ready to work!</b> asks you to turn on location. Gopher Go uses it to find requests near you, even when the app is closed.</p>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/setup-intro.webp" alt="You're set up for both apps: the six Set up to work steps with Recommended, Optional and Required tags, Have these handy, Continue and I'll finish later" loading="lazy"></div><figcaption><b>Set up to work:</b> the six steps</figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/setup-work.webp" alt="Set up to work 4 of 6: What work do you want? with Delivery, General Delivery, Age-Restricted 21+ only, Ride Sharing locked, Hourly / Day Labor, Home Services, Junk Removal, Moving, Yard Project and Custom Task" loading="lazy"></div><figcaption><b>4 of 6:</b> the work you want</figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/setup-practices.webp" alt="Set up to work 6 of 6: Best practices, with The two that matter most and a checklist of rules to confirm" loading="lazy"></div><figcaption><b>6 of 6:</b> best practices</figcaption></figure>
+      </div>
+      <div class="note info"><span class="nico">🧾</span><div><span class="h">Have these handy</span>A valid ID for your payout account, and a debit card for instant payouts. Need a break? <b>I'll finish later</b> saves your progress, but you can't see or take requests until you finish. It takes less than 8 minutes.</div></div>
+      <div class="note warn"><span class="nico">⚖️</span><div><span class="h">The two that matter most</span>Asking a customer to pay outside the app suspends your account at once. And a request you accept is one you complete.</div></div>
+    </section>
+
+    <!-- TOUR -->
+    <section class="section" id="tour">
+      <span class="eyebrow">Getting started</span>
+      <h2>Find your way around</h2>
+      <p>The app has five tabs on a floating bar at the bottom of the screen: <b>Account · Inbox · GO · Refer · More</b>. The big green <b>GO</b> in the middle takes you to <b>Home</b>, or straight back to a job you're working on. A red number on <b>Inbox</b> means unread messages; on <b>Account</b>, it means your payout card needs attention.</p>
+      <h3>Home, top to bottom</h3>
+      <ul class="brand">
+        <li><b>↻ Refresh</b> at the top right. Home also refreshes itself every few seconds.</li>
+        <li><b>Welcome back</b>, with <b>Gopher Pro</b> or <b>Gopher Pro+</b> under your name if you have a tier (see <a href="#tiers">Gopher Pro &amp; Pro+</a>).</li>
+        <li><b>…ask iQ</b>: tap <b>Ask Gopher anything…</b> for quick answers about the app.</li>
+        <li>Three tabs, each with a count: <b>Active</b> (jobs you're working on), <b>Scheduled</b> (jobs you've accepted for later) and <b>Available</b> (jobs you can take, under <b>Available near you</b>).</li>
+      </ul>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/home.webp" alt="Gopher Go Home: Welcome back, Marcus, Gopher Pro+, the ask iQ bar, Active, Scheduled and Available tabs, and job cards under Available near you" loading="lazy"></div><figcaption><b>Home</b>, on Available</figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/home-active.webp" alt="Home on the Active tab: a Junk Removal job marked NEEDS YOU with a new message, and a Home Services job in progress" loading="lazy"></div><figcaption><b>Active:</b> your jobs right now</figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/inbox.webp" alt="Inbox with a search bar, Inbox and Deleted tabs, and messages from customers and Gopher Support" loading="lazy"></div><figcaption><b>Inbox</b></figcaption></figure>
+      </div>
+      <p>In <b>Inbox</b>, swipe a message left to delete it. Deleted messages clear themselves after 90 days.</p>
     </section>
 
     <!-- PROFILE -->
     <section class="section" id="profile">
       <span class="eyebrow">Getting started</span>
-      <h2>Complete your profile</h2>
-      <p>A complete profile builds trust and helps customers pick you. From your dashboard, open <b>Account → Personal Info</b>.</p>
-      <h3>Personal info</h3>
-      <ul class="brand">
-        <li>Add a <b>recent, clear profile photo</b> — real faces get hired.</li>
-        <li>Confirm your legal name, birthday, phone, email, and address.</li>
-        <li>Write a short bio that sells your skillset.</li>
-      </ul>
-      <h3>Ride-sharing &amp; business info <span style="font-weight:600;color:var(--muted);font-size:14px;">(optional)</span></h3>
-      <ul class="brand">
-        <li>If your business is <b>licensed, bonded, and/or insured</b>, upload your verified credentials here.</li>
-        <li><b>Upload photos of completed jobs.</b> Trust us on this one — a portfolio is one of the biggest drivers of getting requested by name.</li>
-      </ul>
-      <div class="note info"><span class="nico">🔒</span><div>Everything is stored securely and only used to set up payouts and match you with the right work.</div></div>
+      <h2>Your profile</h2>
+      <p>Tap <b>Account</b> for your profile card, <b>Request History</b> and <b>Payout Account</b>. If you don't have a tier yet, there's also <b>Become A Gopher Pro</b>.</p>
+      <h3>My Profile</h3>
+      <p>Tap your profile card to open <b>My Profile</b>. It shows your <b>Gopher ID</b> (the number someone you refer enters at sign-up), your personal info, your stats, and your verification status, including whether Stripe pays you at <b>standard</b> or <b>instant</b> speed. Tap your photo to change it. Email, Address and Source have an <b>Edit</b> (or <b>Add</b>) link.</p>
+      <p><b>Edit</b> opens <b>Personal Info</b>. There you can also write <b>About you</b> (up to 150 characters), turn on <b>Offer ride sharing</b> and add your car and driver details, or <b>Register your legal business</b> with your business name, logo, address, credentials and a short description. Your name, date of birth and phone can't be changed here.</p>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/account.webp" alt="Account tab: profile card with Gopher Pro+ Verified, Request History and Payout Account" loading="lazy"></div><figcaption><b>Account</b> (Gopher Pro+)</figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/my-profile.webp" alt="My Profile with the Gopher ID, Personal Info fields with Edit and Add links, and Stats" loading="lazy"></div><figcaption><b>My Profile</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/account-standard.webp" alt="Account tab for a worker without a tier: Request History, Payout Account and Become A Gopher Pro" loading="lazy"></div><figcaption><b>Account</b> without a tier</figcaption></figure>
+      </div>
     </section>
 
     <!-- PAYOUT -->
     <section class="section" id="payout">
       <span class="eyebrow">Getting started</span>
-      <h2>Set up your payout account</h2>
-      <p>This is the one that unlocks everything. On your dashboard go to <b>Account → Payout Account</b>. <b>A valid payout account is required to view and accept requests</b> — no payout account, no jobs.</p>
-      <ul class="brand">
-        <li>Payouts run through <b>Stripe</b> using a custom process. <b>There are no fees to get paid.</b></li>
-        <li>Money is deposited directly to your bank the moment a job is confirmed complete (see <a href="#payouts">payout speed</a> below).</li>
-        <li>Add a debit card that's eligible for instant deposits so you're not waiting.</li>
-      </ul>
-      <div class="note warn"><span class="nico">⚠️</span><div><span class="h">Check your card before you accept</span>Never accept a request knowing your payout card needs updating — that's the #1 cause of a delayed payout. You can confirm your debit card supports instant deposits on <a href="https://docs.stripe.com/payouts/instant-payouts-banks" target="_blank" rel="noopener">Stripe's eligible-banks list</a>.</div></div>
+      <h2>Your payout account</h2>
+      <p>Gopher pays you through <b>Stripe</b>, our payment partner, to a <b>debit card</b>. There are no fees to get paid. You set this up during sign-up:</p>
+      <ol class="brand">
+        <li><b>Set up your payouts.</b> Your SSN, your payout address (or <b>Same as my home address</b>), your ID type with photos of the front and back, and Stripe's terms. Stripe uses these to verify you.</li>
+        <li><b>Where should we pay you?</b> Your debit card number, expiry and code, a name for the card, and <b>Set as default</b>. Tap <span class="ui">Add card &amp; continue →</span>.</li>
+      </ol>
+      <p>You can browse <b>Available</b> without a payout account, but you can't open a job or accept it until yours is ready. If Stripe is still checking your details, the app says <b>Payout Account pending…</b>. There's nothing for you to do: you can open and accept requests as soon as it's ready.</p>
+      <p>Later, <b>Account → Payout Account</b> shows <b>Where you get paid.</b>: your default card on top and any <b>Other cards</b> under it. Tap <span class="ui">Add a debit card</span> to add another.</p>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/setup-payout.webp" alt="Set up your payouts: SSN, Same as my home address, Payout address, ID type with front and back photos, and the Terms and Conditions checkbox" loading="lazy"></div><figcaption><b>Set up your payouts.</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/setup-card.webp" alt="Where should we pay you? with a debit card preview, card number, MM/YY, code, card name and Set as default" loading="lazy"></div><figcaption><b>Where should we pay you?</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/payout-account.webp" alt="Payout Account: Where you get paid, the default Visa debit card, Other cards, Payouts handled by Stripe, Add a debit card and Delete payout account" loading="lazy"></div><figcaption><b>Payout Account</b></figcaption></figure>
+      </div>
+      <div class="note warn"><span class="nico">💳</span><div><span class="h">Debit cards only</span>Payouts go to a debit card. Prepaid cards and wallet cards (like Cash App or DoorDash cards) aren't supported. Never accept a request knowing your payout card needs updating: it's the #1 cause of a delayed payout. You can check that your card supports instant payouts on <a href="https://docs.stripe.com/payouts/instant-payouts-banks" target="_blank" rel="noopener">Stripe's list of eligible banks</a>.</div></div>
     </section>
 
     <!-- SETTINGS -->
     <section class="section" id="settings">
       <span class="eyebrow">Getting started</span>
       <h2>Work settings &amp; radius</h2>
-      <p>Tell Gopher Go what you want to do and how far you'll travel. Open <b>More → Work Settings &amp; Radius</b>, pick your job categories, and set your distance.</p>
+      <p>Tell Gopher Go what you want to do and how far you'll travel. Open <b>More → Work Settings &amp; Radius</b>, tick the work you want, set your distance and tap <span class="ui">Save</span>. You're only alerted about requests in the work you ticked. Every 90 days, the app asks you to check them again.</p>
       <div class="cat-grid">
-        <div class="cat"><div class="thumb"><span class="badge">Errand</span><img src="assets/img/01-delivery.webp" alt="Delivery / Errand" loading="lazy"></div><div class="txt"><div class="nm">Delivery / Errand</div><div class="tg">Pick-up &amp; drop-off</div></div></div>
-        <div class="cat"><div class="thumb"><span class="badge">Hauling</span><img src="assets/img/go101-junk-removal.webp" alt="Junk Removal" loading="lazy"></div><div class="txt"><div class="nm">Junk Removal</div><div class="tg">Furniture &amp; debris haul-away</div></div></div>
-        <div class="cat"><div class="thumb"><span class="badge">Relocation</span><img src="assets/img/go101-moving.webp" alt="Moving" loading="lazy"></div><div class="txt"><div class="nm">Moving</div><div class="tg">Load, move &amp; unload</div></div></div>
-        <div class="cat"><div class="thumb"><span class="badge">Services</span><img src="assets/img/go101-home-office.webp" alt="Home / Office Services" loading="lazy"></div><div class="txt"><div class="nm">Home / Office Services</div><div class="tg">Cleaning, installs &amp; handyman</div></div></div>
-        <div class="cat"><div class="thumb"><span class="badge">Labor</span><img src="assets/img/go101-hourly-day-labor.webp" alt="Hourly / Day Labor" loading="lazy"></div><div class="txt"><div class="nm">Hourly / Day Labor</div><div class="tg">Crews by the hour</div></div></div>
-        <div class="cat"><div class="thumb"><span class="badge">Outdoor</span><img src="assets/img/go101-yard-outdoor.webp" alt="Yard / Outdoor" loading="lazy"></div><div class="txt"><div class="nm">Yard / Outdoor</div><div class="tg">Mowing, cleanup &amp; tree work</div></div></div>
-        <div class="cat"><div class="thumb"><span class="badge">Ride</span><img src="assets/img/go101-ride-sharing.webp" alt="Ride Sharing" loading="lazy"></div><div class="txt"><div class="nm">Ride Sharing</div><div class="tg">Rides &amp; airport runs</div></div></div>
-        <div class="cat"><div class="thumb"><span class="badge">Custom</span><img src="assets/img/go101-other.webp" alt="Other" loading="lazy"></div><div class="txt"><div class="nm">Other</div><div class="tg">Anything else</div></div></div>
+        <div class="cat"><div class="thumb"><img src="assets/img/go101-delivery.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Delivery</div><div class="tg">Groceries, food, packages, store runs</div></div></div>
+        <div class="cat"><div class="thumb"><img src="assets/img/go101-ride-sharing.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Need a Ride</div><div class="tg">Driver &amp; vehicle info required</div></div></div>
+        <div class="cat"><div class="thumb"><img src="assets/img/go101-hourly-day-labor.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Hourly / Day Labor</div><div class="tg">Help by the hour or the day</div></div></div>
+        <div class="cat"><div class="thumb"><img src="assets/img/go101-yard-outdoor.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Yard Project</div><div class="tg">Mowing, leaves, cleanup</div></div></div>
+        <div class="cat"><div class="thumb"><img src="assets/img/go101-home-office.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Home Services</div><div class="tg">Handyman, cleaning, installs</div></div></div>
+        <div class="cat"><div class="thumb"><img src="assets/img/go101-moving.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Moving</div><div class="tg">Loading, unloading, furniture</div></div></div>
+        <div class="cat"><div class="thumb"><img src="assets/img/go101-junk-removal.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Junk Removal</div><div class="tg">Hauling and dump runs</div></div></div>
+        <div class="cat"><div class="thumb"><img src="assets/img/go101-other.webp" alt="" loading="lazy"></div><div class="txt"><div class="nm">Custom Task</div><div class="tg">Anything else a neighbor needs</div></div></div>
       </div>
-      <div class="mock">
-        <div class="mock-label">Travel radius — jobs follow you</div>
-        <div class="slider"><div class="fill"></div><div class="fill-pro"></div><div class="knob"></div></div>
-        <div class="slider-scale"><span>1 mi</span><span>25 mi</span><span class="hl">50 mi</span><span>75 mi</span><span>100 mi</span></div>
-        <div class="slider-legend">
-          <span><i class="swatch std"></i> Standard — up to <b>50 mi</b></span>
-          <span><i class="swatch pro"></i> Elite, Elite+ &amp; Pro — up to <b>100 mi</b> (excl. delivery &amp; rides)</span>
-        </div>
+      <ul class="brand" style="margin-top:18px;">
+        <li><b>Delivery</b> has two kinds: <b>General Delivery</b> and <b>Age-Restricted</b> (<b>21+ only</b>). Ticking Delivery ticks both. A <b>/</b> in the box means you've ticked one of them, and you still get Delivery jobs of that kind.</li>
+        <li><b>How far will you go?</b> Anywhere from <b>1 to 50 miles</b>. It's the same range for every worker, and it starts at 25. It's measured from where you are when a request comes in, not from a fixed home base, so the work finds you wherever you are.</li>
+        <li><b>Under 21?</b> You never see age-restricted jobs, whatever you tick.</li>
+        <li><b>Need a Ride</b>: to accept a ride, your car and driver details have to be complete in My Profile. If they aren't, the app says <b>Add your car first</b>.</li>
+      </ul>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/wsr.webp" alt="Work Settings &amp; Radius: What work do you want? with eight work categories ticked" loading="lazy"></div><figcaption><b>What work do you want?</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/wsr-radius.webp" alt="How far will you go? with a slider from 1 mi to 50 mi set to 25 miles, and the Save button" loading="lazy"></div><figcaption><b>How far will you go?</b> 1 to 50 miles</figcaption></figure>
       </div>
-      <div class="note tip"><span class="nico">📍</span><div><span class="h">Your radius moves with you</span>Set 50 miles and you'll see jobs within 50 miles of your <b>exact location</b> — not a fixed home base. The work finds you wherever you are. Standard workers can go up to <b>50 miles</b> on every job; <b>Elite, Elite+, and Pro</b> unlock up to <b>100</b> — except delivery and ride-sharing jobs, which stay capped at 50 miles for every tier.</div></div>
-      <div class="note warn"><span class="nico">🚫</span><div><span class="h">Very important</span>Don't select job types you're not qualified to perform. Choosing the right categories keeps your ratings high and keeps the marketplace moving.</div></div>
+      <div class="note warn"><span class="nico">🚫</span><div><span class="h">Very important</span>Only tick work you're qualified to do. The right choices keep your ratings high and keep the marketplace moving.</div></div>
     </section>
 
-    <!-- STEP 1  (PLACEHOLDER: swap for real app UI screenshots when provided) -->
+    <!-- STEP 1 -->
     <section class="section" id="step1">
       <span class="eyebrow"><span class="step-pill">Step 1 of 7</span> Read the job feed</span>
       <h2>Know what you're looking at</h2>
-      <p>Every job in your feed shows the same essentials up front: the pay, the category, a short description, when it's needed, how far away it is, and any special tags. Here's a sample card.</p>
-      <div class="job">
-        <div class="job-top">
-          <div class="job-pay"><div class="amt">$75</div><div class="lbl">Earn</div></div>
-          <div class="job-body">
-            <div class="job-cat">Handyman</div>
-            <div class="job-title">Hang a 65" TV (mount provided)</div>
-            <div class="job-desc">Drywall install, one-story home. I have the mount and hardware ready.</div>
-            <span class="job-when">Need it today</span>
-            <div class="job-tags">
-              <span class="tag dist">📍 3.2 mi</span>
-              <span class="tag timer">⏳ 14 min left</span>
-              <span class="tag">⭐ Select My Gopher</span>
-            </div>
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="btn-sm btn-out">Question?</button>
-          <button class="btn-sm btn-out">Counter-offer</button>
-          <button class="btn-sm btn-hire">Accept request</button>
-        </div>
+      <p>Jobs you can take are on <b>Home → Available</b>, under <b>Available near you</b>, nearest first. Jobs where a customer picked you go to the top. Every card shows the essentials:</p>
+      <ul class="brand">
+        <li>A photo and the kind of work (like <b>DELIVERY</b>), with a short title.</li>
+        <li><b>N mi away</b>, and the timing with the time left, like <b>Need ASAP · 38 min left</b>.</li>
+        <li><b>You earn</b> and the amount, or <b>Make an offer</b> if the customer hasn't set a price.</li>
+      </ul>
+      <p>Tap <b>▼</b> to open the card right there. You'll see the description, any special instructions, the route (street names only until you're hired), the pay broken down, the job's labels (see Step 2) and <span class="ui">Open job</span>.</p>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/card-expanded.webp" alt="An Airport pickup card opened on Home: SAM PICKED YOU FIRST · MY GOPHER, Need a bag picked up from the airport, You earn $30.00, the You're their MY Gopher and TrustShield labels, and Open job" loading="lazy"></div><figcaption>A card, <b>opened with ▼</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/card-groceries.webp" alt="A Groceries card opened on Home: Weekly groceries, Special Instructions, Pick up: Gopher's choice, and the pay with items paid back" loading="lazy"></div><figcaption>A job that <b>needs a purchase</b></figcaption></figure>
       </div>
-      <p class="caption">Preview is illustrative — actual in-app screens coming soon.</p>
-      <div class="note info"><span class="nico">💡</span><div>The distance shown is the approximate total drive, per Google Maps. For pick-up <i>and</i> drop-off jobs it's <b>you</b> → pick-up plus pick-up → drop-off; Request Details lists both legs under <b>Est. Total Distance</b>.</div></div>
+      <div class="note info"><span class="nico">💡</span><div>The distance is the approximate total drive, per Google Maps. For pick-up <i>and</i> drop-off jobs it's <b>you</b> → pick-up plus pick-up → drop-off. Request Details lists both legs under <b>Est. Total Distance</b>.</div></div>
+      <div class="note tip"><span class="nico">🔔</span><div><span class="h">New-job alerts</span>Keep notifications on. You get <b>New Request Available In Your Area!</b> when a job matching your work settings is posted, and <b>You've Been Requested As A Favorite Gopher!</b> when a customer picks you. Nothing near you yet? Home shows <b>Recent requests in your area</b> so you can see what's been posted.</div></div>
     </section>
 
     <!-- STEP 2 -->
     <section class="section" id="step2">
-      <span class="eyebrow"><span class="step-pill">Step 2 of 7</span> Icons &amp; alerts</span>
-      <h2>What the badges <span class="scribble">mean</span></h2>
-      <p>Tags and icons tell you what a job involves before you tap in. Learn these and you'll read your feed in seconds.</p>
+      <span class="eyebrow"><span class="step-pill">Step 2 of 7</span> What the labels mean</span>
+      <h2>What the labels <span class="scribble">mean</span></h2>
+      <p>An opened card and Request Details show labels that tell you what a job involves before you commit. The first one says how the customer chooses their worker:</p>
       <div class="legend">
-        <div class="lg"><div class="lico">🛒</div><div><div class="lt">Purchase Needed</div><div class="ld">You buy the items for the customer first, out of your own pocket. You're reimbursed in full — plus your Earn $ — the moment the job is confirmed complete, so you never make or lose money on the item cost. Skip these if you can't cover the cost up front.</div></div></div>
-        <div class="lg"><div class="lico">⭐</div><div><div class="lt">Select My Gopher</div><div class="ld">The customer picks who they hire from everyone who accepts, based on ratings and history. You may accept, but they have final say. You'll be notified either way.</div></div></div>
-        <div class="lg"><div class="lico">📍</div><div><div class="lt">Trip Mileage</div><div class="ld">Approximate total miles for the job: you to the job, or you to the pick-up and on to the drop-off. Request Details lists both legs.</div></div></div>
-        <div class="lg"><div class="lico">⏳</div><div><div class="lt">Job Expiration</div><div class="ld">How long the job stays in the queue — not when it's due. The due time sits above the title in the light-blue oval.</div></div></div>
-        <div class="lg"><div class="lico">👥</div><div><div class="lt">2+ Needed</div><div class="ld">You'll need at least one more qualified helper. Whoever accepts is paid for the whole job and is responsible for paying their crew.</div></div></div>
-        <div class="lg"><div class="lico">💚</div><div><div class="lt">MY Gopher (Favorite)</div><div class="ld">You were requested by name. It's yours alone (and other Favorites) for the first full minute — one minute before it opens to any other tier. Accept it and the job is yours.</div></div></div>
-        <div class="lg"><div class="lico">🪪</div><div><div class="lt">Age Restricted</div><div class="ld">An age-restricted item is involved. Only between customers and workers 21+. Requires in-person ID verification — never contactless.</div></div></div>
-        <div class="lg"><div class="lico">🏢</div><div><div class="lt">Business / Connect</div><div class="ld">A business-posted job via Gopher Connect. These are exclusive to verified Elite, Elite+, and Pro workers. When the posting business has been verified, you'll see a <b>"Verified Business"</b> chip next to its name — just a trust signal for you; nothing for you to do.</div></div></div>
+        <div class="lg"><div class="lico">💚</div><div><div class="lt">You're their MY Gopher</div><div class="ld">The customer saved you as one of their MY Gophers and picked you for this job. The card says <b>★ SAM PICKED YOU FIRST · MY GOPHER</b>, and you see it before other workers. Accept it and you're hired.</div></div></div>
+        <div class="lg"><div class="lico">⚡</div><div><div class="lt">First available</div><div class="ld">The first worker to accept is hired.</div></div></div>
+        <div class="lg"><div class="lico">⭐</div><div><div class="lt">I'll select my worker</div><div class="ld">The customer chooses from everyone who says yes, based on ratings and history. Saying yes doesn't book you: they decide, and you're told either way.</div></div></div>
+        <div class="lg"><div class="lico">👥</div><div><div class="lt">Prioritize MY Gopher(s)</div><div class="ld">The customer's MY Gophers hear about it first, then it opens to everyone else.</div></div></div>
+      </div>
+      <p style="margin-top:16px;">Then, when they apply:</p>
+      <div class="legend">
+        <div class="lg"><div class="lico">🛒</div><div><div class="lt">Purchase needed</div><div class="ld">You buy the items for the customer first, out of your own pocket. They're paid back in full with your pay, so you never make or lose money on the items. Skip these if you can't cover the cost up front.</div></div></div>
+        <div class="lg"><div class="lico">🪪</div><div><div class="lt">Age-restricted</div><div class="ld">The order includes age-restricted items. Only for workers 21 and older, and the customer's ID is always checked in person (see <a href="#age">Age-restricted deliveries</a>).</div></div></div>
+        <div class="lg"><div class="lico">🧑‍🤝‍🧑</div><div><div class="lt">N Gophers needed</div><div class="ld">The job needs a crew. You accept for the whole crew, bring the people, and the full pay comes to you.</div></div></div>
+        <div class="lg"><div class="lico"><img src="assets/img/trustshield-logo.svg" alt="TrustShield" style="width:24px;height:auto;display:block;"></div><div><div class="lt">TrustShield</div><div class="ld">The customer has verified their identity with TrustShield.</div></div></div>
+      </div>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/preaccept-mygopher.webp" alt="Request Details for a MY Gopher job: PICKED YOU FIRST, Sam picked you first, You're Sam's MY Gopher so you see this job before other Gophers, You earn $30.00" loading="lazy"></div><figcaption><b>Picked first</b> as a MY Gopher</figcaption></figure>
       </div>
     </section>
 
@@ -534,268 +641,312 @@ body.nav-open .sections-fab{opacity:0;pointer-events:none;}
     <section class="section" id="step3">
       <span class="eyebrow"><span class="step-pill">Step 3 of 7</span> Job timing</span>
       <h2>When does it need doing?</h2>
-      <p>Every job carries one of three timing types. This decides what happens after you accept.</p>
+      <p>Every job has one of three timings. It decides what happens after you accept.</p>
       <div class="mock">
         <div class="mock-label">Timing on a job</div>
-        <div class="radio-row sel"><span class="dot"></span><div>Need ASAP! <small>Get going right away — text the customer you're on the way, then set status to In-Progress.</small></div></div>
-        <div class="radio-row"><span class="dot"></span><div>Flexible window <small>Due by end of day, within a week, or within two weeks. Sits in your Scheduled queue until you tap Start.</small></div></div>
-        <div class="radio-row"><span class="dot"></span><div>Pick exact time <small>A specific date &amp; time. Stays in Scheduled until you tap Start at that time.</small></div></div>
+        <div class="radio-row sel"><span class="dot"></span><div>Need ASAP <small>Start as soon as you can. A Need ASAP request stays open about 1 hour on Delivery, Need a Ride and Custom Task, and about 6 hours on the other services.</small></div></div>
+        <div class="radio-row"><span class="dot"></span><div>Flexible within 24 hours, 7 days or 14 days <small>Do it any time in the customer's window.</small></div></div>
+        <div class="radio-row"><span class="dot"></span><div>A set time <small>Shown like Tue, Oct 14 · 3:00 PM.</small></div></div>
       </div>
-      <div class="note warn"><span class="nico">⏰</span><div><span class="h">Don't start too early</span>Unless you're <b>Elite, Elite+, or Pro</b>, you can only hold one active job at a time. Once a job is <b>In-Progress</b> you can't accept others until your scheduled job's date and time — so don't mark it started ahead of schedule.</div></div>
+      <p style="margin-top:16px;">Once you accept a flexible or set-time job, it sits under <b>Scheduled</b>. There's no Start button: when you begin, tap <span class="ui">In Progress</span>. We send you a reminder an hour before, and if you never start the job, it starts itself at the set time (or at the end of a flexible window).</p>
+      <div class="note warn"><span class="nico">⏰</span><div><span class="h">One job at a time (unless you're Gopher Pro or Pro+)</span>Without a tier you can have <b>one job in progress</b> at a time, and up to <b>2 finished jobs</b> waiting for customers to confirm. A scheduled job doesn't count until you start it, so don't start one early if you want to take other work first. <b>Gopher Pro</b> and <b>Pro+</b> don't have these limits.</div></div>
     </section>
 
     <!-- STEP 4 -->
     <section class="section" id="step4">
-      <span class="eyebrow"><span class="step-pill">Step 4 of 7</span> Offer types</span>
+      <span class="eyebrow"><span class="step-pill">Step 4 of 7</span> What you'll make</span>
       <h2>Understand exactly what you'll make</h2>
-      <p>Three offer types, three things to know. The number you pocket is always the <b>Earn $</b>.</p>
+      <p>The number you pocket is always <b>You earn</b>. Gopher takes no cut and charges you no fees, so <b>You earn $20.00</b> means $20.00 goes to your card.</p>
 
-      <h3>Earn $</h3>
-      <p>The straightforward one. The Earn $ amount is exactly what you make. <b>Earn $20.00</b> means $20.00 lands in your account at completion.</p>
-
-      <h3>Total $ <span style="font-weight:600;color:var(--muted);font-size:14px;">(Earn $ | Spend $)</span></h3>
-      <p>The customer added funds for you to buy items on their behalf. You front the <b>Spend $</b>, you keep the <b>Earn $</b>, and the <b>Total $</b> is what's deposited at completion.</p>
+      <h3>Jobs with a purchase</h3>
+      <p>When the customer needs you to buy something, the card adds what you'll spend, and the total is what's paid to you, in one payout:</p>
       <div class="receipt">
-        <div class="rl sub"><span>Earn $ (your pay)</span><span>$10.00</span></div>
-        <div class="rl sub"><span>Spend $ (reimbursed)</span><span>$10.00</span></div>
-        <div class="rl"><span>Total deposited at completion</span><span>$20.00</span></div>
+        <div class="rl sub"><span>You earn</span><span>$24.00</span></div>
+        <div class="rl sub"><span>Items you buy (paid back)</span><span>$18.40</span></div>
+        <div class="rl"><span>Total paid to you</span><span>$42.40</span></div>
       </div>
-      <p style="margin-top:14px;">Don't accept a Total $ job unless you're happy to cover the Spend $ up front.</p>
+      <p style="margin-top:14px;">Before you accept one, the app reminds you: <b>You buy the items first</b>. If you can't or don't want to, don't accept it.</p>
 
-      <h3>Request bids from local workers</h3>
-      <p>The customer didn't set a price — they asked local workers to send bids. You name your own number (your <b>Earn $</b>) and submit it. If they pick your bid, the job is yours at that Earn.</p>
+      <h3>Make an offer</h3>
+      <p>Some customers don't set a price. Their cards say <b>Make an offer</b>, and they're asking workers to name their price. Open the job and tap <span class="ui">Make an offer</span>. Enter your <b>Payment for your service</b> (and the cost of items, where there are some), add a note if you like, tick the <b>Offer &amp; Cancellation Policy</b>, and tap <span class="ui">Send offer</span>. The job then shows <b>OFFER SENT</b> until the customer decides, and you're told either way. Changed your mind? <span class="ui">Cancel offer</span>.</p>
+
+      <h3>Crew and hourly jobs</h3>
+      <p>On a crew job, the card shows the pay for the whole crew, like <b>You earn $180.00 · crew of 3</b>. Hourly jobs show the rate and the number of hours.</p>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/preaccept.webp" alt="Request Details for a Groceries job: You earn $24.00 plus $18.40 for items, paid back, total $42.40, and the Purchase needed label" loading="lazy"></div><figcaption><b>You earn</b> + items paid back</figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/offer.webp" alt="Make an offer sheet: Payment for your service $25.00, a note Can do it today after 5, Total you'll receive $25.00 and the Offer &amp; Cancellation Policy" loading="lazy"></div><figcaption><b>Make an offer</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/offer-sent.webp" alt="OFFER SENT: Waiting for Sam, Your offer $25.00, No price was set so Sam decides, and Cancel offer" loading="lazy"></div><figcaption><b>Offer sent</b>: the customer decides</figcaption></figure>
+      </div>
     </section>
 
     <!-- STEP 5 -->
     <section class="section" id="step5">
       <span class="eyebrow"><span class="step-pill">Step 5 of 7</span> Question, counter &amp; accept</span>
       <h2>Decide and lock it in</h2>
+      <p>Tap <span class="ui">Open job</span> for <b>Request Details</b>: what you'll earn, the customer (with their ★ rating and how many requests they've made), the labels, <b>WHERE</b> with a map, and <b>THE JOB</b>. Then choose:</p>
       <ul class="brand">
-        <li><b>Question?</b> — Need more info before deciding? Tap <b>Question?</b> to message the customer. This is for clarifying the job, <i>not</i> for negotiating price or swapping personal contact info.</li>
-        <li><b>Counter-Offer</b> — Want the job at a different number? Propose a counter on your <b>Earn $</b> (your pay). If accepted, it's yours at the new amount — and the customer is bound to it. Keep it reasonable: a 3-mile, $5 trip might fairly counter to $10 — not $30.</li>
-        <li><b>Accept Request</b> — All good? Agree to the cancellation terms box and tap <b>Accept Request</b>. You're on.</li>
+        <li><b>Accept Request.</b> Tick <b>I agree to the Cancellation Policy</b> (and the <b>Liability Waiver</b> on Home Services, Moving, Junk Removal, Hourly / Day Labor and Yard Project), then tap <span class="ui">Accept Request</span>. On a <b>First available</b> job, or when you were picked first, you're hired. On <b>I'll select my worker</b>, you'll see <b>YOU SAID YES</b> while the customer chooses (<span class="ui">Cancel acceptance</span> takes it back).</li>
+        <li><b>Question?</b> Need more info first? Tap <span class="ui">Question?</span> to message the customer.</li>
+        <li><b>Counter-offer.</b> Want the job at a different amount? Tap <span class="ui">Counter-offer</span>, enter your new pay (and the new cost of items, where it can change), say why, tick the <b>Counter-Offer &amp; Cancellation Policy</b> and tap <span class="ui">Send counter-offer</span>. The customer sees the old and new amounts side by side and accepts or declines. Keep it reasonable: a 3-mile, $5 trip might fairly counter to $10, not $30.</li>
+        <li><b>Not interested.</b> The job leaves your Available list for good.</li>
       </ul>
-      <div class="note tip"><span class="nico">⚖</span><div><span class="h">How many counter-offers, and how high?</span>On <b>Standard</b> you get <b>5 counter-offers a month</b> (the count resets on the 1st of each calendar month), and a counter can go up to <b>150% of the offer</b> — measured on your Earn $ only; cost of items never counts toward the cap — with a <b>$20 minimum</b>. Go <b>Elite, Elite+, or Pro</b> and counters are <b>unlimited and uncapped</b> — one of the bigger reasons to verify up.</div></div>
-      <div class="note warn"><span class="nico">🚩</span><div><span class="h">Never take it off-platform</span>Asking for payment, or swapping phone numbers / emails to deal off Gopher, is an instant removal. All messaging stays in the app to protect everyone's privacy. And quite honestly, there's no benefit to taking it off the app. Want to make $100? If a job says $100, that's exactly what you make — we don't take a cut.</div></div>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/preaccept-bottom.webp" alt="Bottom of Request Details: THE JOB details, the Cancellation Policy checkbox, Accept Request, and Question?, Counter-offer and Not interested" loading="lazy"></div><figcaption><b>Accept Request</b> and the three choices</figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/counter.webp" alt="Counter-offer sheet: cost of items $18.40, payment for your service from $24.00 to $30.00, the note Two stops, not one, and Total you'll receive from $42.40 to $48.40" loading="lazy"></div><figcaption><b>Counter-offer</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/counter-sent.webp" alt="COUNTER-OFFER SENT: Waiting for Sam, Your pay $30.00 to $35.00, and Cancel counter-offer" loading="lazy"></div><figcaption><b>Counter-offer sent</b></figcaption></figure>
+      </div>
+      <div class="note tip"><span class="nico">⚖</span><div><span class="h">How high can a counter-offer go?</span>Up to <b>150% of the original pay</b>, or <b>$20</b>, whichever is more. It's measured on your pay only: the cost of items never counts toward it. There's no monthly limit, and the cap is the same for every worker.</div></div>
+      <div class="note info"><span class="nico">✅</span><div><span class="h">Before you're booked, the app checks</span>that your payout account is set up, that your car details are complete for a ride, that you can bring the crew a job needs (<b>Yes, I can bring them</b>), and that you're ready to buy the items on a purchase job.</div></div>
+      <div class="note info"><span class="nico">📍</span><div><span class="h">More than 15 miles away?</span>If you don't have a tier and you accept a <b>First available</b>, <b>Need ASAP</b> Delivery or Need a Ride from more than 15 miles away, the customer has to approve it first. The app shows <b>This Request Must be Approved!</b>. If they approve, go ASAP.</div></div>
+      <div class="note warn"><span class="nico">🚩</span><div><span class="h">Never take it off the platform</span>Asking a customer to pay you outside Gopher gets your account deactivated, on the first offense. And there's no reason to: if a job says $100, you make $100, because we don't take a cut.</div></div>
     </section>
 
     <!-- STEP 6 -->
     <section class="section" id="step6">
       <span class="eyebrow"><span class="step-pill">Step 6 of 7</span> On the job</span>
       <h2>Tools while the job's active</h2>
-      <p>Once you've accepted, your active-request screen has everything you need.</p>
+      <p>Once you're hired, the job screen has everything you need, top to bottom:</p>
       <ul class="brand">
-        <li><b>Text / Call</b> the customer through the app using the buttons under their name. Send a quick text at the start of every job — "On my way!" goes a long way.</li>
-        <li><b>Pick-Up</b> and <b>Destination</b> buttons open turn-by-turn navigation in Google Maps.</li>
-        <li>If the pick-up says <b>"Gopher's Choice,"</b> the item can be bought anywhere — pick whatever's closest or easiest for you.</li>
+        <li><b>You earn</b>, with any items paid back and the total.</li>
+        <li><b>The customer</b>, with <span class="ui">Text</span> (chat in the app) and <span class="ui">Call</span>. Send a quick intro message at the start of every job; "On my way!" goes a long way.</li>
+        <li><b>The steps</b> so far, and <b>NEXT STEP</b> with the green button to update it (see Step 7).</li>
+        <li><span class="ui">Cost adjustment</span>, if the price needs to change (see <a href="#costadj">Cost adjustments</a>).</li>
+        <li><b>WHERE</b>, with <span class="ui">Directions to pick-up</span> and <span class="ui">Directions to drop-off</span> (or <b>Directions to the job</b>). They open Apple Maps on iPhone and Google Maps on Android. If the pick-up says <b>Gopher's choice</b>, buy the items at any store that has them.</li>
+        <li><b>THE JOB</b>: when, what, the customer's notes and photos. At the bottom, <b>Cancel job</b> (see <a href="#active">Cancelling</a>).</li>
       </ul>
-      <div class="note info"><span class="nico">💬</span><div>After a job is accepted, you and the customer can keep chatting in your messaging inbox. Keep it in-app — exchanging personal contact info is prohibited.</div></div>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/job.webp" alt="Job screen, ACCEPTED: You earn $24.00, Sam R. with Text and Call, the steps Accepted to Completed, NEXT STEP In Progress, the In Progress button and Cost adjustment" loading="lazy"></div><figcaption>The <b>job screen</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/job-item.webp" alt="Job screen, IN PROGRESS: NEXT STEP Item Purchased, Buy the items, keep the receipt, Spend up to (paid back) $18.40, and the Item Purchased button" loading="lazy"></div><figcaption>Buying the items</figcaption></figure>
+      </div>
+      <div class="note info"><span class="nico">📍</span><div><span class="h">Your customer can follow you</span>On a Need ASAP job, the customer sees your location on a map from the moment you accept; on a scheduled or flexible job, from <b>In Progress</b>. It stops when you complete the job. Set Gopher Go's location to <b>Always</b> so it keeps updating when your screen sleeps.</div></div>
+      <div class="note info"><span class="nico">🧭</span><div><span class="h">Gopher Pro and Pro+: back to Home any time</span>With a tier, <b>‹ Back</b> takes you to Home while a job is open, and on a scheduled job you can move the time once with <b>Reschedule</b>. Without a tier, the job stays on screen until it's done.</div></div>
     </section>
 
     <!-- STEP 7 -->
     <section class="section" id="step7">
       <span class="eyebrow"><span class="step-pill">Step 7 of 7</span> Update &amp; complete</span>
       <h2>Update in real time → get paid</h2>
-      <p>The <b>Update Request</b> button at the bottom of your active screen walks you through the finish line. <b>Every update is GPS- and time-stamped</b>, so make each one at the correct location.</p>
+      <p>The big green button always shows the next step. Tap it at the right place and confirm. <b>Every update is GPS- and time-stamped</b>, so make each one where it happens.</p>
       <div class="stepper">
-        <div class="stp done"><div class="sc">1</div><div class="sh">In-Progress</div><div class="sd">Activates live GPS tracking on the customer's end so they can watch you arrive.</div><span class="gps">📍 GPS + time stamped</span></div>
-        <div class="stp done"><div class="sc">2</div><div class="sh">Items Picked-Up / Purchased</div><div class="sd">Tells the customer you're on the final stretch. Tap this <b>at the correct location</b> — your spot is stamped.</div><span class="gps">📍 GPS + time stamped</span></div>
-        <div class="stp"><div class="sc">3</div><div class="sh">Completed</div><div class="sd">Signals the job is done. On most jobs we'll ask for a quick photo next — then it's one step from your payout. As soon as the customer confirms, you're paid.</div><span class="gps">📍 GPS + time stamped</span></div>
+        <div class="stp done"><div class="sc">1</div><div class="sh">In Progress →</div><div class="sd">You're on the job. The app asks <b>Mark it In Progress?</b>: tap <b>Yes, In Progress</b> (or <b>Not yet</b>). You can't undo an update.</div><span class="gps">📍 GPS + time stamped</span></div>
+        <div class="stp done"><div class="sc">2</div><div class="sh">Item Purchased → / Item Picked Up →</div><div class="sd">Only on Delivery, mulch deliveries and Custom Tasks with a purchase. The screen shows <b>Spend up to (paid back)</b>. Keep the receipt: a different total goes through <a href="#costadj">Cost adjustment</a>.</div><span class="gps">📍 GPS + time stamped</span></div>
+        <div class="stp"><div class="sc">3</div><div class="sh">Complete →</div><div class="sd"><b>Mark it Complete?</b> The customer is asked to confirm, and your pay is released when they do.</div><span class="gps">📍 GPS + time stamped</span></div>
       </div>
-      <div class="note info"><span class="nico">⏱️</span><div><span class="h">Need ASAP jobs: tap In-Progress within 10 minutes</span>If you accept a <b>Need ASAP</b> request and haven't tapped <b>In-Progress</b> 10 minutes later, we'll send you a text and a push notification. After that it's a push every 10 minutes, for up to an hour. It stops the moment you either update the request <b>or message your customer</b> — so if you're already on your way, a quick message to them counts. Scheduled requests never trigger it.</div></div>
-      <div class="note tip"><span class="nico">✅</span><div><span class="h">First-time customer? Give a friendly nudge.</span>You can see a customer's request count under their profile pic. If it's their first, remind them to confirm in their app at hand-off. If they don't, it <b>auto-confirms within 48 hours</b> — and we text them the moment you tap Completed.</div></div>
-      <div class="note info"><span class="nico">📸</span><div><span class="h">After you tap Completed: the photo step</span>On every job that isn't age-restricted, tapping <b>Completed</b> takes you straight to a photo screen. Add <b>up to 3 photos</b> from your camera or gallery, then tap Submit. Your customer sees them on their confirmation screen — the screen where they release your payout — so a clear photo of the finished work is the fastest way to get confirmed without questions. Your customer isn't asked to confirm until you've submitted your photos or skipped, so don't leave this screen open: finish it and your payout clock starts. <b>You can Skip</b>; on deliveries we'll ask you to confirm that you meant to. Photos also build your profile, which is one of the biggest drivers of getting requested by name.</div></div>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/confirm.webp" alt="Mark it In Progress? Sam will see you're on the job. You can't undo this. Yes, In Progress and Not yet" loading="lazy"></div><figcaption>Every update asks first</figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/complete-confirm.webp" alt="Mark it Complete? Sam will be asked to confirm. Your pay is released when they do. Yes, Complete and Not yet" loading="lazy"></div><figcaption><b>Mark it Complete?</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/photos.webp" alt="COMPLETE: Add photos of the completed request, up to 3, with three empty photo slots, Submit and Skip" loading="lazy"></div><figcaption>The <b>photo step</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/waiting.webp" alt="Job screen, WAITING FOR SAM: all steps done, WHAT HAPPENS NOW, Waiting for Sam to confirm, Confirmation releases your payout" loading="lazy"></div><figcaption><b>Waiting for Sam to confirm</b></figcaption></figure>
+      </div>
+      <div class="note info"><span class="nico">📸</span><div><span class="h">The photo step</span>After you complete a job, add <b>up to 3 photos</b> of the finished work and tap <span class="ui">Submit</span>. They're your proof if anything is questioned later. You can <b>Skip</b>; on deliveries the app asks you to confirm that, because a photo is your proof the delivery arrived. Your customer isn't asked to confirm until you've submitted photos or skipped, so finish this screen and your payout clock starts. Age-restricted deliveries and rides don't have a photo step.</div></div>
+      <div class="note warn"><span class="nico">📍</span><div><span class="h">Complete it at the drop-off</span>If you tap Complete far from the drop-off, the app warns <b>You don't appear to be at the drop-off</b>, because completing somewhere else will likely delay your payout while we check it. Tap <b>I'll wait until there</b>, or <b>Complete Anyway</b> if you're sure.</div></div>
+      <div class="note info"><span class="nico">⏱️</span><div><span class="h">Need ASAP jobs: tap In Progress within 10 minutes</span>If you accept a <b>Need ASAP</b> request and haven't tapped <b>In Progress</b> 10 minutes later, we send you a text and a push notification. After that it's a push every 10 minutes, for up to an hour. It stops the moment you update the job <b>or message your customer</b>, so if you're already on your way, a quick message counts. Scheduled jobs never trigger it.</div></div>
+      <div class="note tip"><span class="nico">✅</span><div><span class="h">First-time customer? Give a friendly nudge.</span>The number of requests a customer has made is next to their name. If it's their first, remind them to confirm in their app when you hand off. If they never do, the job <b>confirms itself after 48 hours</b> (unless they open a dispute).</div></div>
     </section>
 
     <!-- PAYOUTS -->
     <section class="section" id="payouts">
       <span class="eyebrow">After the job</span>
       <h2>Payouts &amp; speed</h2>
-      <p>Once the job's confirmed complete, the money's yours — deposited straight to your bank, with <b>no fee</b> and never any cut taken out of your Earn $. How fast it lands depends on where you are in your journey.</p>
-      <h3>Your first 10 jobs — the trust-building phase</h3>
-      <p>For your first 10 completed payouts, deposits arrive at <b>Standard speed (~2 hours)</b> after a confirmed completion. Most people consider 2 hours plenty fast — but it gets faster.</p>
-      <h3>After 10 jobs (or as Elite / Pro) — bullet speed</h3>
-      <p>Once you've completed 10 jobs, your payout speed upgrades to <b>bullet speed (~1–2 minutes)</b>. <b>Elite, Elite+, and Pro</b> workers skip the trust-building phase and get bullet-speed payouts from the start.</p>
+      <p>When the customer confirms the job (or it confirms itself after 48 hours), your pay and any items you bought go to your debit card together, in one payout, with <b>no fee</b>. You get a <b>Payday!!</b> notification when it's on its way. How fast it lands depends on where you are in your journey.</p>
+      <h3>Your first 10 paid jobs</h3>
+      <p>For your first 10 paid jobs, payouts arrive in <b>about 2 hours</b> after the customer confirms.</p>
+      <h3>After that, or with Gopher Pro / Pro+</h3>
+      <p>From then on, payouts are <b>instant: about 1–2 minutes</b>. <b>Gopher Pro</b> and <b>Pro+</b> workers get instant payouts from their very first job.</p>
       <div class="kpis">
         <div class="kpi good"><div class="v">$0</div><div class="k">Payout fees</div></div>
-        <div class="kpi"><div class="v">~2 hrs</div><div class="k">Standard speed · first 10</div></div>
-        <div class="kpi good"><div class="v">~1–2 min</div><div class="k">Bullet · after 10 or Elite/Pro</div></div>
-        <div class="kpi"><div class="v">100%</div><div class="k">Earn $ is yours</div></div>
+        <div class="kpi"><div class="v">~2 hrs</div><div class="k">First 10 paid jobs</div></div>
+        <div class="kpi good"><div class="v">~1–2 min</div><div class="k">After that, or with Gopher Pro / Pro+</div></div>
+        <div class="kpi"><div class="v">100%</div><div class="k">of You earn is yours</div></div>
       </div>
-      <div class="note tip"><span class="nico">💸</span><div><span class="h">We just handle the money</span>You work for the customer — we make sure they pay you, on time, automatically. Keep your debit card current and eligible for instant deposits so bullet-speed payouts land in minutes.</div></div>
+      <div class="note tip"><span class="nico">🔎</span><div><span class="h">Where to check</span><b>My Profile</b> shows whether Stripe pays you at <b>standard</b> or <b>instant</b> speed. For a single job, open it in <a href="#history">Request History</a>: <b>Payout started</b> means it's on its way, and <b>Payout sent</b> means Stripe has sent it to your card.</div></div>
+      <div class="note info"><span class="nico">⏸️</span><div><span class="h">When a payout is held</span>A few things hold a payout: a customer's dispute (see <a href="#disputes">Disputes</a>), or a no-show or ID problem on an age-restricted delivery (see <a href="#age">Age-restricted deliveries</a>). The job screen and Request History show <b>PAYOUT ON HOLD</b> with what's happening, and you can message support from there.</div></div>
+      <div class="note tip"><span class="nico">💸</span><div><span class="h">We just handle the money</span>You work for the customer; we make sure they pay you, on time, automatically. Keep your debit card current and eligible for instant payouts so they land in minutes.</div></div>
     </section>
 
     <!-- COST ADJUSTMENTS -->
     <section class="section" id="costadj">
       <span class="eyebrow">After the job</span>
       <h2>Cost adjustments</h2>
-      <p>Use a <b>Cost Adjustment</b> when the real price of purchased items differs from the customer's estimate. Simply submit the new amount and the customer can approve it immediately.</p>
-      <div class="card">
+      <p>Use a <b>cost adjustment</b> when the price needs to change: the items cost more or less than the customer's estimate, or the job turned out bigger or smaller. You can send one while you're on the job, up until you complete it (a scheduled job has to be started first), and after completion only if the customer opens a dispute.</p>
+      <ol class="brand">
+        <li>On the job screen, tap <span class="ui">Cost adjustment</span>. <b>Change the price</b> opens.</li>
+        <li>Change the <b>Cost of items</b>, <b>Your pay</b>, or both. On hourly jobs you change the rate, the hours or the crew instead. The navy box shows the <b>New total you'll receive</b>.</li>
+        <li>Pick why: <b>Smaller job</b>, <b>Bigger job</b>, <b>Items cost more</b>, <b>Extra stop</b> or <b>Other</b>, and add a note if it helps.</li>
+        <li>Tap <span class="ui">Send to Sam</span>. If the items cost more, you'll add a photo of the receipt next.</li>
+      </ol>
+      <p>While the customer decides, the job shows <b>WAITING FOR SAM</b> with the old and new amounts (<span class="ui">Cancel change</span> takes it back). You're notified when they approve or decline. <b>You can't complete a job while a cost adjustment is waiting</b>: the button reads <b>Complete · after Sam approves</b>.</p>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/cost.webp" alt="Change the price: New total you'll receive $48.60, was $42.40; Cost of items $24.60; Your pay $24.00; Items cost more selected; Send to Sam" loading="lazy"></div><figcaption><b>Change the price</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/cost-wait.webp" alt="Job screen with a WAITING FOR SAM card: price change, cost of items $18.40 to $24.60, new total $42.40 to $48.60, the reason, and Cancel change" loading="lazy"></div><figcaption><b>Waiting for Sam</b> to approve</figcaption></figure>
+      </div>
+      <div class="card" style="margin-top:20px;">
         <h3 style="margin-top:0;">Example</h3>
-        <p style="font-size:14px;margin:0;">The customer budgeted <b>$10</b> for an item that rings up at <b>$10.91</b>. Submit a Cost Adjustment for the new cost of items — <b>$10.91</b> — and upload the receipt. Done.</p>
+        <p style="font-size:14px;margin:0;">The customer budgeted <b>$18.40</b> for groceries that ring up at <b>$24.60</b>. Send a cost adjustment with the cost of items at <b>$24.60</b>, pick <b>Items cost more</b> and add the receipt. Done.</p>
       </div>
       <h3>Best practices</h3>
       <ul class="brand">
-        <li><b>Item costs are never earnings.</b> If the estimate is off by more than $1 — over or under — adjust to the exact amount and attach the receipt. Put yourself in the customer's shoes; it's a no-brainer.</li>
-        <li><b>Big jumps? Adjust before you buy.</b> If the new cost would raise the total request by more than 20%, submit the Cost Adjustment <i>first</i> so the customer's payment can cover it.</li>
-        <li>If a large adjustment can't be approved, let the customer know purchases must stay within their original budget.</li>
+        <li><b>Item costs are never earnings.</b> If the estimate is off by more than $1, over or under, adjust to the exact amount and add the receipt. Put yourself in the customer's shoes.</li>
+        <li><b>Big jumps? Adjust before you buy.</b> The customer's card is held for the total plus 20%. If the new total goes above that, the app says <b>Additional authorization needed</b>: don't buy the extra items until the customer approves and it's funded. If the new amount fails, the job goes back to the original amount.</li>
+        <li><b>Going down?</b> The app checks with you (<b>Your pay goes down by…</b>). Only send it if you and the customer agreed on it.</li>
       </ul>
-      <div class="note warn"><span class="nico">🧾</span><div><span class="h">Heads up</span>A request <b>can't be completed</b> while a Cost Adjustment is still pending approval — so submit it promptly.</div></div>
+      <div class="note warn"><span class="nico">🧾</span><div><span class="h">Don't skip the receipt</span>The receipt is your proof of what you spent. Without it the customer can decline the extra cost, and if they do, you're out of pocket for it.</div></div>
     </section>
 
     <!-- AGE RESTRICTED -->
     <section class="section" id="age">
       <span class="eyebrow">After the job</span>
       <h2>Age-restricted deliveries</h2>
-      <p>For age-restricted items, the law and our policy are strict — and the customer already agreed to these terms when they ordered.</p>
+      <p>For age-restricted items, the law and our policy are strict, and the customer agreed to these terms when they ordered. Only workers 21 and older see these jobs, and they're always handed over in person. Never leave them at the door.</p>
+      <h3>Check the ID before you hand anything over</h3>
+      <p>When you tap Complete, <b>Check Sam's ID</b> opens:</p>
       <ul class="brand">
-        <li>When you set the job to <b>Completed</b>, you must <b>photograph the front of the customer's ID in the app before handing over the items.</b></li>
-        <li>Contactless delivery is <b>never</b> allowed for these orders.</li>
-        <li>Missing the ID step can mean a delayed payout or disqualification.</li>
+        <li><b>Most customers:</b> three quick checks. <b>1</b>, take a photo of their ID. <b>2</b>, confirm they were <b>born on or before</b> the date shown (21 or older today). <b>3</b>, confirm <b>the face matches the person</b>.</li>
+        <li><b>TrustShield customers:</b> the app shows <b>Verified by TrustShield · 21+ confirmed</b> with the selfie and ID they have on file. Check <b>the face matches the person</b> and <b>the name matches</b>. No photo needed.</li>
       </ul>
+      <p>Then tap <span class="ui">ID checked · Complete job</span>.</p>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/id-check.webp" alt="Check Sam's ID: Photo of the ID, Take picture, Born on or before a date 21 years ago, The face matches the person, ID checked · Complete job, ID not confirmed, and Requester not here? We'll text them now." loading="lazy"></div><figcaption>The <b>three checks</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/id-ts.webp" alt="Check Sam's ID for a TrustShield customer: Verified by TrustShield, 21+ confirmed, the selfie and a demo ID on file, The face matches the person and The name matches" loading="lazy"></div><figcaption>A <b>TrustShield</b> customer</figcaption></figure>
+      </div>
       <h3>Customer not there?</h3>
-      <p>You must be at the drop-off location. Tap <b>"Tap here if customer is not present at drop off location&hellip;"</b> to start a <b>10-minute timer</b>. That tap also texts the customer and GPS-stamps where you are, so the wait is on the record. If they're still not there when it expires, select <b>"Recipient No Show,"</b> leave with the items, and the request is submitted for the full amount &mdash; the cost of goods, the offer and all fees.</p>
-      <p><span class="h">Your payout on a no-show isn't instant &mdash; and that isn't a mark against you.</span>Because nobody was there to confirm the job, Gopher HQ reviews the request before releasing your payout, and it's <b>held until that review is done</b>. You'll get an email with the decision. You turned up and they didn't &mdash; the GPS stamp from your tap is what shows it, which is why waiting the full 10 minutes and tapping <b>at the drop-off address</b> is what keeps the review short.</p>
-      <p>That outcome is called a <b>No-Show Completion</b>, and the customer is told at submission that it isn't refundable — so you're covered. Don't hand the items to a neighbor, a roommate or anyone whose ID doesn't match, and don't leave them at the door: age-restricted items can never be left unattended. Wait the full 10 minutes even if you're sure nobody's home; the timer is what protects your pay if the charge is ever disputed. See <a href="gopher-terms-of-service.html#age">Terms of Service §9</a>.</p>
-      <div class="note warn"><span class="nico">📍</span><div><span class="h">That GPS stamp is checked — be at the drop-off when you tap</span>The tap records where your phone is and compares it to the drop-off address. If you're a long way off, your payout goes on a <b>short hold</b> while we look at it, and <b>we'll text you and send a push</b> saying so, how far off the reading was, and when it releases. It clears on its own — sooner if your customer confirms the job in the meantime. <b>This isn't an accusation</b>: a badly mapped address or a phone that lost location permission produces the same reading. If the distance looks wrong, email <a href="mailto:support@gophergo.io">support@gophergo.io</a> with your request number and we'll review it. The way to avoid it entirely is simple — tap it at the door, not on the way.</div></div>
+      <p>You must be at the drop-off. Tap <b>Requester not here? We'll text them now.</b> to start a <b>10-minute timer</b>. That tap texts, emails and notifies the customer, and GPS-stamps where you are, so the wait is on the record. If they're still not there when it runs out, tap <span class="ui">Requestor No Show</span> and leave with the items.</p>
+      <h3>ID doesn't check out?</h3>
+      <p>Tap <span class="ui">ID not confirmed</span>. You can complete it as <b>Complete Request - No Delivery</b>, go back and send a cost adjustment, or cancel the request; cancelling here never costs you a cancellation fee.</p>
+      <div class="note info"><span class="nico">🛡️</span><div><span class="h">Your payout on a no-show is reviewed first</span>Because nobody was there to confirm the job, Gopher HQ reviews a no-show (or an ID that didn't check out) before your payout is released. You'll see <b>PAYOUT ON HOLD</b>, and we email you the decision. At the right address, your payout is held only until our team confirms the no-show; if you weren't at the address, it's held up to 48 hours for review. <b>That isn't a mark against you</b>: waiting the full 10 minutes and tapping at the drop-off address is what keeps the review short.</div></div>
+      <div class="note warn"><span class="nico">📍</span><div><span class="h">Be at the drop-off when you tap</span>The tap records where your phone is and compares it with the drop-off address. If you're a long way off, the app warns you first (<b>You don't appear to be at the drop-off</b>), and if you go ahead, <b>we'll text you and send a push</b> saying your payout is on hold. A badly mapped address or a phone that lost location permission can cause the same reading; if the distance looks wrong, email <a href="mailto:support@gophergo.io">support@gophergo.io</a> with your request number. Don't hand the items to a neighbor, a roommate or anyone whose ID doesn't match, and wait the full 10 minutes even if you're sure nobody's home. See <a href="gopher-terms-of-service.html">Terms of Service §9</a>.</div></div>
     </section>
 
-    <!-- RATE / FAVORITE -->
+    <!-- DISPUTES -->
+    <section class="section" id="disputes">
+      <span class="eyebrow">After the job</span>
+      <h2>Something wrong? Disputes</h2>
+      <p>A dispute is between you and your customer, and most get sorted out between the two of you. If a customer disputes a job you completed:</p>
+      <ol class="brand">
+        <li>You get a push notification and an email. On Home, the job shows <b>DISPUTED · NEEDS YOU</b>. Open it to see what the customer said.</li>
+        <li>Message them and make it right. If the price needs to change, send a <a href="#costadj">cost adjustment</a>; it's available while the dispute is open.</li>
+        <li>When they're happy, they confirm the job and you're paid as usual.</li>
+        <li>Can't agree? Gopher support reviews it (the job shows <b>UNDER REVIEW</b>) and decides: you're paid the agreed amount, or the request is cancelled. You both get an email with the decision. You can also email <a href="mailto:support@gophergo.io">support@gophergo.io</a> any time.</li>
+      </ol>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/dispute-card.webp" alt="Home, Active tab: a Delivery job marked DISPUTED · NEEDS YOU with the customer's reason, Not finished, and an Open button" loading="lazy"></div><figcaption><b>DISPUTED · NEEDS YOU</b> on Home</figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/dispute.webp" alt="Job screen, DISPUTED · NEEDS YOU: WHAT HAPPENS NOW, Sam opened a dispute, Not finished, message Sam and use Cost adjustment if the price needs to change" loading="lazy"></div><figcaption>What to do next, on the job</figcaption></figure>
+      </div>
+      <div class="note info"><span class="nico">⏸️</span><div>A disputed job never confirms itself after 48 hours. It stays open until you and the customer sort it out, or support decides.</div></div>
+    </section>
+
+    <!-- RATE -->
     <section class="section" id="rate">
       <span class="eyebrow">After the job</span>
-      <h2>Rate your customer &amp; become a favorite</h2>
-      <p>Don't forget to rate your customer after each job — ratings keep the marketplace trustworthy both ways.</p>
-      <h3>Becoming a favorite</h3>
-      <p>After <b>every</b> job, the customer can add you as a preferred provider. Once you're a Favorite, they can:</p>
+      <h2>Rating &amp; MY Gophers</h2>
+      <p>When the customer confirms and your payout starts, the app asks you to rate them: tap the Gopher holes (one to five), add a comment if you like, and tap <span class="ui">Done</span>. Ratings keep the marketplace trustworthy both ways. Missed it? Open the job in <a href="#history">Request History</a> and tap <b>Rate now →</b>.</p>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/rating.webp" alt="REQUEST COMPLETED: Paid, Sam confirmed, $42.40 on its way to your payout account, Please rate Sam Rivera with five Gopher holes filled, a comment box and Done" loading="lazy"></div><figcaption><b>Rate your customer</b></figcaption></figure>
+      </div>
+      <h3>Becoming a MY Gopher</h3>
+      <p>When customers rate you, they can add you as one of their <b>MY Gophers</b>. Then they can:</p>
       <ul class="brand">
-        <li><b>Request you by name</b> — jobs land in your feed first (yours alone for the first full minute, one minute ahead of every other tier).</li>
-        <li><b>Recommend you to their contacts</b>, sending you more work without lifting a finger.</li>
+        <li><b>Pick you first.</b> When they post a job and choose you, you see it before other workers, with <b>★ PICKED YOU FIRST</b> on the card (see <a href="#step2">Step 2</a>).</li>
+        <li><b>Recommend you.</b> We invite them to recommend you to people they know.</li>
       </ul>
-      <div class="note tip"><span class="nico">💚</span><div>Favorites are optional on your end too — a Favorite request is just another chance to earn, never an obligation.</div></div>
+      <div class="note tip"><span class="nico">💚</span><div>Being someone's MY Gopher is optional on your end too: a job where they picked you is another chance to earn, never an obligation.</div></div>
     </section>
 
-    <!-- REFER YOURSELF -->
-    <section class="section" id="refer">
+    <!-- HISTORY -->
+    <section class="section" id="history">
       <span class="eyebrow">After the job</span>
-      <h2>Refer yourself &amp; grow your own book</h2>
-      <p>Every worker has a unique <b>self-referral code and QR</b>. Share it with anyone — when they sign up through it and make their first request, it can come <b>straight to you</b>, and they're prompted to add you as a Favorite instantly.</p>
-      <div class="card" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
-        <div class="qr" role="img" aria-label="Example Gopher refer-yourself QR code"><svg class="qr-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges"><path stroke="#002461" d="M2 2.5h7m4 0h1m1 0h1m2 0h1m3 0h1m1 0h7m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h1m1 0h2m1 0h3m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m2 0h1m2 0h1m4 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h2m1 0h2m2 0h1m1 0h3m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m3 0h2m1 0h2m1 0h1m3 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h1m1 0h1m2 0h7m2 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-18 1h1m1 0h1m3 0h4m-20 1h1m2 0h1m1 0h1m1 0h2m1 0h1m2 0h3m1 0h1m2 0h1m1 0h2m1 0h1m-27 1h1m4 0h1m1 0h2m4 0h2m1 0h3m1 0h3m1 0h2m1 0h2m-27 1h1m2 0h2m4 0h2m2 0h1m1 0h1m3 0h1m2 0h2m2 0h1m-25 1h1m2 0h1m2 0h4m1 0h1m1 0h1m3 0h1m2 0h2m1 0h2m-28 1h1m1 0h2m1 0h2m1 0h1m2 0h3m1 0h2m1 0h2m2 0h1m1 0h1m2 0h1m-28 1h3m3 0h1m1 0h1m2 0h1m2 0h2m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m-29 1h1m2 0h5m1 0h1m2 0h3m1 0h2m2 0h2m2 0h1m3 0h1m-27 1h2m1 0h1m2 0h6m3 0h1m1 0h5m1 0h1m1 0h1m-28 1h4m1 0h2m1 0h2m2 0h2m4 0h2m7 0h2m-29 1h3m1 0h2m3 0h3m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1m3 0h1m-26 1h2m1 0h1m3 0h2m4 0h3m4 0h4m1 0h1m-26 1h1m1 0h1m2 0h1m2 0h1m2 0h1m2 0h2m4 0h1m3 0h2m-29 1h3m1 0h1m1 0h2m1 0h1m1 0h1m1 0h3m1 0h1m1 0h7m1 0h2m-21 1h3m1 0h1m2 0h3m1 0h2m3 0h1m1 0h1m1 0h1m-29 1h7m3 0h3m2 0h1m2 0h3m1 0h1m1 0h1m2 0h2m-29 1h1m5 0h1m3 0h2m1 0h1m5 0h2m3 0h2m-26 1h1m1 0h3m1 0h1m1 0h3m5 0h1m2 0h6m2 0h2m-29 1h1m1 0h3m1 0h1m3 0h2m1 0h1m4 0h1m4 0h1m3 0h1m-28 1h1m1 0h3m1 0h1m2 0h2m1 0h4m3 0h3m3 0h4m-29 1h1m5 0h1m1 0h1m3 0h2m1 0h3m1 0h5m1 0h1m1 0h2m-29 1h7m4 0h3m3 0h1m1 0h2m1 0h1m1 0h1m2 0h1"/></svg></div>
-        <div style="flex:1;min-width:200px;">
-          <h3 style="margin-top:0;">Your shortcut to new customers</h3>
-          <p style="font-size:14px;margin:0;">Use the <b>"Refer yourself"</b> link or post your QR code anywhere — work van, business cards, social, the neighborhood board. Each person you refer gets an instant inbox prompt to favorite you. From there, we handle the safe, instant payout once the job's done. Share away!</p>
-        </div>
+      <h2>Request History</h2>
+      <p><b>Account → Request History</b> lists your <b>Completed</b> and <b>Cancelled</b> jobs, with a search bar. Each card shows what you earned and where it stands: <b>PAID</b>, <b>WAITING FOR SAM</b>, <b>PAYOUT ON HOLD</b>, <b>DISPUTED</b> or <b>DISPUTE RESOLVED</b>.</p>
+      <p>Tap a job to see <b>WHAT HAPPENED</b>, step by step: Hired, In progress, Completed, Sam confirmed, Payout started, Payout sent. If it ever says <b>Payout didn't go through · add a new debit card</b>, replace your card in Payout Account.</p>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/history.webp" alt="Request History: Completed and Cancelled tabs, a search bar, and job cards marked PAID, DISPUTE RESOLVED and WAITING FOR SAM with what you earned" loading="lazy"></div><figcaption><b>Request History</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/history-job.webp" alt="A paid job in Request History: $25.00 you earned, You rated Sam, THE JOB, and WHAT HAPPENED from Hired to Payout sent" loading="lazy"></div><figcaption><b>What happened</b> on a job</figcaption></figure>
       </div>
-      <div class="note tip"><span class="nico">🔀</span><div><span class="h">Two ways to refer — pick in Refer &amp; Earn</span>Your Refer screen has a toggle. <b>Refer a customer</b> sends someone to <b>Gopher Request</b> to start hiring. <b>Refer a Gopher</b> invites a new worker to join you here on <b>Gopher Go</b> (they'll go through the same vetting you did). Same QR, same share tools — just choose who you're inviting.</div></div>
-      <div class="note tip"><span class="nico">📣</span><div><span class="h">Pro tip</span>Post your QR code <b>everywhere</b>. It's the fastest way to turn your existing network into repeat Gopher Go income.</div></div>
     </section>
 
     <!-- TIERS -->
     <section class="section" id="tiers">
       <span class="eyebrow">Earn more</span>
-      <h2>Elite, Elite+ &amp; Pro</h2>
-      <p>Gopher is the first gig marketplace to provide assurance for <b>workers</b> too — not just customers. Verify once and you carry a badge across every job, so the customer requesting you has real assurance, and so do you.</p>
-
-      <div class="tier-cards">
+      <h2>Gopher Pro &amp; Pro+</h2>
+      <p>Gopher Pro and Pro+ are optional tiers with a background check through <b>Yardstik</b>. Pass it once and you carry a badge on every job, so the customer requesting you has real assurance, and you get perks that help you earn more.</p>
+      <div class="tier-cards two">
         <div class="tier-card">
-          <img src="assets/img/shared-ts-right.svg" alt="Gopher Elite">
-          <div class="price">$35<small>one-time fee</small></div>
+          <img src="assets/img/101-go/gopher-pro.svg" alt="Gopher Pro">
+          <div class="price">$20<small>one-time fee</small></div>
         </div>
         <div class="tier-card plus">
-          <img src="assets/img/shared-gopher-elite.svg" alt="Gopher Elite+">
-          <div class="price">$50<small>one-time fee</small></div>
-        </div>
-        <div class="tier-card pro">
-          <img src="assets/img/shared-gopher-pro.svg" alt="Gopher Pro">
-          <div class="price">Verified<small>Any verifiable credential</small></div>
+          <img src="assets/img/101-go/gopher-pro-plus.svg" alt="Gopher Pro+">
+          <div class="price">$30<small>one-time fee</small></div>
         </div>
       </div>
-
       <div class="fee-wrap">
       <table class="fee">
         <thead>
           <tr>
             <th>What you get</th>
-            <th class="c tier">Standard</th>
-            <th class="c tier">Elite</th>
-            <th class="c tier">Elite+</th>
-            <th class="c tier">Pro</th>
+            <th class="c tier">No tier</th>
+            <th class="c tier">Gopher Pro &amp; Pro+</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td class="row">Free access to Gopher requests</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
-          <tr><td class="row">Offer free bids on jobs</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
-          <tr><td class="row">Ability to counter-offer</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
-          <tr><td class="row">A verified badge shown on your profile</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
-          <tr><td class="row">Priority access to <a class="glink" href="gopher-customer-deals.html">Gopher Deals</a> (for Customers) requests</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
-          <tr><td class="row">Eligible to offer your own unique service on <a class="glink" href="gopher-deals.html">Gopher Deals</a> (for Service Providers)</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
-          <tr><td class="row">Exclusive jobs from <a class="glink" href="gopher-connect.html">Gopher Connect</a> business customers</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
-          <tr><td class="row">Accept more than one active job at a time</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
-          <tr><td class="row">Instant payout from day 1</td><td class="c no">—</td><td class="c ck">✓</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
-          <tr><td class="row">Verify a professional credential (any verifiable licence, bond, insurance, or certification)</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">Free to join, see jobs and accept them</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">Make offers and counter-offers</td><td class="c ck">✓</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">Instant payouts (about 1–2 minutes)</td><td class="c">After 10 paid jobs</td><td class="c ck">From your first job</td></tr>
+          <tr><td class="row">Take more than one job at a time</td><td class="c no">—</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">See new requests before workers without a tier</td><td class="c no">—</td><td class="c ck">✓</td></tr>
+          <tr><td class="row">A verified badge on your profile</td><td class="c no">—</td><td class="c ck">✓</td></tr>
         </tbody>
       </table>
       </div>
-      <p class="caption"><b>Ride Sharing isn't a tier unlock</b> — any active Gopher can accept ride-sharing jobs once it's selected in Work Settings &amp; Radius and all required vehicle and licence details are on file. <b>Service-Provider Deals eligibility</b> is automatic once you're a verified tier (Elite, Elite+, or Pro) with <b>20+ completed service jobs</b> and a <b>4.75★ average over your last 20 service jobs</b> (Delivery, Ride Sharing, and Other don't count toward either).</p>
-      <div class="note info"><span class="nico">🚀</span><div>All three verified tiers also unlock a <b>100-mile work radius</b> (delivery and ride-sharing jobs stay at 50 miles) and <b>bullet-speed payouts</b> from your very first job — no trust-building phase.</div></div>
-
-      <div class="note tip"><span class="nico">🛡️</span><div><span class="h">Free to apply, always optional</span>Verification is free and entirely up to you. Higher tiers involve a background check. The exact requirements and perks for each tier are shown in-app — check that your area is active first, then apply. In active areas, it's a no-brainer.</div></div>
-      <p style="margin-top:14px;">Learn more on the <a href="gopher-go.html">Gopher Go page</a>.</p>
+      <p class="caption">Your work radius (1 to 50 miles) and the counter-offer cap are the same for every worker.</p>
+      <h3>How to get it</h3>
+      <p>Tap <b>Account → Become A Gopher Pro</b> (or, on Home's <b>Active</b> tab, <b>Learn more about becoming a Gopher Pro here.</b>). It opens our website, where you choose Pro or Pro+ and start the background check. Results usually take 1–3 days, then we add the badge and perks to your Gopher Go account. You'll see <b>Gopher Pro Verified</b> (or <b>Pro+ Verified</b>) on your Account.</p>
+      <div class="note tip"><span class="nico">🛡️</span><div><span class="h">Always optional</span>A tier is never required to work on Gopher Go. In busy areas, it's a no-brainer.</div></div>
     </section>
 
-    <!-- OFFER A SERVICE-PROVIDER DEAL -->
-    <section class="section" id="offer-deals">
+    <!-- REFER -->
+    <section class="section" id="refer">
       <span class="eyebrow">Earn more</span>
-      <h2>Offer a Service-Provider <span class="scribble">Deal</span></h2>
-      <p>Once you've built a track record, you can offer your <b>own</b> service at your <b>own</b> price to nearby neighbors on <a class="glink" href="gopher-deals.html">Gopher Deals</a> — no paying for leads. You set exactly what you want to earn, and the customer books you directly. It's the same idea as a bid, but it's your standing offer instead of a one-off.</p>
-
-      <h3>Are you eligible?</h3>
-      <p>Service-Provider eligibility is <b>automatic</b> — there's nothing to buy and no application. You're in the moment you meet <b>all three</b>:</p>
-      <div class="fee-wrap">
-      <table class="fee">
-        <thead>
-          <tr><th>The bar</th><th class="c tier">What it means</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="row">A verified tier</td><td class="c">Elite, Elite+, or Pro</td></tr>
-          <tr><td class="row">20+ completed <b>service</b> jobs</td><td class="c">All-time, on Gopher Go — <b>Delivery, Ride Sharing, and Other jobs don't count</b> toward the 20</td></tr>
-          <tr><td class="row">4.75★ over your last 20 <b>service</b> jobs</td><td class="c">Average rating across your last 20 completed <b>service</b> jobs — the same categories that count toward the 20</td></tr>
-        </tbody>
-      </table>
+      <h2>Refer Gopher</h2>
+      <p>Tap <b>Refer</b> on the bottom bar.</p>
+      <ul class="brand">
+        <li><b>Refer Yourself.</b> Your QR code: new customers scan it and save you as their Gopher. Tap it to show it bigger. <b>Your referral link</b> is the same thing as a link; tap <span class="ui">Copy link</span> to paste it anywhere. Or tap <span class="ui">Refer via SMS</span> or <span class="ui">Refer via email</span> to send it.</li>
+        <li><b>Refer Gopher Go</b> invites a trusted local worker to earn on Gopher Go. <b>Refer Gopher Request</b> invites someone to post requests and hire workers. Type their numbers or emails, or tap <b>Choose from my contacts</b>, then send.</li>
+        <li><b>Referral tracking</b> shows who you've invited: <b>Pending</b> (invited), <b>Added</b> (signed up) and <b>Active</b> (completed their first job).</li>
+      </ul>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/refer.webp" alt="Refer Gopher: Refer Yourself with a QR code, Refer via SMS and Refer via email, Your referral link with Copy link, and the Refer Gopher Go and Refer Gopher Request tiles" loading="lazy"></div><figcaption><b>Refer Gopher</b></figcaption></figure>
       </div>
-      <div class="note info"><span class="nico">✓</span><div><span class="h">Eligible, not approved</span>Meeting the bar makes you <b>eligible</b> to submit — each deal you post is then <b>reviewed manually</b> before it goes live (just a quick sanity check so nothing crazy ships), and we'll message your Gopher Go inbox the moment it's live. An admin can also grant eligibility to any worker case-by-case.</div></div>
-
-      <h3>How it works when you're eligible</h3>
-      <p>The moment you qualify, it's automatic: you'll get a congratulations email from <b>deals@gophergo.io</b> explaining how to offer your first deal, and the green <b>"+ Service Provider Deal"</b> button at the top of your Gopher Go dashboard sidebar activates on its own. Tap it and your personal details are already filled in — you just add the deal and your price. In the <b>Gopher Go app</b>, the same entry lives in the <b>Perks</b> section of your Home screen.</p>
-      <div class="note tip"><span class="nico">💵</span><div><span class="h">You keep your full amount</span>You set exactly what you want to <b>earn</b> — that's what lands in your payout account. The customer pays a small <b>10% Deal Boost</b> on top to promote your deal to ready-to-book neighbors; it doesn't come out of your take-home.</div></div>
-      <div class="note tip"><span class="nico">🏷️</span><div><span class="h">Your &ldquo;normally&rdquo; price is what makes it a deal</span>You'll also enter <b>what you'd normally charge</b>. It's required, it shows on your card <b>struck through exactly as you type it</b>, and the gap between the two is the saving your neighbors see. It has to be <b>more than what the customer pays</b> &mdash; your earn plus the 10% boost &mdash; or there's no saving to show. Example: earn <b>$150</b> &rarr; customer pays <b>$165</b> &rarr; so your normal price needs to be above $165 (say <b>$225</b>, for a $60 saving on the card).</div></div>
-      <div class="note tip"><span class="nico">📍</span><div><span class="h">Reach travels up to 50 miles</span>Your deal reaches neighbors within the radius you set — up to <b>50 miles</b> — separate from your general work radius. You decide how far your deal travels.</div></div>
-      <div class="note warn"><span class="nico">🔒</span><div><span class="h">Not there yet?</span>If the <b>+ Service Provider Deal</b> button is deactivated, you haven't hit the bar above yet — tap <b>Learn more</b> beneath it to see these terms anytime. Keep completing jobs and keeping your rating high — eligibility flips on automatically the moment you qualify.</div></div>
+      <div class="note tip"><span class="nico">📣</span><div><span class="h">Pro tip</span>Post your QR code <b>everywhere</b>: your work van, business cards, social, the neighborhood board. It's the fastest way to turn the people you already know into repeat Gopher Go work.</div></div>
     </section>
 
     <!-- STAY ACTIVE -->
     <section class="section" id="active">
       <span class="eyebrow">Good to know</span>
-      <h2>Stay active &amp; in good standing</h2>
+      <h2>Cancelling &amp; good standing</h2>
       <p>A few habits keep your account healthy and your earnings flowing.</p>
       <h3>If you have to back out of a job</h3>
       <ul class="brand">
-        <li><b>Release it, with a reason.</b> Backing out after accepting doesn't cancel the customer's request — it goes straight back to the marketplace for another Gopher, under the same order, and the customer reads your reason. Their money stays held; nothing is re-charged.</li>
-        <li><b>You won't see it again.</b> A request you released is kept off your list and out of your alerts, and the release is recorded against your account the same way a cancellation is.</li>
-        <li><b>Support can do it for you.</b> If a request you accepted needs to go back out and you can't act — you've gone offline, or the customer calls us — support can release it on the customer's behalf. You'll get a notification if that happens.</li>
+        <li><b>Cancel it, with a reason.</b> On the job screen, tap <b>Cancel job</b>. Tell us what happened in your own words (at least 3 words). Your reason is shared with the customer, and it's what a reviewer reads. Then tap <span class="ui">Cancel job</span>, or <b>Keep this job</b> if you change your mind.</li>
+        <li><b>The customer decides what's next.</b> We tell them right away, and they choose whether to send the job to another worker or cancel it. You won't see it again.</li>
+        <li><b>It's reviewed.</b> Cancelling after you accept is reviewed. Repeated unexcused cancellations can carry a fee of up to $5 and can lead to removal. Emergencies are excused; that's what the reason is for.</li>
+        <li><b>Support can take you off a job.</b> If a job needs to go back out and you can't act, support can do it. You'll get a notification, <b>You were removed from a request</b>, if that happens.</li>
       </ul>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/cancel.webp" alt="Cancel this job? sheet: Tell us what happened, in your own words, a note that cancelling a job you accepted is reviewed, and a reason box" loading="lazy"></div><figcaption><b>Cancel this job?</b></figcaption></figure>
+      </div>
       <h3>Avoid these cancellation reasons</h3>
       <ul class="brand">
-        <li><b>"Too far"</b> — distance is posted before you accept. Check it.</li>
-        <li><b>"Not enough money"</b> — earnings are clear from the start.</li>
-        <li><b>"Didn't mean to accept"</b> — that'd be a <i>lot</i> of checkboxes to click through by accident.</li>
-        <li><b>"Wasn't clear what to do"</b> — DM the customer with <b>Question?</b> <i>before</i> committing.</li>
+        <li><b>"Too far"</b>: the distance is shown before you accept. Check it.</li>
+        <li><b>"Not enough money"</b>: the pay is clear from the start.</li>
+        <li><b>"Didn't mean to accept"</b>: that's a lot of checkboxes to tick by accident.</li>
+        <li><b>"Wasn't clear what to do"</b>: tap <b>Question?</b> <i>before</i> you accept.</li>
       </ul>
       <h3>Do this every time</h3>
       <ul class="brand">
-        <li>Update your job status in real time, at the right location.</li>
-        <li>Complete jobs promptly and professionally.</li>
-        <li>Communicate respectfully — always.</li>
+        <li>Update the job in real time, at the right location.</li>
+        <li>Complete jobs promptly and professionally. Need ASAP jobs should be done within an hour unless you agree otherwise; food deliveries closer to 30 minutes.</li>
+        <li>Be courteous, always.</li>
       </ul>
     </section>
 
@@ -804,30 +955,38 @@ body.nav-open .sections-fab{opacity:0;pointer-events:none;}
       <span class="eyebrow">Good to know</span>
       <h2>Safety &amp; the rules</h2>
       <ul class="brand">
-        <li><b>Truly independent.</b> You're not a Gopher employee and you're not on a leash — you work for the customer. We just make sure they pay you on time.</li>
-        <li><b>All communication stays in-app.</b> Sharing phone numbers, emails, or other personal contact info on the platform is strictly prohibited.</li>
-        <li><b>Only take what you can do well.</b> Don't accept jobs outside your qualifications or your ID/age eligibility.</li>
+        <li><b>Truly independent.</b> You're not a Gopher employee: you work for the customer. We just make sure they pay you on time.</li>
+        <li><b>Keep messages in the app.</b> Before you're hired, don't share phone numbers, emails or other contact details; the app hides them. Once you're hired, you can call or text your customer. Paying, or arranging to pay, outside Gopher is never allowed, before or after you're hired.</li>
+        <li><b>The app checks your messages before they send.</b> If a message breaks these rules, the app asks you to remove the details. If you send it anyway, it's flagged, and the conversation is blocked while our team reviews it.</li>
+        <li><b>Only take what you can do well.</b> Don't accept jobs outside your skills or your age eligibility.</li>
       </ul>
-      <div class="note warn"><span class="nico">🚫</span><div><span class="h">Never ask for money off the platform</span>This is an instant bye-bye. Every payout runs through the app — that's how we keep it safe for everyone and pay you fast, with no cut taken.</div></div>
+      <div class="note warn"><span class="nico">🚫</span><div><span class="h">Never ask for money off the platform</span>Asking a customer to pay you outside Gopher gets your account deactivated on the first offense. Every payout runs through the app: that's how we keep it safe for everyone and pay you fast, with no cut taken.</div></div>
     </section>
 
     <!-- HELP -->
     <section class="section" id="help">
       <span class="eyebrow">Good to know</span>
-      <h2>Need help?</h2>
+      <h2>Help &amp; your account</h2>
       <p>You're ready to earn! For anything else:</p>
       <ul class="brand">
-        <li><b>Ask Gopher iQ</b> — the assistant in the Help screen answers your questions instantly (how do I…, what does X mean, where is Y). Type it, or tap the <b>mic</b> and just say it — speaking gets the same answer as typing.</li>
-        <li>Tap <b>More Stuff → Help Center</b> in the app — if anything ever feels wonky, send a message so we can fix it fast.</li>
-        <li>Browse the <a href="gopher-faqs.html">Gopher Go FAQs</a> — updated as the platform evolves.</li>
+        <li><b>Ask Gopher iQ.</b> On Home, tap <b>Ask Gopher anything…</b>. You'll see common questions, and answers appear as you type. You can also use your keyboard's microphone to say it. Didn't find it? Tap <b>Open the Help Center →</b>.</li>
+        <li><b>More → Help Center</b> has three buttons: <b>Gopher Go Tutorial</b>, <b>FAQs</b>, and <b>Message Support</b> to chat with our team.</li>
         <li>Email us at <a href="mailto:support@gophergo.io">support@gophergo.io</a>.</li>
       </ul>
-      <div class="note info"><span class="nico">🌱</span><div><span class="h">Not seeing jobs yet? Hang tight.</span>Keep notifications on, refer the app, and follow us on social. The marketplace grows daily — and once it's buzzing near you, you'll be earning more per job than any other marketplace out there.</div></div>
+      <div class="shots">
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/iq.webp" alt="Gopher iQ on Home: Ask Gopher anything with Common questions like When do I receive my payout?" loading="lazy"></div><figcaption><b>Ask Gopher iQ</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/help.webp" alt="Help Center: We'd love to help you! with Gopher Go Tutorial, FAQs and Message Support" loading="lazy"></div><figcaption><b>Help Center</b></figcaption></figure>
+        <figure class="shot"><div class="phone"><img src="assets/img/101-go/more.webp" alt="More: Help Center, Work Settings &amp; Radius, Services Offered, Social Media Links, Gopher Website, Become a Gopher Pro, Hire A Gopher, Terms &amp; Conditions and Sign Out" loading="lazy"></div><figcaption><b>More</b></figcaption></figure>
+      </div>
+      <h3>Your account</h3>
+      <p><b>More</b> also has <b>Sign Out</b> and <b>Delete Account</b>. Deleting your account is permanent and happens straight away: it erases your history. If you just need a break, sign out instead.</p>
+      <div class="note info"><span class="nico">🌱</span><div><span class="h">Not seeing jobs yet? Hang tight.</span>Keep notifications on, check your <a href="#settings">work settings and radius</a>, and share your QR code. The marketplace grows daily, and once it's buzzing near you, you'll be earning more per job than on any other marketplace out there.</div></div>
       <p style="margin-top:24px;font-family:'Caveat';font-size:30px;color:var(--terracotta);transform:rotate(-1.5deg);">Now get in the game — go Gopher it!</p>
     </section>
 
   </main>
 </div>
+
 
 <link rel="stylesheet" href="assets/css/gopher-footer.css">
 <footer class="gopher-footer">
