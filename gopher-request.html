@@ -24239,6 +24239,20 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       },
       // 4) SCHEDULED — worker hired, booked for later
       {
+        /* cat:'junk' and not moving, settled 2026-10-12 on the owner's "do what
+           is consistent with what we're building". A clear-out is DISPOSAL, and
+           "Garage cleanout" is one of Junk Removal's own five iQ examples;
+           Moving's five are all about relocating things that are being kept
+           ("Load or unload a U-Haul", "Move heavy furniture"). The 🚚 it carries
+           is the seed author's flavour and fits either, so it is not the tell.
+           ⚠️ RETRACTED, same day: I twice flagged that this id also exists in
+           previousRequests (an airport run) as a lookup hazard. It is NOT one.
+           findPrevById searches previousRequests, expiredRequests and
+           cancelledRequests; every active lookup in this file searches
+           activeRequests alone. Nothing searches both, so the two never
+           collide — checked all eight active lookups, not inferred. Left
+           unchanged deliberately: renumbering would be churn, and the v79
+           changelog above already names ids that have since moved. */
         id:'GR-00121', cat:'junk', icon:'🚚', title:'Office furniture clear-out',
         status:'scheduled', statusLabel:'Scheduled', needsAttention:false, userCreated:false,
         scheduledForLater:true, workersNeeded:1, perWorkerCost:280, multiIndividual:false,
