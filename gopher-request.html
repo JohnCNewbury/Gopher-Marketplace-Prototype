@@ -8527,7 +8527,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .hv-art { display:grid; place-items:center; border-bottom:1px solid rgba(0,36,97,.06); }
   .hv-nm { font-family:'Nunito',sans-serif; font-weight:900; font-size:14px; color:var(--navy);
            padding:11px 13px; line-height:1.2; }
-  .hv-ds { font-size:11.5px; color:var(--muted); padding:0 13px 11px; margin-top:-7px; }
+  /* Shown in Spotlight and All at once, where the name has room beneath it.
+     ⛔ HIDDEN IN LIST: that row already carries the category's five example
+     pills, which say the same thing in more detail — the hint there would be a
+     second, vaguer version of the line beside it. */
+  .hv-ds { display:none; font-size:11.5px; color:var(--muted); line-height:1.3; }
+  .hv-grid[data-hview="spot"] .hv-ds,
+  .hv-grid[data-hview="all"]  .hv-ds { display:block; padding:0 14px 12px; margin-top:-6px; }
   /* Category art. Each category declares its two ingredients ONCE as custom
      properties — its gradient and, where one exists, its photograph — and the
      views compose them. The earlier version declared every gradient twice, which
@@ -8611,9 +8617,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      once do not show it. ──────────────────────────────────────────────── */
   .hv-grid[data-hview="spot"] .hv-iq {
     display:inline-flex; align-items:center; gap:5px; position:absolute;
-    right:12px; bottom:58px; z-index:2;   /* just above the name strip, so it
-                                             rides the bottom of the PHOTO and
-                                             survives the next art-height change */
+    right:12px; z-index:2;
+    /* ⚠️ ANCHORED FROM THE TOP, PER VIEW — not from the card's bottom.
+       It was `bottom:58px`, chosen to clear the name strip, and the comment
+       claimed it would survive the next art-height change. It did. What it did
+       NOT survive was the name strip growing: adding the one-line hint under
+       each name pushed the strip taller and the pill landed on top of the
+       words. The pill belongs to the PHOTO, so it is measured from the photo —
+       each view sets its own `top` beside its own art height, and the two are
+       changed together or not at all. */
     font-family:'Nunito',sans-serif; font-weight:800; font-size:11.5px; letter-spacing:.2px;
     color:var(--navy); background:rgba(255,255,255,.94); border:1px solid rgba(0,36,97,.14);
     border-radius:999px; padding:6px 11px; cursor:pointer;
@@ -8770,6 +8782,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      is what the UI draws as it is converted, surface by surface. */
   .cat-mark { width:1em; height:1em; display:inline-block; vertical-align:-0.14em;
               flex:0 0 auto; }
+  /* The record surfaces that used to show an emoji. Each sized to what it
+     replaced, so nothing around them shifts. */
+  .hlive-ico .cat-mark      { width:20px; height:20px; }
+  .req-icon .cat-mark       { width:22px; height:22px; }
+  .req-detail-title .cat-mark { width:20px; height:20px; vertical-align:-0.16em; }
   .progress-meta-cat { display:inline-flex; align-items:center; gap:6px; }
   /* No hover on touch — a tap opens the category, same as Connect. */
   @media (max-width:760px){ .hv-grid[data-hview="all"] .hv-pop { display:none; } }
@@ -8908,6 +8925,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      Two rows at 380 + the header still clear 950px without scrolling. */
   .hv-grid[data-hview="spot"] { grid-template-columns:repeat(4,1fr); }
   .hv-grid[data-hview="spot"] .hv-art { height:330px; font-size:92px; }
+  .hv-grid[data-hview="spot"] .hv-iq  { top:290px; }   /* art 330 − pill − 12 */
   .hv-grid[data-hview="spot"] .hv-nm { font-size:16px; padding:15px 16px; }
 
   /* Owner 2026-10-12, "a little taller". 74 -> 112px. This also fixes the thing
@@ -8920,6 +8938,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      it — see the split-layout block above. Art 112 -> 146 is the +30%. */
   .hv-grid[data-hview="all"] { grid-template-columns:repeat(2,1fr); gap:12px; }
   .hv-grid[data-hview="all"] .hv-art { height:146px; font-size:38px; }
+  .hv-grid[data-hview="all"] .hv-iq  { top:112px; }    /* art 146 − pill − 9 */
   .hv-grid[data-hview="all"] .hv-nm { font-size:13px; padding:10px 12px; }
 
   /* List rows were 56px tall and read as a thin index rather than a way in —
@@ -17824,6 +17843,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   // Used by the homepage AI search "Start a request" suggestions. Resets the
   // flow, selects the category, advances to Step 2 (Job details), and makes the
   // flow visible (scrolls it into view). Returns true on success.
+  /* The category marks, exported for the dashboard's record renderers, which
+     live in a different script block and cannot see CATEGORIES. Derived from
+     the table rather than restated, so there is one set of drawings. */
+  window.HOME_MARKS = Object.keys(CATEGORIES).reduce(function(m, k){
+    if(CATEGORIES[k] && CATEGORIES[k].mark) m[k] = CATEGORIES[k].mark;
+    return m;
+  }, {});
+
   window.__startRequestWithCategory = function(catKey, idea){
     if(!CATEGORIES[catKey]) return false;
     resetFlowState();
@@ -22595,6 +22622,25 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        'Explain here the grill brand and model, and whether you have the tools.'],
     ],
   };
+
+  /* ── The one-line hint under each category name (owner's "what's next" list,
+     2026-10-12) ──────────────────────────────────────────────────────────
+     ⛔ THE APP'S WORDS, ported not written: CATEGORY_HINT in
+     src/component/home/homeNav.js at origin/production bca7d23b4, generated
+     from that file rather than retyped. The tiles carried no sub-copy until
+     now on purpose — the note in the markup said to port these rather than
+     invent a line, and this is that port. */
+  window.HOME_HINTS = {
+    delivery: 'Groceries, takeout, pharmacy',
+    junk:     'Couches, cleanouts, debris',
+    moving:   'Heavy lifting, U-Haul help',
+    home:     'Mount, assemble, fix',
+    labor:    'An extra set of hands',
+    yard:     'Mow, trim, clean up',
+    ride:     'Airport, appointments, home',
+    other:    'If a neighbor could do it',
+  };
+
   /* "What kind of delivery?" — the app's IDEAS_NOUN. */
   window.HOME_IDEAS_NOUN = { delivery:'delivery', junk:'junk removal', moving:'move', home:'home service', labor:'labor job', yard:'yard project', ride:'ride', other:'custom task' };
 
@@ -22662,6 +22708,20 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        the CSS uppercases. Custom Task gets Connect's closing line.
        Both nodes are inert: the popover is a tooltip with pointer-events:none
        and the mark is not a control, so neither intercepts the card's click. */
+    /* The one-line hint under each name, from the app's CATEGORY_HINT. Injected
+       rather than written into the markup, so the eight strings live in one
+       place — same reason the example pills are. */
+    const HINTS = window.HOME_HINTS || {};
+    Array.prototype.forEach.call(grid.querySelectorAll('[data-homecat]'), function(tile){
+      if(tile.querySelector('.hv-ds')) return;
+      const h = HINTS[tile.dataset.homecat];
+      if(!h) return;
+      const d = document.createElement('span');
+      d.className = 'hv-ds';
+      d.textContent = h;
+      tile.appendChild(d);
+    });
+
     const EXAMPLES = window.CAT_EXAMPLES || {};
     Array.prototype.forEach.call(grid.querySelectorAll('.hv-cell'), function(cell){
       const tile = cell.querySelector('[data-homecat]');
@@ -23817,6 +23877,24 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     do { id = 'GT-' + (++goToSeq); } while (used.has(id));
     return id;
   }
+  /* ── The mark for a REQUEST record (owner's "what's next" list, 2026-10-12:
+     the live strip, request cards and detail title still drew emoji while the
+     rest of the home had gone one-tone).
+     Order matters: a record's own `cat` first, then its display `category`
+     mapped through the one history mapping, then — only if it has neither —
+     its original emoji. ⛔ THE EMOJI FALLBACK STAYS. A record created before
+     `cat` existed, or by a path that does not set it, still renders something
+     rather than nothing, and `r.icon` is left in the data untouched either
+     way: this changes what is DRAWN, not what is stored. */
+  function recMark(r){
+    const M = window.HOME_MARKS || {};
+    let k = r && r.cat;
+    if(!k && r && r.category && typeof window.__mapHistoryCategory === 'function'){
+      k = window.__mapHistoryCategory(r.category);
+    }
+    return (k && M[k]) || (r && r.icon) || '\uD83D\uDCCB';
+  }
+
   const GoTos = {
     all(){ return DASH_DATA.goTos; },
     count(){ return DASH_DATA.goTos.length; },
@@ -23857,7 +23935,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     return [
       // 1) PENDING — needs attention, worker = count, no name yet
       {
-        id:'GR-00123', icon:'👷', title:'Crew of 3 to unload pavers — 2 hrs',
+        id:'GR-00123', cat:'labor', icon:'👷', title:'Crew of 3 to unload pavers — 2 hrs',
         status:'pending', statusLabel:'Pending', needsAttention:true, userCreated:false,
         scheduledForLater:false, workersNeeded:3, perWorkerCost:120, multiIndividual:false,
         worker:'6 workers interested', amount:'$360.00 total',
@@ -23882,7 +23960,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       //     gmvTotal 68.00+6.5092=74.5092 → "$74.51 total". Carries 3 counter-offers
       //     (A offer-up, B items-down, C both) — see counterOffers below.
       {
-        id:'GR-00129', icon:'🛒', title:'Grocery + pharmacy run — purchase needed',
+        id:'GR-00129', cat:'delivery', icon:'🛒', title:'Grocery + pharmacy run — purchase needed',
         status:'pending', statusLabel:'Pending', needsAttention:true, userCreated:false,
         scheduledForLater:false, workersNeeded:1, perWorkerCost:18, multiIndividual:false,
         worker:'2 workers interested', amount:'$74.51 total',
@@ -23959,7 +24037,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       //     is hired immediately and would demonstrate nothing. If you give her a
       //     badge, the fixture stops testing the thing it exists for.
       {
-        id:'GR-00141', icon:'📦', title:'Pick up a parcel from the Apex depot',
+        id:'GR-00141', cat:'delivery', icon:'📦', title:'Pick up a parcel from the Apex depot',
         status:'pending', statusLabel:'Pending', needsAttention:true, userCreated:false,
         scheduledForLater:false, workersNeeded:1, perWorkerCost:34, multiIndividual:false,
         firstAvailable:true, workerSelection:'first',
@@ -23982,7 +24060,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       //     fee) that the read-only Request recap renders from — no stepper/cost-
       //     adjustment yet.
       {
-        id:'GR-00127', icon:'📦', title:'Grocery run — Harris Teeter to 412 Oakwood Ave',
+        id:'GR-00127', cat:'delivery', icon:'📦', title:'Grocery run — Harris Teeter to 412 Oakwood Ave',
         status:'in-progress', statusLabel:'In Progress', needsAttention:false, userCreated:false,
         scheduledForLater:false, workersNeeded:1, perWorkerCost:50.00, multiIndividual:false,
         worker:'Marcus B. (Pro)', amount:'$55.07 total',
@@ -24063,7 +24141,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       //     Ride fare footing: workerPay 28 → cogOffer 28; Gopher Fee 0.99; ITF
       //     0.08×(28+0.99)=2.3192; requestFee 3.3092; total 31.3092 → "$31.31".
       {
-        id:'GR-00131', icon:'🚗', title:'Ride — RDU Airport to 412 Oakwood Ave',
+        id:'GR-00131', cat:'ride', icon:'🚗', title:'Ride — RDU Airport to 412 Oakwood Ave',
         status:'in-progress', statusLabel:'In Progress', needsAttention:false, userCreated:false,
         scheduledForLater:false, workersNeeded:1, perWorkerCost:28.00, multiIndividual:false,
         category:'ride',
@@ -24102,7 +24180,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         }
       },
       {
-        id:'GR-00128', icon:'📦', title:'Hardware-store run — drill bits + anchors',
+        id:'GR-00128', cat:'delivery', icon:'📦', title:'Hardware-store run — drill bits + anchors',
         status:'in-progress', statusLabel:'In Progress', needsAttention:false, userCreated:false,
         scheduledForLater:false, workersNeeded:1, perWorkerCost:70.00, multiIndividual:false,
         worker:'Priya N. (Elite+)', amount:'$76.67 total',
@@ -24152,7 +24230,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       },
       // 3) SCHEDULED — worker hired, booked for later
       {
-        id:'GR-00122', icon:'🛠️', title:'Install 2 ceiling fans · conference room',
+        id:'GR-00122', cat:'home', icon:'🛠️', title:'Install 2 ceiling fans · conference room',
         status:'scheduled', statusLabel:'Scheduled', needsAttention:false, userCreated:false,
         scheduledForLater:true, workersNeeded:1, perWorkerCost:145, multiIndividual:false,
         worker:'Rosa P. (Pro)', amount:'$145.00 total',
@@ -24161,7 +24239,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       },
       // 4) SCHEDULED — worker hired, booked for later
       {
-        id:'GR-00121', icon:'🚚', title:'Office furniture clear-out',
+        id:'GR-00121', cat:'junk', icon:'🚚', title:'Office furniture clear-out',
         status:'scheduled', statusLabel:'Scheduled', needsAttention:false, userCreated:false,
         scheduledForLater:true, workersNeeded:1, perWorkerCost:280, multiIndividual:false,
         worker:'Diego R. (Elite+)', amount:'$280.00 total',
@@ -24178,7 +24256,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       //    0.08×(24.00+0.99)=1.9992; requestFee 2.9892; gmvTotal 24.00+2.9892=26.9892
       //    → "$26.99 total".
       {
-        id:'GR-00130', icon:'📦', title:'Coffee + pastry run to 14 Maiden Lane',
+        id:'GR-00130', cat:'delivery', icon:'📦', title:'Coffee + pastry run to 14 Maiden Lane',
         status:'in-progress', statusLabel:'Completed — confirm', needsAttention:false, userCreated:false,
         scheduledForLater:false, workersNeeded:1, perWorkerCost:24.00, multiIndividual:false,
         worker:'Marcus B. (Pro)', amount:'$26.99 total',
@@ -25014,7 +25092,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       '<div class="hlive-card' + (r.needsAttention ? ' has-attention' : '') + '">'
       +   left
       +   '<button type="button" class="hlive-body" data-hlive-open="' + r.id + '">'
-      +     '<span class="hlive-ico">' + (r.icon || '\ud83d\udccb') + '</span>'
+      +     '<span class="hlive-ico">' + recMark(r) + '</span>'
       +     '<span class="hlive-tx">'
       +       (pillTxt ? '<span class="hlive-pill' + pillCls + '">' + pillTxt + '</span>' : '')
       +       '<span class="hlive-ttl">' + (r.title || ('Request #' + r.id)) + '</span>'
@@ -25079,7 +25157,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         : '';
       frag.push(`
         <div class="req-card is-clickable ${r.needsAttention?'has-attention':''}" data-dynamic data-rqstatus="${rqstatus}" data-open-req="${r.id}">
-          <div class="req-icon">${r.icon}</div>
+          <div class="req-icon">${recMark(r)}</div>
           <div class="req-info">
             <div class="req-title">${r.title}</div>
             <div class="req-meta">${metaBits.join(' · ')}</div>
@@ -25461,7 +25539,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     const headerHtml = `
       <div class="req-detail-header ${r.needsAttention?'has-attention':''}">
         <div style="flex:1;">
-          <div class="req-detail-title">${r.icon} ${r.title}</div>
+          <div class="req-detail-title">${recMark(r)} ${r.title}</div>
           <div class="req-detail-sub"><b>#${r.id}</b> · ${r.amount} · ${r.when}</div>
           <div class="req-detail-sub" style="margin-top:4px;">${r.worker}</div>
         </div>
