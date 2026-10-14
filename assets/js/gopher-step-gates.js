@@ -158,12 +158,29 @@
       message: 'Your pick-up and drop-off need to be different addresses — please '
              + 'update one so your Gopher knows where to go.',
       needs: ['isVisible'],
+      /* G40-274 (owner, 2026-10-14): the SAME PLACE, compared by LOCATION, not by
+         address text — "Same point, ~80 ft": two map points within
+         SAME_PLACE_METERS, whatever the Unit/Apt # says. Same rule as the app and
+         the server (backend helpers/same_place.js, 25 m).
+         `host.placeOf(text)` → {lat, lng} or null is OPTIONAL: a surface that
+         knows its addresses' map points supplies it (Request web). Where either
+         point is unknown the pair falls back to the old normalised-text match,
+         which only ever catches the same place written the same way — so a
+         surface without placeOf (Connect, the prototype) behaves exactly as
+         before, and a missing coordinate never blocks on its own. */
       when: function (s, h) {
         if (s.noSpecificPickup || !h.isVisible('pickupSection')) return false;
         if (!Array.isArray(s.pickupStops) || !Array.isArray(s.dropoffStops)) return false;
-        var pk = s.pickupStops.map(normAddr).filter(Boolean);
-        var dp = s.dropoffStops.map(normAddr).filter(Boolean);
-        return pk.some(function (p) { return dp.indexOf(p) !== -1; });
+        var pk = s.pickupStops.filter(function (v) { return normAddr(v); });
+        var dp = s.dropoffStops.filter(function (v) { return normAddr(v); });
+        return pk.some(function (p) {
+          return dp.some(function (d) { return samePlace(p, d, h); });
+        });
+      },
+      selectorFor: function (s, h) {
+        var pair = samePlacePair(s, h);
+        return pair ? 'input[data-locedit="dropoff"][data-idx="' + pair.dropoff + '"]'
+                    : '.field-input';
       }
     },
     {
@@ -302,6 +319,54 @@
 
   function normAddr(v) {
     return String(v == null ? '' : v).toLowerCase().replace(/[^a-z0-9]+/g, '');
+  }
+
+  /* ── G40-274: same place ─────────────────────────────────────────────────── */
+  var SAME_PLACE_METERS = 25;
+
+  function pointOf(v) {
+    if (!v || typeof v !== 'object') return null;
+    var lat = (v.lat === '' || v.lat == null) ? NaN : Number(v.lat);
+    var lng = (v.lng === '' || v.lng == null) ? NaN : Number(v.lng);
+    if (!isFinite(lat) || !isFinite(lng)) return null;
+    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+    if (lat === 0 && lng === 0) return null;          // a "no coordinates" placeholder
+    return { lat: lat, lng: lng };
+  }
+
+  /* Great-circle metres between two {lat, lng}, or NaN. */
+  function haversineMeters(a, b) {
+    var p = pointOf(a), q = pointOf(b);
+    if (!p || !q) return NaN;
+    var rad = function (d) { return d * Math.PI / 180; };
+    var dLat = rad(q.lat - p.lat), dLng = rad(q.lng - p.lng);
+    var x = Math.pow(Math.sin(dLat / 2), 2)
+          + Math.cos(rad(p.lat)) * Math.cos(rad(q.lat)) * Math.pow(Math.sin(dLng / 2), 2);
+    return 2 * 6371008.8 * Math.asin(Math.min(1, Math.sqrt(x)));
+  }
+
+  /* Two address TEXTS: the same place? By map point when the host knows both,
+     else by normalised text (identical text is the same place by definition). */
+  function samePlace(a, b, h) {
+    if (h && typeof h.placeOf === 'function') {
+      var d = haversineMeters(h.placeOf(a), h.placeOf(b));
+      if (isFinite(d)) return d <= SAME_PLACE_METERS;
+    }
+    var na = normAddr(a), nb = normAddr(b);
+    return !!na && na === nb;
+  }
+
+  /* The first offending {pickup, dropoff} index pair, or null. */
+  function samePlacePair(s, h) {
+    var pk = Array.isArray(s.pickupStops) ? s.pickupStops : [];
+    var dp = Array.isArray(s.dropoffStops) ? s.dropoffStops : [];
+    for (var i = 0; i < pk.length; i++) {
+      if (!normAddr(pk[i])) continue;
+      for (var j = 0; j < dp.length; j++) {
+        if (normAddr(dp[j]) && samePlace(pk[i], dp[j], h)) return { pickup: i, dropoff: j };
+      }
+    }
+    return null;
   }
 
   function firstEmpty(arr) {
@@ -448,6 +513,10 @@
     toWebShape: toWebShape,
     toPrototypeShape: toPrototypeShape,
     normAddr: normAddr,
+    SAME_PLACE_METERS: SAME_PLACE_METERS,
+    haversineMeters: haversineMeters,
+    samePlace: samePlace,
+    samePlacePair: samePlacePair,
     firstEmpty: firstEmpty,
     assertInvariants: assertInvariants
   };
