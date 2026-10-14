@@ -18099,9 +18099,9 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
          switch (Delivery / Moving; Ride has none). */
       samePlace: function(o){
         o = o || {};
-        var tip = !o.switchLabel ? '' : (o.category === 'moving'
-          ? 'Moving within one place? Turn on \u201c' + o.switchLabel + '\u201d'
-          : 'No preference where it\u2019s bought? Turn on \u201c' + o.switchLabel + '\u201d');
+        /* John 10/14: the pill reads the switch's own name (one line, as on
+           the app's fixed-height pills). */
+        var tip = o.switchLabel || '';
         /* G40-308 Guide A (owner 10/14: "308 shapes, 595 colours"): centred
            icon in the amber info tint (never red), h4 title, body, then the
            primary and an outlined secondary stacked. */
