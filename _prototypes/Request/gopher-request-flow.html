@@ -2659,7 +2659,7 @@ function openAgeKwModal(){
     +'<button class="js-agekw-no" style="width:100%;margin-top:12px;border:0;background:#c44257;color:#fff;border-radius:13px;padding:14px;font-family:Nunito;font-weight:900;font-size:14px;cursor:pointer;">No — this is NOT age-restricted</button>'
   +'</div>';
   document.body.appendChild(ov);
-  ov.querySelector('.js-agekw-yes').onclick=function(){ if(state.category!=='delivery') state.category='delivery'; state.ageRestricted=true;
+  ov.querySelector('.js-agekw-yes').onclick=function(){ var fromRide=state.category==='ride'; if(state.category!=='delivery') state.category='delivery'; if(fromRide) state.description=state.specialInstructions||''; state.ageRestricted=true;   // John 10/14 "Carry it over": a ride's special instructions become the Delivery description (web + app alike)
     // Mirror the toggle's smart default (web parity): confirming age-restricted via the
     // keyword modal also enables "purchase needed" — skips a step the user would almost
     // certainly have to do anyway.

@@ -18410,7 +18410,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         // Junk volume tier / hourly pay can't survive the route into Delivery),
         // then the age flags below are set on the clean slate. No-op if already
         // Delivery, which leaves an in-progress Delivery request untouched.
+        // The text that tripped the check moves with it (John 10/14, "Carry it
+        // over"; the app's deliveryCarryValues does the same): a ride's special
+        // instructions become the Delivery description. They arrived empty before.
+        const fromRide = state.category === 'ride';
         switchCategory('delivery');
+        if(fromRide) state.description = state.specialInstructions || '';
         state.ageRestricted = true;
         // Mirror the smart default (toggle-click path): ~99% of
         // age-restricted deliveries need a purchase, so confirming via the
