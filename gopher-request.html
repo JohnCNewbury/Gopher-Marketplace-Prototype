@@ -15689,7 +15689,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         ` : ''}
         <div class="toggle-row">
           <button class="toggle-switch ${state.itemsPurchased?'on':''}" data-toggle="itemsPurchased" aria-label="Items purchased toggle"></button>
-          <span class="tr-label">Slide if this delivery requires a purchase needed
+          <span class="tr-label">Slide if this delivery requires a purchase
             <span class="info-tip">
               <button class="info-btn" aria-label="Cost of items info">?</button>
               <div class="info-popover" role="tooltip">
@@ -20613,7 +20613,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
   <div class="gr-modal" role="dialog" aria-modal="true" aria-labelledby="agePurchaseTitle">
     <div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">⚠️</div>
     <h4 id="agePurchaseTitle">Most age-restricted orders need a purchase</h4>
-    <p class="gr-modal-sub">You marked this age-restricted but turned off <b>Purchase needed</b>. Almost all age-restricted deliveries require a purchase — without one, your card is authorized for a lower amount, and if your Gopher needs to add items later, re-authorizing your card can fail and stall your order.</p>
+    <p class="gr-modal-sub">You marked this age-restricted but turned off <b>This delivery requires a purchase</b>. Almost all age-restricted deliveries require a purchase — without one, your card is authorized for a lower amount, and if your Gopher needs to add items later, re-authorizing your card can fail and stall your order.</p>
     <p style="text-align:center;background:#fdf3f4;border:1px solid #f0d2d7;border-radius:12px;padding:13px 15px;margin:4px 0 16px;font-family:'DM Sans',sans-serif;font-size:13px;color:#8a3a46;line-height:1.55;">Only skip if you truly don't need anything purchased — e.g. a prescription pickup or pre-paid alcohol.</p>
     <label for="agePurchaseDontShow" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#6b7280;margin:2px 0 14px;cursor:pointer;">
       <input type="checkbox" id="agePurchaseDontShow" style="width:16px;height:16px;accent-color:#1CB061;"> Don't show me this again
