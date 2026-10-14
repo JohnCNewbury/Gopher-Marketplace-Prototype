@@ -361,3 +361,57 @@ window.GopherAgeSupplement = [
   "zyn"
 
 ];
+
+/* ── EXCEPTIONS: a keyword that is NOT age-restricted in this company ──────────
+   OWNER RULING 2026-10-14 (John, "P2" + "P4"), term by term, each MEASURED before
+   applying over all 65,325 production orders (Documentation/Dashboard/data/master/
+   Orders.csv): together they release 14 orders that were not age-restricted and
+   lose NO real one. Why it matters now: since the 10/11 under-21 block, a false hit
+   is a dead end for an under-21 requester — not one extra question.
+
+   How it is read (findAgeRestrictedKeyword, gopher-request-logic.js): when a match
+   of the KEY term has one of `before` as the word right in front of it, or one of
+   `after` among the next `afterWithin` words (default 1), THAT occurrence is skipped
+   and the search goes on — so "wine glasses and a bottle of wine" still flags on the
+   second "wine". Keys and words are lowercase letters/digits only. Plain lists, not
+   regexes, on purpose: the Request app copies this table (G40-623) as JSON.
+
+   ⛔ NOT here, by ruling: "weed" ("P3", declined 10/14 — weed eater / killer stay
+   flagged). And "wine cooler" stays caught (it is a drink): do not add "cooler".
+   Re-measure before adding a word — an exception is a hole in a compliance gate. */
+window.GopherAgeExceptions = {
+  /* P2 — "game" is Game cigarillos ("game grape", "game blue", "a game cigarello"
+     all still flag). Excepted only next to words that make it a GAME. 13 released, 0 lost.
+     No articles or pronouns in `before`: "a game cigarello" is a real order. */
+  "game": {
+    before: ["board", "video", "card", "cards", "spikeball", "pong", "ball", "baseball",
+             "football", "basketball", "soccer", "hockey", "golf", "tennis", "volleyball",
+             "softball", "play", "playing", "party", "lawn", "yard", "dice", "puzzle",
+             "trivia", "arcade", "bingo", "chess", "xbox", "playstation", "ps4", "ps5",
+             "nintendo", "switch", "wii", "pc", "computer", "mobile", "phone", "team",
+             "big", "home", "away", "playoff"],
+    after:  ["day", "night", "nights", "console", "consoles", "controller", "controllers",
+             "system", "ticket", "tickets", "room", "table", "tables", "piece", "pieces",
+             "cartridge", "disc", "disk", "boy", "cube", "stop", "board", "boards", "card",
+             "cards", "set", "sets", "plan", "time", "show", "tonight", "today", "tomorrow",
+             "ball", "balls", "bag", "bags", "jersey", "jerseys", "gear"]
+  },
+  /* P4 — the cases the 10/11 dead-end review raised. Near-zero in production
+     (1 released, 0 lost), kept because each is unambiguous. */
+  "1792": {       /* 1792 Bourbon vs a street number: "1792 Maple Ave", "1792 N Main St" */
+    before: ["apt", "unit", "suite", "no", "number"],
+    after:  ["n", "s", "e", "w", "north", "south", "east", "west", "st", "street", "ave",
+             "avenue", "rd", "road", "dr", "drive", "ln", "lane", "blvd", "boulevard", "ct",
+             "court", "way", "pl", "place", "cir", "circle", "hwy", "highway", "pkwy",
+             "parkway", "trl", "trail", "apt", "unit", "suite"],
+    afterWithin: 3
+  },
+  "corona": {     /* the beer vs the virus / a place */
+    after:  ["virus", "vaccine", "test", "tests", "mask", "masks", "del"]
+  },
+  "wine": {       /* the drink vs the furniture / glassware / a restaurant. NOT "cooler". */
+    after:  ["fridge", "fridges", "rack", "racks", "glass", "glasses", "opener", "openers",
+             "cabinet", "cabinets", "bar", "cellar", "key", "stopper", "stoppers", "aerator",
+             "tote", "charms"]
+  }
+};

@@ -13311,6 +13311,36 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   // isn't worth it — it's a one-line edit.
      // hand-maintained supplement is SHARED — edit assets/js/gopher-age-supplement.js, never here
   function findAgeRestrictedKeyword(text){ var L=window.GopherRequestLogic; return L ? L.findAgeRestrictedKeyword(text) : null; }   // SHARED — detection lives in assets/js/gopher-request-logic.js (brain + supplement)
+  function findAgeRestrictedMatch(text){ var L=window.GopherRequestLogic; return (L && L.findAgeRestrictedMatch) ? L.findAgeRestrictedMatch(text) : null; }   // SHARED — { term, start, end }
+  /* ⛔ OWNER RULING 2026-10-13 ("Both"): the under-21 sheet never names the word (his
+     10/11 "Block, neutral words"), so a requester could not tell WHAT to edit -- a dead
+     end on any false hit. When the sheet closes ("Edit my request", or a tap outside),
+     the word is SELECTED in their own description box instead: the exact occurrence
+     that tripped the gate (findAgeRestrictedMatch -- a text search cannot know which
+     "wine" in "wine glasses and a bottle of wine"), so typing replaces it. The sheet
+     itself is untouched. Read from the box's CURRENT value, so the offsets are its own. */
+  /* ⛔ WHICH free text the age check reads (owner 2026-10-14, G40-623): the description --
+     and on RIDE, which has no description on web or app, the special instructions, "as a
+     safety precaution ... in case someone writes 'need a ride the the liquor store' or
+     'need a ride to pick up cigs'". The same sheets apply. One place, so the scan, the
+     "No" path and the highlight can never read different fields. */
+  function ageScanField(){
+    return state.category === 'ride'
+      ? { text: state.specialInstructions || '', inputId: 'specialInstructionsInput' }
+      : { text: state.description || '',         inputId: 'descriptionInput' };
+  }
+  function selectAgeTermOnClose(ov, inputId){
+    if(!ov) return;
+    ov.addEventListener('click', function(e){
+      if(e.target !== ov && !(e.target.classList && e.target.classList.contains('grx'))) return;
+      var d = document.getElementById(inputId || 'descriptionInput');
+      if(!d) return;
+      var m = findAgeRestrictedMatch(d.value);
+      try { d.focus({ preventScroll: true }); } catch(_){ try { d.focus(); } catch(__){} }
+      if(m && m.start >= 0){ try { d.setSelectionRange(m.start, m.end); } catch(_){} }
+      try { d.scrollIntoView({ block: 'center' }); } catch(_){}
+    });
+  }
 
   // ---- Suggested-offer model (Step 5 "offer suggestion" helper) ----
   // Offer is based on the cost of items (COG); region (NC vs other) nudges it.
@@ -17198,7 +17228,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     });
     /* Same no-re-render pattern: re-rendering per keystroke drops focus mid-word. */
     const $si = $content.querySelector('#specialInstructionsInput');
-    if($si) $si.addEventListener('input', () => { state.specialInstructions = $si.value; });
+    if($si) $si.addEventListener('input', () => {
+      state.specialInstructions = $si.value;
+      // Ride's age check reads this field (G40-623), so editing it re-arms the check
+      // exactly as editing the description does.
+      if(state.category === 'ride'){ state.ageKeywordAck = false; state.idRequiredAtCompletion = false; }
+    });
 
     // Update state on input WITHOUT a full re-render so the field keeps focus
     // while typing. Values are picked up when the review step renders.
@@ -17760,13 +17795,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // block Continue and confirm; the modal's "Yes" routes it to age-restricted
     // Delivery, "No" force-flags ID-at-drop-off (no silent bypass).
     if(state.step === 2 && !state.ageKeywordAck && !(state.category === 'delivery' && state.ageRestricted)){
-      const kw = findAgeRestrictedKeyword(state.description);
+      const scan = ageScanField();   // the description, or Ride's special instructions
+      const kw = findAgeRestrictedKeyword(scan.text);
       if(kw){
         /* D-038 part 2: under-21 is a DEAD STOP, never the Yes/No confirmation.
            ageKeywordAck is deliberately NOT set, so it blocks on every attempt
            until the term is removed -- an ack would let one dismissal through. */
         if(!canSeeAgeRestricted()){
-          if(window.G40_REQ) G40_REQ.ageRestrictedNotEligible(kw);
+          if(window.G40_REQ) selectAgeTermOnClose(G40_REQ.ageRestrictedNotEligible(), scan.inputId);
           return;
         }
         // Block Continue only if the confirmation actually opened; if the modal
@@ -17902,20 +17938,24 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
          thing they must never be offered (owner: "No-one under 21 should see anything
          AR or trustshield related"). So they get a dead-stop instead, with no mention
          of TrustShield and no route to enable it.
-         The term is named because a block with no reason is unactionable -- they have
-         to know WHICH word to remove. */
-      ageRestrictedNotEligible: function(kw){
-        var safe = String(kw == null ? 'that item' : kw)
-                     .replace(/[&<>"]/g, function(c){
-                       return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; });
+         ~~The term is named because a block with no reason is unactionable.~~ SUPERSEDED:
+         the sheet names nothing (owner 10/11, below); the word is SELECTED in the
+         requester's own description box when the sheet closes (owner 10/13, "Both")
+         -- see selectAgeTermOnClose(). They still learn WHICH word to remove. */
+      /* ⛔ OWNER-PICKED WORDING, John 2026-10-11 ~11:2x ET, verbatim and NOT to be
+         reworded: "This request includes an item we can't deliver for you. Please edit
+         your request to continue." One button, "Edit my request".
+         NO term, NO age, NO "21", NO ID, NO "age-restricted" -- the ruling was "Block,
+         neutral words", and he was told it fires on EVERY web category before choosing
+         it. My first version named the matched term and said "age-restricted items
+         cannot be requested from this account"; that is what this replaces.
+         `kw` is deliberately NOT a parameter any more: the sentence cannot mention the
+         term, so passing it would only invite someone to put it back. */
+      ageRestrictedNotEligible: function(){
         return reqModal('<div class="gr-modal-icon gr-modal-icon-warn" '
           + 'style="font-size:26px;line-height:1;">\u26d4</div>'
-          + '<h4>This item can\u2019t be requested</h4>'
-          + '<p class="gr-modal-sub">Your description mentions <b>\u201c' + safe
-          + '\u201d</b>, which is an age-restricted item. Age-restricted items '
-          + 'cannot be requested from this account. Please remove it from your '
-          + 'description to continue.</p>'
-          + '<button type="button" class="gr-modal-btn grx">Got it</button>'); },
+          + '<p class="gr-modal-sub">This request includes an item we can\u2019t deliver for you. Please edit your request to continue.</p>'
+          + '<button type="button" class="gr-modal-btn grx">Edit my request</button>'); },
       phoneEntered: function(){ return wirePrimary(reqModal('<div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">📵</div><h4>Remove the phone number</h4><p class="gr-modal-sub">For your privacy we don’t broadcast phone numbers. Once your request is submitted you’ll be able to text and/or call your Gopher in-app. Please edit your message to remove it.</p><button type="button" class="gr-modal-btn grx">Edit my message</button>'+b2('Cancel')), function(){ var d=document.getElementById('descriptionInput'); if(d) d.focus(); }); },
       paymentNotAuthorized: function(){ return wirePrimary(reqModal('<div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">💳</div><h4>Update your card to keep this request</h4><p class="gr-modal-sub">A Gopher accepted, but your bank didn’t authorize the payment. Update your card in the next <b>5 minutes</b> and we’ll reassign it to them. If they’re no longer available, we’ll rebroadcast to nearby Gophers immediately.</p><button type="button" class="gr-modal-btn grx">Update payment</button>'), openAddPay); },
       pickupSameAsDropoff: function(){ return reqModal('<div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">📍</div><h4>Pick-up and drop-off are the same</h4><p class="gr-modal-sub">If you don’t have a preferred pickup spot, slide <b>“Gopher can purchase from anywhere.”</b> (Moving at one location? Slide the pick-up toggle to <b>“Single-location move.”</b>)</p><button type="button" class="gr-modal-btn grx">Got it</button>'); },
@@ -18144,7 +18184,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       if(noBtn) noBtn.addEventListener('click', () => {
         state.ageKeywordAck = true;
         // If a keyword is still present, flag ID-required-at-completion and proceed.
-        if(findAgeRestrictedKeyword(state.description)) state.idRequiredAtCompletion = true;
+        if(findAgeRestrictedKeyword(ageScanField().text)) state.idRequiredAtCompletion = true;
         overlay.hidden = true;
         advanceFromJobDetails();
       });
@@ -26546,6 +26586,24 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
   // card, the modal and the recap all round identically and speak the same fee language.
   const _adjFmt = (n) => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
 
+  // G40-621 — the receipt follows the apps' rule (G40-101; backend receipt_missing,
+  // Request CostAdjustmentReceipt): the photo when the Gopher attached one; "No
+  // receipt provided" when the cost of items went UP with none (the Gopher skipped
+  // it after being warned); nothing when the items did not go up. Stated plainly,
+  // no caution flag (owner 9/13). Compared in cents, as the server does.
+  function adjReceiptState(snap, P){
+    if(P && P.receipt) return 'photo';
+    const cents = (v) => Math.round((Number(v) || 0) * 100);
+    const A = P && P.adjusted;
+    return cents(A && A.costOfItems) > cents(snap && snap.costOfItems) ? 'missing' : 'none';
+  }
+  function adjReceiptHtml(snap, P, cap){
+    const s = adjReceiptState(snap, P);
+    if(s === 'photo') return `<div class="rcpt-row">${window.__receiptThumb(P.receipt.src, 'TAP TO ZOOM')}<div class="rcpt-cap">${cap}</div></div>`;
+    if(s === 'missing') return `<p class="rcpt-none" data-rcpt-missing>No receipt provided</p>`;
+    return '';
+  }
+
   // Compact card — terracotta-bordered, current total → new total tiles + the "?".
   function buildAdjustmentCard(r){
     const snap = r && r.reviewSnapshot;
@@ -26564,8 +26622,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
           <div><div class="adj-h">Cost adjustment requested</div><div class="adj-s">Your approval is needed before the job continues</div></div>
         </div>
         <div class="adj-body">
+          ${adjReceiptHtml(snap, P, '<b>Receipt attached.</b> Tap to zoom in and verify the line items and total before you approve.')}
           <div class="adj-reason"><span class="adj-who">${workerName}:</span> “${P.comment}”</div>
-          ${P.receipt ? `<div class="rcpt-row">${window.__receiptThumb((P.receipt && P.receipt.src), 'TAP TO ZOOM')}<div class="rcpt-cap"><b>Receipt attached.</b> Tap to zoom in and verify the line items and total before you approve.</div></div>` : ''}
           <div class="adj-prices">
             <div class="adj-price old"><div class="adj-lbl">Current total</div><div class="adj-val">${fmt(snap.total)}</div></div>
             <div class="adj-arrow">→</div>
@@ -26797,13 +26855,13 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         <div class="gr-modal gr-m--flush" role="dialog" aria-modal="true" aria-label="Cost adjustment breakdown">
           <div class="ca-head"><h3>Cost adjustment</h3><button class="ca-x" data-adj-close aria-label="Close">✕</button></div>
           <div class="ca-body">
+            ${adjReceiptState(snap, P) === 'none' ? '' : `<div class="ca-eyebrow">Receipt</div>${adjReceiptHtml(snap, P, 'Pinch or scroll to zoom the receipt and confirm the total before approving.')}`}
             <div class="ca-eyebrow">Adjustment details</div>
             ${lines}
             <div class="ca-comments">
               <div class="ca-cl">Comments</div>
               <div class="ca-cbox">${P.comment}</div>
             </div>
-            ${P.receipt ? `<div class="ca-eyebrow">Receipt</div><div class="rcpt-row">${window.__receiptThumb((P.receipt && P.receipt.src), 'TAP TO ZOOM')}<div class="rcpt-cap">Pinch or scroll to zoom the receipt and confirm the total before approving.</div></div>` : ''}
             <div class="ca-actions">
               <button class="ca-approve" data-adj-action="approve">Approve</button>
               <button class="ca-decline" data-adj-action="decline">Decline</button>
@@ -31620,6 +31678,7 @@ function initPersonalEdit(){
   .rcpt-row{display:flex;gap:11px;align-items:center;margin:11px 0}
   .rcpt-row .rcpt-cap{font:500 12.5px/1.5 system-ui,-apple-system,sans-serif;color:#5b6472}
   .rcpt-row .rcpt-cap b{color:#111;font-weight:700}
+  .rcpt-none{margin:11px 0;font:400 13px/1.5 system-ui,-apple-system,sans-serif;color:#74777C}
   .rcpt-viewer{position:fixed;inset:0;z-index:99999;background:rgba(12,12,14,.93);display:none;
     align-items:center;justify-content:center;touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none}
   .rcpt-viewer.on{display:flex}
