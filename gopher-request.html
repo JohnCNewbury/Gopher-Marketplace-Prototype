@@ -17856,6 +17856,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     return (window.GopherStepGates && GopherStepGates.samePlacePair(state, host)) || { pickup:0, dropoff:0 };
   }
   function flagSamePlace(pair){
+    /* One flag per field, however many times Continue is tapped: clear the
+       last set first (found by John on the live site 10/14: the note
+       stacked on every tap). */
+    $content.querySelectorAll('.same-place-flag').forEach(function(n){ n.classList.remove('same-place-flag'); });
+    $content.querySelectorAll('.same-place-note').forEach(function(n){ n.remove(); });
     [['pickup', pair.pickup, 'Same place as the destination'],
      ['dropoff', pair.dropoff, 'Same place as the pick-up']].forEach(function(f){
       const input = $content.querySelector('input[data-locedit="' + f[0] + '"][data-idx="' + f[1] + '"]');
