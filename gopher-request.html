@@ -4618,9 +4618,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
   /* ─── Age-restricted keyword modal ─── */
   .gr-modal-icon-warn { background:#fdeaec; }
-  .age-kw-term {
-    font-family:'Nunito',sans-serif; font-weight:900; color:#c44257;
-  }
   .age-kw-consequences {
     text-align:center; background:#fdf3f4; border:1px solid #f0d2d7; border-radius:12px;
     padding:13px 15px; margin:4px 0 16px;
@@ -4633,8 +4630,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     box-shadow:0 6px 18px rgba(196,66,87,0.3);
   }
   .gr-modal-btn-danger:hover { background:#a83648; }
-  /* Age-restricted modal — clear separation between the two stacked choices */
-  #ageKwOverlay .gr-modal-btn + .gr-modal-btn { margin-top:12px; }
 
   /* ─── Personal info edit modal — canonical Gopher profile form (mirrors Connect) ─── */
   .gr-modal.pe-modal { max-width:600px; text-align:left; padding:26px 26px 22px; max-height:90vh; overflow-y:auto; }
@@ -18090,9 +18085,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
          cannot be requested from this account"; that is what this replaces.
          `kw` is deliberately NOT a parameter any more: the sentence cannot mention the
          term, so passing it would only invite someone to put it back. */
+      /* G40-308 Guide A (owner 10/14: "308 shapes, 595 colours"), the same
+         sheet as the app's: the neutral amber icon circle (never red), the
+         h4 title the owner picked (U21-TITLE = A, 1:46 PM ET 10/14: "One
+         thing to change"), his sentence, one kit pill. The title is neutral
+         too: no word, age, 21+ or ID (DL-07). */
       ageRestrictedNotEligible: function(){
-        return reqModal('<div class="gr-modal-icon gr-modal-icon-warn" '
-          + 'style="font-size:26px;line-height:1;">\u26d4</div>'
+        return reqModal('<div class="gr-modal-icon" '
+          + 'style="font-size:26px;line-height:1;">\u270f\ufe0f</div>'
+          + '<h4>One thing to change</h4>'
           + '<p class="gr-modal-sub">This request includes an item we can\u2019t deliver for you. Please edit your request to continue.</p>'
           + '<button type="button" class="gr-modal-btn grx">Edit my request</button>'); },
       phoneEntered: function(){ return wirePrimary(reqModal('<div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">📵</div><h4>Remove the phone number</h4><p class="gr-modal-sub">For your privacy we don’t broadcast phone numbers. Once your request is submitted you’ll be able to text and/or call your Gopher in-app. Please edit your message to remove it.</p><button type="button" class="gr-modal-btn grx">Edit my message</button>'+b2('Cancel')), function(){ var d=document.getElementById('descriptionInput'); if(d) d.focus(); }); },
@@ -20476,10 +20477,14 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
       </svg>
     </div>
     <h4 id="ageKwTitle">This looks age-restricted</h4>
-    <p class="gr-modal-sub">Your request mentions <span class="age-kw-term">"<span id="ageKwTerm">this item</span>"</span>, which is commonly an age-restricted item. To keep everyone compliant with legal and safe-guarding protocols, please confirm whether this is an age-restricted request before continuing.</p>
+    <p class="gr-modal-sub">Your request mentions <b>"<span id="ageKwTerm">this item</span>"</b>, which is commonly an age-restricted item. To keep everyone compliant with legal and safe-guarding protocols, please confirm whether this is an age-restricted request before continuing.</p>
     <p class="age-kw-consequences">Submitting an age-restricted request <b>without a valid ID at completion</b> means the worker <b>cannot release the items</b>. The order may be canceled, you may still be charged worker time/fees, and repeat issues can lead to account review.</p>
     <button type="button" class="gr-modal-btn" id="ageKwYes">Yes — this IS an age-restricted request</button>
-    <button type="button" class="gr-modal-btn gr-modal-btn-danger" id="ageKwNo">No — this is NOT age-restricted</button>
+    <!-- G40-308 Guide A + owner's pick AR-NO-BUTTON = A (2:23 PM ET 10/14):
+         the outlined secondary, not red (red is for destructive confirms only),
+         stacked under Yes as the app's BackPill. Spacing inline, as the
+         sibling sheets do (no local modal CSS). -->
+    <button type="button" class="gr-modal-btn gr-modal-btn-secondary" id="ageKwNo" style="margin-top:8px;">No — this is NOT age-restricted</button>
   </div>
 </div>
 
