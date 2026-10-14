@@ -4487,9 +4487,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .gr-modal-overlay[hidden] { display:none; }
   /* G40-274 — same-place sheets (owner picks 10/14: S1 = B, S2 = C). Amber,
      never red: red is for a failed payment only. */
-  .gr-modal .sp-link { display:block; width:100%; margin-top:10px; background:none; border:0;
-    color:var(--navy); font:inherit; font-size:13.5px; font-weight:700; cursor:pointer; }
-  .gr-modal .sp-blunt { font-size:17px; line-height:1.35; }
+  /* (the sheets themselves are G40-308 Guide A: .gr-modal-icon, h4,
+     .gr-modal-sub, .gr-modal-btn + .gr-modal-btn-secondary; nothing local) */
   .field-input.same-place-flag { outline:2px solid #E59A1A; outline-offset:2px; }
   .same-place-note { font-size:12px; font-weight:700; color:#9A5B00; margin:4px 2px 0; }
   .gr-modal {
@@ -18108,12 +18107,17 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         var tip = !o.switchLabel ? '' : (o.category === 'moving'
           ? 'Moving within one place? Turn on \u201c' + o.switchLabel + '\u201d'
           : 'No preference where it\u2019s bought? Turn on \u201c' + o.switchLabel + '\u201d');
+        /* G40-308 Guide A (owner 10/14: "308 shapes, 595 colours"): centred
+           icon in the amber info tint (never red), h4 title, body, then the
+           primary and an outlined secondary stacked. */
         var head = o.again
-          ? '<h4 class="sp-blunt">To proceed with your request, the pick up and drop off must be different.</h4>'
-          : '<h4>Same pick-up and destination</h4><p class="gr-modal-sub">Your pick-up and destination are the same place. Change one so your worker knows where to go.</p>';
+          ? '<div class="gr-modal-icon" style="font-size:26px;line-height:1;">\u26a0\ufe0f</div>'
+            + '<h4>To proceed with your request, the pick up and drop off must be different.</h4>'
+          : '<div class="gr-modal-icon" style="font-size:26px;line-height:1;">\ud83d\udccd</div>'
+            + '<h4>Same pick-up and destination</h4><p class="gr-modal-sub">Your pick-up and destination are the same place. Change one so your worker knows where to go.</p>';
         var ov = reqModal(head
           + '<button type="button" class="gr-modal-btn grx" data-sp="change">Change an address</button>'
-          + (tip ? '<button type="button" class="sp-link grx" data-sp="switch">' + tip + '</button>' : ''));
+          + (tip ? '<button type="button" class="gr-modal-btn gr-modal-btn-secondary grx" data-sp="switch" style="margin-top:8px;">' + tip + '</button>' : ''));
         var c = ov.querySelector('[data-sp="change"]'), w = ov.querySelector('[data-sp="switch"]');
         if(c && o.onChange) c.addEventListener('click', function(){ setTimeout(o.onChange, 0); });
         if(w && o.onSwitch) w.addEventListener('click', function(){ setTimeout(o.onSwitch, 0); });
