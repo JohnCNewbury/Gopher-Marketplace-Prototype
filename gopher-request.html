@@ -13218,6 +13218,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   };
   const AGE_FEE = 1.99;          // Age-Restricted Delivery surcharge (Request) — workbook "Gopher App" A/R Fee
   const INSTANT_TRANSFER_RATE = 0.08;  // 8% — always applied
+  // G40-625: the one 8% formula (web = server = app). Base in dollars; the
+  // base is taken to whole cents first, the 8% is rounded to the nearest
+  // cent (an exact half-cent cannot occur on whole cents).
+  function itfCents(baseDollars){
+    const baseCents = Math.round((Number(baseDollars) || 0) * 100);
+    return Math.round(baseCents * INSTANT_TRANSFER_RATE) / 100;
+  }
+  window.__itfCents = itfCents;   // for the bid card (__bidBreakdown), a later script
 
   // Promo codes. GOPHER50 takes 50% off the TOTAL Request Fee. The worker's
   // COG+Offer is never discounted. feeMultiplier is what each fee line is ×'d by.
@@ -13268,8 +13276,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     const baseAge = (state.category === 'delivery' && state.ageRestricted) ? AGE_FEE : 0;
     const feeSubtotal = baseGopher + baseAge;   // Gopher + A/R, pre-ITF
 
-    // ITF — 8% of the FULL, pre-discount base. Unchanged by any discount.
-    const instantTransfer = INSTANT_TRANSFER_RATE * (cogOffer + feeSubtotal);
+    // ITF — 8% of the FULL, pre-discount base (the FULL A/R fee, before the
+    // TrustShield $1). Unchanged by any discount. G40-625: rounded to the
+    // nearest cent, in cents, exactly as the server does
+    // (gopher-backend-api helpers/instant_transfer_fee.js), so every fee line
+    // adds up to the total and the card is charged what this screen shows.
+    const instantTransfer = itfCents(cogOffer + feeSubtotal);
     const fullInstantTransfer = instantTransfer;
 
     // Discountable bundle = the whole fee side INCLUDING the ITF (canonical sheet).
@@ -26860,9 +26872,9 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
      computeConnectFee uses: flat Gopher + Age fees, then instant transfer as a
      rate on (COG + offer + those flat fees), then discounts.
 
-     The ITF rate is DERIVED from the snapshot rather than hardcoded at 0.08, so
-     if the canonical rate ever changes this follows it instead of quietly
-     disagreeing with the review screen. */
+     The ITF is the one formula (G40-625, window.__itfCents: 8% of the base,
+     nearest cent), the same function the review screen uses, so the two
+     cannot disagree. */
   window.__bidBreakdown = function(r, w){
     const snap = (r && r.reviewSnapshot) || {};
     const fee  = snap.fee || {};
@@ -26873,14 +26885,18 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     const flatGopher = num(fee.fullGopherFee);
     const flatAge    = num(fee.fullAgeFee);
 
-    // Original base the snapshot's ITF was computed on, used only to recover the rate.
-    const origBase = num(snap.costOfItems) + num(snap.workerPay) + flatGopher + flatAge;
-    const itfRate  = (origBase > 0 && num(fee.fullInstantTransfer) > 0)
-      ? num(fee.fullInstantTransfer) / origBase
-      : 0;
+    // G40-625: the snapshot's ITF is now rounded to the cent, so dividing it by
+    // its base no longer recovers the rate exactly. A snapshot that carried an
+    // ITF gets the one formula on the bid's base; one with none (a service
+    // deal) still gets none.
+    const hasItf = num(fee.fullInstantTransfer) > 0;
 
     const base = cog + offer + flatGopher + flatAge;
-    const itf  = itfRate * base;
+    const itf  = hasItf
+      ? (typeof window.__itfCents === 'function'
+          ? window.__itfCents(base)
+          : Math.round(Math.round(base * 100) * 0.08) / 100)
+      : 0;
     const feesPre = flatGopher + flatAge + itf;
 
     /* Discounts carry across as the snapshot recorded them, capped so they can
