@@ -4618,12 +4618,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
   /* ─── Age-restricted keyword modal ─── */
   .gr-modal-icon-warn { background:#fdeaec; }
-  .age-kw-consequences {
-    text-align:center; background:#fdf3f4; border:1px solid #f0d2d7; border-radius:12px;
-    padding:13px 15px; margin:4px 0 16px;
-    font-family:'DM Sans',sans-serif; font-size:13px; color:#8a3a46; line-height:1.55;
-  }
-  .age-kw-consequences b { color:#c44257; font-weight:800; }
 
   .gr-modal-btn-danger {
     background:#c44257; color:#ffffff;
@@ -20478,7 +20472,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     </div>
     <h4 id="ageKwTitle">This looks age-restricted</h4>
     <p class="gr-modal-sub">Your request mentions <b>"<span id="ageKwTerm">this item</span>"</b>, which is commonly an age-restricted item. To keep everyone compliant with legal and safe-guarding protocols, please confirm whether this is an age-restricted request before continuing.</p>
-    <p class="age-kw-consequences">Submitting an age-restricted request <b>without a valid ID at completion</b> means the worker <b>cannot release the items</b>. The order may be canceled, you may still be charged worker time/fees, and repeat issues can lead to account review.</p>
+    <p style="text-align:center;background:#fdf3f4;border:1px solid #f0d2d7;border-radius:12px;padding:13px 15px;margin:4px 0 16px;font-family:'DM Sans',sans-serif;font-size:13px;color:#8a3a46;line-height:1.55;">Submitting an age-restricted request <b style="color:#c44257;font-weight:800;">without a valid ID at completion</b> means the worker <b style="color:#c44257;font-weight:800;">cannot release the items</b>. The order may be canceled, you may still be charged worker time/fees, and repeat issues can lead to account review.</p>
     <button type="button" class="gr-modal-btn" id="ageKwYes">Yes — this IS an age-restricted request</button>
     <!-- G40-308 Guide A + owner's pick AR-NO-BUTTON = A (2:23 PM ET 10/14):
          the outlined secondary, not red (red is for destructive confirms only),
@@ -20498,7 +20492,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     <div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">⚠️</div>
     <h4 id="agePurchaseTitle">Most age-restricted orders need a purchase</h4>
     <p class="gr-modal-sub">You marked this age-restricted but turned off <b>Purchase needed</b>. Almost all age-restricted deliveries require a purchase — without one, your card is authorized for a lower amount, and if your Gopher needs to add items later, re-authorizing your card can fail and stall your order.</p>
-    <p class="age-kw-consequences">Only skip if you truly don't need anything purchased — e.g. a prescription pickup or pre-paid alcohol.</p>
+    <p style="text-align:center;background:#fdf3f4;border:1px solid #f0d2d7;border-radius:12px;padding:13px 15px;margin:4px 0 16px;font-family:'DM Sans',sans-serif;font-size:13px;color:#8a3a46;line-height:1.55;">Only skip if you truly don't need anything purchased — e.g. a prescription pickup or pre-paid alcohol.</p>
     <label for="agePurchaseDontShow" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#6b7280;margin:2px 0 14px;cursor:pointer;">
       <input type="checkbox" id="agePurchaseDontShow" style="width:16px;height:16px;accent-color:#1CB061;"> Don't show me this again
     </label>
