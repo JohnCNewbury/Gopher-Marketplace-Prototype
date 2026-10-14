@@ -2310,7 +2310,7 @@ function renderStep7(){
     <div class="si-text"><h5>${haLabel} ${haNames.length>1?'have':'has'} first dibs</h5><p>${haLabel} will be alerted to your request immediately. If they accept, the job is theirs. We'll also broadcast your request to other workers if ${haSubject} not available.</p></div>
   </div>` : `<div class="si-band">
     <span class="si-ico">${svgIco('users')}</span>
-    <div class="si-text"><h5>${interested} ${isGophW()?'Gopher':'worker'}${interested!==1?'s':''} already interested</h5><p>Review profiles, hire, or consider ${isGophW()?'Gophers':'workers'} from your dashboard.</p></div>
+    <div class="si-text"><h5>${interested} ${isGophW()?'Gopher':'worker'}${interested!==1?'s':''} already interested</h5><p>Review profiles, hire, or message ${isGophW()?'Gophers':'workers'} from your dashboard.</p></div>
   </div>`}
   ${''/* DEMO sim bars — web parity (76a3b9c / f48e261). Both modals have REAL triggers
        that this prototype cannot receive: expiredInterestedWorkers fires at the EXPIRY

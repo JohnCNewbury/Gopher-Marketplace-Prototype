@@ -8257,16 +8257,35 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .wsection-hired .wsection-head { color:var(--green-dark); }
   .wsection-hired .wsection-count { background:var(--green); }
-  .wsection-considered .wsection-head { color:var(--navy); }
-  .wsection-considered .wsection-count { background:var(--navy); }
 
+  /* ⛔ OPTION B (owner pick, 2026-10-14). Stage 2's lifted card, kept as a ROW:
+     the live app stacks these vertically because a phone is narrow, but on the
+     1120px dashboard a column layout pushes most candidates below the fold.
+     Same actions and order as the app (Hire / Deny / Message), Hire primary.
+     Before this the row was a 12px hairline box with no elevation — a third
+     radius value that existed nowhere else in the system. */
   .wcard {
-    display:flex; align-items:center; gap:13px;
-    background:white; border:1px solid #e7eaf2; border-radius:12px;
-    padding:11px 14px; margin-bottom:8px;
-    transition:border-color 0.15s, box-shadow 0.15s;
+    display:flex; align-items:center; gap:14px;
+    background:#fff; border:0; border-radius:16px;
+    box-shadow:0 4px 14px -4px rgba(0,36,97,.16), 0 1px 3px rgba(0,36,97,.06);
+    padding:14px 18px; margin-bottom:10px;
+    transition:transform 0.15s, box-shadow 0.15s;
   }
-  .wcard:hover { border-color:#d4d8e3; box-shadow:0 2px 10px rgba(26,42,94,0.06); }
+  .wcard:hover {
+    transform:translateY(-1px);
+    box-shadow:0 10px 22px -6px rgba(0,36,97,.22), 0 1px 3px rgba(0,36,97,.06);
+  }
+  /* Hire is the primary action and must LOOK it. It was 70px wide against
+     Consider's 78px — the primary action was the second-widest on the row. */
+  .wcard-actions .wbtn { height:38px; padding:0 16px; }
+  /* min-width, not padding: with padding alone Hire measured 80px against
+     Message's 82px, because "Message" is simply a longer word — the primary
+     action would have lost on width again, which is the defect this replaced
+     (it used to lose to "Consider" at 78px). Pin it so no label can outgrow it. */
+  .wcard-actions .wbtn-lg { min-width:112px; padding:0 26px; font-size:14px; }
+  /* The old inline "Text" link is now a duplicate of the Message button.
+     One affordance per action — the app has exactly one. */
+  .wcard .wcard-msg { display:none; }
   .wcard-fresh { border-color:rgba(51,217,117,0.4); background:linear-gradient(0deg,#fff,#f6fcf7); }
   .wcard-photo {
     width:42px; height:42px; border-radius:50%; overflow:hidden; flex-shrink:0;
@@ -16759,7 +16778,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           <h5>Broadcasting to Gophers nearby</h5>
           <p>You'll be notified the moment a Gopher accepts.</p>` : `
           <h5>${workers.length} ${saysGopher() ? 'Gopher' : 'worker'}${workers.length!==1?'s':''} already interested</h5>
-          <p>Review profiles, hire, or consider ${saysGopher() ? 'Gophers' : 'workers'} from your dashboard.</p>`}
+          <p>Review profiles, hire, or message ${saysGopher() ? 'Gophers' : 'workers'} from your dashboard.</p>`}
         </div>
         <button class="si-workers-btn attn-pulse" data-action="see-workers-dashboard">See ${saysGopher() ? 'Gophers' : 'workers'} in dashboard →</button>
       </div>`}
@@ -26230,18 +26249,13 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         if(isLive){
           // Job is running — only contact actions remain.
           actions = '';   // Review profile + Message render in the .wcard-sub row regardless
-        } else if(w.status === 'considered'){
-          actions = `
-            <button class="wbtn wbtn-green wbtn-lg" data-wact="approve" data-i="${realIdx}">Approve</button>
-            <button class="wbtn wbtn-red-soft" data-wact="deny" data-i="${realIdx}">Deny</button>
-          `;
         } else if(w.status === 'hired'){
           actions = `<button class="wbtn wbtn-red-ghost" data-wact="unhire" data-i="${realIdx}">Remove</button>`;
         } else {
           actions = `
             <button class="wbtn wbtn-green wbtn-lg" data-wact="hire" data-i="${realIdx}">Hire</button>
-            <button class="wbtn wbtn-navy-soft" data-wact="consider" data-i="${realIdx}">Consider</button>
             <button class="wbtn wbtn-red-soft" data-wact="deny" data-i="${realIdx}">Deny</button>
+            <button class="wbtn wbtn-navy-soft" data-wact="message" data-i="${realIdx}">Message</button>
           `;
         }
         const fresh = w.justAccepted && w.status==='interested';
@@ -26292,9 +26306,19 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         `;
       };
 
-      const interested = r.interestedWorkers.filter(w => w.status === 'interested' || !w.status);
+      /* ⛔ CONSIDER IS CONNECT-ONLY — removed from Request 2026-10-14 (John:
+         "Consider is a Connect only feature. Not to be part of Request"). The
+         live app agrees: src/component/live/OffersSheet.js has no Consider
+         anywhere, only Hire / Deny / Message. Nothing can CREATE status
+         'considered' here any more, but a record persisted before this change
+         still could carry it — and the v55 note above records what happens
+         then: with no Considered bucket the worker "silently disappears".
+         So 'considered' is folded back into interested rather than filtered
+         out, and card() gives it the same Hire / Deny / Message as any other
+         interested worker (it used to get Approve / Deny and no way to message).
+         Do not "tidy" that clause away. */
+      const interested = r.interestedWorkers.filter(w => w.status === 'interested' || w.status === 'considered' || !w.status);
       const hired      = r.interestedWorkers.filter(w => w.status === 'hired');
-      const considered = r.interestedWorkers.filter(w => w.status === 'considered');
       /* REQUEST HIRE RULE — Request hires exactly ONE worker, always. Individually selecting >1 worker is a CONNECT-ONLY capability (Connect's laborManagement radio: 'individually' | 'one-hires'). In Request the requester picks ONE lead worker who is responsible for bringing the rest. r.workersNeeded stays the CREW SIZE and still drives pricing/labels. Canon: owner 2026-07-27; matches live production. */
       const needed     = 1;
 
@@ -26507,21 +26531,18 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
           ${window.__g40PayDeclineBar ? __g40PayDeclineBar(hired.length) : ''}
           ${interestedBlock(interested)}
           ${window.__g40ExpirySimBar ? __g40ExpirySimBar(hired.length, interested.length) : ''}
-          ${section('Considered', considered.length, considered, 'wsection-considered')}
           ${counterSection}
         `;
       } else {
-        // Single-worker (or non-multi-individual) requests: Considered must
-        // ALSO render here. Without this section, a worker tagged status:
-        // 'considered' has no bucket to surface in and silently disappears
-        // from the list — visible on multi-individual flows but not here
-        // (the bug v55 fixed). Approve/Deny from this section still work.
+        // Single-worker (or non-multi-individual) requests. A worker tagged
+        // status:'considered' used to need its own section here or it silently
+        // disappeared (the bug v55 fixed); since Consider left Request
+        // (2026-10-14) that status is folded into the interested list above.
         workersHtml = `
           ${section('Hired', `${hired.length}`, hired, 'wsection-hired')}
           ${window.__g40PayDeclineBar ? __g40PayDeclineBar(hired.length) : ''}
           ${interestedBlock(interested)}
           ${window.__g40ExpirySimBar ? __g40ExpirySimBar(hired.length, interested.length) : ''}
-          ${section('Considered', considered.length, considered, 'wsection-considered')}
           ${counterSection}
         `;
       }
@@ -26695,7 +26716,6 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
              so tapping the amount can never alter the worker. */
           if(act === 'bidinfo'){ window.__openBidBreakdown(r, list[i]); return; }
           if(act === 'hire')          { list[i].status = 'hired'; list[i].justAccepted = false; }
-          else if(act === 'consider') { list[i].status = 'considered'; list[i].justAccepted = false; }
           else if(act === 'approve')  { list[i].status = 'hired'; }
           else if(act === 'unhire')   { list[i].status = 'interested'; }
           else if(act === 'deny')     { list.splice(i, 1); }
@@ -26708,7 +26728,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
           }
           else return;
           // Keep the header's "N workers interested" count in sync.
-          const stillInterested = list.filter(w => w.status === 'interested' || !w.status).length;
+          // 'considered' counts: it is folded into the interested list (Consider left Request).
+          const stillInterested = list.filter(w => w.status === 'interested' || w.status === 'considered' || !w.status).length;
           r.worker = `${stillInterested} worker${stillInterested!==1?'s':''} interested`;
           renderRequestDetail();
           renderActiveRequests();

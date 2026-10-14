@@ -1281,7 +1281,7 @@ function openCounterReview(order){
   };
 }
 // Workers Interested \u2014 the bids list for an open-to-bids request. Shows every bid on one screen (a core
-// value prop), sortable, each with its two line items (materials cost + labor) and Hire/Consider/Deny.
+// value prop), sortable, each with its two line items (materials cost + labor) and Hire/Deny/Message.
 var _bidSort='amount';
 function openBidsList(order){
   if(!window.GReq) return; var r=GReq.get(order); if(!r) return;
@@ -1306,11 +1306,13 @@ function openBidsList(order){
     return l; }
   function bidRow(b,i){
     var initials=(b.by.split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('')||'G').toUpperCase();
-    var considering=b.status==='considered';
-    return '<div style="border:1px solid '+(considering?'#bfe6cf':'#eceaf0')+';border-radius:14px;padding:11px;margin-bottom:9px;background:'+(considering?'#f3faf5':'#fff')+';">'
+    // ⛔ No "Consider" here — it is CONNECT-ONLY (John 2026-10-14). The live app's offer
+    // card (src/component/live/OffersSheet.js) is Hire / Deny / Message. A bid persisted
+    // as status 'considered' before this change simply renders as a normal bid.
+    return '<div style="border:1px solid #eceaf0;border-radius:14px;padding:11px;margin-bottom:9px;background:#fff;">'
       +'<div style="display:flex;align-items:center;gap:10px;">'
         +'<div style="width:40px;height:40px;border-radius:50%;background:#002461;color:#fff;display:flex;align-items:center;justify-content:center;font-family:Nunito;font-weight:900;font-size:14px;flex:0 0 auto;">'+esc(initials)+'</div>'
-        +'<div style="flex:1;min-width:0;"><div style="font-family:Nunito;font-weight:900;font-size:14px;color:#002461;">'+esc(b.by)+(considering?' <span style="font-size:10px;color:#1CB061;font-weight:800;">\u00b7 Considering</span>':'')+'</div>'
+        +'<div style="flex:1;min-width:0;"><div style="font-family:Nunito;font-weight:900;font-size:14px;color:#002461;">'+esc(b.by)+'</div>'
           +'<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:#8a94a3;">\u2605 '+esc(b.rating)+' \u00b7 '+(b.jobs||0)+' jobs \u00b7 '+esc(b.dist)+' away</div></div>'
         +'<div style="text-align:right;flex:0 0 auto;"><div style="font-family:Nunito;font-weight:900;font-size:17px;color:#1CB061;">'+money(b.amt)+'</div><div style="font-family:\'DM Sans\',sans-serif;font-size:9.5px;color:#8a94a3;text-transform:uppercase;letter-spacing:.5px;">'+W.unit+'</div></div>'
       +'</div>'
@@ -1318,8 +1320,8 @@ function openBidsList(order){
       +(b.note?'<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:#8a94a3;margin-bottom:4px;">\u201c'+esc(b.note)+'\u201d</div>':'')
       +'<div style="display:flex;gap:7px;margin-top:9px;">'
         +'<button data-bid-act="hire" data-bid-i="'+i+'" style="flex:1.2;border:0;background:#1CB061;color:#fff;border-radius:10px;padding:9px;font-family:Nunito;font-weight:800;font-size:12.5px;cursor:pointer;">Hire</button>'
-        +'<button data-bid-act="consider" data-bid-i="'+i+'" style="flex:1;border:1.5px solid #002461;background:#fff;color:#002461;border-radius:10px;padding:9px;font-family:Nunito;font-weight:800;font-size:12.5px;cursor:pointer;">'+(considering?'Considering':'Consider')+'</button>'
         +'<button data-bid-act="deny" data-bid-i="'+i+'" style="flex:0.85;border:1.5px solid #C44257;background:#fff;color:#C44257;border-radius:10px;padding:9px;font-family:Nunito;font-weight:800;font-size:12.5px;cursor:pointer;">Deny</button>'
+        +'<button data-bid-act="message" data-bid-i="'+i+'" style="flex:1;border:1.5px solid #002461;background:#fff;color:#002461;border-radius:10px;padding:9px;font-family:Nunito;font-weight:800;font-size:12.5px;cursor:pointer;">Message</button>'
       +'</div></div>';
   }
   var o=gSheet('Gophers Interested', '<div id="bidsBody"></div>');
@@ -1343,7 +1345,9 @@ function openBidsList(order){
         when:'Accepted \u00b7 '+money(b.amt)+' \u00b7 on the job' });
       o.remove(); uiBucket='active'; uiIdx=0; renderPending(); toast('Hired '+b.by+' at '+money(b.amt)); return;
     }
-    if(act==='consider'){ b.status=(b.status==='considered'?'new':'considered'); GReq.update(order,{bidsList:list}); renderBody(); return; }
+    // Demo-only: pre-hire chat is not modelled in this sheet (openInboxThread is the hired
+    // order's thread), so Message acknowledges and stays put, like the detail panel's.
+    if(act==='message'){ toast('Messaging '+b.by+'…'); return; }
     if(act==='deny'){ b.status='denied'; GReq.update(order,{bidsList:list});
       var remaining=list.filter(function(x){return x.status!=='denied';});
       if(!remaining.length){ GReq.update(order,{attention:null}); o.remove(); renderPending(); toast(W.none); return; }
@@ -2913,9 +2917,9 @@ document.addEventListener('click',function(e){
 <!-- ===================================================================
      REQUEST DETAILS — worker selection ("I'll choose my worker").
      Matches the web dashboard: request summary, Hire Approved, dynamic
-     price-adjust + Start Job, sortable Workers Interested (Hire/Consider/
-     Deny), and a Considered section at the BOTTOM (Consider relocates a
-     worker there; Approve hires, Deny removes). Self-contained; mounted
+     price-adjust + Start Job, sortable Workers Interested (Hire / Deny /
+     Message — "Consider" and its Considered section were removed 2026-10-14,
+     Consider is Connect-only). Self-contained; mounted
      into #phone (same pattern as iQ). Front-end sim.
      ==================================================================== -->
 <style>
@@ -2951,9 +2955,8 @@ document.addEventListener('click',function(e){
   .rd-just{font-family:'Nunito';font-weight:800;font-size:9.5px;letter-spacing:.04em;color:var(--green-dark,#0a7d44);background:#E6F6EC;border-radius:999px;padding:3px 8px;white-space:nowrap;}
   .rd-acts{display:flex;gap:7px;margin-top:11px;}
   .rd-btn{flex:1;border:none;border-radius:10px;padding:10px;font-family:'Nunito';font-weight:900;font-size:12.5px;cursor:pointer;}
-  .rd-btn.hire{background:var(--green,#1CB061);color:#fff;}
-  .rd-btn.approve{background:var(--green,#1CB061);color:#fff;}
-  .rd-btn.consider{background:#eef1f6;color:#5C6685;}
+  .rd-btn.hire{flex:1.3;background:var(--green,#1CB061);color:#fff;}
+  .rd-btn.msg{background:#eef1f6;color:#002461;}
   .rd-btn.deny{background:#FCEBEE;color:#C44257;}
   .rd-btn.remove{flex:0 0 auto;padding:9px 16px;background:#fff;border:1px solid #e0c4ca;color:#C44257;}
   .rd-btn:active{transform:scale(.98);}
@@ -3098,8 +3101,8 @@ document.addEventListener('click',function(e){
   var workers=[
     {id:'w1',name:'Tyler J.', tier:'elite+',rating:4.91,jobs:95, unit:'hauls',dist:6.0,state:'interested',just:true},
     {id:'w2',name:'Marcus T.',tier:'elite+',rating:4.87,jobs:91, unit:'jobs', dist:6.0,state:'interested'},
-    {id:'w3',name:'Diego R.', tier:'elite+',rating:4.95,jobs:262,unit:'hauls',dist:4.0,state:'considered'},
-    {id:'w4',name:'Priya N.', tier:'elite+',rating:4.90,jobs:118,unit:'jobs', dist:4.0,state:'considered'},
+    {id:'w3',name:'Diego R.', tier:'elite+',rating:4.95,jobs:262,unit:'hauls',dist:4.0,state:'interested'},
+    {id:'w4',name:'Priya N.', tier:'elite+',rating:4.90,jobs:118,unit:'jobs', dist:4.0,state:'interested'},
     {id:'w5',name:'Sam K.',   tier:'elite+',rating:4.85,jobs:67, unit:'jobs', dist:5.0,state:'hired'}
   ];
   var sortBy='dist';
@@ -3120,20 +3123,23 @@ document.addEventListener('click',function(e){
   function toast(m){ var t=document.getElementById('rdToast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('show');},1900); }
 
   function workerRow(w, ctx){
+    // One affordance per action: an interested row has a Message button, so its inline
+    // "Text" chip would be a duplicate (web Stage 3 B hides the same link).
     var links='<div class="rd-links"><button class="rd-link" data-rd="profile" data-id="'+w.id+'">Review profile</button>'
-      +'<button class="rd-link chip" data-rd="text" data-id="'+w.id+'">Text</button></div>';
+      +(ctx==='interested'?'':'<button class="rd-link chip" data-rd="text" data-id="'+w.id+'">Text</button>')+'</div>';
     var meta='<div class="rd-meta"><span class="star">\u2605</span> '+w.rating.toFixed(2)+' ('+w.jobs+' '+w.unit+') &nbsp;·&nbsp; <span class="dist">\uD83D\uDCCD</span> '+w.dist.toFixed(1)+' mi \u2192 pickup</div>';
     var just = (ctx==='interested'&&w.just) ? '<span class="rd-just">JUST ACCEPTED</span>' : '';
     var acts='';
     if(ctx==='hired')      acts='<div class="rd-acts"><button class="rd-btn remove" data-rd="remove" data-id="'+w.id+'">Remove</button></div>';
-    else if(ctx==='interested') acts='<div class="rd-acts"><button class="rd-btn hire" data-rd="hire" data-id="'+w.id+'">Hire</button><button class="rd-btn consider" data-rd="consider" data-id="'+w.id+'">Consider</button><button class="rd-btn deny" data-rd="deny" data-id="'+w.id+'">Deny</button></div>';
-    else if(ctx==='considered') acts='<div class="rd-acts"><button class="rd-btn approve" data-rd="hire" data-id="'+w.id+'">Approve</button><button class="rd-btn deny" data-rd="deny" data-id="'+w.id+'">Deny</button></div>';
+    // ⛔ Hire / Deny / Message, as the live app's offer card has it. "Consider" is
+    // CONNECT-ONLY (John 2026-10-14) and is gone from Request, with its Considered section.
+    else if(ctx==='interested') acts='<div class="rd-acts"><button class="rd-btn hire" data-rd="hire" data-id="'+w.id+'">Hire</button><button class="rd-btn deny" data-rd="deny" data-id="'+w.id+'">Deny</button><button class="rd-btn msg" data-rd="text" data-id="'+w.id+'">Message</button></div>';
     return '<div class="rd-card"><div class="rd-row"><span class="rd-av">'+inits(w.name)+'</span>'
       +'<div class="rd-info"><div class="rd-nm">'+w.name+' '+tierBadge(w.tier)+(just?' <span style="margin-left:auto">'+just+'</span>':'')+'</div>'+meta+links+'</div></div>'+acts+'</div>';
   }
 
   function renderPending(){
-    var hired=by('hired'), interested=sortInterested(by('interested')), considered=by('considered');
+    var hired=by('hired'), interested=sortInterested(by('interested'));
     // Canon (connect-flows-granular, "Bids when >1 worker"): the single hire is responsible
     // for PAYING THE WHOLE CREW, so one payment covers every worker. No pro-rating.
     var adj = TOTAL;
@@ -3142,7 +3148,7 @@ document.addEventListener('click',function(e){
     html+='<div class="rd-sum"><span class="rd-pending">PENDING</span>'
       +'<div class="rd-sum-t">'+REQ.icon+' '+REQ.title+' \u00b7 '+REQ.note+'</div>'
       +'<div class="rd-sum-m">'+REQ.order+' \u00b7 '+money(TOTAL)+' total \u00b7 Just now \u00b7 awaiting your selection</div>'
-      +'<div class="rd-sum-w">'+(interested.length+considered.length)+' Gopher'+((interested.length+considered.length)!==1?'s':'')+' interested</div></div>';
+      +'<div class="rd-sum-w">'+interested.length+' Gopher'+(interested.length!==1?'s':'')+' interested</div></div>';
     // hire approved
     if(hired.length){
       html+='<div class="rd-sec">Hire Approved <span class="rd-count">Lead Gopher</span></div>';
@@ -3161,11 +3167,6 @@ document.addEventListener('click',function(e){
         +'<button class="rd-sortc'+(sortBy==='jobs'?' on':'')+'" data-rd="sort" data-k="jobs">Total jobs</button></div>';
       interested.forEach(function(w){ html+=workerRow(w,'interested'); });
     } else { html+='<div class="rd-empty">No one waiting here right now.</div>'; }
-    // considered (bottom)
-    if(considered.length){
-      html+='<div class="rd-sec muted">Considered <span class="rd-count">'+considered.length+'</span></div>';
-      considered.forEach(function(w){ html+=workerRow(w,'considered'); });
-    }
     body.innerHTML=html; body.scrollTop=body.scrollTop;
   }
 
@@ -3348,11 +3349,10 @@ html+='<div class="rd-sec">Your Crew</div>';
       if(by('hired').length>=1){ toast('You hire one Gopher \u2014 remove them to pick someone else.'); return; }
       w.state='hired'; w.just=false; toast('Hired '+w.name);
     }
-    else if(act==='consider'){ w.state='considered'; w.just=false; toast('Moved '+w.name+' to Considered'); }
     else if(act==='deny'){ w.state='denied'; toast('Declined '+w.name); }
     else if(act==='remove'){ w.state='interested'; toast('Removed '+w.name+' from hires'); }
     else if(act==='profile'){ profileWho=id; profileFrom=view; jobMode='all'; view='profile'; render(); return; }
-    else if(act==='text'){ toast('Texting '+w.name+'\u2026'); return; }
+    else if(act==='text'){ toast('Messaging '+w.name+'\u2026'); return; }
     render();
   });
   // ---- Start-Job confirmation modals (mirror web pop-ups, fitted to phone) ----
