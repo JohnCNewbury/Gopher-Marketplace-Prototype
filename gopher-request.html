@@ -8086,6 +8086,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .inbox-convo-req { font-family:'DM Sans'; font-size:12px; color:var(--muted); }
   .inbox-open-req { background:none; border:none; color:var(--green-dark); font-weight:700; cursor:pointer; font-family:'DM Sans'; font-size:12px; padding:0; text-decoration:underline; }
   .inbox-convo-call { padding:7px 14px; font-size:12px; }
+  /* PHONE: Back, photo, name, Call, MY Gophers and Block on one line pushed the
+     Block button 27px outside the card at 390 (the card clips overflow). Back
+     takes its own line and Call goes icon-only, like its two neighbours. */
+  @media (max-width:560px){
+    .inbox-convo-head { flex-wrap:wrap; gap:8px 10px; }
+    .inbox-convo-back { flex:0 0 100%; text-align:left; }
+    .inbox-convo-meta { min-width:0; }
+    .inbox-convo-call { padding:7px 10px; }
+    .inbox-convo-call span { display:none; }
+  }
   .inbox-thread { padding:18px 16px; display:flex; flex-direction:column; gap:12px; }
   .inbox-msg { display:flex; flex-direction:column; max-width:75%; }
   .inbox-msg.theirs { align-self:flex-start; align-items:flex-start; }
@@ -9071,6 +9081,40 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .hv-grid[data-hview="list"] .hv-nm { padding:0; font-size:14.5px; }
   .hv-grid[data-hview="list"] .hv-ds { padding:0; margin-top:2px; }
+  /* ⛔ LIST BELOW 1150px — owner pick C (Stage 4, 2026-10-14). The two fixed
+     tracks above (296px name + rail) hold symmetry only on a wide window: at
+     1024 the rows spread 34px, and on a 390 phone the rail track collapsed to
+     ZERO width and all 48 pills were clipped. So below 1150 the row stacks —
+     photo and name on top, examples beneath — and shows three examples plus
+     "+3 more", which expands in place. Every pill is pinned to one height so
+     a long example ("Tobacco, vape and nicotine delivery (21+ only)") cannot
+     make its row the odd one out; measured even at 390 / 768 / 1024 / 1150.
+     Above 1150 nothing changes. Options A (all six) and B (swipe line) were
+     the alternatives. */
+  .hv-more { display:none; }
+  @media (max-width:1150px){
+    .hv-grid[data-hview="list"] .hv-cell { grid-template-columns:1fr; row-gap:14px; padding:16px; }
+    .hv-grid[data-hview="list"] .hv-tile { grid-template-columns:88px 1fr; gap:14px; }
+    .hv-grid[data-hview="list"] .hv-art { width:88px; height:88px; border-radius:18px; }
+    .hv-grid[data-hview="list"] .hv-pills { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .hv-grid[data-hview="list"] .hv-pills:not(.open) .hv-pill-x { display:none; }
+    .hv-grid[data-hview="list"] .hv-pill { min-height:44px; }
+    .hv-grid[data-hview="list"] .hv-more {
+      display:flex; align-items:center; justify-content:center; min-height:44px;
+      font-family:'Nunito',sans-serif; font-weight:800; font-size:11.5px; color:var(--navy);
+      background:#fff; border:1.5px dashed #D9CBAE; border-radius:999px; padding:6px 11px; cursor:pointer;
+    }
+    .hv-grid[data-hview="list"] .hv-more:hover { background:var(--sand,#FBF3E4); }
+    .hv-grid[data-hview="list"] .hv-more:focus-visible { outline:2px solid var(--green-text); outline-offset:2px; }
+  }
+  @media (max-width:560px){
+    .hv-grid[data-hview="list"] .hv-cell { padding:14px; row-gap:12px; }
+    .hv-grid[data-hview="list"] .hv-tile { grid-template-columns:72px 1fr; }
+    .hv-grid[data-hview="list"] .hv-art { width:72px; height:72px; border-radius:16px; }
+    .hv-grid[data-hview="list"] .hv-pills { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .hv-grid[data-hview="list"] .hv-pill,
+    .hv-grid[data-hview="list"] .hv-more { min-height:36px; }
+  }
   @media (prefers-reduced-motion:reduce){ .hv-tile{transition:none} .hv-sb{transition:none} }
   @media (max-width:900px){
     .hv-grid[data-hview="spot"]{grid-template-columns:repeat(3,1fr)}
@@ -11211,7 +11255,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     .dash-avatar{ cursor:pointer; }
     .kpi-grid { grid-template-columns:repeat(2, 1fr); }
     .gophers-grid { grid-template-columns:1fr; }
-    .dash-content { padding:18px; }
+    /* Vertical only: .dash-content wraps the HOME section, which already gets the
+       shared gutter from .dash-section — 18px here on top made home sit 36px in
+       from a 390 phone's edges while every other section sat at 16. */
+    .dash-content { padding:18px 0; }
     .dash-topbar { padding:10px 18px; }
     /* no sidebar to line up with on a phone — the logo just takes its own width */
     .dash-topbar-brand { flex:0 0 auto; margin-right:14px; }
@@ -23322,12 +23369,17 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     /* Fill the per-category example rails from HOME_IDEAS, so the forty labels
        live in ONE place and the markup carries none of them. */
     const IDEAS = window.HOME_IDEAS || {};
+    /* Below 1150px the List row shows THREE examples and a "+N more" control
+       (owner pick C, Stage 4, 2026-10-14); .hv-pill-x marks the rest. On a wide
+       screen all six show and .hv-more is hidden — see the 1150px block. */
     Array.prototype.forEach.call(grid.querySelectorAll('[data-pills]'), function(rail){
       const list = IDEAS[rail.dataset.pills] || [];
-      rail.innerHTML = list.map(function(pair){
-        return '<button type="button" class="hv-pill" data-idea="' + esc(pair[0]) + '">'
+      rail.innerHTML = list.map(function(pair, i){
+        return '<button type="button" class="hv-pill' + (i >= 3 ? ' hv-pill-x' : '') + '" data-idea="' + esc(pair[0]) + '">'
              + esc(pair[0]) + '</button>';
-      }).join('');
+      }).join('') + (list.length > 3
+        ? '<button type="button" class="hv-more" aria-expanded="false">+' + (list.length - 3) + ' more</button>'
+        : '');
     });
 
     /* ── All-at-once: the iQ mark and the hover popover. Built from the page's
@@ -23383,6 +23435,15 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     grid.addEventListener('click', function(e){
       /* A pill or the iQ pill sits INSIDE the cell but is its own control, so
          each returns before the row's own handler can also fire. */
+      const more = e.target.closest('.hv-more');
+      if(more){
+        e.preventDefault(); e.stopPropagation();
+        const rail = more.closest('.hv-pills');
+        const open = rail.classList.toggle('open');
+        more.setAttribute('aria-expanded', String(open));
+        more.textContent = open ? 'Show less' : '+' + rail.querySelectorAll('.hv-pill-x').length + ' more';
+        return;
+      }
       const pill = e.target.closest('.hv-pill');
       if(pill){
         e.preventDefault(); e.stopPropagation();
