@@ -1159,12 +1159,6 @@ const prevVisibleStep = (from)=>{ let s=from; while(s>1 && stepIsEmpty(s-1)) s--
    here — the false-positive friction isn't worth it for this prototype. */
    // hand-maintained supplement is SHARED — edit assets/js/gopher-age-supplement.js, never here
 function findAgeRestrictedKeyword(text){ var L=window.GopherRequestLogic; return L ? L.findAgeRestrictedKeyword(text) : null; }   // SHARED — detection lives in assets/js/gopher-request-logic.js (brain + supplement)
-function findAgeRestrictedMatch(text){ var L=window.GopherRequestLogic; return (L && L.findAgeRestrictedMatch) ? L.findAgeRestrictedMatch(text) : null; }   // SHARED — { term, start, end }: the under-21 sheet's word selection
-// WHICH free text the age check reads (owner 2026-10-14, G40-623): the description -- and on RIDE,
-// which has no description on web or app, the special instructions ("need a ride the the liquor
-// store", "need a ride to pick up cigs"). One place, so the gate, the sheet and the selection agree.
-function ageScanText(){ return state.category==='ride' ? (state.specialInstructions||'') : (state.description||''); }
-function ageScanEl(){ return state.category==='ride' ? document.querySelector('[data-field="specialInstructions"]') : document.getElementById('descriptionInput'); }
 
 /* ---- Popular-requests examples (verbatim from Gopher Request) ---- */
 const CAT_EXAMPLES = {
@@ -2479,7 +2473,7 @@ function stepGate(){
   if(state.step===1 && !state.category) return {ok:false,sel:'.cat-grid',msg:'Pick a service category to continue.'};
   if(state.step===2 && isVisible('describe') && !state.description.trim()) return {ok:false,sel:'#descriptionInput',msg:'Add a description before continuing.'};
   if(state.step===2 && state.itemsPurchased && !(toNum(state.costOfItems)>0)) return {ok:false,sel:'#costOfItemsInput',msg:'Enter the cost of items before continuing.'};
-  if(state.step===2 && !state.ageRestricted && !(state.ageKeywordAck && state.ageKwText===ageScanText().trim()) && findAgeRestrictedKeyword(ageScanText()))
+  if(state.step===2 && !state.ageRestricted && !(state.ageKeywordAck && state.ageKwText===state.description.trim()) && findAgeRestrictedKeyword(state.description))
     return {ok:false,sel:'.age-kw-banner',msg:'This looks age-restricted — confirm before continuing.',tone:'alert',age:true};   // ALL categories (compliance): age items under Other/Ride/etc. can't bypass the ID/waiver flow
   /* THE IDENTITY GATE IS GONE AGAIN (John via the 909 desk, 2026-10-04, G40-581). It stood here from 2026-08-25 and required a one-time
      "Submit identification" or a TrustShield before an age-restricted delivery could leave Step 2. The app has no such path: an
@@ -2619,33 +2613,18 @@ function goNext(){
 // Age-restricted confirmation — the VERY IMPORTANT guardrail. Blocking G40-308-standard modal (parity
 // with the Connect/Request web apps): 21 mark, consequences warning, two clearly-separated choices.
 function openAgeKwModal(){
-  const kw=findAgeRestrictedKeyword(ageScanText())||'this item';
+  const kw=findAgeRestrictedKeyword(state.description)||'this item';
   const e=(s)=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const old=document.getElementById('ageKwModalOv'); if(old) old.remove();
   if(!canRequestRestricted()){   // D-038 part 2: a requester who can't request age-restricted items cannot go on while the term is there
-    /* ⛔ OWNER-PICKED WORDING, John 2026-10-11, verbatim and NOT to be reworded: "This
-       request includes an item we can't deliver for you. Please edit your request to
-       continue." One button, "Edit my request". NO term, NO age, NO "21", NO ID, no title
-       and not red (red is for a failed payment) -- the live app's UNDER_21_BLOCK_SENTENCE
-       (flows/delivery.js). This sheet still carried the PRE-ruling version (named the term,
-       "21 or older with a verified ID") after d605e3b fixed Request and Connect on the web;
-       brought into line 2026-10-14 (rule 12b).
-       Owner 2026-10-13 ("Both"): because the sheet names nothing, "Edit my request" SELECTS
-       the word in the description box -- the exact occurrence that tripped the gate. */
     const bv=document.createElement('div'); bv.id='ageKwModalOv';
     bv.setAttribute('style','position:fixed;inset:0;z-index:99999;background:rgba(0,18,49,.55);display:flex;align-items:center;justify-content:center;padding:22px;');
     bv.innerHTML='<div role="dialog" aria-modal="true" style="background:#fff;width:100%;max-width:340px;border-radius:22px;padding:24px 22px;text-align:center;box-shadow:0 24px 60px rgba(0,18,55,.5);font-family:Nunito,sans-serif;">'
-      +'<div style="font-size:26px;line-height:1;margin:0 0 10px;">⛔</div>'
-      +'<p style="font-family:\'DM Sans\',sans-serif;font-size:14px;color:#3b4250;line-height:1.5;margin:0 0 18px;">This request includes an item we can’t deliver for you. Please edit your request to continue.</p>'
+      +'<h4 style="font-weight:900;font-size:19px;color:#c44257;margin:0 0 10px;">This looks age-restricted</h4>'
+      +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5b6472;line-height:1.5;margin:0 0 10px;">Your request mentions <b style="color:#c44257;">&ldquo;'+e(kw)+'&rdquo;</b>, which is commonly an age-restricted item.</p>'
+      +'<p style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#5b6472;line-height:1.5;margin:0 0 18px;">Age-restricted requests can only be placed by requesters 21 or older with a verified ID. Please edit your request to continue.</p>'
       +'<button class="js-agekw-edit" style="width:100%;border:0;background:#1CB061;color:#fff;border-radius:13px;padding:14px;font-family:Nunito;font-weight:900;font-size:14px;cursor:pointer;">Edit my request</button></div>';
-    document.body.appendChild(bv); bv.querySelector('.js-agekw-edit').onclick=function(){
-      bv.remove();
-      const d=ageScanEl(); if(!d) return;
-      const m=findAgeRestrictedMatch(d.value);
-      try{ d.focus({preventScroll:true}); }catch(_){ try{ d.focus(); }catch(__){} }
-      if(m && m.start>=0){ try{ d.setSelectionRange(m.start, m.end); }catch(_){} }
-      try{ d.scrollIntoView({block:'center'}); }catch(_){}
-    };
+    document.body.appendChild(bv); bv.querySelector('.js-agekw-edit').onclick=function(){ bv.remove(); const d=document.getElementById('descriptionInput'); if(d){ try{ d.focus(); }catch(_){} } };
     return;
   }
   const ov=document.createElement('div'); ov.id='ageKwModalOv';
@@ -2664,8 +2643,8 @@ function openAgeKwModal(){
     // keyword modal also enables "purchase needed" — skips a step the user would almost
     // certainly have to do anyway.
     if(!state.itemsPurchased){ state.itemsPurchased=true; state.agePurchaseAck=false; }
-    state.ageKeywordAck=true; state.ageKwText=ageScanText().trim(); ov.remove(); render(); };   // route age-restricted → Delivery
-  ov.querySelector('.js-agekw-no').onclick=function(){ state.ageKeywordAck=true; state.ageKwText=ageScanText().trim(); if(findAgeRestrictedKeyword(ageScanText())) state.idRequiredAtCompletion=true; ov.remove(); goNext(); };   // no silent bypass: force ID-at-completion
+    state.ageKeywordAck=true; state.ageKwText=state.description.trim(); ov.remove(); render(); };   // route age-restricted → Delivery
+  ov.querySelector('.js-agekw-no').onclick=function(){ state.ageKeywordAck=true; state.ageKwText=state.description.trim(); if(findAgeRestrictedKeyword(state.description)) state.idRequiredAtCompletion=true; ov.remove(); goNext(); };   // no silent bypass: force ID-at-completion
 }
 // Age-restricted "no purchase" guardrail — web-parity modal (copy verbatim from
 // Final/gopher-request.html #agePurchaseOverlay). "Add a purchase amount" turns the

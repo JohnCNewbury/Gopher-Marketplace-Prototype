@@ -7542,9 +7542,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:flex; align-items:center; justify-content:space-between;
     margin:8px 0 12px;
   }
+  /* Uppercase eyebrow rather than a 16px title: it reads as a section LABEL
+     instead of competing with the page's own h2, which is what made the
+     stacked blocks feel unordered. */
   .dash-block-head h3 {
-    font-family:'Nunito'; font-weight:800; font-size:16px;
-    color:var(--navy); margin:0;
+    font-family:'Nunito'; font-weight:800; font-size:13px; letter-spacing:.8px;
+    text-transform:uppercase; color:#5A6682; margin:0;
   }
   .dash-block-head .view-all {
     font-family:'Nunito'; font-weight:700; font-size:12px;
@@ -7567,9 +7570,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     transition:all 0.15s;
   }
   /* Empty state for the request log */
+  /* The empty state keeps its 48px breathing room -- that is a role
+     difference, not drift -- but adopts the card's radius and elevation. */
   .req-empty {
     text-align:center; padding:48px 24px;
-    background:white; border:1px dashed #d7dce8; border-radius:14px;
+    border:0; border-radius:16px; background:#fff;
+    box-shadow:0 4px 14px -4px rgba(0,36,97,.16), 0 1px 3px rgba(0,36,97,.06);
   }
   .req-empty-icon { font-size:34px; margin-bottom:10px; opacity:0.85; }
   .req-empty-title {
@@ -10647,10 +10653,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   @media (max-width:560px){ .goto-edit-ctas { flex-direction:column; } }
 
   /* ─── Info cards (Business Info, Personal info) ─── */
+  /* ⛔ THE ACCOUNT CARD — owner picked "A lifted" of three on 2026-10-14.
+     One card for every account section, matching the home's floating photo
+     cards: no border, 16px radius, soft shadow, roomy padding. Before this,
+     these sections carried FOUR radii (12/14/16/18) and seven neutral border
+     colours between them, and #E7EAF2 alone rendered at three different radii
+     -- which is what the owner meant by "cramped now, not symmetrical".
+     Change these five rules together or the sections drift apart again. */
   .info-card {
-    background:white;
-    border:1px solid #e7eaf2;
-    border-radius:14px;
+    border:0; border-radius:16px; background:#fff;
+    box-shadow:0 4px 14px -4px rgba(0,36,97,.16), 0 1px 3px rgba(0,36,97,.06);
     overflow:hidden;
   }
   .info-card-head {
@@ -10699,9 +10711,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   /* Personal section profile card (v77 — name + inline stats on the left,
      a right-aligned BADGES RAIL on the right). */
   .personal-hero {
-    background:white;
-    border:1px solid #e7eaf2;
-    border-radius:16px;
+    border:0; border-radius:16px; background:#fff;
+    box-shadow:0 4px 14px -4px rgba(0,36,97,.16), 0 1px 3px rgba(0,36,97,.06);
     padding:24px 28px;
     margin-bottom:18px;
     display:flex; align-items:center; gap:24px;
@@ -10822,15 +10833,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   /* ─── Payment methods grid ─── */
   .pay-card {
     display:flex; align-items:center; gap:14px;
-    background:white;
-    border:1px solid #e7eaf2;
-    border-radius:12px;
-    padding:14px 18px;
-    margin-bottom:8px;
+    border:0; border-radius:16px; background:#fff;
+    box-shadow:0 4px 14px -4px rgba(0,36,97,.16), 0 1px 3px rgba(0,36,97,.06);
+    padding:20px 22px;
+    margin-bottom:14px;
   }
+  /* ⛔ STATE, not styling: the default card stays Shamrock. With the border
+     gone it is carried as an inset ring + a green-tinted shadow, so the state
+     still reads at a glance without reintroducing a hairline. */
   .pay-card.default {
-    border-color:var(--green);
-    background:rgba(51,217,117,0.03);
+    box-shadow:0 4px 14px -4px rgba(15,122,63,.26), 0 0 0 2px #33D975 inset;
   }
   .pay-card .pc-icon {
     width:54px; height:36px; border-radius:6px;
@@ -11113,8 +11125,9 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   /* MY Gophers section intro banner. */
   .gophers-banner {
-    background:#f3f6fb; border:1px solid #e7eaf2; border-radius:12px;
-    padding:14px 16px; margin-bottom:16px;
+    border:0; border-radius:16px; background:#fff;
+    box-shadow:0 4px 14px -4px rgba(0,36,97,.16), 0 1px 3px rgba(0,36,97,.06);
+    padding:20px 22px; margin-bottom:16px;
     font-family:'DM Sans'; font-size:13px; line-height:1.5; color:var(--text);
   }
   .gophers-banner b { color:var(--navy); font-weight:700; }
