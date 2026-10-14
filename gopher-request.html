@@ -8681,9 +8681,20 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      examples of requests in that category"). In this view the CELL is the card
      and the tile inside it is transparent, because the pills have to be real
      buttons sitting beside the row's own click target. ─────────────────── */
+  /* ⚠️ GRID, NOT WRAPPING FLEX — this is what makes the rows symmetrical, and
+     it is the whole point of the owner's 10/13 ruling ("the formatting needs
+     better symmetry"). The old rule was a wrapping flex row with the pill rail
+     at justify-content:flex-end, so every row's pills ENDED together and
+     therefore STARTED at a different x: measured spread was 267px across the
+     eight rows, and Delivery's rail wrapped the whole cell to a second line
+     (181px tall against everyone else's 138). Two fixed tracks fix both: the
+     name block always occupies the first, so the rail always begins at the
+     same x, and the row's height is set by the photo rather than by how many
+     pills happened to fit. Do not revert this to flex. */
   .hv-grid[data-hview="list"] .hv-cell {
-    flex-direction:row; align-items:center; gap:14px; flex-wrap:wrap;
-    background:#fff; border:1px solid #EDE7D9; border-radius:14px; padding:12px 16px;
+    display:grid; grid-template-columns:296px 1fr; align-items:center;
+    column-gap:24px; row-gap:0; flex-wrap:nowrap;
+    background:#fff; border:1px solid #EDE7D9; border-radius:14px; padding:16px 20px;
     transition:box-shadow .15s, transform .15s;
   }
   .hv-grid[data-hview="list"] .hv-cell:hover { transform:translateY(-1px); box-shadow:0 8px 20px -6px rgba(0,36,97,.14); }
@@ -8694,12 +8705,23 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      guessed; and at narrow widths every row wraps together, which reads as
      responsive rather than as one broken row. */
   .hv-grid[data-hview="list"] .hv-tile {
-    flex:0 0 auto; background:none; border:0; border-radius:0; box-shadow:none;
-    padding:0; width:auto; min-width:196px;
+    background:none; border:0; border-radius:0; box-shadow:none;
+    padding:0; min-width:0; width:100%;
+    display:grid; grid-template-columns:104px 1fr; align-items:center; gap:16px;
   }
   .hv-grid[data-hview="list"] .hv-tile:hover { transform:none; box-shadow:none; }
+  /* Three equal columns x two rows = the six examples land in a fixed block of
+     identical geometry on every row, whatever the words are. That is why
+     CAT_EXAMPLES carries SIX per category and not five: with five, the last
+     row of the grid was half empty and the asymmetry the owner objected to
+     reappeared inside the card. Adding a seventh would start a third row --
+     keep it at six. */
   .hv-grid[data-hview="list"] .hv-pills {
-    display:flex; flex-wrap:wrap; gap:7px; flex:1 1 auto; min-width:0; justify-content:flex-end;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:9px; min-width:0;
+  }
+  .hv-grid[data-hview="list"] .hv-pill {
+    white-space:normal; text-align:center; line-height:1.25; min-height:36px;
+    display:flex; align-items:center; justify-content:center;
   }
   .hv-pill {
     font-family:'DM Sans',system-ui,sans-serif; font-size:11.5px; color:var(--navy);
@@ -8778,9 +8800,18 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     z-index:40;
   }
   /* The trigger is the FOOTER, not the whole card — the photo above it still
-     goes straight to Step 2, so hovering the picture must not cover the grid. */
-  .hv-grid[data-hview="all"] .hv-cell:has(.hv-nm:hover) .hv-pop,
-  .hv-grid[data-hview="all"] .hv-cell:has(.hv-iqm:hover) .hv-pop {
+     goes straight to Step 2, so hovering the picture must not cover the grid.
+     ⚠️ EXPRESSED AS "the tile, minus the photo" ON PURPOSE — do not go back to
+     listing the text spans. It was `:has(.hv-nm:hover)` + `:has(.hv-iqm:hover)`,
+     and BOTH were wrong: .hv-iqm is pointer-events:none so that half never fired
+     at all, and .hv-nm is a bare text span covering only the footer's top 36px of
+     58 — so the bottom strip, the very strip the iQ mark sits in, was dead. The
+     owner reported it as "some of the bottom activates it, in other parts it
+     doesn't" (2026-10-13). Naming the spans also left the seams, the padding and
+     the tile's bottom edge dead, and would silently lose a cell whose hint is
+     missing (the injector does `if(!h) return`, so no .hv-ds is created).
+     :not(:has(.hv-art:hover)) keeps the photo going straight to Step 2. */
+  .hv-grid[data-hview="all"] .hv-cell:has(.hv-tile:hover):not(:has(.hv-art:hover)) .hv-pop {
     opacity:1; visibility:visible; transform:translateX(-50%) translateY(0);
   }
   .hv-grid[data-hview="all"] .hv-pop::after {
@@ -8793,8 +8824,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .hv-grid[data-hview="all"] .hv-cell:nth-child(n+5) .hv-pop {
     top:auto; bottom:calc(100% + 11px); transform:translateX(-50%) translateY(-6px);
   }
-  .hv-grid[data-hview="all"] .hv-cell:nth-child(n+5):has(.hv-nm:hover) .hv-pop,
-  .hv-grid[data-hview="all"] .hv-cell:nth-child(n+5):has(.hv-iqm:hover) .hv-pop {
+  .hv-grid[data-hview="all"] .hv-cell:nth-child(n+5):has(.hv-tile:hover):not(:has(.hv-art:hover)) .hv-pop {
     transform:translateX(-50%) translateY(0);
   }
   .hv-grid[data-hview="all"] .hv-cell:nth-child(n+5) .hv-pop::after {
@@ -9007,8 +9037,18 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      empty until the desk's master supplies the words) — the second line lands
      inside this height instead of growing the row again. */
   .hv-grid[data-hview="list"] { grid-template-columns:1fr; gap:10px; }
-  .hv-grid[data-hview="list"] .hv-tile { flex-direction:row; align-items:center; gap:15px; padding:14px 16px; }
-  .hv-grid[data-hview="list"] .hv-art { height:84px; width:118px; border-radius:11px; font-size:29px; flex:0 0 auto; border-bottom:0; }
+  .hv-grid[data-hview="list"] .hv-art {
+    height:104px; width:104px; border-radius:20px; font-size:29px;
+    flex:0 0 auto; border-bottom:0;
+    box-shadow:0 8px 18px -5px rgba(0,36,97,.38), 0 0 0 3px #fff;
+    transition:transform .16s ease, box-shadow .16s ease;
+  }
+  /* The photo lifts, not just the card — the owner's 10/13 ruling was that the
+     pictures should "look like floating buttons". */
+  .hv-grid[data-hview="list"] .hv-cell:hover .hv-art {
+    transform:translateY(-4px) scale(1.03);
+    box-shadow:0 17px 30px -9px rgba(0,36,97,.48), 0 0 0 3px #fff;
+  }
   .hv-grid[data-hview="list"] .hv-nm { padding:0; font-size:14.5px; }
   .hv-grid[data-hview="list"] .hv-ds { padding:0; margin-top:2px; }
   @media (prefers-reduced-motion:reduce){ .hv-tile{transition:none} .hv-sb{transition:none} }
@@ -14582,14 +14622,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   // with hard-to-find, "ask-a-neighbor" tasks because it has no dedicated
   // services page; it also gets an italic footer (handled in renderStep1).
   const CAT_EXAMPLES = {
-    delivery: ['Beer & liquor run', 'Groceries dropped off', 'Pharmacy pickup', 'Tobacco, vape and nicotine delivery (21+ only)', 'Takeout delivered'],
-    junk:     ['Haul an old couch', 'Garage cleanout', 'Mattress to the dump', 'Construction debris', 'Scrap metal pickup'],
-    moving:   ['Load or unload a U-Haul', 'Move heavy furniture', 'Whole-apartment move', 'Dorm move-out', 'Rearrange a room'],
-    home:     ['Mount a TV', 'Assemble furniture', 'Fix a leaky faucet', 'Hang shelves & art', 'Deep clean'],
-    labor:    ['An extra set of hands', 'Event setup & teardown', 'Load / haul materials', 'Warehouse help', 'General cleanup'],
-    yard:     ['Mow & edge the lawn', 'Leaf & yard cleanup', 'Trim hedges & bushes', 'Pressure wash', 'Spread mulch'],
-    ride:     ['Ride to the airport', 'Doctor appointment', 'Late-night ride home', 'Senior transportation', 'Wait & return trip'],
-    other:    ['Pet sitting', 'Change a tire', 'Stereo install', 'Wait for a delivery', 'Assemble a grill'],
+    delivery: ['Beer & liquor run', 'Groceries dropped off', 'Pharmacy pickup', 'Tobacco, vape and nicotine delivery (21+ only)', 'Takeout delivered', 'Store return drop-off'],
+    junk:     ['Haul an old couch', 'Garage cleanout', 'Mattress to the dump', 'Construction debris', 'Scrap metal pickup', 'Appliance removal'],
+    moving:   ['Load or unload a U-Haul', 'Move heavy furniture', 'Whole-apartment move', 'Dorm move-out', 'Rearrange a room', 'Storage unit load-in'],
+    home:     ['Mount a TV', 'Assemble furniture', 'Fix a leaky faucet', 'Hang shelves & art', 'Deep clean', 'Install a ceiling fan'],
+    labor:    ['An extra set of hands', 'Event setup & teardown', 'Load / haul materials', 'Warehouse help', 'General cleanup', 'Unload a delivery truck'],
+    yard:     ['Mow & edge the lawn', 'Leaf & yard cleanup', 'Trim hedges & bushes', 'Pressure wash', 'Spread mulch', 'Weed the beds & borders'],
+    ride:     ['Ride to the airport', 'Doctor appointment', 'Late-night ride home', 'Senior transportation', 'Wait & return trip', 'Pick up a family member'],
+    other:    ['Pet sitting', 'Change a tire', 'Stereo install', 'Wait for a delivery', 'Assemble a grill', 'Hang holiday lights'],
   };
   /* Exposed, not copied. The home screen's All-at-once hover popover reads THIS
      map — the same one Step 1's popups use — so the two can never disagree.
@@ -22597,6 +22637,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        'Explain here the specific brand, type, flavor and quantity you want purchased.'],
       ['Takeout delivered',
        'Explain here the name the order is under and the order number, if you have one.'],
+      ['Store return drop-off',
+       'Explain here what is being returned and whether you have the receipt, QR code or the original box.'],
     ],
     junk: [
       ['Haul an old couch',
@@ -22609,6 +22651,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        'Explain here what the debris is (drywall, wood, tile) and whether it is bagged or loose.'],
       ['Scrap metal pickup',
        'Explain here what the metal items are and whether anything needs to be taken apart first.'],
+      ['Appliance removal',
+       'Explain here which appliance it is and whether it still needs to be unhooked or disconnected.'],
     ],
     moving: [
       ['Load or unload a U-Haul',
@@ -22621,6 +22665,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        'Explain here what is going (boxes, mini fridge, furniture) and whether there is an elevator.'],
       ['Rearrange a room',
        'Explain here which room, what needs to move, and how you would like it set up.'],
+      ['Storage unit load-in',
+       'Explain here what is going into or out of the unit and anything fragile or awkward that needs extra care.'],
     ],
     home: [
       ['Mount a TV',
@@ -22633,6 +22679,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        'Explain here how many pieces, the wall type, and whether you have the hardware.'],
       ['Deep clean',
        'Explain here which rooms, the size of the home, and anything that needs extra attention.'],
+      ['Install a ceiling fan',
+       'Explain here what is being replaced and whether the new fixture and mounting hardware are already on site.'],
     ],
     labor: [
       ['An extra set of hands',
@@ -22645,6 +22693,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        'Explain here the tasks and any heavy lifting or equipment involved.'],
       ['General cleanup',
        'Explain here what needs cleaning up, how big the area is, and where the debris should go.'],
+      ['Unload a delivery truck',
+       'Explain here what is being unloaded and whether a dolly, pallet jack or other equipment will be on site.'],
     ],
     yard: [
       ['Mow & edge the lawn',
@@ -22657,6 +22707,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        'Explain here what needs washing (driveway, deck, siding), roughly how big, and whether a washer is available.'],
       ['Spread mulch',
        'Explain here how much mulch, whether it is already on site, and which beds.'],
+      ['Weed the beds & borders',
+       'Explain here which beds or areas to work on and whether anything planted should be left alone.'],
     ],
     ride: [
       ['Ride to the airport',
@@ -22669,6 +22721,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        'Explain here any help needed getting in and out of the car and any walker or wheelchair coming along.'],
       ['Wait & return trip',
        'Explain here about how long your Gopher should wait and where to meet for the return.'],
+      ['Pick up a family member',
+       'Explain here anything that helps identify the passenger at pick-up, such as what they will be wearing.'],
     ],
     other: [
       ['Pet sitting',
@@ -22681,6 +22735,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        'Explain here the delivery window and what to do when it arrives.'],
       ['Assemble a grill',
        'Explain here the grill brand and model, and whether you have the tools.'],
+      ['Hang holiday lights',
+       'Explain here what you want put up and whether the lights, clips and a ladder are already there.'],
     ],
   };
 
