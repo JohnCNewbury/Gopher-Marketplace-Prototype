@@ -39,7 +39,7 @@
   .wrap{ max-width:1140px; margin:0 auto; }
   .sec-head{ text-align:center; max-width:760px; margin:0 auto 48px; }
   .sec-head .eyebrow{ display:block; margin-bottom:13px; }
-  .sec-head h2{ font-weight:900; font-size:clamp(28px,3.8vw,42px); line-height:1.07; letter-spacing:-.02em; margin:0 0 12px; }
+  .sec-head h2{ font-weight:800; font-size:clamp(28px,3.8vw,40px); line-height:1.07; letter-spacing:-.015em; margin:0 0 12px; }
   .sec-head h2 .caveat{ font-size:clamp(32px,4.2vw,48px); }
   .sec-head p{ font-size:17.5px; color:var(--muted); margin:0; }
 
@@ -81,7 +81,7 @@
   .pillar{ background:#fff; border:1px solid var(--rule); border-radius:20px; padding:30px 26px; box-shadow:var(--shadow); position:relative; overflow:hidden; }
   .pillar::after{ content:''; position:absolute; top:-60px; right:-60px; width:160px; height:160px; border-radius:50%; background:radial-gradient(circle, rgba(51,217,117,.10), transparent 70%); }
   .pillar .pic{ width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:26px; background:var(--green-light); margin-bottom:16px; }
-  .pillar h4{ font-weight:900; font-size:19px; margin:0 0 8px; }
+  .pillar h4{ font-weight:800; font-size:19px; margin:0 0 8px; }
   .pillar h4 .caveat{ font-size:22px; }
   .pillar p{ font-size:14.5px; color:var(--muted); margin:0; line-height:1.62; }
   .pillar p b{ color:var(--navy); font-weight:700; }
@@ -111,7 +111,7 @@
 
   /* ───── HONEST-PRICE CALLOUT ───── */
   .price-card{ max-width:760px; margin:0 auto; background:#fff; border:1px solid var(--rule); border-radius:20px; padding:30px 32px; box-shadow:var(--shadow); }
-  .price-card h3{ font-weight:900; font-size:21px; margin:0 0 6px; }
+  .price-card h3{ font-weight:800; font-size:21px; margin:0 0 6px; }
   .price-card .lead{ color:var(--muted); font-size:15px; margin:0 0 20px; }
   .price-line{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px 0; border-bottom:1px dashed var(--rule); }
   .price-line:last-of-type{ border-bottom:none; }
@@ -127,7 +127,7 @@
   .steps{ max-width:1040px; margin:0 auto; display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
   .step{ position:relative; padding:6px 4px; }
   .step .n{ font-family:'Nunito',sans-serif; font-weight:900; font-size:34px; color:var(--aqua); line-height:1; }
-  .step h4{ font-weight:900; font-size:16.5px; margin:10px 0 6px; }
+  .step h4{ font-weight:800; font-size:16.5px; margin:10px 0 6px; }
   .step p{ font-size:14px; color:var(--muted); margin:0; line-height:1.55; }
 
   /* ───── FINAL ORDER CTA ───── */
@@ -136,7 +136,7 @@
       radial-gradient(circle at 16% 24%, rgba(51,217,117,.30), transparent 52%),
       radial-gradient(circle at 84% 76%, rgba(186,219,252,.20), transparent 52%),
       linear-gradient(140deg, var(--navy) 0%, #001a48 100%); }
-  .order h3{ color:#fff; font-weight:900; font-size:clamp(28px,4vw,46px); line-height:1.05; letter-spacing:-.02em; margin:0 0 12px; }
+  .order h3{ color:#fff; font-weight:800; font-size:clamp(28px,4vw,40px); line-height:1.05; letter-spacing:-.015em; margin:0 0 12px; }
   .order h3 .caveat{ color:var(--aqua); font-size:clamp(34px,4.6vw,56px); }
   .order p{ font-size:18px; color:rgba(255,255,255,.85); max-width:600px; margin:0 auto 28px; }
   .order .btn-row{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; align-items:center; }
