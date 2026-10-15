@@ -26423,12 +26423,15 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
              requester's approval, worded "N mi from your drop-off", grey
              (offerDistance; was an always-on "📍 N mi → destination" plus a
              separate red-amber "auto-match paused" note);
-           - a bid shows THE WORKER'S OFFER (b.offer), with "Payment to your
-             worker · Cost of items" when there are items. Web-only: it stays
-             clickable to the all-in breakdown, because the app's Hire on a bid
-             goes to a review-and-pay step the web does not have; and the "Bid"
-             label stays left of the number (owner 2026-09-29), though the app has
-             none — an open owner question, not drift. */
+           - a bid carries "Payment to your worker · Cost of items" when there
+             are items, as the app's does.
+           ⛔ WEB-ONLY, owner 2026-10-15: the bid NUMBER is the ALL-IN total, not
+           the app's b.offer. The app's Hire on a bid opens a review-and-pay step
+           that shows the total before anything is committed; the web hires
+           straight away, so the total has to be on the card. (Restates the
+           2026-09-29 ruling "a bid is an ALL-IN number", after a brief 10/15
+           change to the worker's offer.) The "Bid" label stays left of it
+           (9/29; kept 10/15) and the number still opens the itemised breakdown. */
         const rating = workerStats(w);
         const distMi = (w.distanceMi != null) ? Number(w.distanceMi) : null;
         const distLine = (!isLive && distMi != null && needsDistanceApproval(w))
@@ -26437,7 +26440,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         const bidHtml = (bidsMode && !isLive && w.bidAmount != null)
           ? `<button type="button" class="wcard-bid" data-wact="bidinfo" data-i="${realIdx}"
                      title="See what this bid covers" aria-label="See what ${w.name}'s bid covers">
-               <span class="wb-label">Bid</span><span class="wb-amount">${usd(w.bidAmount)}</span>
+               <span class="wb-label">Bid</span><span class="wb-amount">${usd(window.__bidAllIn(r, w))}</span>
              </button>`
           : '';
         const bidLine = (bidsMode && !isLive && w.bidAmount != null && bidCog > 0)
