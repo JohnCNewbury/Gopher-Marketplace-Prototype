@@ -26434,7 +26434,12 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
            (9/29; kept 10/15) and the number still opens the itemised breakdown. */
         const rating = workerStats(w);
         const distMi = (w.distanceMi != null) ? Number(w.distanceMi) : null;
-        const distLine = (!isLive && distMi != null && needsDistanceApproval(w))
+        /* firstAvailable FIRST: the app's require_distance_approval is the server's
+           flag for a far worker on an auto-matched (First Available) request — the
+           15-mile CONVERSION, which never blocks. On "I'll select" the requester is
+           choosing anyway, so no approval and no distance. (Also the call-site shape
+           scripts/web-checks/helper-scope.js guards.) */
+        const distLine = (firstAvailable && !isLive && distMi != null && needsDistanceApproval(w))
           ? `<span class="wcard-distance">${distMi.toFixed(1)} mi from your drop-off</span>` : '';
         const bidCog = Number((r.reviewSnapshot && r.reviewSnapshot.costOfItems) || 0);
         const bidHtml = (bidsMode && !isLive && w.bidAmount != null)
@@ -26554,7 +26559,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
            transfer), Discount (promo + TrustShield), Total. */
         const rating = workerStats(w);
         const distMi = (w.distanceMi != null) ? Number(w.distanceMi) : null;
-        const distLine = (distMi != null && needsDistanceApproval(w))
+        const distLine = (firstAvailable && distMi != null && needsDistanceApproval(w))
           ? `<span class="wcard-distance">${distMi.toFixed(1)} mi from your drop-off</span>` : '';
         const snap = r.reviewSnapshot || {};
         const sf = snap.fee || {};
