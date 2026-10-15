@@ -341,105 +341,20 @@
   .jobfeed .sec-title { color:white; }
   .jobfeed .sec-sub { color:rgba(255,255,255,0.6); }
 
-  .feed-grid {
-    display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
-    position:relative;
-  }
-  .feed-col { display:flex; flex-direction:column; gap:16px; }
-  /* ── JOB CARDS (Figma component states) ── */
-  .job-card {
-    position:relative;
-    background:#fff;
-    border:1px solid #edf0f5;
-    border-radius:18px;
-    padding:15px;
-    display:flex; flex-direction:column; gap:5px;
-    box-shadow:0 3px 7px rgba(0,36,97,0.06);
-    overflow:hidden;
-    transition:transform 0.2s ease, box-shadow 0.2s ease;
-    cursor:default;
-  }
-  .job-card:hover { transform:translateY(-3px); box-shadow:0 10px 22px rgba(0,36,97,0.14); }
-  /* Top-Pay accent variant */
-  .job-card.is-toppay { border-color:#33d975; box-shadow:0 6px 10px rgba(51,217,117,0.2); }
-
-  .jc-top { display:flex; gap:6px; align-items:center; }
-  .jc-cat {
-    display:inline-flex; align-items:center; gap:7px;
-    background:#f2f4f9; border-radius:99px; padding:5px 9px 5px 8px;
-    flex-shrink:0;
-  }
-  .jc-cat svg { width:15px; height:15px; color:var(--green-dark); flex-shrink:0; }
-  .jc-cat span { font-family:'Nunito',sans-serif; font-weight:800; font-size:11px; color:var(--navy); white-space:nowrap; }
-  .jc-posted { margin-left:auto; font-family:'DM Sans',sans-serif; font-weight:600; font-size:10.5px; color:#6b7280; white-space:nowrap; }
-
-  .jc-pay { display:flex; align-items:center; gap:8px; min-height:40px; padding:11px 0 5px; }
-  .jc-pay .amt { font-family:'Nunito',sans-serif; font-weight:900; font-size:30px; line-height:30px; letter-spacing:-1px; color:var(--green-dark); }
-  .jc-pay .per { background:#e2f3e9; border-radius:99px; padding:4px 9px; font-family:'Nunito',sans-serif; font-weight:900; font-size:12px; color:var(--green-dark); }
-  .bid-cta {
-    display:inline-flex; align-items:center; padding:10px 20px; border-radius:12px;
-    background:linear-gradient(135deg, #33d975 0%, #1cb061 100%);
-    box-shadow:0 6px 8px rgba(51,217,117,0.35);
-    font-family:'Nunito',sans-serif; font-weight:900; font-size:16px; color:#fff;
-  }
-
-  .jc-scope { font-family:'DM Sans',sans-serif; font-weight:500; font-size:13px; color:#424242; line-height:18.2px; padding-bottom:6px; }
-
-  .jc-stats { display:flex; flex-wrap:wrap; gap:6px 14px; border-top:1px dashed #e7eaf1; padding-top:11px; }
-  .jc-stat { display:inline-flex; align-items:center; gap:6px; }
-  .jc-stat svg { width:12px; height:12px; color:var(--green-dark); flex-shrink:0; }
-  .jc-stat b { font-family:'Nunito',sans-serif; font-weight:700; font-size:11.5px; color:var(--navy); }
-  .jc-stat small { font-family:'Nunito',sans-serif; font-weight:600; font-size:9.6px; color:#6b7280; margin-left:-2px; }
-
-  .jc-flags { display:flex; flex-wrap:wrap; gap:6px; padding-top:6px; }
+  /* ── Real Gopher Go screens (owner 10/15) — replaced the HTML job-card
+     mock-up and its ~95 lines of card/lock/flag-variant styles. ── */
+  .feed-phones { display:flex; justify-content:center; gap:32px; margin:40px 0 0; }
+  .feed-phones figure { margin:0; flex:0 1 260px; text-align:center; }
+  .feed-phones img { width:100%; max-width:260px; height:auto; display:block; margin:0 auto;
+    filter:drop-shadow(0 22px 40px rgba(0,0,0,0.45)); }
+  .feed-phones figcaption { margin-top:14px; font-family:'Nunito',sans-serif; font-weight:800;
+    font-size:14px; color:rgba(255,255,255,0.82); }
+  /* .flag is still used elsewhere on this page */
   .flag {
     display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:7px;
     font-family:'Nunito',sans-serif; font-weight:800; font-size:10px; white-space:nowrap;
   }
   .flag svg { width:12px; height:12px; flex-shrink:0; }
-  .flag.f-warn { background:#fff7c2; color:#92580d; }
-  .flag.f-good { background:#e2f3e9; color:#1cb061; }
-  .flag.f-info { background:#eef1f7; color:#1a3a7a; }
-  .flag.f-iq { background:#fff; border:1px dashed currentColor; padding:5px 9px; }
-  .flag.f-iq.iq-warn { color:#92580d; }
-  .flag.f-iq.iq-info { color:#1a3a7a; }
-  .iqm { display:inline-flex; align-items:center; justify-content:center; padding:1px 4px; border-radius:4px; background:currentColor; }
-  .iqm span { font-family:'Nunito',sans-serif; font-weight:900; font-size:8px; letter-spacing:0.3px; color:#fff; }
-
-  /* Ribbons (top-right) */
-  /* ── Corner rail (canonical, ported from assets/css/gopher-connect-uc.css +
-     the Go prototype). The source mark is a FRAMED WHITE PILL sitting IN the top
-     row, not a flush ribbon: 15px lockup, 4px/8px padding, 9px radius, hairline
-     border, soft shadow — identical sizing for the Connect and Deals marks.
-     The rail is a COLUMN so a TOP PAY badge stacks ABOVE the source mark instead
-     of colliding with it (owner, 2026-08-26), and `posted` moved to .jc-foot so
-     nothing crowds the corner. */
-  .jc-corner { margin-left:auto; display:inline-flex; flex-direction:column;
-    align-items:flex-end; gap:7px; flex:0 0 auto; }
-  .jc-badge { display:inline-flex; align-items:center; gap:5px; border-radius:9px; }
-  .jc-badge.mark { background:#fff; border:1px solid #e4e8f0; padding:4px 8px;
-    box-shadow:0 1px 3px rgba(0,36,97,.08); }
-  .jc-badge.mark img { height:15px; width:auto; display:block; }
-  .jc-badge.mark .lk { display:inline-flex; width:11px; height:11px; color:#7a869a; }
-  .jc-badge.mark .lk svg { width:11px; height:11px; display:block; }
-  .jc-badge.top { background:linear-gradient(135deg,#33d975 0%,#1cb061 100%); color:#fff;
-    font-family:'Nunito',sans-serif; font-weight:900; font-size:9.5px; letter-spacing:.3px;
-    padding:5px 10px; white-space:nowrap; }
-  /* the category chip yields rather than pushing the rail off the card */
-  .jc-top .jc-cat { flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .jc-foot { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:11px; }
-  .jc-foot .jc-flags { padding-top:0; flex:1 1 auto; }
-  .jc-foot .jc-posted { margin-left:auto; flex:0 0 auto; }
-
-  /* Locked states */
-  .lockwrap { opacity:0.45; display:flex; flex-direction:column; gap:5px; filter:saturate(0.6); }
-  .lock-cta {
-    display:flex; align-items:center; gap:8px; background:#eef0f8; border-radius:11px; padding:9px 11px; margin-top:6px;
-  }
-  .lock-cta > svg { width:13px; height:13px; color:var(--navy); flex-shrink:0; }
-  .lock-cta p { font-family:'Nunito',sans-serif; font-weight:800; font-size:11.5px; color:var(--navy); line-height:1.25; flex:1; }
-  .lock-cta p b { font-family:'Nunito',sans-serif; font-weight:900; color:var(--green-dark); }
-  .lock-cta .lgo { background:var(--green-dark); border-radius:99px; padding:6px 11px; font-family:'Nunito',sans-serif; font-weight:900; font-size:11px; color:#fff; white-space:nowrap; flex-shrink:0; }
 
   .feed-cta { text-align:center; margin-top:40px; }
   .feed-cta p { color:rgba(255,255,255,0.55); font-size:15px; margin-bottom:20px; }
@@ -517,27 +432,12 @@
 
   /* Share-card visual */
   .gg-feature-visual { display:flex; justify-content:center; }
-  .gg-share-card {
-    width:100%; max-width:300px; background:#fff; border-radius:20px;
-    padding:26px 24px; box-shadow:0 20px 50px rgba(0,0,0,0.4);
+  /* Real app screen in place of the old HTML share card (owner 10/15). */
+  .gg-feature-phone {
+    width:100%; max-width:260px; height:auto; display:block;
+    filter:drop-shadow(0 20px 50px rgba(0,0,0,0.45));
     animation:ggFloat 5s ease-in-out infinite;
   }
-  .gg-share-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-  .gg-share-label { font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:var(--navy); }
-  .gg-share-dot { width:9px; height:9px; border-radius:50%; background:var(--green); animation:blink 1.6s infinite; }
-  .gg-qr { display:flex; justify-content:center; padding:10px 0 16px; }
-  .gg-qr img { width:150px; height:auto; display:block; }
-  .gg-share-link {
-    text-align:center; font-family:'DM Sans',sans-serif; font-size:14px;
-    color:var(--muted); background:var(--gray); border-radius:8px; padding:9px;
-    margin-bottom:16px;
-  }
-  .gg-share-link strong { color:var(--green-dark); }
-  .gg-share-foot {
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    font-family:'Nunito',sans-serif; font-weight:700; font-size:12.5px; color:var(--navy);
-  }
-  .gg-share-pulse { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(51,217,117,0.6); animation:ggPulse 1.8s infinite; }
 
   /* Supporting feature cards */
   .gg-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
@@ -560,7 +460,7 @@
   @keyframes ggFloat { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
   @keyframes ggPulse { 0% { box-shadow:0 0 0 0 rgba(51,217,117,0.5); } 70% { box-shadow:0 0 0 10px rgba(51,217,117,0); } 100% { box-shadow:0 0 0 0 rgba(51,217,117,0); } }
   @media (prefers-reduced-motion: reduce) {
-    .gg-feature, .gg-share-card, .gg-share-pulse, .gg-share-dot { animation:none; }
+    .gg-feature, .gg-feature-phone { animation:none; }
   }
 
   /* ── HOW IT WORKS ── */
@@ -728,11 +628,14 @@
     .hero-phone { order:2; }
     .device { width:250px; }
     .pillars { grid-template-columns:1fr 1fr; }
-    .feed-grid { grid-template-columns:1fr; }
+    /* phones: swipe sideways, one and a bit on screen */
+    .feed-phones { justify-content:flex-start; overflow-x:auto; scroll-snap-type:x mandatory; gap:18px; padding-bottom:8px; }
+    .feed-phones figure { flex:0 0 72%; scroll-snap-align:center; }
     .gg-grid { grid-template-columns:1fr; }
     .gogetter { padding:64px 24px; }
     .gg-feature { grid-template-columns:1fr; gap:36px; padding:32px 26px; }
     .gg-feature-visual { order:-1; }
+    .gg-feature-phone { max-width:200px; }
     .gg-feature-copy h3 { font-size:32px; }
     .gg-feature-cta { flex-direction:column; align-items:flex-start; gap:16px; }
     .free-strip-inner { gap:18px; }
@@ -1209,75 +1112,16 @@
     <p class="sec-label">Real jobs, right now</p>
     <h2 class="sec-title" style="color:white">From $10 errands to<br>$500 paydays.</h2>
     <p class="sec-sub">A taste of what Gophers pick up every day. Hundreds post across the US — these could be in your feed by tonight.</p>
-    <div class="feed-grid">
-      <div class="feed-col">
-        <div class="job-card is-toppay">
-          <div class="jc-top"><span class="jc-cat"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2Z"/></svg><span>Seasonal</span></span><span class="jc-corner"><span class="jc-badge top">&#9733; TOP PAY</span></span></div>
-          <div class="jc-pay"><span class="amt">$275</span><span class="per">~$55/hr</span></div>
-          <div class="jc-scope">Install Christmas lights on my 2-story house. All lights and hooks ready to go.</div>
-          <div class="jc-stats"><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><b>2.4 mi</b><small>away</small></span><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg><b>~5 hr</b></span><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg><b>This week</b></span></div>
-          <div class="jc-foot">
-<div class="jc-flags"><span class="flag f-warn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>Ladder needed</span><span class="flag f-good">Materials ready</span></div>
-<span class="jc-posted">3 min ago</span>
-</div>
-        </div>
-        <div class="job-card">
-          <div class="jc-top"><span class="jc-cat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 4.5a4 4 0 0 0-5.3 5.1l-6.2 6.2 2.8 2.8 6.2-6.2a4 4 0 0 0 5.1-5.3l-2.6 2.6-2.1-2.1 2.1-2.1Z"/></svg><span>Hourly / Day Labor</span></span><span class="jc-corner"><span class="jc-badge mark connect"><span class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><img src="assets/img/connect-mark.png" alt="Gopher Connect"></span></span></div>
-<div class="lockwrap">
-                        <div class="jc-pay"><span class="amt">$200</span><span class="per">~$50/hr</span></div>
-            <div class="jc-scope">Need 2 people for 2 hrs to break down tables &amp; chairs after a wedding reception.</div>
-            <div class="jc-stats"><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><b>4.0 mi</b><small>away</small></span><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg><b>~2 hr</b></span></div>
-            <div class="jc-foot">
-<div class="jc-flags"><span class="flag f-info">1 of 2 crew</span></div>
-<span class="jc-posted">19 min ago</span>
-</div>
-          </div>
-          <div class="lock-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><p>Connect job &mdash; for <b>Gopher Elite &amp; Pros</b></p><span class="lgo">Tier up</span></div>
-        </div>
-      </div>
-      <div class="feed-col">
-        <div class="job-card">
-          <div class="jc-top"><span class="jc-cat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h11v9H2zM13 10h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.7"/><circle cx="17" cy="18" r="1.7"/></svg><span>Moving</span></span></div>
-          <div class="jc-pay"><span class="bid-cta">Submit a Bid</span></div>
-          <div class="jc-scope">Need 2 people to move me from a small 1-bedroom apartment to another 1-bedroom across town. Not much stuff &mdash; just need the muscle.</div>
-          <div class="jc-stats"><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><b>5.4 mi</b><small>away</small></span><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg><b>~3 hr</b></span><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg><b>Sat 9 AM</b></span></div>
-          <div class="jc-foot">
-<div class="jc-flags"><span class="flag f-info">You staff 2</span><span class="flag f-warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4v-4h4v-4h4V8h4"/></svg>Stairs at pickup</span></div>
-<span class="jc-posted">8 min ago</span>
-</div>
-        </div>
-        <div class="job-card">
-          <div class="jc-top"><span class="jc-cat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l8-8M13 7l4 4 3.5-3.5-4-4L13 7Z"/><path d="M11 9l4 4"/></svg><span>Handyman</span></span></div>
-          <div class="jc-pay"><span class="amt">$75</span><span class="per">~$50/hr</span></div>
-          <div class="jc-scope">Hang a 65&quot; TV. I have the mount. Drywall install, one-story home.</div>
-          <div class="jc-stats"><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><b>3.1 mi</b><small>away</small></span><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg><b>~1.5 hr</b></span></div>
-          <div class="jc-foot">
-<div class="jc-flags"><span class="flag f-info">Mount supplied</span><span class="flag f-iq iq-warn"><span class="iqm"><span>iQ</span></span>Heavy item</span><span class="flag f-iq iq-info"><span class="iqm"><span>iQ</span></span>Stud-mount</span></div>
-<span class="jc-posted">11 min ago</span>
-</div>
-        </div>
-      </div>
-      <div class="feed-col">
-        <div class="job-card">
-          <div class="jc-top"><span class="jc-cat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span>Delivery / Errand</span></span></div>
-          <div class="jc-pay"><span class="amt">$50</span><span class="per">~$40/hr</span></div>
-          <div class="jc-scope">Anniversary emergency! Need a bouquet delivered. Text me pics of what&rsquo;s available, $60&ndash;$80.</div>
-          <div class="jc-stats"><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><b>1.8 mi</b><small>away</small></span><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg><b>~1 hr</b></span><span class="jc-stat"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg><b>Now</b></span></div>
-          <div class="jc-foot">
-<div class="jc-flags"><span class="flag f-warn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>Time-sensitive</span><span class="flag f-good">No heavy lift</span></div>
-<span class="jc-posted">4 min ago</span>
-</div>
-        </div>
-        <div class="job-card">
-          <div class="jc-top"><span class="jc-cat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span>Delivery / Errand</span></span><span class="jc-corner"><span class="jc-badge mark deal"><span class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><img src="assets/img/deals-mark.png" alt="Gopher Deals"></span></span></div>
-<div class="lockwrap">
-                        <div class="jc-pay"><span class="amt">$10</span><span class="per">~$30/hr</span></div>
-            <div class="jc-scope">Deals Request &mdash; My Way Tavern Delivery</div>
-            <div class="jc-stats"><span class="jc-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><b>0.9 mi</b><small>away</small></span><span class="jc-stat"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg><b>Now</b></span></div>
-          </div>
-          <div class="lock-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><p>Gopher Deal &mdash; unlocks once <b>verified</b></p><span class="lgo">Tier up</span></div>
-        </div>
-      </div>
+    <!-- REAL Gopher Go screens (101 captures, 10/13), owner 10/15: real app
+         screens instead of the HTML job-card mock-up. Browse -> name your price ->
+         get paid. Re-run after the G40-604 app restyle; same filenames. -->
+    <div class="feed-phones">
+      <figure><img src="assets/img/go-feed-card-expanded.webp" width="520" height="1120" loading="lazy"
+           alt="Gopher Go: jobs available near you with what you earn, one opened to show the details"><figcaption>See what's near you &mdash; and what it pays</figcaption></figure>
+      <figure><img src="assets/img/go-feed-offer.webp" width="520" height="1120" loading="lazy"
+           alt="Gopher Go: Make an offer, naming your own price for a request with no price set"><figcaption>No price set? Name yours</figcaption></figure>
+      <figure><img src="assets/img/go-feed-history.webp" width="520" height="1120" loading="lazy"
+           alt="Gopher Go: request history with what you earned on each job"><figcaption>Get paid &mdash; every job, on the record</figcaption></figure>
     </div>
     <div class="feed-cta">
       <p>Just a sample — the real feed is whatever's posting near you, the moment it posts.</p>
@@ -1312,18 +1156,14 @@
           <a href="blog-refer-yourself.html" class="gg-link">Read how Refer Yourself works <span aria-hidden="true">&rarr;</span></a>
         </div>
       </div>
-      <div class="gg-feature-visual" aria-hidden="true">
-        <div class="gg-share-card">
-          <div class="gg-share-top">
-            <span class="gg-share-label">Your refer yourself link</span>
-            <span class="gg-share-dot"></span>
-          </div>
-          <div class="gg-qr">
-            <img src="assets/img/go-gg-share-label.png" alt="Scan John Newbury's Gopher Refer Yourself QR code" width="150" height="148">
-          </div>
-          <div class="gg-share-link">gophergo.io/r/<strong>you</strong></div>
-          <div class="gg-share-foot"><span class="gg-share-pulse"></span> New request routed to you</div>
-        </div>
+      <div class="gg-feature-visual">
+        <!-- The REAL Gopher Go Refer screen (101 capture, 10/13), owner 10/15: real
+             screens instead of HTML mock-ups. Its QR is the one this card always
+             carried (api.gophergo.io/self-referral/1), re-drawn into the screen;
+             the capture's own QR was a placeholder (example.com). Verified to scan. -->
+        <img class="gg-feature-phone" src="assets/img/go-refer-yourself-phone.webp"
+             alt="The Gopher Go app's Refer Yourself screen, with a scannable QR code, Refer via SMS and Refer via email"
+             width="640" height="1379">
       </div>
     </div>
 
