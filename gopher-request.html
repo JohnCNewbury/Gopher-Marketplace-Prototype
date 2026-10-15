@@ -14458,6 +14458,9 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       scheduledForLater: state.scheduleType !== 'now',
       ageRestricted: state.ageRestricted,
       idRequiredAtCompletion: state.ageRestricted || state.idRequiredAtCompletion,
+      // G40-628 (D6): double-flagged + the word; never on an age-restricted request.
+      ageKeywordDeclined: !state.ageRestricted && !!state.ageKeywordDeclined,
+      ageKeyword: (!state.ageRestricted && state.ageKeywordDeclined) ? (state.ageKeyword || '') : '',
       // Pre-clearance metadata for age-restricted delivery. Does NOT replace the
       // in-person ID-at-exchange requirement (idRequiredAtCompletion stays); it
       // just lets the completion gate + worker view show "ID pre-verified".
@@ -14572,6 +14575,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // age-restricted" but a keyword remained, so ID is still required at handoff.
     // Both reset when the description changes; both carried into the saved request.
     ageKeywordAck: false,
+    // G40-628 (D6): the request is DOUBLE-FLAGGED ("No", then "Submit as-is" on
+    // "You'll need your ID for this one"), and the word that tripped it. Reset
+    // with the ack; carried into the saved request for HQ's tag and filter.
+    ageKeywordDeclined: false,
+    ageKeyword: '',
     // Age-restricted "no purchase" guardrail: agePurchaseAck = the
     // no-purchase warning was acknowledged this attempt (re-armed if purchase is
     // toggled back on); agePurchaseDismissed = "Don't show me this again" for the
@@ -14688,7 +14696,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
      session-level "don't show me this again" preference. */
   const CATEGORY_SCOPED_KEYS = [
     // Delivery — age-restricted + purchase gates
-    'ageRestricted','ageKeywordAck','agePurchaseAck','idRequiredAtCompletion','idVerification',
+    'ageRestricted','ageKeywordAck','ageKeywordDeclined','ageKeyword','agePurchaseAck','idRequiredAtCompletion','idVerification',
     'itemsPurchased','costOfItems',
     // Ride — rider info
     'numRiders','numBags',
@@ -17399,7 +17407,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       state.specialInstructions = $si.value;
       // Ride's age check reads this field (G40-623), so editing it re-arms the check
       // exactly as editing the description does.
-      if(state.category === 'ride'){ state.ageKeywordAck = false; state.idRequiredAtCompletion = false; }
+      if(state.category === 'ride'){ state.ageKeywordAck = false; state.idRequiredAtCompletion = false; state.ageKeywordDeclined = false; state.ageKeyword = ''; }
     });
 
     // Update state on input WITHOUT a full re-render so the field keeps focus
@@ -17414,6 +17422,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         // blur / Continue.
         state.ageKeywordAck = false;
         state.idRequiredAtCompletion = false;
+        state.ageKeywordDeclined = false;
+        state.ageKeyword = '';
         state.userAcknowledgedCategory = false;
         if(state.step === 2 && isVisible('describe')){
           $btnNext.classList.toggle('is-disabled', !$desc.value.trim());
@@ -18464,11 +18474,50 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
         overlay.hidden = true;
         render();
       });
+      /* G40-628 (D6, John 10/15): "No" no longer goes straight on. It opens
+         "You'll need your ID for this one"; only "Submit as-is" there goes on,
+         DOUBLE-FLAGGED. Same logic as the app (ageKeywordCheck.js). */
       if(noBtn) noBtn.addEventListener('click', () => {
-        state.ageKeywordAck = true;
-        // If a keyword is still present, flag ID-required-at-completion and proceed.
-        if(findAgeRestrictedKeyword(ageScanField().text)) state.idRequiredAtCompletion = true;
         overlay.hidden = true;
+        const kw = findAgeRestrictedKeyword(ageScanField().text);
+        if(!kw){ state.ageKeywordAck = true; advanceFromJobDetails(); return; }
+        const warn = document.getElementById('ageIdWarnOverlay');
+        if(!warn){   // markup missing: fail safe, flagged as before (never trap the user)
+          state.ageKeywordAck = true; state.idRequiredAtCompletion = true;
+          state.ageKeywordDeclined = true; state.ageKeyword = String(kw).slice(0, 100);
+          advanceFromJobDetails(); return;
+        }
+        const termEl = document.getElementById('ageIdWarnTerm');
+        if(termEl) termEl.textContent = kw;
+        warn.hidden = false;
+      });
+      const editBtn = document.getElementById('ageIdWarnEdit');
+      const submitBtn = document.getElementById('ageIdWarnSubmit');
+      /* Edit my request: the final backstop. Back to the box with the word
+         selected, as the under-21 block does; nothing is acknowledged, so the
+         next Continue asks again (the app's Edit clears its "No" the same way). */
+      if(editBtn) editBtn.addEventListener('click', () => {
+        document.getElementById('ageIdWarnOverlay').hidden = true;
+        const d = document.getElementById(ageScanField().inputId);
+        if(!d) return;
+        const m = findAgeRestrictedMatch(d.value);
+        try { d.focus({ preventScroll: true }); } catch(_){ try { d.focus(); } catch(__){} }
+        if(m && m.start >= 0){ try { d.setSelectionRange(m.start, m.end); } catch(_){} }
+        try { d.scrollIntoView({ block: 'center' }); } catch(_){}
+      });
+      /* Submit as-is: DOUBLE-FLAGGED. ID required at completion (the worker checks
+         it at Complete) AND the word, carried on the request for HQ's tag/filter
+         (the server's orders.age_keyword_declined + age_keyword, max 100). Still
+         NOT age-restricted: no A/R fee, no TrustShield $1. */
+      if(submitBtn) submitBtn.addEventListener('click', () => {
+        document.getElementById('ageIdWarnOverlay').hidden = true;
+        const kw = findAgeRestrictedKeyword(ageScanField().text);
+        state.ageKeywordAck = true;
+        if(kw){
+          state.idRequiredAtCompletion = true;
+          state.ageKeywordDeclined = true;
+          state.ageKeyword = String(kw).trim().slice(0, 100);
+        }
         advanceFromJobDetails();
       });
     }
@@ -20681,13 +20730,31 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
     </div>
     <h4 id="ageKwTitle">This looks age-restricted</h4>
     <p class="gr-modal-sub">Your request mentions <b>"<span id="ageKwTerm">this item</span>"</b>, which is commonly an age-restricted item. To keep everyone compliant with legal and safe-guarding protocols, please confirm whether this is an age-restricted request before continuing.</p>
-    <p style="text-align:center;background:#fdf3f4;border:1px solid #f0d2d7;border-radius:12px;padding:13px 15px;margin:4px 0 16px;font-family:'DM Sans',sans-serif;font-size:13px;color:#8a3a46;line-height:1.55;">Submitting an age-restricted request <b style="color:#c44257;font-weight:800;">without a valid ID at completion</b> means the worker <b style="color:#c44257;font-weight:800;">cannot release the items</b>. The order may be canceled, you may still be charged worker time/fees, and repeat issues can lead to account review.</p>
+    <p style="text-align:center;background:#fdf3f4;border:1px solid #f0d2d7;border-radius:12px;padding:13px 15px;margin:4px 0 16px;font-family:'DM Sans',sans-serif;font-size:13px;color:#8a3a46;line-height:1.55;">Submitting an age-restricted request <b style="color:#c44257;font-weight:800;">without a valid ID at completion</b> means the worker <b style="color:#c44257;font-weight:800;">cannot release the items</b>. The order is non-refundable: it pays your worker for their time and anything they bought for you, and repeat issues can lead to account review.</p>
     <button type="button" class="gr-modal-btn" id="ageKwYes">Yes — this IS an age-restricted request</button>
     <!-- G40-308 Guide A + owner's pick AR-NO-BUTTON = A (2:23 PM ET 10/14):
          the outlined secondary, not red (red is for destructive confirms only),
          stacked under Yes as the app's BackPill. Spacing inline, as the
          sibling sheets do (no local modal CSS). -->
     <button type="button" class="gr-modal-btn gr-modal-btn-secondary" id="ageKwNo" style="margin-top:8px;">No — this is NOT age-restricted</button>
+  </div>
+</div>
+
+<!-- G40-628 (D6, John 10/15): "No" on the sheet above opens THIS one. Owner-approved
+     words, verbatim; the app shows the same sheet (stepFlow/ageKeywordCheck.js
+     idWarningSheet). G40-308 Guide A + G40-595 pills: Edit my request is the primary
+     (the final backstop: back to the box with the word selected), Submit as-is the
+     outlined secondary, which DOUBLE-FLAGS the request (ID required at completion +
+     the word, tracked). No dismiss, as the sheet above: the user picks one. -->
+<div class="gr-modal-overlay" id="ageIdWarnOverlay" hidden>
+  <div class="gr-modal" role="dialog" aria-modal="true" aria-labelledby="ageIdWarnTitle">
+    <div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;" aria-hidden="true">🪪</div>
+    <h4 id="ageIdWarnTitle">You’ll need your ID for this one</h4>
+    <p class="gr-modal-sub">Your request mentions <b>“<span id="ageIdWarnTerm">this item</span>”</b>, which is almost always an age-restricted item. Only submit it if you can show a valid ID proving you’re 21 or older when it’s delivered.</p>
+    <p class="gr-modal-sub">If you can’t show ID, your worker can’t hand over the items. The order is non-refundable: it pays your worker for their time and anything they bought for you.</p>
+    <p style="text-align:center;background:#fdf3f4;border:1px solid #f0d2d7;border-radius:12px;padding:13px 15px;margin:4px 0 16px;font-family:'DM Sans',sans-serif;font-size:13px;color:#8a3a46;line-height:1.55;">Flagged by mistake? Sorry about that. Age-restricted items are tightly regulated, and these checks protect you, your worker and Gopher. A real person reviews every request flagged like this.</p>
+    <button type="button" class="gr-modal-btn" id="ageIdWarnEdit">Edit my request</button>
+    <button type="button" class="gr-modal-btn gr-modal-btn-secondary" id="ageIdWarnSubmit" style="margin-top:8px;">Submit as-is</button>
   </div>
 </div>
 
@@ -25188,6 +25255,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       numBags:   data.numBags   || null,
       idVerification: data.idVerification || null,
       idRequiredAtCompletion: !!data.idRequiredAtCompletion,
+      ageKeywordDeclined: !!data.ageKeywordDeclined,   // G40-628 (D6)
+      ageKeyword: data.ageKeywordDeclined ? String(data.ageKeyword || '').slice(0, 100) : '',
       bidsMode: !!data.bidsMode,
       firstAvailable: !!data.firstAvailable,
       workerSelection: _mode,
@@ -27085,8 +27154,46 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     if(bidsMode && w && w.bidAmount != null) return Number(w.bidAmount) || 0;
     return Number(r && r.perWorkerCost) || 0;
   };
-  window.__agreedTotalFor = function(r, hiredList){
-    return (hiredList || []).reduce((sum, w) => sum + window.__agreedAmountFor(r, w), 0);
+  /* ── The agreed TOTAL after a hire: what the REQUESTER pays ───────────────
+     ⛔ PL-291 (John 10/15): this used to SUM __agreedAmountFor above, which is
+     WORKER PAY, and startJob() printed it as "$X total". Accepting Tess B.'s
+     $85.31 counter on GR-00129 then read "$28.00 total" directly above a recap
+     saying Total $85.31, and a bid hire read the bare bid.
+     The app shows the order's total_charge after every hire (offer + items +
+     fees − discounts: livePriceRows.js "Total", LiveReviewCard.js), so this is
+     the request's frozen deal total. acceptCounterOffer and the cost
+     adjustment already keep reviewSnapshot.total current, and a bid hire
+     writes the bid onto it (__applyHiredBid). Null when there is no snapshot
+     (a seeded demo row): the caller keeps the label it already has. */
+  window.__agreedTotalFor = function(r){
+    const snap = r && r.reviewSnapshot;
+    const t = snap ? Number(snap.total) : NaN;
+    return (snap && snap.total != null && isFinite(t)) ? t : null;
+  };
+  /* PL-291: hiring a BID agrees that bid's price. The app prices the hired bid
+     (orders/summary with the bid as the offer, requestOrder.js hireBid) and the
+     order then carries it, so the recap and the total both show the bid's deal.
+     Written onto the frozen deal exactly as acceptCounterOffer writes a
+     counter's. Idempotent: the breakdown reads only the flat fees and the
+     recorded discounts, so a second call lands on the same numbers. */
+  window.__applyHiredBid = function(r, w){
+    const snap = r && r.reviewSnapshot;
+    if(!snap || !w || w.bidAmount == null) return false;
+    const b = window.__bidBreakdown(r, w);
+    const fullFees = b.gopherFee + b.ageFee + b.instantTransfer;
+    snap.fee = Object.assign({}, snap.fee || {}, {
+      gopherFee: b.gopherFee, fullGopherFee: b.gopherFee,
+      ageFee: b.ageFee, fullAgeFee: b.ageFee,
+      instantTransfer: b.instantTransfer, fullInstantTransfer: b.instantTransfer,
+      promoDiscount: b.promoDiscount, trustShieldDiscount: b.tsDiscount,
+      fullRequestFee: fullFees,
+      requestFee: fullFees - b.promoDiscount - b.tsDiscount,
+      cogOffer: b.cog + b.offer, gmvTotal: b.total,
+    });
+    snap.workerPay = b.offer;
+    snap.total = b.total;
+    r.perWorkerCost = b.offer;   // the worker's agreed pay, as a counter sets it
+    return true;
   };
   /* bidsMode is recorded in BOTH places at creation — on the record (read by the
      worker-card bid column) and inside reviewSnapshot. Demo/seeded requests set
@@ -27141,7 +27248,10 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     /* Discounts carry across as the snapshot recorded them, capped so they can
        never exceed the fee side — the same cap computeConnectFee applies. */
     const promoDisc = Math.min(num(fee.promoDiscount), feesPre);
-    const tsDisc    = Math.min(num(fee.tsDiscount), feesPre - promoDisc);
+    /* PL-291: computeRequestFee stores the TrustShield $1 as
+       trustShieldDiscount; reading only fee.tsDiscount (never set) dropped it,
+       so a TrustShield holder's bid total was $1 high. */
+    const tsDisc    = Math.min(num(fee.trustShieldDiscount != null ? fee.trustShieldDiscount : fee.tsDiscount), feesPre - promoDisc);
 
     const feesPost = feesPre - promoDisc - tsDisc;
     const total    = cog + offer + feesPost;
@@ -27211,7 +27321,10 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       delete r.threads[nm];
       if(dashState.inboxThreadId === r.id + '::' + nm) dashState.inboxThreadId = r.id;
     }
-    const finalTotal = window.__agreedTotalFor(r, hiredList);
+    /* PL-291: the total is what the requester pays (see __agreedTotalFor). A
+       hired bid becomes the agreed deal first, as an accepted counter does. */
+    if(window.__isBidsRequest(r) && hiredCount === 1) window.__applyHiredBid(r, hiredList[0]);
+    const finalTotal = window.__agreedTotalFor(r);
 
     const goScheduled = !!r.scheduledForLater;
     r.status         = goScheduled ? 'scheduled' : 'in-progress';
@@ -27226,7 +27339,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     r.worker = hiredCount === 1
       ? `${lead.name} (${tierLabel(lead.badge || lead.tier)})`
       : `${leadName} +${hiredCount - 1} · crew of ${hiredCount}`;
-    r.amount = `$${finalTotal.toFixed(2)} total`;
+    if(finalTotal != null) r.amount = `$${finalTotal.toFixed(2)} total`;
     r.when   = goScheduled ? r.when : 'Started just now · matching complete';
 
     // Per-worker enrichment — each crew member gets their own phone, rating,
