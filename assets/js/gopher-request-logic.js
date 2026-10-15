@@ -432,6 +432,121 @@
     return true;
   }
 
+  /* ── THE SERVER'S suggested-offer models, for Request (D11 + D12) ─────────────
+     The Request APP computes no suggestion: it shows POST orders/smart_price,
+     i.e. gopher-backend-api helpers/suggested_pricing.js. John, 2026-10-13: "The
+     logic MUST be the same on Web and App", and the web adopts the server's
+     NEWER owner decisions (APP-DIVERGENCE-2026-10-13.md, D11 + D12):
+       D11 · Delivery = G40-502 owner anchors (9/21): $10 -> 10, $100 -> 20,
+             $200 -> 30, then the last segment's slope (+$0.10 per $), floor $10,
+             +/-25%. The server's distance component is OFF (CALIBRATED: false),
+             so Delivery prices on the cost of items alone, as here.
+       D12 · Ride = G40-535 WORKER PAY (9/23): variable = (tapered miles +
+             $0.55/min) / 2; the band on the variable, THEN the $8 floor, THEN
+             x1.15 when scheduled. No platform fee and no 8%: checkout adds
+             those, so a suggestion carrying them charged both twice.
+     ⛔ Same shape as the server, step for step. Harness section 8 RUNS the
+     server's module beside these and FAILS on any difference.
+     ⛔ Connect keeps suggestedOffer / OFFER_TABLE above. It is a separate,
+     later product (John 10/14); do not repoint it here. */
+  var DELIVERY_MODEL_VERSION = 'g40-502-owner-anchors-2026-09-21';
+  var DELIVERY_ANCHORS = [[10, 10], [100, 20], [200, 30]];
+  var DELIVERY_MIN_SUGGESTION = 10;
+  var OFFER_BAND = 0.25;
+  function deliveryCostComponent(costOfGoods){
+    var c = Number(costOfGoods);
+    if(!isFinite(c) || c <= DELIVERY_ANCHORS[0][0]) return DELIVERY_ANCHORS[0][1];
+    for(var i = 0; i < DELIVERY_ANCHORS.length - 1; i++){
+      var x0 = DELIVERY_ANCHORS[i][0], y0 = DELIVERY_ANCHORS[i][1];
+      var x1 = DELIVERY_ANCHORS[i + 1][0], y1 = DELIVERY_ANCHORS[i + 1][1];
+      if(c <= x1) return y0 + ((c - x0) * (y1 - y0)) / (x1 - x0);
+    }
+    var a = DELIVERY_ANCHORS[DELIVERY_ANCHORS.length - 2];
+    var b = DELIVERY_ANCHORS[DELIVERY_ANCHORS.length - 1];
+    return b[1] + ((c - b[0]) * (b[1] - a[1])) / (b[0] - a[0]);
+  }
+  function deliverySuggestedOffer(costOfGoods){
+    var suggested = Math.max(DELIVERY_MIN_SUGGESTION, Math.round(deliveryCostComponent(costOfGoods)));
+    return {
+      low: Math.round(suggested * (1 - OFFER_BAND)),
+      suggested: suggested,
+      generous: Math.round(suggested * (1 + OFFER_BAND))
+    };
+  }
+
+  /* ── THE SERVER'S coupon discount, for Request (D9, ruled 2026-10-15) ──────────
+     John: the website copies the REAL coupon rules. This is gopher-backend-api
+     helpers/coupon_discount.js couponDiscount(), step for step: a coupon reduces
+     the Gopher fee AND the instant-transfer fee always (owner rule 2026-09-10),
+     plus the age-restricted fee NET of TrustShield only when the coupon carries
+     its 21+ flag (age_restricted_discount); percentOff or amountOff. All amounts
+     in dollars, as the server's summary passes them. Harness section 8 RUNS the
+     server's function beside this one and FAILS on any difference.
+     ⛔ PL-289 (2026-10-15, John: "Fix it, server + web"): a fixed-amount 21+
+     coupon never takes more than its value. The remainder used to be reduced only
+     on the transfer-fee branch, so a $2 coupon could take $3.99. Fixed here in
+     step with gopher-backend-api !752; ship this copy only once that is live. */
+  function couponDiscount(gopherFee, transferFee, coupon, ageRestrictedFee){
+    var transfer_fee = +transferFee, gopher_fee = +gopherFee;
+    var age_restricted_fee = ageRestrictedFee || 0;
+    var discount_amount = coupon.value, rest_to_discount = coupon.value;
+    var calc = 0;
+    if(coupon.type === 'amountOff'){
+      if(gopher_fee < discount_amount) calc += gopher_fee; else calc += discount_amount;
+      if(calc < discount_amount){
+        discount_amount -= calc;
+        if(transfer_fee < discount_amount) calc += transfer_fee; else calc += discount_amount;
+      }
+      rest_to_discount = coupon.value - calc;   // PL-289: whatever legs ran, never the full value again
+      if(coupon.age_restricted_discount && age_restricted_fee){
+        if(rest_to_discount > age_restricted_fee) calc += age_restricted_fee;
+        else calc += rest_to_discount;
+      }
+    }
+    if(coupon.type === 'percentOff'){
+      calc += gopher_fee * (+discount_amount / 100);
+      calc += transfer_fee * (+discount_amount / 100);
+      if(coupon.age_restricted_discount && age_restricted_fee)
+        calc += age_restricted_fee * (+discount_amount / 100);
+    }
+    return { discount_amount: +calc.toFixed(2) };
+  }
+
+  var RIDE_MODEL_VERSION = 'g40-535-ride-worker-pay-2026-09-23';
+  var RIDE_PER_MINUTE = 0.55, RIDE_MIN_FLOOR = 8.0, RIDE_SCHEDULED_UPLIFT = 0.15;
+  var RIDE_MILE_TIERS_SRV = [[0, 5, 2.4], [5, 15, 1.8], [15, 40, 1.35], [40, Infinity, 1.05]];
+  function rideMileageCostSrv(miles){
+    var m = Number(miles);
+    if(!isFinite(m) || m <= 0) return 0;
+    return RIDE_MILE_TIERS_SRV.reduce(function(total, t){
+      return total + Math.max(0, Math.min(m, t[1]) - t[0]) * t[2];
+    }, 0);
+  }
+  /* Minutes when none are known: the server's measured fit, 9.8 + 1.01 x miles. */
+  function rideMinutesFromMiles(miles){
+    var m = Number(miles);
+    if(!isFinite(m) || m <= 0) return 0;
+    return 9.8 + 1.01 * m;
+  }
+  function rideWorkerPayOffer(miles, minutes, scheduled){
+    var m = Number(miles);
+    if(!isFinite(m) || m <= 0) m = 0;
+    var sent = parseFloat(minutes);
+    var mins = (isFinite(sent) && sent > 0) ? sent : rideMinutesFromMiles(m);
+    var variable = (rideMileageCostSrv(m) + Math.max(0, mins) * RIDE_PER_MINUTE) / 2;
+    var at = function(mult){
+      var pay = Math.max(variable * mult, RIDE_MIN_FLOOR);   // floor AFTER the band
+      if(scheduled) pay *= 1 + RIDE_SCHEDULED_UPLIFT;        // uplift AFTER the floor
+      return pay;
+    };
+    return {
+      low: Math.round(at(1 - OFFER_BAND)),
+      suggested: Math.round(at(1)),
+      generous: Math.round(at(1 + OFFER_BAND)),
+      miles: m, minutes: mins
+    };
+  }
+
   /* ── Suggested-offer model (Junk Removal, VOLUME-tier based) ──────────────────
      Junk has no clean "item cost" axis like Delivery, so it prices on how much
      stuff there is. Three tiers matching the flow's own vocabulary; the user can
@@ -793,6 +908,12 @@
     findAgeRestrictedKeyword: findAgeRestrictedKeyword,
     findAgeRestrictedMatch: findAgeRestrictedMatch,
     suggestedOffer: suggestedOffer,
+    // The server's models, for Request (D11 + D12, 2026-10-15)
+    deliverySuggestedOffer: deliverySuggestedOffer,
+    rideWorkerPayOffer: rideWorkerPayOffer,
+    couponDiscount: couponDiscount,
+    DELIVERY_MODEL_VERSION: DELIVERY_MODEL_VERSION,
+    RIDE_MODEL_VERSION: RIDE_MODEL_VERSION,
     regionIsNC: regionIsNC,
     regionStateFromAddress: regionStateFromAddress,
     OFFER_TABLE: OFFER_TABLE,

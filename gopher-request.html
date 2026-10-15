@@ -13296,10 +13296,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   window.__itfCents = itfCents;   // for the bid card (__bidBreakdown), a later script
 
-  // Promo codes. GOPHER50 takes 50% off the TOTAL Request Fee. The worker's
-  // COG+Offer is never discounted. feeMultiplier is what each fee line is ×'d by.
+  // Promo codes: shaped like the server's coupon records, and discounted by the
+  // server's own rule (D9, John 2026-10-15: "Copy the real rules"; the shared
+  // module's couponDiscount). A coupon takes from the Gopher fee and the transfer
+  // fee, plus the age-restricted fee (net of TrustShield) only when it is a 21+
+  // coupon. The worker's COG+Offer is never discounted. Demo codes until the web
+  // places real orders; then the code is checked with the server, as in the app.
   const PROMO_CODES = {
-    GOPHER50: { label: 'GOPHER50', desc: '50% off fees', feeMultiplier: 0.5 },
+    GOPHER50: { label: 'GOPHER50', desc: '50% off the Gopher + transfer fees',
+                type: 'percentOff', value: 50, age_restricted_discount: false },
   };
   function getPromo(code){
     if(!code) return null;
@@ -13322,9 +13327,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   //
   // CANONICAL DISCOUNT SHEET (founder, June 21, 2026) — SUPERSEDES the old
   // "ITF hard-line" (D-033). Fees are calculated FIRST (ITF = 8% of the full,
-  // pre-discount base), then discounts come off the TOTAL: a % promo (e.g.
-  // GOPHER50) sizes on the WHOLE fee bundle — Gopher + A/R + ITF — so it halves
-  // the ITF too. TrustShield is a flat $1.00 off the total, applied LAST. The
+  // pre-discount base), then discounts come off the TOTAL. ⛔ D9 (2026-10-15):
+  // the promo is the SERVER's coupon rule — Gopher fee + ITF always, the A/R fee
+  // (net of TrustShield) only for a 21+ coupon — no longer the whole bundle.
+  // TrustShield is a flat $1.00 off the total, applied LAST. The
   // combined discount is capped at 100% of total fees (it can zero the fee
   // bundle but never reduce COG+Offer); TrustShield absorbs the truncation when
   // the cap binds.
@@ -13339,7 +13345,6 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
                dealBoostFee, serviceDealZeroFee:true };
     }
     const promo = getPromo(state.promoApplied ? state.promoCode : null);
-    const m = promo ? promo.feeMultiplier : 1;
 
     const baseGopher = (GOPHER_FEE[state.category] ?? GOPHER_FEE.other);
     const baseAge = (state.category === 'delivery' && state.ageRestricted) ? AGE_FEE : 0;
@@ -13353,9 +13358,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     const instantTransfer = itfCents(cogOffer + feeSubtotal);
     const fullInstantTransfer = instantTransfer;
 
-    // Discountable bundle = the whole fee side INCLUDING the ITF (canonical sheet).
     const totalFees = feeSubtotal + instantTransfer;
-    const promoDiscountRaw = promo ? (1 - m) * totalFees : 0;   // % promo on (fees + ITF)
 
     // TrustShield: flat $1.00 off the TOTAL, verified person. Applies ONLY to
     // AGE-RESTRICTED delivery, or ALL ride-share (ride is not sub-categorized by age).
@@ -13364,6 +13367,14 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       ? !!window.__hasTrustShield() : !!(state && state.trustShield);
     const tsEligible = hasTS && ((state.category === 'delivery' && state.ageRestricted) || state.category === 'ride');
     const tsRaw = tsEligible ? 1.00 : 0;
+
+    // D9: the promo is the SERVER's coupon discount (shared module couponDiscount):
+    // the Gopher fee + the transfer fee, plus the age-restricted fee NET of
+    // TrustShield (what the server's summary passes) for a 21+ coupon only.
+    const agePortion = baseAge - Math.min(tsRaw, baseAge);
+    const promoDiscountRaw = promo
+      ? window.GopherRequestLogic.couponDiscount(baseGopher, instantTransfer, promo, agePortion).discount_amount
+      : 0;
 
     // Cap: promo + TrustShield <= total fees. Promo first; TrustShield absorbs truncation.
     const promoDiscount = Math.min(promoDiscountRaw, totalFees);
@@ -13446,7 +13457,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     return isNaN(n) ? 0 : n;
   }
   function currentRegionIsNC(){ var L=window.GopherRequestLogic; return L ? L.regionIsNC() : true; }   // SHARED policy — NC pricing platform-wide (owner 2026-07-09); see gopher-request-logic.js
-  function suggestedOffer(itemCost, isNC){ return window.GopherRequestLogic.suggestedOffer(itemCost, isNC); }   // SHARED — table, interpolation and >$200 extrapolation live in assets/js/gopher-request-logic.js
+  /* D11 (ruled 10/13, built 10/15): the SERVER's G40-502 Delivery curve, the number the
+     Request app shows (POST orders/smart_price). Region no longer applies (the server has
+     none); the second argument is ignored. Connect still uses the old NC table. */
+  function suggestedOffer(itemCost){ return window.GopherRequestLogic.deliverySuggestedOffer(itemCost); }
 
   // ─── RIDE suggested-offer model (distance-based) ───────────────────────────
   // Mirrors the delivery rail shape { low, suggested, generous } so it flows
@@ -13673,20 +13687,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   document.addEventListener('mousedown', function(e){ if(_savedPickerEl && !_savedPickerEl.contains(e.target) && !(e.target.matches && e.target.matches('input[data-locedit]'))) hideSavedPicker(); }, true);
   window.addEventListener('scroll', hideSavedPicker, true);
 
+  /* D12 (ruled 10/13, built 10/15): the SERVER's G40-535 WORKER-PAY Ride model, the number
+     the Request app shows. It is what the worker is offered, so no $2.99 platform fee and no
+     8% (checkout adds both; the old all-in figure here charged them twice, about $4-6 high).
+     RIDE_RATES / RIDE_MILE_TIERS / rideMileageCost above are no longer used by the suggestion. */
   function rideSuggestedOffer(miles, minutes, scheduled){
-    const r = RIDE_RATES;
-    const variable = (rideMileageCost(miles) + minutes * r.perMin) / 2;
-    const calc = (mult) => {
-      let base = Math.max(r.fee + variable * mult, r.minRide);
-      if(scheduled) base *= (1 + r.schedUplift);
-      return base * (1 + r.itf);
-    };
-    return {
-      low:       Math.round(calc(1 - r.band)),
-      suggested: Math.round(calc(1)),
-      generous:  Math.round(calc(1 + r.band)),
-      miles, minutes
-    };
+    return window.GopherRequestLogic.rideWorkerPayOffer(miles, minutes, scheduled);
   }
 
   // Shared fair-range model for the categories we price (Delivery + Ride Share).
