@@ -8379,19 +8379,36 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .wsort-chip .wsort-arrow { font-size:11px; line-height:1; opacity:0.9; }
 
-  /* Distance line (from where the worker was when they accepted → pickup/destination) */
+  /* Distance — only when the worker is far enough to need the requester's
+     approval, "N mi from your drop-off", grey (the app's offerDistance: "Grey,
+     not red"). It used to show on every card, with a separate amber note. */
   .wcard-distance {
     font-family:'DM Sans'; font-size:12px; font-weight:600; color:var(--muted);
     display:inline-flex; align-items:center; gap:4px;
   }
-  /* Approval-required note for First-available matches > 15 mi out */
-  .wcard-approval {
-    margin-top:6px;
-    font-family:'DM Sans'; font-size:12px; font-weight:600;
-    color:#92580D;
-    background:#fff7d6; border:1px solid #f3e08f; border-radius:8px;
-    padding:4px 9px; display:inline-flex; align-items:center; gap:6px;
+  /* ── The app's offer-card pieces (live/OffersSheet.js, owner 10/15) ── */
+  .wcard-line { margin-top:6px; font-family:'DM Sans'; font-size:12px; color:var(--muted); }
+  .wcard-tag {
+    font-family:'Nunito'; font-weight:800; font-size:10.5px; letter-spacing:.3px;
+    color:var(--navy); background:#eef2f9; border-radius:99px; padding:2px 9px;
   }
+  .wcard-cm { margin:8px 0 0; font-family:'DM Sans'; font-size:13px; color:var(--text); font-style:italic; }
+  .wcard-more {
+    margin-top:6px; padding:0; background:none; border:0; cursor:pointer;
+    font-family:'Nunito'; font-weight:800; font-size:12.5px; color:var(--green-dark);
+  }
+  .wcard-more:hover { text-decoration:underline; }
+  .wcard-cmp { margin-top:8px; border-collapse:collapse; font-family:'DM Sans'; font-size:12.5px; }
+  .wcard-cmp th { font-family:'Nunito'; font-weight:800; font-size:10.5px; letter-spacing:.4px;
+    text-transform:uppercase; color:var(--muted); text-align:right; padding:3px 10px; }
+  .wcard-cmp td { padding:4px 10px; text-align:right; color:var(--text); border-top:1px solid #eef0f5; }
+  .wcard-cmp td:first-child { text-align:left; padding-left:0; color:var(--muted); }
+  .wcard-cmp td.now { font-weight:700; color:var(--navy); }
+  .wcard-cmp td.up { color:#c8443a; font-weight:700; }
+  .wcard-cmp .wcard-cmp-total td { font-weight:800; color:var(--navy); border-top:1.5px solid #dfe3ec; }
+  .wcard-px { flex-shrink:0; text-align:right; font-family:'Nunito'; font-weight:900; font-size:18px; color:var(--navy); line-height:1.2; }
+  .wcard-px s { display:block; font-weight:700; font-size:12px; color:var(--muted); }
+  .wcard-counter { align-items:flex-start; }
   /* Bid amount — prominent, sits between the worker info and the action buttons */
   /* Owner 2026-09-29: BID reads to the LEFT of the number, and the number is
      tappable — it opens the itemised breakdown. Mirrors gopher-connect.html. */
@@ -9483,6 +9500,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   @media(max-width:620px){
     .wcard-bid { align-items:flex-start; padding-left:54px; }
+    /* Counter-offer: the price drops under the details, like the bid above, so
+       the name, tag, comment and What-changed table get the full width. */
+    .wcard-counter .wcard-main { flex-basis:calc(100% - 60px); }
+    .wcard-px { padding-left:54px; text-align:left; display:flex; align-items:baseline; gap:8px; }
+    .wcard-px s { display:inline; }
   }
 
   .wcard-actions { display:flex; align-items:center; gap:7px; flex-shrink:0; }
@@ -26003,6 +26025,16 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     const t = String((w && (w.tier || w.badge)) || '').toLowerCase();
     return !/^(elite|pro)/.test(t);          // '', 'standard', anything unbadged
   }
+  /* "Jobs: 396 | Rating: 5.00", as the live app's offer card writes it
+     (offerRows.offerStats). Reads the meta ensureWorkerMeta derives. */
+  function workerStats(w){
+    const parts = [];
+    if(w && w.jobsNum != null) parts.push('Jobs: ' + w.jobsNum);
+    if(w && w.ratingNum) parts.push('Rating: ' + Number(w.ratingNum).toFixed(2));
+    return parts.join(' | ');
+  }
+  function usd(n){ return '$' + (Number(n) || 0).toFixed(2); }
+
   function needsDistanceApproval(w){
     const d = w && w.distanceMi;
     return isStandardTier(w) && d != null && Number(d) > 15;
@@ -26384,22 +26416,32 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
           `;
         }
         const fresh = w.justAccepted && w.status==='interested';
-        const rating = (w.stats && w.stats[0]) || '';
-        // Distance from where the worker was when they accepted → pickup/destination.
+        /* ⛔ THE LIVE APP's OFFER CARD (owner 10/15, "match the app"; requester
+           production live/OffersSheet.js + live/offerRows.js):
+           - stats read "Jobs: N | Rating: R" (offerStats);
+           - distance shows ONLY when the worker is far enough to need the
+             requester's approval, worded "N mi from your drop-off", grey
+             (offerDistance; was an always-on "📍 N mi → destination" plus a
+             separate red-amber "auto-match paused" note);
+           - a bid shows THE WORKER'S OFFER (b.offer), with "Payment to your
+             worker · Cost of items" when there are items. Web-only: it stays
+             clickable to the all-in breakdown, because the app's Hire on a bid
+             goes to a review-and-pay step the web does not have; and the "Bid"
+             label stays left of the number (owner 2026-09-29), though the app has
+             none — an open owner question, not drift. */
+        const rating = workerStats(w);
         const distMi = (w.distanceMi != null) ? Number(w.distanceMi) : null;
-        const distLine = (distMi != null && !isLive)
-          ? `<span class="wcard-distance">📍 ${distMi.toFixed(1)} mi → ${distRef}</span>` : '';
-        // First-available + > 15 mi out: auto-match pauses; needs approval to hire.
-        const farApproval = (firstAvailable && !isLive && needsDistanceApproval(w))
-          ? `<div class="wcard-approval">⚠ ${Math.round(distMi)} mi out — auto-match paused, needs your approval before hiring</div>`
-          : '';
-        // Bid amount, shown to the right on every "ask for bids" request.
+        const distLine = (!isLive && distMi != null && needsDistanceApproval(w))
+          ? `<span class="wcard-distance">${distMi.toFixed(1)} mi from your drop-off</span>` : '';
+        const bidCog = Number((r.reviewSnapshot && r.reviewSnapshot.costOfItems) || 0);
         const bidHtml = (bidsMode && !isLive && w.bidAmount != null)
           ? `<button type="button" class="wcard-bid" data-wact="bidinfo" data-i="${realIdx}"
                      title="See what this bid covers" aria-label="See what ${w.name}'s bid covers">
-               <span class="wb-label">Bid</span><span class="wb-amount">$${Number(window.__bidAllIn(r, w)).toFixed(0)}</span>
+               <span class="wb-label">Bid</span><span class="wb-amount">${usd(w.bidAmount)}</span>
              </button>`
           : '';
+        const bidLine = (bidsMode && !isLive && w.bidAmount != null && bidCog > 0)
+          ? `<div class="wcard-line">Payment to your worker ${usd(w.bidAmount)} · Cost of items ${usd(bidCog)}</div>` : '';
         return `
           <div class="wcard ${fresh?'wcard-fresh':''}">
             <!-- ⛔ Was an unconditional <img src="${w.photo}">. Every seeded worker
@@ -26423,7 +26465,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
                   <span>Text</span>
                 </button>
               </div>
-              ${farApproval}
+              ${bidLine}
             </div>
             ${bidHtml}
             <div class="wcard-actions">${actions}</div>
@@ -26498,42 +26540,71 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       const counterCard = (co, ci) => {
         ensureWorkerMeta(co.worker, r, ci, false);
         const w = co.worker;
-        const rating = (w.stats && w.stats[0]) || '';
+        /* ⛔ THE LIVE APP's COUNTER-OFFER CARD (owner 10/15, "match the app";
+           OffersSheet.js counterOffers + offerRows.counterOfferRows): the new
+           total with the original struck through, a "Counter-offer" tag, the
+           worker's comment, a "What changed ›" Was / Now / Change table, and
+           "Hire for $X" / Deny / Message. Replaces the "+$N (offer)" delta and
+           the Accept / Details / Deny row. The table folds this page's canonical
+           fee lines into the app's five rows: Cost of items (not on Hourly /
+           Day Labor), Payment to your worker, Fees (Gopher + age + instant
+           transfer), Discount (promo + TrustShield), Total. */
+        const rating = workerStats(w);
         const distMi = (w.distanceMi != null) ? Number(w.distanceMi) : null;
-        const distLine = (distMi != null) ? `<span class="wcard-distance">📍 ${distMi.toFixed(1)} mi → ${distRef}</span>` : '';
+        const distLine = (distMi != null && needsDistanceApproval(w))
+          ? `<span class="wcard-distance">${distMi.toFixed(1)} mi from your drop-off</span>` : '';
         const snap = r.reviewSnapshot || {};
-        const offerD = (co.counter.workerPay || 0) - (snap.workerPay || 0);
-        const itemsD = (co.counter.costOfItems || 0) - (snap.costOfItems || 0);
-        let delta, tag;
-        if(co.changed === 'offer'){ delta = offerD; tag = 'offer'; }
-        else if(co.changed === 'items'){ delta = itemsD; tag = 'items'; }
-        else { delta = offerD + itemsD; tag = 'offer and items'; }
-        const sign = delta >= 0 ? '+' : '−';
-        const amt = Number.isInteger(delta) ? Math.abs(delta) : Math.abs(delta).toFixed(2);
-        const deltaHtml = `<div class="counter-delta ${delta >= 0 ? 'cd-pos' : 'cd-neg'}" title="Driver change vs the original offer">${sign}$${amt} <span class="cd-tag">(${tag})</span></div>`;
+        const sf = snap.fee || {};
+        const C = co.counter || {};
+        const n = (v) => Number(v) || 0;
+        const isLabor = (snap.category || r.category) === 'labor';
+        const rows = [];
+        const row = (label, was, now, total) => rows.push({ label, was, now, total });
+        if(!isLabor) row('Cost of items', n(snap.costOfItems), n(C.costOfItems));
+        row('Payment to your worker', n(snap.workerPay), n(C.workerPay));
+        row('Fees', n(sf.fullGopherFee) + n(sf.fullAgeFee) + n(sf.fullInstantTransfer),
+                    n(C.fullGopherFee) + n(C.fullAgeFee) + n(C.fullInstantTransfer));
+        row('Discount', n(sf.promoDiscount) + n(sf.trustShieldDiscount),
+                        n(C.promoDiscount) + n(C.trustShieldDiscount));
+        row('Total', n(snap.total), n(C.gmvTotal), true);
+        const change = (was, now) => {
+          const d = now - was;
+          if(Math.abs(d) < 0.005) return '—';
+          return (d > 0 ? '+' : '-') + usd(Math.abs(d));
+        };
+        const table = `
+          <table class="wcard-cmp" hidden>
+            <thead><tr><th scope="col"><span style="position:absolute;left:-9999px">Line</span></th><th scope="col">Was</th><th scope="col">Now</th><th scope="col">Change</th></tr></thead>
+            <tbody>${rows.map(x => `
+              <tr${x.total ? ' class="wcard-cmp-total"' : ''}>
+                <td>${x.label}</td><td>${usd(x.was)}</td><td class="now">${usd(x.now)}</td>
+                <td${x.now - x.was > 0.005 ? ' class="up"' : ''}>${change(x.was, x.now)}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`;
         return `
-          <div class="wcard">
+          <div class="wcard wcard-counter">
             <div class="wcard-photo">${w.photo ? `<img src="${w.photo}" alt="${w.name}">` : `<div class="wcard-photo-fallback">${(w.name||'?').charAt(0)}</div>`}</div>
             <div class="wcard-main">
               <div class="wcard-top">
                 <span class="wcard-name">${w.name}</span>
                 <span class="gopher-badge ${w.badge==='pro+'?'tier-pro':''}">${(w.badge||'pro+').replace('+','')}${w.badge==='elite+'?'<span class="gb-plus">+</span>':''}</span>
+                <span class="wcard-tag">Counter-offer</span>
               </div>
               <div class="wcard-sub">
                 <span class="wcard-rating">${rating}</span>
                 ${distLine}
                 <button class="wcard-link" data-coact="profile" data-ci="${ci}">Review profile</button>
-                <button class="wcard-msg" data-coact="message" data-ci="${ci}" title="Text ${w.name}" aria-label="Text ${w.name}">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.5 8.5 0 0 1-.9-3.8A8.38 8.38 0 0 1 12.5 3a8.38 8.38 0 0 1 8.5 8.5z"/></svg>
-                  <span>Text</span>
-                </button>
               </div>
+              ${co.comment ? `<p class="wcard-cm">&ldquo;${co.comment}&rdquo;</p>` : ''}
+              <button type="button" class="wcard-more" data-coact="changes" data-ci="${ci}" aria-expanded="false">What changed ›</button>
+              ${table}
             </div>
-            ${deltaHtml}
+            <div class="wcard-px"><s>${usd(snap.total)}</s>${usd(C.gmvTotal)}</div>
             <div class="wcard-actions">
-              <button class="wbtn wbtn-green wbtn-lg" data-coact="accept" data-ci="${ci}">Accept</button>
-              <button class="wbtn wbtn-navy-soft" data-coact="details" data-ci="${ci}">Details</button>
+              <button class="wbtn wbtn-green wbtn-lg" data-coact="accept" data-ci="${ci}">Hire for ${usd(C.gmvTotal)}</button>
               <button class="wbtn wbtn-red-soft" data-coact="deny" data-ci="${ci}">Deny</button>
+              <button class="wbtn wbtn-navy-soft" data-coact="message" data-ci="${ci}">Message</button>
             </div>
           </div>
         `;
@@ -26955,6 +27026,15 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
           const counters = r.counterOffers || [];
           if(isNaN(ci) || !counters[ci]) return;
           if(act === 'message'){ openInboxThread(r.id + '::' + counters[ci].worker.name); return; }
+          if(act === 'changes'){
+            const tbl = coBtn.closest('.wcard') && coBtn.closest('.wcard').querySelector('.wcard-cmp');
+            if(tbl){
+              tbl.hidden = !tbl.hidden;
+              coBtn.setAttribute('aria-expanded', String(!tbl.hidden));
+              coBtn.textContent = tbl.hidden ? 'What changed ›' : 'Hide what changed';
+            }
+            return;
+          }
           if(act === 'profile'){
             dashState.counterProfileIdx = ci;
             dashState.profileReqId = r.id;
