@@ -8161,6 +8161,28 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .inbox-composer-send:hover { background:var(--green-dark); }
   .inbox-composer-send:active { transform:scale(0.92); }
   .inbox-composer-send svg { width:18px; height:18px; }
+  /* G40-216 (John 10/15: "Add Request app unlimited camera (just like app)"): the app's chat camera on
+     the web inbox. Navy camera on white (as in the app), the photo waits as a 72px thumbnail with an x
+     above the message box and goes with Send, and shows in the thread as a photo (max 250px, no
+     full-size viewer: the app has none). The requester's photos are never gated, as in the app. */
+  .inbox-composer { flex-wrap:wrap; }
+  .inbox-composer-cam {
+    width:42px; height:42px; flex-shrink:0; border-radius:50%; background:#fff;
+    border:1.5px solid var(--navy); color:var(--navy); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .inbox-composer-cam svg { width:20px; height:20px; }
+  .inbox-composer-cam:focus-visible, .inbox-photo-wait-x:focus-visible { outline:3px solid var(--green); outline-offset:2px; }
+  .inbox-photo-wait-row { flex-basis:100%; }
+  .inbox-photo-wait { position:relative; width:72px; height:72px; margin:2px 0 4px; }
+  .inbox-photo-wait img { width:72px; height:72px; object-fit:cover; border-radius:8px; display:block; }
+  .inbox-photo-wait-x {
+    position:absolute; top:-6px; right:-6px; width:22px; height:22px; padding:0; border:0;
+    border-radius:50%; background:rgba(0,0,0,.6); color:#fff; font-size:14px; line-height:22px; cursor:pointer;
+  }
+  .inbox-photo-wait-x:hover { background:rgba(0,0,0,.8); }
+  .inbox-bubble.inbox-photo { padding:0; background:transparent !important; }
+  .inbox-photo img { display:block; max-width:min(250px, 100%); border-radius:14px; }
   .inbox-thread-empty { text-align:center; color:var(--muted); font-family:'DM Sans'; font-size:13px; padding:30px 16px; line-height:1.5; }
   .inbox-list-empty { padding:18px 16px; color:var(--muted); font-family:'DM Sans'; font-size:13px; border-top:1px solid #f0f2f7; }
   .inbox-empty { padding:40px; text-align:center; color:var(--muted); font-family:'DM Sans'; font-size:14px; }
@@ -18219,6 +18241,13 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           + '<h4>One thing to change</h4>'
           + '<p class="gr-modal-sub">This request includes an item we can\u2019t deliver for you. Please edit your request to continue.</p>'
           + '<button type="button" class="gr-modal-btn grx">Edit my request</button>'); },
+      /* G40-216: the app's "too large" photo alert (convertToJpeg, over 10 MB), as a G40-308 Guide A card:
+         amber icon circle, h4, one kit pill. */
+      photoTooLarge: function(){
+        return reqModal('<div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">\ud83d\udcf7</div>'
+          + '<h4>Photo is too large</h4>'
+          + '<p class="gr-modal-sub">This image is too large. Please choose a smaller photo.</p>'
+          + '<button type="button" class="gr-modal-btn grx">OK</button>'); },
       phoneEntered: function(){ return wirePrimary(reqModal('<div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">📵</div><h4>Remove the phone number</h4><p class="gr-modal-sub">For your privacy we don’t broadcast phone numbers. Once your request is submitted you’ll be able to text and/or call your Gopher in-app. Please edit your message to remove it.</p><button type="button" class="gr-modal-btn grx">Edit my message</button>'+b2('Cancel')), function(){ var d=document.getElementById('descriptionInput'); if(d) d.focus(); }); },
       paymentNotAuthorized: function(){ return wirePrimary(reqModal('<div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">💳</div><h4>Update your card to keep this request</h4><p class="gr-modal-sub">A Gopher accepted, but your bank didn’t authorize the payment. Update your card in the next <b>5 minutes</b> and we’ll reassign it to them. If they’re no longer available, we’ll rebroadcast to nearby Gophers immediately.</p><button type="button" class="gr-modal-btn grx">Update payment</button>'), openAddPay); },
       /* G40-274 — owner picks 2026-10-14 (pick-doc 8RzFQm38iwrSZ5na7uMei4):
@@ -24072,7 +24101,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
                 <span class="inbox-row-time">${th.last ? th.last.time : ''}</span>
               </div>
               <div class="inbox-row-sub">${th.title || ''}</div>
-              <div class="inbox-row-last">${th.last ? (th.last.from === 'me' ? 'You: ' : '') + th.last.text : ''}</div>
+              <div class="inbox-row-last">${th.last ? (th.last.from === 'me' ? 'You: ' : '') + (th.last.type === 'image' ? '📷 Photo' : th.last.text) : ''}</div>
             </div>
           </button>`, th.id, dashState.inboxTab === 'deleted') : '')).join('')
           : (dashState.inboxTab === 'deleted'
@@ -24150,6 +24179,14 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       const flNote = (m.f && m.from !== 'me')
         ? `<div class="inbox-msg-flag" style="margin-top:3px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:#C44257;line-height:1.35;">&#9873; This message was flagged for a possible terms violation.</div>`
         : '';
+      // G40-216: a photo message (the app's content_type 'image'). Only a picked photo's data: URL is drawn.
+      if(m && m.type === 'image' && /^data:image\/(jpeg|png|webp|gif);base64,/.test(String(m.src || ''))){
+        return `
+            <div class="inbox-msg ${m.from === 'me' ? 'mine' : 'theirs'}">
+              <div class="inbox-bubble inbox-photo"><img src="${m.src}" alt="Photo"></div>
+              <div class="inbox-msg-time">${m.time}</div>
+            </div>`;
+      }
       return `
             <div class="inbox-msg ${m.from === 'me' ? 'mine' : 'theirs'}">
               <div class="inbox-bubble">${String(m.text).replace(/</g,'&lt;')}</div>${flNote}
@@ -24178,6 +24215,11 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         </div>
         ${t.typeable ? `
           <div class="inbox-composer">
+            <div class="inbox-photo-wait-row" id="rqInboxPhotoWait" hidden></div>
+            <button type="button" class="inbox-composer-cam" id="rqInboxCam" aria-label="Add a photo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </button>
+            <input type="file" id="rqInboxPhotoFile" accept="image/*" hidden>
             <input type="text" class="inbox-composer-input" id="rqInboxInput" placeholder="Message ${(tw.name || 'your Gopher').split(' ')[0]}…" autocomplete="off">
             <button class="inbox-composer-send" id="rqInboxSend" aria-label="Send message">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
@@ -24338,9 +24380,58 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     // Composer — gated on non-empty text
     const input = document.getElementById('rqInboxInput');
     const sendBtn = document.getElementById('rqInboxSend');
+    /* G40-216: the camera. The browser's own photo picker stands in for the app's Camera / Library chooser
+       (on a phone it offers both). The photo is shrunk as the app's convertToJpeg does (1024px, JPEG 0.7,
+       refused over 10 MB) and waits for Send, one at a time, for THIS thread only. */
+    const camBtn = document.getElementById('rqInboxCam');
+    const photoFile = document.getElementById('rqInboxPhotoFile');
+    const photoWait = document.getElementById('rqInboxPhotoWait');
+    if(_rqPhotoWait && _rqPhotoWait.threadId !== t.id) _rqPhotoWait = null;
+    const drawPhotoWait = () => {
+      if(!photoWait) return;
+      if(!_rqPhotoWait){ photoWait.hidden = true; photoWait.innerHTML = ''; return; }
+      photoWait.innerHTML = '<div class="inbox-photo-wait"><img src="' + _rqPhotoWait.src + '" alt="Photo to send">'
+        + '<button type="button" class="inbox-photo-wait-x" aria-label="Remove photo">&times;</button></div>';
+      photoWait.hidden = false;
+      photoWait.querySelector('.inbox-photo-wait-x').addEventListener('click', () => {
+        _rqPhotoWait = null; drawPhotoWait(); if(input) input.focus();
+      });
+    };
+    drawPhotoWait();
+    if(camBtn && photoFile){
+      camBtn.addEventListener('click', () => { photoFile.value = ''; photoFile.click(); });
+      photoFile.addEventListener('change', () => {
+        const f = photoFile.files && photoFile.files[0];
+        if(!f) return;
+        if(f.size > 10 * 1024 * 1024){ window.G40_REQ && G40_REQ.photoTooLarge(); return; }
+        const url = URL.createObjectURL(f);
+        const img = new Image();
+        img.onload = () => {
+          let w = img.naturalWidth, h = img.naturalHeight;
+          const k = Math.min(1, 1024 / Math.max(w, h));
+          w = Math.round(w * k); h = Math.round(h * k);
+          const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+          cv.getContext('2d').drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(url);
+          _rqPhotoWait = { threadId: t.id, src: cv.toDataURL('image/jpeg', 0.7) };
+          drawPhotoWait();
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); };
+        img.src = url;
+      });
+    }
     if(input && sendBtn){
       const doSend = () => {
         const text = (input.value || '').trim();
+        // G40-216: a waiting photo goes first, then any text (the app's order: upload, then the message).
+        if(_rqPhotoWait && _rqPhotoWait.threadId === t.id){
+          const src = _rqPhotoWait.src;
+          _rqPhotoWait = null;
+          sendInboxMessage(t.id, '', false, src);
+          if(text){ const again = document.getElementById('rqInboxInput'); if(again){ again.value = text; } }
+          else return;
+          return document.getElementById('rqInboxSend') && document.getElementById('rqInboxSend').click();
+        }
         if(!text) return;
         // Route through the shared messaging guard (prototype deterrent). On the
         // allow path the existing faked send runs UNCHANGED; "Edit message" and
@@ -24391,7 +24482,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
 
   // Send a message. Parses "<reqId>::<workerName>" if present (per spec §8 —
   // missing this parse is the most common bug; messages would silently vanish).
-  function sendInboxMessage(reqId, text, flagged){
+  var _rqPhotoWait = null; // G40-216: { threadId, src } — the photo waiting for Send (var: renderInbox may run first)
+  function sendInboxMessage(reqId, text, flagged, photoSrc){
     const sep = String(reqId).indexOf('::');
     const baseId  = sep > -1 ? reqId.slice(0, sep) : reqId;
     const crewName = sep > -1 ? reqId.slice(sep + 2) : null;
@@ -24418,7 +24510,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     const firstMessage = thread.length === 0;
     // f:1 = sent via "Send as-is" on a guard hit — the RECIPIENT's app shows
     // the terms-violation note under this bubble (our own side renders clean).
-    thread.push(flagged ? { from:'me', text, time, f:1 } : { from:'me', text, time });
+    if(photoSrc) thread.push({ from:'me', type:'image', src:photoSrc, text:'', time });
+    else thread.push(flagged ? { from:'me', text, time, f:1 } : { from:'me', text, time });
     dashState.inboxThreadId = reqId;  // preserve the FULL per-worker id
     renderInbox();
     updateInboxBadge();
