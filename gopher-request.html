@@ -10228,6 +10228,9 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   .pdx-type { font-family:'Nunito'; font-weight:900; font-size:17px; color:var(--navy); }
   .pdx-when { font-family:'DM Sans'; font-size:13px; color:var(--muted); margin-top:2px; }
   .pdx-sec { border-top:1px solid #eef0f5; padding:14px 0 4px; }
+  /* G40-622 (John 10/14: "there is a line above the 'where' that needs to be removed"):
+     the completed view opens on its first section with no rule above it, as the app does. */
+  .pdx-head + .pdx-sec { border-top:0; }
   .pdx-h {
     font-family:'Nunito'; font-weight:900; font-size:13px; color:var(--navy);
     margin-bottom:8px;
