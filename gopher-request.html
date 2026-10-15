@@ -14020,7 +14020,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   // ---- Service catalog ----
   const CATEGORIES = {
     delivery: {
-      icon:'🚚', name:'Delivery / Errand', mark:`<svg class="cat-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5h10.5v9H3z"/><path d="M13.5 10.5h4L21 13.5v3h-7.5z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/><path d="M8.8 18h6.4"/></svg>`, tag:'Errand',
+      icon:'🚚', name:'Delivery', mark:`<svg class="cat-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5h10.5v9H3z"/><path d="M13.5 10.5h4L21 13.5v3h-7.5z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/><path d="M8.8 18h6.4"/></svg>`, tag:'Errand',
       detailsTitle:'Where is this going?',
       detailsSub:'Tell us the pickup and drop-off so we can match a driver nearby.',
       fields:[
@@ -14142,7 +14142,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
 
     yard: {
-      icon:'🌳', name:'Yard / Outdoor Projects', mark:`<svg class="cat-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 7.4 9.2h2.6L6.2 15h3.4l-2.4 3.4h9.6L14.4 15h3.4l-3.8-5.8h2.6L12 2.5Z"/><path d="M12 18.4V21.5"/></svg>`, tag:'Outdoor',
+      icon:'🌳', name:'Yard Project', mark:`<svg class="cat-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 7.4 9.2h2.6L6.2 15h3.4l-2.4 3.4h9.6L14.4 15h3.4l-3.8-5.8h2.6L12 2.5Z"/><path d="M12 18.4V21.5"/></svg>`, tag:'Outdoor',
       detailsTitle:'What outdoor work do you need?',
       detailsSub:'Mowing, hauling, planting, cleanup — we match the right outdoor pro.',
       fields:[
@@ -22702,7 +22702,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
               <div class="hv-cell">
                 <button type="button" class="hv-tile" data-homecat="delivery">
                   <span class="hv-art hv-a-delivery" aria-hidden="true"></span>
-                  <span class="hv-nm">Delivery / Errand</span>
+                  <span class="hv-nm">Delivery</span>
                 </button>
                 <button type="button" class="hv-iq" data-iq="delivery" aria-haspopup="dialog">iQ Ideas ▲</button>
                 <div class="hv-pills" data-pills="delivery"></div>
@@ -22742,7 +22742,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
               <div class="hv-cell">
                 <button type="button" class="hv-tile" data-homecat="yard">
                   <span class="hv-art hv-a-yard" aria-hidden="true"></span>
-                  <span class="hv-nm">Yard / Outdoor Projects</span>
+                  <span class="hv-nm">Yard Project</span>
                 </button>
                 <button type="button" class="hv-iq" data-iq="yard" aria-haspopup="dialog">iQ Ideas ▲</button>
                 <div class="hv-pills" data-pills="yard"></div>
@@ -23747,6 +23747,17 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
   }
   function visibleMyGophers(list){ return (list || []).filter(g => !isDeactivatedGopher(g)); }
 
+  /* A worker the requester may message BEFORE hiring: still a candidate on a
+     pending request (interested, or offering a counter). Mirrors the live app,
+     whose offer cards open the conversation with that Gopher before any hire.
+     Returns the display worker, or null. */
+  function preHireCandidate(r, name){
+    if(!r || r.status !== 'pending' || !name) return null;
+    const w = (r.interestedWorkers || []).find(x => x.name === name && x.status !== 'hired')
+           || (r.counterOffers || []).map(c => c && c.worker).find(x => x && x.name === name);
+    return w ? { name: w.name, photo: w.photo || '', tier: w.badge || w.tier || '' } : null;
+  }
+
   function getThreads(){
     const out = [];
     (DASH_DATA.activeRequests || []).forEach(r => {
@@ -23770,14 +23781,16 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         Object.keys(r.threads).forEach(name => {
           const th = r.threads[name];
           if(!th || !th.length) return;
-          const worker = crew.find(w => w.name === name) || { name, photo:'', tier:'' };
+          const cand = preHireCandidate(r, name);
+          const worker = crew.find(w => w.name === name) || cand || { name, photo:'', tier:'' };
           out.push({
             id: `${r.id}::${name}`,
             worker,
             title: r.title,
             thread: th,
             last: th[th.length - 1],
-            typeable: !!r.userStarted,
+            typeable: !!r.userStarted || !!cand,
+            preHire: !r.userStarted && !!cand,
           });
         });
       }
@@ -23909,6 +23922,24 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
           last: thread[thread.length - 1] || null,
           typeable: true,
         };
+      } else if(crewName){
+        /* Pre-hire: Message on a candidate worker (see preHireCandidate). Same
+           purge rule as above — a purged conversation reopens empty. */
+        const rp = (DASH_DATA.activeRequests || []).find(x => x.id === baseId);
+        const cand = preHireCandidate(rp, crewName);
+        if(cand){
+          const wasPurged = !!(dashState.inboxPurged && dashState.inboxPurged[activeId]);
+          const thread = wasPurged ? [] : ((rp.threads && rp.threads[crewName]) || []);
+          activeThread = {
+            id: activeId,
+            worker: cand,
+            title: rp.title,
+            thread,
+            last: thread[thread.length - 1] || null,
+            typeable: true,
+            preHire: true,
+          };
+        }
       }
     }
 
@@ -24045,10 +24076,10 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
             <div class="inbox-convo-name">${tw.name || 'Gopher'}${tierBadge}</div>
             <div class="inbox-convo-req">Re: ${t.title || ''} · <button class="inbox-open-req" data-open-req="${t.id}">View request</button></div>
           </div>
-          <a class="contact-btn contact-call inbox-convo-call" href="tel:${telDigits}">
+          ${t.preHire ? '' : `<a class="contact-btn contact-call inbox-convo-call" href="tel:${telDigits}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.86 19.86 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.86 19.86 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
             <span>Call</span>
-          </a>
+          </a>`}
           <button type="button" id="rqRelFav" title="${((dashState.gopherRels||{})[tw.name]==='favorite')?'Remove from MY Gophers':'Add to MY Gophers'}" style="border:1.6px solid ${((dashState.gopherRels||{})[tw.name]==='favorite')?'#1CB061':'#d9d2c2'};background:${((dashState.gopherRels||{})[tw.name]==='favorite')?'#1CB061':'#fff'};color:${((dashState.gopherRels||{})[tw.name]==='favorite')?'#fff':'#8a94a3'};border-radius:10px;width:34px;height:34px;font-size:16px;cursor:pointer;flex:0 0 auto;margin-left:6px;">&#9829;</button>
           <button type="button" id="rqRelBlock" title="${((dashState.gopherRels||{})[tw.name]==='blocked')?'Unblock this Gopher':'Block this Gopher'}" style="border:1.6px solid ${((dashState.gopherRels||{})[tw.name]==='blocked')?'#C44257':'#d9d2c2'};background:${((dashState.gopherRels||{})[tw.name]==='blocked')?'#C44257':'#fff'};color:${((dashState.gopherRels||{})[tw.name]==='blocked')?'#fff':'#8a94a3'};border-radius:10px;width:34px;height:34px;font-size:16px;cursor:pointer;flex:0 0 auto;margin-left:6px;">&#8856;</button>
         </div>
@@ -24232,10 +24263,18 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         // crew threads ("::name") only exist for hired crew; otherwise the
         // request is connected once it's live or has a hired worker. Relaxes
         // only the contact patterns — payment/conduct always checked.
+        // ⛔ Since 2026-10-15 a "::name" thread can exist BEFORE a hire (Message on
+        // a candidate, as in the app), so "::name" no longer implies hired: a
+        // named thread is connected only when THAT worker is hired or on the live
+        // crew. Otherwise a pre-hire chat would get the relaxed contact patterns,
+        // against the owner's 10/9 ruling (contact before hire hidden).
         const _sep = String(t.id).indexOf('::');
         const _rq = (DASH_DATA.activeRequests || []).find(x => x.id === (_sep > -1 ? t.id.slice(0, _sep) : t.id));
-        const _connected = _sep > -1 || !!(_rq && (_rq.live ||
-          (_rq.interestedWorkers || []).some(w => w.status === 'hired')));
+        const _nm = _sep > -1 ? t.id.slice(_sep + 2) : null;
+        const _connected = !!(_rq && (_nm
+          ? (((_rq.live && _rq.live.crew) || []).some(w => w.name === _nm)
+             || (_rq.interestedWorkers || []).some(w => w.name === _nm && w.status === 'hired'))
+          : (_rq.live || (_rq.interestedWorkers || []).some(w => w.status === 'hired'))));
         if(window.GopherMessageGuard){
           GopherMessageGuard.guard(text, t.id, {
             connected: _connected,
@@ -26790,7 +26829,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
             // G40 modal: selectedGopherBusy — Standard Gophers take one job at
             // a time. Runs BEFORE the hire-cap check; nothing about the worker
             // changes state until the requester picks someone available.
-            G40_REQ.selectedGopherBusy(function(){ openInboxThread(r.id); });
+            G40_REQ.selectedGopherBusy(function(){ openInboxThread(r.id + '::' + list[i].name); });
             return;
           }
           if(act === 'hire' || act === 'approve'){
@@ -26805,7 +26844,12 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
           else if(act === 'approve')  { list[i].status = 'hired'; }
           else if(act === 'unhire')   { list[i].status = 'interested'; }
           else if(act === 'deny')     { list.splice(i, 1); }
-          else if(act === 'message')  { openInboxThread(r.id); return; }
+          /* Message = the conversation with THIS worker about this request, before
+             any hire — as the live app's offer card does (requestOrder.js
+             messageOfferGopher: receiver = that Gopher). It used to open r.id, the
+             request's own thread, which does not exist before a hire, so the Inbox
+             fell back to whichever conversation it had first. */
+          else if(act === 'message')  { openInboxThread(r.id + '::' + list[i].name); return; }
           else if(act === 'profile')  {                 // open full profile view
             dashState.profileWorkerIdx = i;
             dashState.profileReqId = r.id;
@@ -26910,7 +26954,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
           const ci = parseInt(coBtn.dataset.ci, 10);
           const counters = r.counterOffers || [];
           if(isNaN(ci) || !counters[ci]) return;
-          if(act === 'message'){ coBtn.classList.add('msg-open'); coBtn.title = 'Conversation opened'; return; }
+          if(act === 'message'){ openInboxThread(r.id + '::' + counters[ci].worker.name); return; }
           if(act === 'profile'){
             dashState.counterProfileIdx = ci;
             dashState.profileReqId = r.id;
@@ -27069,6 +27113,16 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     const hiredList = (r.interestedWorkers || []).filter(w => w.status === 'hired');
     const hiredCount = hiredList.length;
     if(hiredCount === 0) return;
+    /* One conversation per request + worker, as in the app. A single hire talks
+       in r.thread (thread id r.id), so anything said BEFORE the hire, in
+       r.threads[name] (Message on a candidate), moves into it rather than
+       stranding in a second conversation with the same person. */
+    if(hiredCount === 1 && r.threads && (r.threads[hiredList[0].name] || []).length){
+      const nm = hiredList[0].name;
+      r.thread = r.threads[nm].concat(r.thread || []);
+      delete r.threads[nm];
+      if(dashState.inboxThreadId === r.id + '::' + nm) dashState.inboxThreadId = r.id;
+    }
     const finalTotal = window.__agreedTotalFor(r, hiredList);
 
     const goScheduled = !!r.scheduledForLater;
