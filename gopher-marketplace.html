@@ -221,6 +221,9 @@
   .rung .mark{font-family:var(--head);font-weight:900;font-size:18px}
   .rung p{margin:0;font-size:14.5px;color:var(--body)}
   .rung.pro{background:var(--green-tint);border:2px dashed var(--green)}
+  /* Pro / Pro+ pills (the Go app's own art). Pro+ is drawn taller so its pill matches Pro's: the plus rises above it. */
+  .rung img.pill{height:36px;max-height:none;width:auto}
+  .rung img.pill.plus{height:43.7px}
   @media(max-width:640px){.rung{grid-template-columns:1fr;gap:8px}.rung.step2{margin-left:0}}
 
   /* deals */
@@ -556,7 +559,10 @@
     <div class="choose-grid">
       <div class="card"><h4>First available <span class="default">default</span></h4><p>Post it and the first qualified Gopher to say yes gets it. Fastest option, and the one most neighbors use.</p><span class="best">Best for: getting it done today</span></div>
       <div class="card"><h4>MY Gophers</h4><p>Your favorites from past jobs see the request a full minute before anyone else. If one accepts, it's theirs. Anyone else who's interested needs your approval.</p><span class="best">Best for: the same trusted face, again</span></div>
-      <div class="card"><h4>Pick your tier</h4><p>Want an Elite Gopher in your home, or a Pro on the job site? Choose the tier you want and select your worker instead of first available.</p><span class="best">Best for: inside your home, or licensed work</span></div>
+      <!-- Was "Pick your tier" (choose a tier). Neither the Request app nor the backend has a tier choice;
+           Select My Gopher is real, and each worker's profile shows Gopher Pro / Pro+ (Request app
+           GopherProfileHeader.js). John's pick, Pro/Pro+ stage 4, 10/16. -->
+      <div class="card"><h4>Select My Gopher</h4><p>See who wants the job and pick the one you want instead of first available. Each profile shows their Gopher Pro or Pro+ badge if they have one.</p><span class="best">Best for: inside your home, or work you want a background-checked Gopher for</span></div>
       <div class="phone"><span>What a Gopher sees</span><img src="assets/img/go-gopher-go-app-home-screen.webp" alt="The Gopher Go app showing available jobs with their prices."></div>
     </div>
   </div>
@@ -586,10 +592,12 @@
         <p class="body" style="margin:0;font-size:15px"><b>Every Gopher</b>, including standard, has their identity verified through Stripe with a government ID and Social Security number. Badges stack on top of that.</p>
         <div class="ladder">
           <div class="rung base"><span class="mark">Standard</span><p>Identity verified. Government ID and SSN on file.</p></div>
-          <div class="rung"><img src="assets/img/tier-elite.svg" alt="Elite"><p><b>Elite</b> adds a clean criminal background check.</p></div>
-          <div class="rung step2"><img src="assets/img/tier-elite-plus.webp" alt="Elite+"><p><b>Elite+</b> is Elite plus a clean DMV record. If you're Elite+, you're also Elite.</p></div>
-          <div class="rung pro"><img src="assets/img/tier-pro.svg" alt="Gopher Pro"><p><b>Pro</b> is separate: licensed, bonded, and/or insured. A Gopher can be Pro without being Elite, or Pro and Elite+ at once.</p></div>
+          <div class="rung"><img class="pill" src="assets/img/badge-gopher-pro.png" alt="Gopher Pro" width="418" height="187"><p><b>Pro</b> adds a clean background check: criminal, sex-offender registry and watch-list searches.</p></div>
+          <div class="rung step2"><img class="pill plus" src="assets/img/badge-gopher-pro-plus.png" alt="Gopher Pro+" width="501" height="227"><p><b>Pro+</b> is Pro plus a clean driving record. If you're Pro+, you're also Pro.</p></div>
         </div>
+        <!-- The app's own words (Request app GopherProfileHeader.js: "Background checked" for Pro / Pro+,
+             "Identity Verified" otherwise). <strong>, not <b>: .where b is styled as the block heading. -->
+        <div class="where"><b>What you'll see in the app</b>On a Gopher's profile in Gopher Request: their <strong>pro</strong> or <strong>pro+</strong> badge and &ldquo;Background checked&rdquo; under their name. A Standard Gopher shows &ldquo;Identity Verified&rdquo;.</div>
       </div>
     </div>
   </div>
