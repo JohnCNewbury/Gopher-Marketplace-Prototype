@@ -69,8 +69,15 @@
       id: 'costOfItems', step: 2,
       label: 'Cost of items', selector: '#costOfItemsInput',
       message: 'Please enter the cost of items needed before continuing.',
-      when: function (s) {
+      when: function (s, h) {
         if (!s.itemsPurchased) return false;
+        /* CT-3 / D-24 (CT port, 2026-10-15): a Custom Task skips the cost check
+           while bids are on, as the app (customTaskFlowSteps.js ctStepProblem:
+           `need_purchase && !gopher_bid && !(cost > 0)`) -- a bid request carries
+           no purchase. Only where the host says bids are really allowed; a host
+           without bidsAllowed() keeps the gate (it blocks, never no-ops). */
+        if (s.category === 'other' && s.payMode === 'bids'
+            && h && typeof h.bidsAllowed === 'function' && h.bidsAllowed()) return false;
         return !(parseFloat(String(s.costOfItems).replace(/[^\d.]/g, '')) > 0);
       }
     },
@@ -170,6 +177,11 @@
          before, and a missing coordinate never blocks on its own. */
       when: function (s, h) {
         if (s.noSpecificPickup || !h.isVisible('pickupSection')) return false;
+        /* CT port (2026-10-15): a Custom Task with a pick-up is NOT a two-address
+           category for this check -- the app runs none on it (stepFlows.js: no
+           samePlace on the Custom Task flow) and the server's
+           TWO_ADDRESS_CATEGORIES has no "Other" (helpers/same_place.js). */
+        if (s.category === 'other') return false;
         if (!Array.isArray(s.pickupStops) || !Array.isArray(s.dropoffStops)) return false;
         var pk = s.pickupStops.filter(function (v) { return normAddr(v); });
         var dp = s.dropoffStops.filter(function (v) { return normAddr(v); });

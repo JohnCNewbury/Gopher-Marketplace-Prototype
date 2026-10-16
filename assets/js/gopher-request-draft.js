@@ -87,6 +87,15 @@
      ours to do. Flip a field out of this list only on an explicit owner decision. */
   var RECONSENT_FIELDS = ['waiverChecked', 'lowOfferAck'];
 
+  /* 'YYYY-MM-DD' + 'h:mm AM' -> local Date, or null when there is no slot. */
+  function schedSlotTime(dateISO, slot) {
+    var m = /^(\d{1,2}):(\d{2})\s*([AP]M)$/i.exec(String(slot).trim());
+    var p = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateISO);
+    if (!m || !p) return null;
+    var h = (+m[1]) % 12 + (/pm/i.test(m[3]) ? 12 : 0);
+    return new Date(+p[1], +p[2] - 1, +p[3], h, +m[2], 0, 0);
+  }
+
   function contractFields() { return CONTRACT_FIELDS.slice(); }
   function transientFields() { return TRANSIENT_FIELDS.slice(); }
   function sensitiveFields() { return SENSITIVE_FIELDS.slice(); }
@@ -177,17 +186,21 @@
     /* Affirmative consent is re-taken here. */
     for (var i = 0; i < RECONSENT_FIELDS.length; i++) out[RECONSENT_FIELDS[i]] = false;
 
-    /* A scheduled date that has passed cannot be resumed as-is. Clear it and drop the
-       confirmation so the picker re-opens rather than submitting into the past. */
+    /* B-29 (App wins, audit 10/15): a scheduled time that is no longer in the
+       future resumes as NEED ASAP, as the app's yardDraft.js does ("the time it was
+       for has passed"). This cleared only a past DATE and kept the request
+       "scheduled" with the picker reopened -- and a past time EARLIER TODAY was kept
+       and let through (the step-6 gate only checks that a slot exists). */
     if (out.schedDate) {
-      var d = String(out.schedDate);
-      var iso = today.getFullYear() + '-' +
+      var at = schedSlotTime(String(out.schedDate), String(out.timeSlot || ''));
+      var dayGone = String(out.schedDate) < (today.getFullYear() + '-' +
                 String(today.getMonth() + 1).padStart(2, '0') + '-' +
-                String(today.getDate()).padStart(2, '0');
-      if (d < iso) {
+                String(today.getDate()).padStart(2, '0'));
+      if (dayGone || (at && at.getTime() <= today.getTime())) {
         out.schedDate = null;
         out.timeSlot = '';
         out.scheduleConfirmed = false;
+        if (out.scheduleType === 'scheduled') out.scheduleType = 'now';
         notes.push('scheduleExpired');
       }
     }

@@ -54,13 +54,24 @@
     bidsOption:           ['delivery', 'ride'],
     deliveryType:         ['home', 'junk', 'labor', 'moving', 'other', 'ride', 'yard'],
     describe:             ['ride'],
-    destStairs:           ['delivery', 'home', 'junk', 'ride', 'yard'],
+    /* CT port 2026-10-15 (John 10/13 "Web `other` gets the app's Custom Task
+       logic"; 10/15 "App wins"). Five rows moved for 'other' (Custom Task),
+       each to what the live app's Custom Task does (customTaskFlowSteps.js):
+         destStairs          + other  no stairs question (B-36)
+         noSpecificPickup    - other  its "No pick up — work happens on site"
+         pickupSection       - other  switch, ON by default; OFF = pick-up (B-2)
+         workerSelectChoice  - other  First available / I'll select my worker /
+                                      Prioritize MY Gopher(s) (B-15, D-46)
+         workerSetup         + other  no crew control (B-19)
+       Connect and the app prototype are NOT ported: each keeps its old value
+       through an override below, so neither surface moves. */
+    destStairs:           ['delivery', 'home', 'junk', 'other', 'ride', 'yard'],
     hazardous:            ['delivery', 'home', 'labor', 'moving', 'other', 'ride', 'yard'],
     itemInfo:             ['delivery', 'home', 'labor', 'other', 'ride', 'yard'],
     laborMgmt:            ['delivery', 'home', 'ride'],
     multiStop:            ['delivery', 'home', 'junk', 'labor', 'moving', 'other', 'ride', 'yard'],
-    noSpecificPickup:     ['home', 'junk', 'labor', 'other', 'ride', 'yard'],
-    pickupSection:        ['home', 'junk', 'labor', 'other', 'yard'],
+    noSpecificPickup:     ['home', 'junk', 'labor', 'ride', 'yard'],
+    pickupSection:        ['home', 'junk', 'labor', 'yard'],
     pickupStairs:         ['delivery', 'home', 'junk', 'labor', 'other', 'ride', 'yard'],
     riderInfo:            ['delivery', 'home', 'junk', 'labor', 'moving', 'other', 'yard'],
     /* ⚠️ BOTH ENTRIES CORRECTED 2026-10-04 (G40-576 Moving package). Each one
@@ -77,8 +88,13 @@
        both now show the two-option Gopher choice. 'junk' joined destStairs the same day (JR-34) -- owner:
        "Web, Connect and prototype match the app: no stairs question on Junk.
        Junk sends total_stair_flight 0 everywhere, as the app does." */
-    workerSelectChoice:   ['other', 'yard'],
-    workerSetup:          ['delivery', 'home', 'ride']
+    /* D13 (John 10/13: "the WEB shows the app's 2 options on Yard"): 'yard' left
+       on 2026-10-15. The app's Yard step offers I'll select my worker and
+       Prioritize MY Gopher(s), no First Available (yardFlowSteps.js Y-05). Only
+       Custom Task ('other') hid it until the Custom Task port (2026-10-15), which
+       gives it the app's three choices; no Request category hides it now. */
+    workerSelectChoice:   [],
+    workerSetup:          ['delivery', 'home', 'other', 'ride']
   };
 
   /* ── Surface overrides ─────────────────────────────────────────────────────
@@ -106,10 +122,30 @@
          Connect keeps hiding workerSelectChoice for BOTH 'moving' and 'labor',
          permanently. This is not a parity gap to be closed later. */
   var SURFACE_OVERRIDES = {
+    /* The app PROTOTYPE keeps the pre-D13 Yard value on purpose: John 10/14, the
+       prototype is a lame duck, "redone after web code/logic". This override is
+       the declared lag, so the harness stays honest instead of the base drifting
+       back. Remove it when the prototype is rebuilt. */
+    prototype: {
+      workerSelectChoice:   ['other', 'yard'],
+      /* The CT port's declared lag (2026-10-15), same reason: the prototype's
+         Custom Task keeps its pre-port rows until the prototype is rebuilt. */
+      destStairs:           ['delivery', 'home', 'junk', 'ride', 'yard'],
+      noSpecificPickup:     ['home', 'junk', 'labor', 'other', 'ride', 'yard'],
+      pickupSection:        ['home', 'junk', 'labor', 'other', 'yard'],
+      workerSetup:          ['delivery', 'home', 'ride']
+    },
     connect: {
       multiStop:            ['home', 'junk', 'labor', 'moving', 'other', 'yard'],
       serviceElevator:      ['delivery', 'home', 'junk', 'labor', 'other', 'ride', 'yard'],
-      workerSelectChoice:   ['home', 'labor', 'moving', 'other', 'yard']
+      workerSelectChoice:   ['home', 'labor', 'moving', 'other', 'yard'],
+      /* The CT port (2026-10-15) is REQUEST ONLY: Connect is parked (John 10/15)
+         and its Custom/Other flow is its own. These four hold Connect exactly
+         where it was when the Request base moved for 'other'. */
+      destStairs:           ['delivery', 'home', 'junk', 'ride', 'yard'],
+      noSpecificPickup:     ['home', 'junk', 'labor', 'other', 'ride', 'yard'],
+      pickupSection:        ['home', 'junk', 'labor', 'other', 'yard'],
+      workerSetup:          ['delivery', 'home', 'ride']
       /* ⚠️ Connect keeps BOTH 'labor' and 'moving' hidden, and this is a finding
          rather than lag. Connect's control offers exactly two options --
          "First available worker" and "I'll select my worker(s)" -- and has NO
