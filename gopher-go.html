@@ -1775,6 +1775,7 @@ window.GoSession = (function(){
           first_name:_i.first_name, last_name:_i.last_name,
           gopher_completed_task_count:_i.jobs, average_rating:_i.rating, created_at:_i.since
         });
+        if(_i.tier !== undefined && window.GoTier) GoTier.apply(_i.tier);
       } else if(_s.signedIn){
         ['dashWorkerName','profName'].forEach(function(id){
           var el=document.getElementById(id); if(el) el.textContent='';
@@ -1825,7 +1826,7 @@ window.GoSession = (function(){
     }
     enterDash();
   }
-  function signOut(){ clear(); exitToSignIn(); }
+  function signOut(){ clear(); if(window.GoTier) GoTier.reset(); exitToSignIn(); }
   /* The live access-token. Kept in the same store as the session so a remembered
      worker stays authenticated across a reload — without it, GoSession would
      restore the DASHBOARD but not the credential, and every call behind it would
@@ -2469,6 +2470,53 @@ window.GoWork = (function(){
 </script>
 
 <script>
+/* ⛔ GoTier — THE GO APP'S TIER RULE, ON THE WEB (stage 3 = A, John 10/16).
+   gopher_type_id comes from GET /users/profile/:id, the same response the Go
+   app reads. The web signs in with apptype 'gopher', so the server reads the
+   worker's role-2 row and the value is their real tier (profile.js).
+     renderForm.js   gopher_type_id > 0 -> the Pro badge shows and "Become A
+                     Gopher Pro" hides; otherwise the reverse (missing = Standard)
+     AccountHome.js  proLabel: 2 "Gopher Pro+", 1 "Gopher Pro", else ""; a Pro
+                     with no label falls back to "Gopher Pro+"
+   Before the account loads, nothing is shown either way: "not known yet" is
+   not Standard, and offering a Pro the upgrade row is the worse mistake. */
+window.GoTier = (function(){
+  var PILL = { 1:'assets/img/badge-gopher-pro.png', 2:'assets/img/badge-gopher-pro-plus.png' };
+  var current;   // undefined until the account says
+  function label(id){ return id === 2 ? 'Gopher Pro+' : id === 1 ? 'Gopher Pro' : ''; }
+  function el(id){ return document.getElementById(id); }
+  function paint(){
+    var known = current !== undefined;
+    var pro = known && current > 0;
+    var name = pro ? (label(current) || 'Gopher Pro+') : '';
+    var pill = pro ? (PILL[current] || PILL[2]) : '';
+    var acct = el('dashAcctTier');
+    if(acct) acct.innerHTML = pro ? '<img src="' + pill + '" alt=""><span>' + name + '</span>' : '';
+    var prof = el('profTier');
+    if(prof){
+      prof.innerHTML = pro ? '<img src="' + pill + '" alt="' + name + '">' : '';
+      prof.hidden = !pro;
+      /* Its "Verified Worker" caption belongs to the badge: no badge, no caption. */
+      var vb = prof.closest('.ph-vbadge'); if(vb) vb.hidden = !pro;
+    }
+    var row = el('verifyTierRow');
+    if(row){
+      row.hidden = !pro;
+      var img = el('verifyTierImg'), nm = el('verifyTierName');
+      if(img){ if(pro){ img.src = pill; } else { img.removeAttribute('src'); } }
+      if(nm) nm.textContent = name;
+    }
+    var become = el('becomeProRow');
+    if(become) become.hidden = !(known && !pro);
+  }
+  function apply(typeId){ var n = Number(typeId); current = (Number.isFinite(n) && n > 0) ? n : 0; paint(); }
+  function reset(){ current = undefined; paint(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', paint);
+  return { apply:apply, reset:reset, label:label, get:function(){ return current; } };
+})();
+</script>
+
+<script>
 window.GoProfile = (function(){
   /* ── THE IDENTITY LOAD ────────────────────────────────────────────────────
      One /users/profile/:id read populates every place the dashboard shows who
@@ -2539,6 +2587,9 @@ window.GoProfile = (function(){
 
   function applyIdentity(p){
     if(!p) return;
+    /* The tier, from the same response the app reads (renderForm.js). Only when
+       the field is present: the session-cache repaint below passes a partial. */
+    if(Object.prototype.hasOwnProperty.call(p, 'gopher_type_id') && window.GoTier) GoTier.apply(p.gopher_type_id);
     var set = function(id, val, fallbackBlank){
       var el = document.getElementById(id); if(!el) return;
       var v = (val == null ? '' : String(val)).trim();
@@ -2816,7 +2867,8 @@ window.GoProfile = (function(){
           last_name:  r.profile.last_name  || '',
           jobs:   r.profile.gopher_completed_task_count,
           rating: r.profile.average_rating,
-          since:  r.profile.created_at
+          since:  r.profile.created_at,
+          tier:   r.profile.gopher_type_id
         };
         GoSession.save(sess);
       }catch(e){}
@@ -3323,6 +3375,16 @@ window.showNoAccount = function(){
   .dash-worker-sub { font-family:'DM Sans',sans-serif; font-weight:400; font-size:12px; color:var(--muted); margin-top:2px; }
   .dash-acct-tier { margin-top:8px; font-family:'Nunito',sans-serif; font-weight:800; font-size:12px; color:var(--green-dark); }
   .dash-acct-tier:empty { display:none; }
+  /* Stage 3 = A (John 10/16): the tier pill, the Go app's own badge art. */
+  .dash-acct-tier { display:flex; align-items:center; gap:7px; }
+  .dash-acct-tier img { height:16px; width:auto; display:block; }
+  /* This page has no global [hidden] rule, so each GoTier-driven element says it. */
+  .dash-nav-item[hidden], .idrow[hidden], .ph-vlogo[hidden], .ph-vbadge[hidden] { display:none; }
+  .dash-nav-ext { text-decoration:none; }
+  .dash-nav-ext .dni-ico img { height:13px; width:auto; display:block; margin:0 auto; }
+  .dash-nav-ext .dni-label { display:flex; flex-direction:column; line-height:1.25; }
+  .dash-nav-ext .dni-label small { font-weight:600; font-size:11px; color:rgba(255,255,255,0.55); }
+  .dash-nav-ext::after { content:"\2197"; margin-left:auto; color:rgba(255,255,255,0.6); font-size:13px; }
   .dash-tier-chip { display:inline-flex; align-items:center; background:#fff; border-radius:6px; padding:3px 8px; margin-right:2px; vertical-align:middle; }
   .dash-tier-chip[hidden] { display:none; }
   .dash-tier-chip img { height:15px; width:auto; display:block; }
@@ -4387,12 +4449,14 @@ window.showNoAccount = function(){
       <button class="dash-nav-item" data-dash-section="blocked"><span class="dni-ico">&#128683;</span><span class="dni-label">Block Requesters</span></button>
       <div class="dash-nav-divider">Account</div>
       <button class="dash-nav-item" data-dash-section="business"><span class="dni-ico">&#127970;</span><span class="dni-label">Business info</span></button>
-      <button class="dash-nav-item" data-dash-section="pro"><span class="dni-ico"><img src="assets/img/tier-pro.svg" alt="Pro" style="height:13px;width:auto;background:#fff;border-radius:5px;padding:2px 3px;display:block"></span><span class="dni-label">Become a Pro</span></button>
-      <!-- Matches the App Prototype's openElite() (data-goto="gopher-elite"). Coming
-           soon rather than live: the Pro -> Elite conversion has not happened, so a
-           worker acting on this today would be applying for a tier that does not yet
-           exist under that name. -->
-      <button class="dash-nav-item" data-dash-section="elite"><span class="dni-ico">&#11088;</span><span class="dni-label">Become Elite / Elite+</span></button>
+      <!-- ⛔ STAGE 3 = A (John 10/16), THE GO APP'S RULE: renderForm.js shows
+           "Become A Gopher Pro" only while gopher_type_id is not > 0, and the row
+           opens the website (AccountHome.js openPro). This replaces "Become a Pro"
+           and "Become Elite / Elite+", two coming-soon rows the app never had.
+           DECLARED difference: the app opens gophergo.io/become-a-gopher-pro/; the
+           web opens the tiers page, per John's pick. Hidden until GoTier knows
+           the account is Standard, so a Pro is never offered it by mistake. -->
+      <a class="dash-nav-item dash-nav-ext" id="becomeProRow" href="gopher-tiers.html" target="_blank" rel="noopener" hidden><span class="dni-ico"><img src="assets/img/badge-gopher-pro.png" alt=""></span><span class="dni-label">Become A Gopher Pro<small>See what Gopher Pro unlocks</small></span></a>
       <button class="dash-nav-item" data-dash-section="personal"><span class="dni-ico">&#128221;</span><span class="dni-label">Personal info</span></button>
       <button class="dash-nav-item" data-dash-section="work"><span class="dni-ico">&#128205;</span><span class="dni-label">Work settings &amp; ratings</span></button>
       <button class="dash-nav-item" data-dash-section="payout"><span class="dni-ico">&#128179;</span><span class="dni-label">Payment info</span></button>
@@ -4473,7 +4537,7 @@ window.showNoAccount = function(){
             <div class="idrow"><span class="idl">&#9993;&#65039; Email</span><span class="idstat ok">&#10003; Verified</span></div>
             <div class="idrow"><span class="idl">&#128241; Phone</span><span class="idstat ok">&#10003; Verified</span></div>
             <div class="idrow"><span class="idl"><svg class="idl-shield" viewBox="0 0 336.54 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"> <g> <path fill="#32d876" d="m168.27,0C79.89,0,0,41.93,0,41.93v61.25c8.34-6.79,17.16-13.21,26.42-19.21,47.71-30.9,106.92-50.85,170.32-56.01,43.98-3.58,89.98-.06,135.56,11.87C314.72,31.33,244.68,0,168.27,0Z"/> <path fill="#012462" d="m310.12,48.13v124.67c0,62.43-24.68,115.12-73.37,156.61-27.3,23.26-55.11,36.63-68.53,42.28-13.14-5.5-40.01-18.38-67.1-41.14-49.57-41.64-74.71-94.72-74.71-157.74v-41.6C112.84,61.43,190.08,47.87,261.06,41c-34.75-2.8-69.87-.94-104.49,5.7-48.62,9.32-93.31,27.72-130.15,53.14-9.33,6.44-18.16,13.33-26.42,20.64v52.32c0,171.67,168.27,227.2,168.27,227.2,0,0,168.27-55.52,168.27-227.2V54.65c-8.75-2.49-17.56-4.65-26.42-6.52Z"/> </g> <g> <path fill="#32d876" d="m247.93,140.65c-.04.05-.08.11-.13.16.04-.05.08-.11.13-.16Z"/> <path fill="#32d876" d="m248.93,139.23c-.15.24-.3.47-.46.7.16-.23.31-.46.46-.7Z"/> <path fill="#32d876" d="m238.37,145.96c-.11.01-.22.03-.33.04.11-.01.22-.03.33-.04Z"/> <path fill="#32d876" d="m239.71,145.74c-.09.02-.18.04-.26.05.09-.02.18-.04.26-.05Z"/> <path fill="#32d876" d="m117.97,146.07c0,.65-.05,1.29-.14,1.91v95.78s.09,0,.14,0v-97.69Z"/> <path fill="#32d876" d="m117.96,145.8c0,.09.01.18.01.28v-.28h-.01Z"/> <path fill="#32d876" d="m106.55,145.8c-.98,0-1.81-.14-2.65-.28-.14,0-.42-.14-.7-.14-.7-.14-1.25-.28-1.81-.56-.28-.14-.42-.14-.7-.28-.84-.28-1.53-.7-2.23-1.11l-.14-.14c-.56-.42-1.11-.84-1.67-1.39-.14-.14-.42-.42-.56-.56-.42-.42-.84-.98-1.11-1.39-.28-.28-.42-.42-.56-.7-.42-.7-.84-1.39-1.11-2.09.14-7.11,5.99-12.82,13.1-12.82,3.76,0,7.24,1.67,9.61,4.32l6.27,6.27c8.22-18.95,27.17-32.32,49.18-32.32h.14v21.87c11.29,0,20.34,9.06,20.34,20.34v12.53c6.27,1.94,10.96,7.72,11.42,14.5.28,8.92-6.83,16.3-15.74,16.3-1.35,0-2.66-.17-3.9-.48v9.53c6.35,3.77,10.85,10.41,11.56,18.26l3.8,39.45c.68-.27,1.41-.44,2.19-.44,2.65,0,4.74,1.67,5.57,4.04,1.11-1.39,2.65-2.37,4.6-2.37,1.39,0,2.65.42,3.62,1.25.56-4.04,4.04-7.11,8.22-7.11.68,0,1.32.1,1.95.25v-102.32c-.09-.65-.14-1.31-.14-2,0-8.5,6.97-15.46,15.46-15.46.16,0,.31.02.46.03.17,0,.34-.03.51-.03,3.76,0,7.11,2.23,8.78,5.43-.34,1.06-.8,2.08-1.37,3.02,1.39-2.22,2.21-4.83,2.21-7.61,0-7.94-6.41-14.49-14.49-14.49-4.04,0-7.66,1.67-10.31,4.18l-6.69,6.69-.14.14c-6.69-11.15-17.14-19.78-29.68-23.96l2.09-3.62c-5.99-2.23-12.54-3.48-19.37-3.48-21.6,0-40.26,12.54-49.18,30.79l-6.69-6.69c-2.65-2.65-6.27-4.18-10.31-4.18-7.94,0-14.49,6.55-14.49,14.49s6.55,14.49,14.49,14.49h4.45s0-.09,0-.14h-4.31Z"/> <path fill="#1baf61" d="m159.49,197.2v-9.44c-1.12.25-2.29.39-3.48.39-7.7,0-14.04-5.51-15.45-12.76,0,.03-.01.05-.02.08-.01-.1-.02-.19-.03-.28-.19-1.08-.28-2.2-.25-3.34.23-6.73,4.82-12.48,11.01-14.46v-12.57c0-11.29,9.06-20.34,20.34-20.34v-21.87h-.14c-22.01,0-40.96,13.38-49.18,32.32l-6.27-6.27c-2.37-2.65-5.85-4.32-9.61-4.32-7.11,0-12.96,5.71-13.1,12.82.28.7.7,1.39,1.11,2.09.14.28.28.42.56.7.28.42.7.98,1.11,1.39.14.14.42.42.56.56.56.56,1.11.98,1.67,1.39l.14.14c.7.42,1.39.84,2.23,1.11.28.14.42.14.7.28.56.28,1.11.42,1.81.56.28,0,.56.14.7.14.84.14,1.67.28,2.65.28h4.31c-.13-7.12-5.09-13.12-11.97-14.77,1.25-.28,2.37-.42,3.62-.42,8.4,0,15.3,6.82,15.45,15.19h.01v97.97c4.34.29,7.8,3.92,7.8,8.33,0,.56,0,.98-.14,1.53.7-.42,1.67-.7,2.65-.7,2.79,0,5.15,1.95,5.71,4.46,1.25-3.07,4.32-5.29,7.8-5.29.9,0,1.75.17,2.56.44l3.57-37.09c.71-7.85,5.21-14.49,11.56-18.26Z"/> <path fill="#86f7bc" d="m183.73,197.2v.84c0,.56-.42.98-.98.98h-3.36c-1.78,1.35-4.6,2.23-7.79,2.23s-6.01-.88-7.79-2.23h-3.36c-.56,0-.98-.42-.98-.98v-.84c-6.35,3.77-10.85,10.41-11.56,18.26l-3.57,37.09c2.97.99,5.22,3.63,5.66,6.8,1.11-1.11,2.51-1.81,4.18-1.81,1.81,0,3.2.84,4.32,1.95v-.7c0-3.2,2.65-5.85,5.85-5.85s5.85,2.65,5.85,5.85v.14c1.25-.84,2.93-1.39,4.6-1.39,2.23,0,4.18.84,5.71,2.23.98-3.48,4.18-5.99,7.94-5.99,3.2,0,5.99,1.81,7.38,4.46.57-1.53,1.75-2.72,3.24-3.32l-3.8-39.45c-.71-7.85-5.21-14.49-11.56-18.26Z"/> <path fill="#1baf61" d="m163.82,199.02c1.78,1.35,4.6,2.23,7.79,2.23s6.01-.88,7.79-2.23h-15.58Z"/> <path fill="#fff" d="m172.73,177.7c-.28-.84-1.53-.84-1.81,0-1.84,5.06-6.14,8.87-11.42,10.06v10.28c0,.56.42.98.98.98h22.29c.56,0,.98-.42.98-.98v-10.37c-5.15-1.28-9.21-5.04-11.01-9.97Z"/> <path fill="#fff" d="m151.27,144.82v12.57c1.24-.4,2.55-.66,3.9-.73h2.05c2.02-3.48,7.69-5.99,14.39-5.99s12.38,2.51,14.39,5.99h2.19c1.3.07,2.56.31,3.76.69v-12.53c0-11.29-9.06-20.34-20.34-20.34s-20.34,9.06-20.34,20.34Zm25.77-5.99c0-1.25,1.11-2.37,2.37-2.37s2.37.98,2.37,2.37v5.85c0,1.25-1.11,2.37-2.37,2.37s-2.37-1.11-2.37-2.37v-5.85Zm-15.47,0c0-1.25,1.11-2.37,2.37-2.37s2.37.98,2.37,2.37v5.85c0,1.25-1.11,2.37-2.37,2.37s-2.37-1.11-2.37-2.37v-5.85Z"/> <path fill="#1baf61" d="m140.51,175.19c-.13-1.14-.25-2.18-.25-3.34-.04,1.14.05,2.26.25,3.34Z"/> <path fill="#1baf61" d="m186,156.66c.51.88.79,1.81.79,2.79,0,4.85-6.8,8.78-15.19,8.78-6.61,0-12.22-2.44-14.3-5.85h-2.14c-7.36.42-13.46,5.81-14.61,13.02,1.41,7.25,7.75,12.76,15.45,12.76,1.2,0,2.36-.14,3.48-.39,5.28-1.19,9.59-5,11.42-10.06.28-.84,1.53-.84,1.81,0,1.8,4.94,5.85,8.7,11.01,9.97,1.24.31,2.55.48,3.9.48,8.92,0,16.02-7.38,15.74-16.3-.47-6.78-5.16-12.56-11.42-14.5-1.2-.37-2.46-.62-3.76-.69h-2.19Z"/> <path fill="#32d876" d="m155.17,162.37h2.14c-.56-.92-.88-1.9-.88-2.93s.29-1.91.79-2.79h-2.05c-1.35.07-2.66.33-3.9.73-6.19,1.98-10.77,7.73-11.01,14.46,0,1.16.12,2.2.25,3.34.01.1.02.19.03.28,0-.03.01-.05.02-.08,1.15-7.2,7.26-12.6,14.61-13.02Z"/> <path fill="#012462" d="m157.31,162.37c2.09,3.41,7.69,5.85,14.3,5.85,8.39,0,15.19-3.93,15.19-8.78,0-.98-.29-1.91-.79-2.79-2.02-3.48-7.69-5.99-14.39-5.99s-12.37,2.51-14.39,5.99c-.51.88-.79,1.81-.79,2.79,0,1.03.32,2.01.88,2.93Z"/> <path fill="#1baf61" d="m241.55,130.75c-.17,0-.34.02-.51.03,1.1.03,2.18.15,3.16.39-6.83,1.53-11.84,7.66-11.84,14.91h4.32c.46,0,.92-.03,1.37-.07.11-.01.22-.03.33-.04.36-.04.72-.1,1.07-.17.09-.02.18-.04.26-.05,3.25-.69,6.09-2.47,8.1-4.93.04-.05.08-.11.13-.16.19-.23.37-.47.54-.72.16-.23.32-.46.46-.7,0-.01.01-.02.02-.04.57-.94,1.04-1.95,1.37-3.02-1.67-3.2-5.02-5.43-8.78-5.43Z"/> <g> <path fill="#012462" d="m228.73,110.27c-3.07.98-5.71,2.79-8.08,5.15l-.14.14c-5.15-6.13-11.56-11.29-18.81-15.05l1.39-2.51c.42-.7.14-1.67-.7-1.95l-7.52-2.93c-3.76-1.39-7.52-2.51-11.42-3.2-24.52-4.04-47.79,5.99-61.58,24.94-4.18-3.9-9.61-5.99-15.33-5.99-13.65,0-24.52,11.98-22.43,26.05,1.53,11.15,11.56,19.37,22.99,19.37h2.65v85.45c-.23-.02-.46-.05-.7-.05-4.04,0-7.52,2.93-8.22,6.83-.84-.42-1.67-.56-2.51-.56-3.2,0-5.85,2.65-5.85,5.85v.14c-.42,0-.7-.14-1.11-.14-4.6,0-8.36,3.76-8.36,8.36s3.76,8.36,8.36,8.36c.98,0,1.95-.14,2.79-.56.84,2.23,2.93,3.9,5.43,3.9,1.39,0,2.65-.56,3.62-1.39,1.53,2.37,4.04,3.9,6.97,3.9,1.67,0,3.2-.56,4.6-1.39.7,2.37,2.93,4.04,5.57,4.04,1.53,0,2.93-.56,3.9-1.53,1.39,2.79,4.18,4.6,7.38,4.6,2.93,0,5.57-1.53,7.11-3.9,1.39,1.25,3.34,1.95,5.29,1.95,2.65,0,4.88-1.25,6.41-3.07.42,2.79,2.79,5.02,5.71,5.02,2.65,0,4.88-1.81,5.57-4.32,1.53,1.39,3.48,2.37,5.71,2.37,1.95,0,3.76-.7,5.29-1.95,1.11,3.34,4.18,5.71,7.94,5.71,3.48,0,6.41-2.09,7.66-5.02,1.11,1.53,2.79,2.51,4.74,2.51,1.81,0,3.34-.84,4.46-2.09,1.39,2.65,4.18,4.6,7.38,4.6,2.93,0,5.57-1.53,7.11-3.9,1.53,2.37,4.04,3.9,7.11,3.9,3.34,0,6.27-2.09,7.66-5.02,1.53,0,2.93-.56,3.9-1.53,1.53,1.67,3.62,2.65,6.13,2.65,3.48,0,6.41-2.09,7.66-5.02,1.67-.14,3.2-.98,4.18-2.23.7.14,1.39.28,2.09.28,4.6,0,8.36-3.76,8.36-8.36.42-2.93-.98-5.29-3.07-6.83.14-.56.28-.98.28-1.53,0-3.2-2.65-5.85-5.85-5.85-1.25,0-2.37.42-3.34,1.11-.98-3.62-4.18-6.27-8.08-6.27v-.42c0-3.16-2.57-5.76-5.71-5.84v-82.63h2.51c12.26,0,22.71-9.33,23.41-21.46.98-15.6-14.21-28.14-30.51-22.71Zm20.22,28.93s-.01.02-.02.04c-.15.24-.3.47-.46.7-.17.25-.35.48-.54.72-.04.05-.08.11-.13.16-2.02,2.46-4.85,4.24-8.1,4.93-.09.02-.18.04-.26.05-.35.07-.71.12-1.07.17-.11.01-.22.03-.33.04-.45.04-.91.07-1.37.07h-4.32c0-7.24,5.02-13.38,11.84-14.91-.98-.24-2.06-.36-3.16-.39-.16,0-.31-.03-.46-.03-8.5,0-15.46,6.97-15.46,15.46,0,.69.05,1.35.14,2v102.32c-.63-.15-1.27-.25-1.95-.25-4.18,0-7.66,3.07-8.22,7.11-.98-.84-2.23-1.25-3.62-1.25-1.95,0-3.48.98-4.6,2.37-.84-2.37-2.93-4.04-5.57-4.04-.78,0-1.52.16-2.19.44-1.49.6-2.67,1.79-3.24,3.32-1.39-2.65-4.18-4.46-7.38-4.46-3.76,0-6.97,2.51-7.94,5.99-1.53-1.39-3.48-2.23-5.71-2.23-1.67,0-3.34.56-4.6,1.39v-.14c0-3.2-2.65-5.85-5.85-5.85s-5.85,2.65-5.85,5.85v.7c-1.11-1.11-2.51-1.95-4.32-1.95-1.67,0-3.07.7-4.18,1.81-.44-3.17-2.69-5.81-5.66-6.8-.81-.27-1.66-.44-2.56-.44-3.48,0-6.55,2.23-7.8,5.29-.56-2.51-2.93-4.46-5.71-4.46-.98,0-1.95.28-2.65.7.14-.56.14-.98.14-1.53,0-4.41-3.46-8.04-7.8-8.33-.05,0-.09,0-.14,0v-95.78c.09-.62.14-1.25.14-1.91,0-.09-.01-.19-.01-.28-.15-8.37-7.05-15.19-15.45-15.19-1.25,0-2.37.14-3.62.42,6.88,1.65,11.84,7.65,11.97,14.77,0,.05,0,.09,0,.14h-4.45c-7.94,0-14.49-6.55-14.49-14.49s6.55-14.49,14.49-14.49c4.04,0,7.66,1.53,10.31,4.18l6.69,6.69c8.92-18.25,27.59-30.79,49.18-30.79,6.83,0,13.37,1.25,19.37,3.48l-2.09,3.62c12.54,4.18,22.99,12.82,29.68,23.96l.14-.14,6.69-6.69c2.65-2.51,6.27-4.18,10.31-4.18,8.08,0,14.49,6.55,14.49,14.49,0,2.79-.82,5.39-2.21,7.61Z"/> <path fill="#012462" d="m253.12,273.97c-3.2,0-5.85,2.65-5.85,5.85s2.65,5.85,5.85,5.85,5.85-2.65,5.85-5.85-2.51-5.85-5.85-5.85Z"/> <path fill="#012462" d="m73.95,254.05c-3.2,0-5.85,2.65-5.85,5.85s2.65,5.85,5.85,5.85,5.85-2.65,5.85-5.85c-.14-3.2-2.65-5.85-5.85-5.85Z"/> <path fill="#012462" d="m264.82,265.06c-2.09,0-3.76,1.67-3.76,3.76s1.67,3.62,3.76,3.62,3.62-1.67,3.62-3.62c.14-2.09-1.53-3.76-3.62-3.76Z"/> </g> <path fill="#012462" d="m179.41,147.05c1.25,0,2.37-1.11,2.37-2.37v-5.85c0-1.39-1.11-2.37-2.37-2.37s-2.37,1.11-2.37,2.37v5.85c0,1.25,1.11,2.37,2.37,2.37Z"/> <path fill="#012462" d="m163.95,147.05c1.25,0,2.37-1.11,2.37-2.37v-5.85c0-1.39-1.11-2.37-2.37-2.37s-2.37,1.11-2.37,2.37v5.85c0,1.25,1.11,2.37,2.37,2.37Z"/> </g> </svg> Gopher TrustShield&trade;</span><span class="idstat ok">&#10003; Verified</span></div>
-            <div class="idrow"><span class="idl"><img class="pro-badge-sm" src="assets/img/go-idstat-ok.svg" alt="Elite+"> Gopher Elite+</span><span class="idstat ok">&#10003; Verified</span></div>
+            <div class="idrow" id="verifyTierRow" hidden><span class="idl"><img class="pro-badge-sm" id="verifyTierImg" alt=""> <span id="verifyTierName"></span></span><span class="idstat ok">&#10003; Verified</span></div>
           </div>
           <p class="lock-note" style="margin-top:10px">View-only. Update your contact details in <b>Personal info</b>; identity is maintained by Stripe.</p>
         </div>
@@ -4546,7 +4610,7 @@ window.showNoAccount = function(){
       <section class="dash-section" data-dash-section="business">
         <div class="panel">
           <div class="panel-head"><h2>Business info</h2><span class="eyebrow">Optional</span></div>
-          <p class="panel-desc">Work as an individual? You can leave this blank. Adding business details &amp; documents determines your <b>Gopher Pro</b> eligibility.</p>
+          <p class="panel-desc">Work as an individual? You can leave this blank.</p>
           <!-- Owner 2026-07-23: business name is EDITABLE (was locked); worker
                chooses how they present; logo lives with the business fields. -->
           <div class="field full"><label>Business name</label><input type="text" id="bizName" data-field value="Hale Services LLC"></div>
@@ -4623,39 +4687,7 @@ window.showNoAccount = function(){
         </div>
       </section>
 
-      <!-- ░░ BECOME A PRO (owner, 2026-07-23: its own section under Business
-           info; credentials moved here from Business info; real Pro logo) ░░ -->
-      <section class="dash-section" data-dash-section="pro">
-        <div class="panel">
-          <div class="panel-head"><h2>Become a Pro</h2><img src="assets/img/tier-pro.svg" alt="Gopher Pro" style="height:26px;width:auto"></div>
-          <p class="panel-desc">The Pro badge tells requesters you're insured, bonded, and licensed — a credential that stacks with any tier and wins more work.</p>
-          <div class="procallout"><span class="pc-ico">&#11088;</span><div>These docs determine your <b>Gopher Pro</b> eligibility and are reviewed for approval. Uploading a new document <b>replaces the previous one</b> — newest overrides oldest.</div></div>
-          <div class="up2">
-            <div class="cred uptile" data-cred="Proof of insurance"><div class="up-ico">&#128196;</div><span>Proof of insurance</span><input type="hidden" data-field value="0"></div>
-            <div class="cred uptile" data-cred="Proof of bonded"><div class="up-ico">&#128196;</div><span>Proof of bonded</span><input type="hidden" data-field value="0"></div>
-          </div>
-          <div class="up2">
-            <div class="cred uptile" data-cred="Proof of license"><div class="up-ico">&#128196;</div><span>Proof of license</span><input type="hidden" data-field value="0"></div>
-          </div>
-          <div class="save-row"><button class="btn-save" disabled>Save changes</button><span class="save-note">No changes yet.</span></div>
-        </div>
-      </section>
-
       <!-- ░░ WORK SETTINGS & RADIUS ░░ -->
-      <!-- BECOME ELITE / ELITE+ — content matched to the App Prototype's openElite()
-           so the two surfaces teach the same thing. Gated "coming soon": the tier
-           rename has not shipped, and this pane must not invite an application for a
-           tier that is still called Pro everywhere else. -->
-      <section class="dash-section" data-dash-section="elite">
-        <div class="panel">
-          <div class="panel-head"><h2>Become Elite / Elite+</h2></div>
-          <p class="panel-desc">Level-up &mdash; earn more. Below are the Elite tiers on the Gopher Marketplace.</p>
-          <div class="tier-row"><b class="tier-badge">elite</b><span>Verified identity, SSN, phone, email, Stripe account and verified clean background from Yardstik.</span></div>
-          <div class="tier-row"><b class="tier-badge">elite+</b><span>Verified identity, SSN, phone, email, Stripe account and verified clean background <strong>and DMV</strong> from Yardstik.</span></div>
-          <p class="panel-desc"><strong>Invest in getting your Elite or Elite+ badge</strong> and increase your earnings and volume instantly.</p>
-          <a class="tier-link" href="gopher-tiers.html" target="_blank" rel="noopener">View the full Gopher tiers page &#8594;</a>
-        </div>
-      </section>
 
       <section class="dash-section" data-dash-section="work">
         <div class="panel">
@@ -4725,17 +4757,13 @@ window.showNoAccount = function(){
           </div>
 
           <div class="sec-h">Travel radius</div>
-          <div class="tier-badge" id="workTierBadge">Your tier: <b id="workTierName">Gopher Elite+</b></div>
-          <div class="seg" id="workTierSeg"><button data-tier="standard">Standard view</button><button class="on" data-tier="elite">Elite / Pro view</button></div>
-          <p class="demo-note">&#128295; Demo toggle only — in production this is set automatically from the worker's tier (Standard vs Elite / Elite+ / Pro) and isn't editable here.</p>
-          <div class="tierhint" id="workTierHint">As an Elite-or-above gopher you have a second, wider radius for non-delivery work.</div>
-          <div class="rad-standard" style="display:none">
+          <!-- ONE radius for every Gopher, as the Go app (work_radius.js: a single
+               1-50 mi slider) and the server (worksettings: one `radius`). The old
+               "second, wider radius" for Elite-or-above existed nowhere else, and
+               the Go 101 says the radius is the same for every worker (stage 3,
+               John 10/16). -->
+          <div class="rad-standard">
             <div class="radius"><div class="rl"><span>All categories</span><b>25 mi</b></div><input type="range" class="rg" min="1" max="50" value="25"></div>
-            <a class="tier-up" id="workTierUp" href="gopher-tiers.html">&#11014;&#65039; Tier up to Elite to unlock a second, wider radius &rarr;</a>
-          </div>
-          <div class="rad-elite">
-            <div class="radius"><div class="rl"><span>Delivery &amp; Ride Sharing</span><b>25 mi</b></div><input type="range" class="rg" min="1" max="50" value="25"></div>
-            <div class="radius"><div class="rl"><span>All other services</span><b>50 mi</b></div><input type="range" class="rg" min="1" max="100" value="50"></div>
           </div>
 
 
@@ -4999,7 +5027,7 @@ window.showNoAccount = function(){
       </div>
       <div class="ai-suggestions" id="aiSuggestions">
         <button class="ai-suggestion" data-q="When do I get paid and what fees come out?">When do I get paid?</button>
-        <button class="ai-suggestion" data-q="How do the Elite and Pro tiers work?">Elite &amp; Pro tiers</button>
+        <button class="ai-suggestion" data-q="What tiers are there?">Pro &amp; Pro+ tiers</button>
         <button class="ai-suggestion" data-q="How much can I counter offer?">Counter offers</button>
         <button class="ai-suggestion" data-q="How do I change my work settings and radius?">Work settings &amp; radius</button>
         <button class="ai-suggestion" data-q="What do I need to turn on ride sharing?">Turn on Ride Sharing</button>
@@ -5353,9 +5381,8 @@ window.showNoAccount = function(){
 
 <script>
   window.__TIER_LOGOS = {
-    'Elite': 'assets/img/tier-elite.svg',
-    'Elite+': 'assets/img/tier-elite-plus.webp',
-    'Pro': 'assets/img/tier-pro.svg'
+    'Gopher Pro':  'assets/img/badge-gopher-pro.png',
+    'Gopher Pro+': 'assets/img/badge-gopher-pro-plus.png'
   };
 </script>
 
@@ -5736,8 +5763,6 @@ window.showNoAccount = function(){
        inside each pane means a new pane is gated by adding its name to this
        list, and cannot be reached by any other route. */
     const COMING_SOON = {
-      pro:     'Become a Pro',
-      elite:   'Become Elite / Elite+',
       payout:  'Payment info',
       /* ⛔ INBOX IS FABRICATED END TO END, which is why it is gated rather than
          made read-only. GO_INBOX is a hardcoded array — nothing loads threads
@@ -5769,8 +5794,6 @@ window.showNoAccount = function(){
     };
     /* Why each one waits, shown to the worker rather than kept internal. */
     const SOON_WHY = {
-      pro:     'Pro is being folded into the Elite tiers. Applying now would put you in a tier that is about to be renamed.',
-      elite:   'The Elite tiers go live with launch. Your eligibility keeps building in the meantime — nothing is lost by waiting.',
       /* ⚠️ THIS COPY WAS BACKWARDS and said the Go app already does this. It
          does not. Verified on origin/production: one table, `blocked_gophers`,
          one direction — a REQUESTER blocks a WORKER. The requester app ships a
@@ -6328,14 +6351,9 @@ window.showNoAccount = function(){
        was built — the same gap App Prototypes flagged in the Go app prototype. Follows
        the page's existing window.__* convention (__openVerifyModal, __TIER_LOGOS). */
     window.__setStripeVerified = (v) => { ACCOUNT.stripeVerified = !!v; return ACCOUNT.stripeVerified; };
-    /* Owner, 2026-08-26: the new build has ZERO Pros, so the demo worker must not
-       present as one. Elite+ is the top tier that actually exists today. Every
-       tier-dependent surface (profile lockup, sidebar account card, Work-settings
-       "Your tier" badge) derives from THIS constant — the only hardcoded copies
-       are the static Verification row and that badge's pre-JS placeholder, both
-       updated alongside it. */
-    const WORKER  = { tier: 'Elite+' };   // Standard | Elite | Elite+ | Pro — drives the radius UI
-    window.__WORKER_TIER = WORKER.tier;
+    /* The worker's tier is no longer a demo constant (it read 'Elite+' for
+       everyone, Standard included). GoTier paints it from the account's
+       gopher_type_id, as the Go app does (stage 3 = A, John 10/16). */
     const digits = (s) => (s.match(/\d/g)||[]).join('');
     const maskPhone = (v) => { const d=digits(v); return d.length>=4 ? '\u2022\u2022\u2022 \u2022\u2022\u2022-'+d.slice(-4) : v; };
     const maskEmail = (v) => { const p=(v||'').split('@'); if(p.length!==2) return v; const u=p[0]; return (u.length<=2?(u[0]||''):u.slice(0,2))+'\u2022\u2022\u2022@'+p[1]; };
@@ -6752,8 +6770,7 @@ window.showNoAccount = function(){
         if(business.__setBaseline) business.__setBaseline();
       });
     }
-    const proPane = wire('pro');   // Become a Pro — its own pane (owner, 2026-07-23)
-    if(business || proPane){
+    if(business){
       const credFile = document.createElement('input');
       credFile.type='file'; credFile.accept='image/*,application/pdf'; credFile.style.display='none';
       document.body.appendChild(credFile);
@@ -6771,7 +6788,7 @@ window.showNoAccount = function(){
          printed "New file ready" and dropped the File on the floor, so a worker
          would set their photo, be told it worked, save, and have nothing happen.
          It has a real upload of its own below. */
-      document.querySelectorAll('.dash-section[data-dash-section="business"] .cred:not([data-cred="Business logo"]):not([data-cred="Profile photo"]), .dash-section[data-dash-section="pro"] .cred')
+      document.querySelectorAll('.dash-section[data-dash-section="business"] .cred:not([data-cred="Business logo"]):not([data-cred="Profile photo"])')
         .forEach(tile => tile.addEventListener('click', () => { credTarget=tile; credFile.value=''; credFile.click(); }));
       credFile.addEventListener('change', () => {
         if(!credTarget) return;
@@ -7152,34 +7169,6 @@ window.showNoAccount = function(){
         }
       });
 
-      // tier-driven radius display — the demo toggle lets you preview both;
-      // it does NOT count as an edit (excluded from the dirty check).
-      const std = work.querySelector('.rad-standard'), elite = work.querySelector('.rad-elite');
-      const tierName = document.getElementById('workTierName'), tierHint = document.getElementById('workTierHint');
-      const seg = document.getElementById('workTierSeg');
-      // The "Your tier" badge follows the previewed view: Elite/Pro view shows
-      // the real tier lockup; Standard view shows plain "Standard" with no badge.
-      function setTierBadge(view){
-        const logos = window.__TIER_LOGOS || {};
-        const t = WORKER.tier;
-        const showLogo = view !== 'standard' && t && t !== 'Standard' && logos[t];
-        if(!tierName) return;
-        if(showLogo) tierName.innerHTML = '<img class="tier-badge-logo" src="'+logos[t]+'" alt="Gopher '+t+'">';
-        else tierName.textContent = 'Standard';
-      }
-      function showView(tier){
-        const isStd = tier === 'standard';
-        std.style.display = isStd ? '' : 'none';
-        elite.style.display = isStd ? 'none' : '';
-        tierHint.textContent = isStd
-          ? 'Standard gophers set one radius for all categories.'
-          : 'As an Elite-or-above gopher you have a second, wider radius for non-delivery work.';
-        if(seg) seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.tier === tier));
-        setTierBadge(tier);
-      }
-      if(seg) seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => showView(b.dataset.tier)));
-      // initialise from the worker's actual tier
-      showView(/elite|pro/i.test(WORKER.tier) ? 'elite' : 'standard');
     }
 
     /* ── PAYOUT ── card(s) on file display + add-a-new-card method ── */
@@ -7291,19 +7280,7 @@ window.showNoAccount = function(){
 
   /* ════ Activity sections — Profile, Request history, Refer, Blocked ════ */
   (function initActivitySections(){
-    // Profile hero + sidebar account-card: tier lockup (worker's ACTUAL tier)
-    (function(){
-      const logos = window.__TIER_LOGOS || {};
-      const t = window.__WORKER_TIER;
-      const hasLogo = !!(t && t!=='Standard' && logos[t]);
-      const prof = document.getElementById('profTier');
-      if(prof){
-        if(hasLogo) prof.innerHTML = '<img src="'+logos[t]+'" alt="Gopher '+t+'">';
-        else prof.textContent = t || 'Standard';
-      }
-      const acct = document.getElementById('dashAcctTier');
-      if(acct) acct.textContent = (t && t!=='Standard') ? ('Gopher ' + t) : 'Standard';
-    })();
+    // Profile hero + sidebar account card: GoTier paints the tier from the account.
 
     /* Demo seeds for the SIGNED-OUT Blocked pane only. Signed in, the pane
        replaces these with the account's real list from the API.
