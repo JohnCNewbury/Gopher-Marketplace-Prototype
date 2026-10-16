@@ -2792,42 +2792,46 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
 
   /* ── BITE — "Yes, we can Gopher that, too." ── */
   .bite { background:var(--tan); }
+  /* v28 (John 10/15, picked card by card): each topic is the Gopher character's outline (ears and
+     dirt mound, line ~25% thinner than the reference) with a real moment playing inside it. The white
+     cards, colored top borders and pill tags are gone. Outline + mask were traced from John's outline
+     (assets/img/gopher-outline-thin.svg, gopher-head-mask.svg); .bite-clip's box is the traced inside,
+     ears included, so its numbers move only with those two files. */
   .bite-grid {
     margin-top:56px;
-    display:grid; grid-template-columns:repeat(4, 1fr); gap:22px;
+    display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:28px;
+    text-align:left; align-items:start;
   }
-  .bite-card {
-    background:white; border-radius:18px; padding:32px 26px 30px;
-    position:relative;
-    box-shadow:0 4px 16px rgba(42,54,84,0.06);
-    border-top:4px solid var(--green);
-    text-align:left;
-    transition:transform 0.25s, box-shadow 0.25s;
+  .bite-g { margin:0; min-width:0; }
+  .bite-gd { position:relative; width:110%; margin-left:-5%; aspect-ratio:1240/1220; }   /* ears reach into the gaps */
+  .bite-clip {
+    position:absolute; left:11.29%; top:3.607%; width:80.645%; height:83.607%;
+    overflow:hidden; background:var(--sand);
+    -webkit-mask:url(assets/img/gopher-head-mask.svg) 0 0/100% 100% no-repeat;
+            mask:url(assets/img/gopher-head-mask.svg) 0 0/100% 100% no-repeat;
   }
-  .bite-card:nth-child(2) { border-top-color:var(--terracotta); }
-  .bite-card:nth-child(3) { border-top-color:var(--navy); }
-  .bite-card:nth-child(4) { border-top-color:var(--green-dark); }
-  .bite-card:hover {
-    transform:translateY(-4px);
-    box-shadow:0 14px 30px rgba(42,54,84,0.12);
-  }
+  .bite-vid { display:block; width:100%; height:100%; object-fit:cover; }
+  .bite-line { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .bite-txt { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
   .bite-tag {
-    display:inline-block;
-    font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
-    letter-spacing:1.5px; text-transform:uppercase;
-    color:var(--green-text); background:var(--green-light);
-    padding:5px 10px; border-radius:99px;
-    margin-bottom:14px;
+    display:flex; align-items:center; gap:10px;
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:12px; line-height:1;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--navy);
   }
-  .bite-card:nth-child(2) .bite-tag { color:var(--terracotta); background:var(--terracotta-soft); }
-  .bite-card:nth-child(3) .bite-tag { color:var(--navy); background:var(--navy-light); }
-  .bite-card:nth-child(4) .bite-tag { color:var(--green-text); background:var(--green-light); }
-  .bite-card h4 {
+  .bite-tag::before { content:""; width:22px; height:3px; border-radius:2px; background:var(--green); flex:none; }
+  .bite-g h4 {
     font-family:'Nunito',sans-serif; font-weight:800; font-size:21px;
-    color:var(--navy); line-height:1.2; margin-bottom:10px;
+    color:var(--navy); line-height:1.2; margin:0;
     letter-spacing:-0.3px;
   }
-  .bite-card p { font-size:15px; color:var(--muted); line-height:1.6; }
+  .bite-g p { font-size:15px; color:var(--muted); line-height:1.6; margin:0; }
+  @media (max-width:1000px) {
+    .bite-grid { grid-template-columns:repeat(2, minmax(0,1fr)); gap:44px 40px; max-width:720px; margin-left:auto; margin-right:auto; }
+  }
+  @media (max-width:560px) {
+    .bite-grid { max-width:420px; }
+    .bite-gd { width:100%; margin-left:0; }
+  }
   .bite-footer {
     margin-top:40px; text-align:center;
     font-family:'Nunito',sans-serif; font-weight:700; font-size:15px;
@@ -11697,27 +11701,54 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     <h2 class="section-title">Yes, we can Gopher <em>that</em> too.</h2>
     <p class="section-sub">Other apps stop at the easy stuff. Gopher Request keeps going — because a real neighbor would.</p>
 
+    <!-- v28 (John 10/15): each topic is the Gopher outline with a real moment inside, picked card by card
+         (pick doc: claude.ai/artifact/Y9Zxohy4k8zNo2kgxjYjb3). Clips are muted, play only while on screen,
+         and show their poster still to anyone who has motion turned off (script below the section). -->
     <div class="bite-grid">
-      <div class="bite-card">
-        <span class="bite-tag">Age-restricted</span>
-        <h4>Beer, wine, and the occasional vape pen.</h4>
-        <p>Your Gopher is a real, verified adult. They check ID. We&rsquo;ll deliver what most apps quietly refuse to.</p>
-      </div>
-      <div class="bite-card">
-        <span class="bite-tag">Same-day, often same-hour</span>
-        <h4>That thing you needed an hour ago.</h4>
-        <p>Forgotten cord. Last-minute gift. Pickup the courier said couldn&rsquo;t happen until Tuesday. Post the request — someone&rsquo;s usually rolling within minutes.</p>
-      </div>
-      <div class="bite-card">
-        <span class="bite-tag">Odd-job-friendly</span>
-        <h4>The one nobody else has a category for.</h4>
-        <p>Move a piano three blocks. Stand in a return line. Drop a casserole at your mom&rsquo;s. If a neighbor could do it, a Gopher will.</p>
-      </div>
-      <div class="bite-card">
-        <span class="bite-tag">You name the price</span>
-        <h4>The number you&rsquo;d actually pay.</h4>
-        <p>No surge. No service fee theater. You offer what feels fair — and a Gopher in your neighborhood says yes, or doesn&rsquo;t.</p>
-      </div>
+      <figure class="bite-g">
+        <div class="bite-gd">
+          <div class="bite-clip"><video class="bite-vid" src="Beer-Delivery.mp4" poster="assets/img/gopher-that-beer.webp" muted loop playsinline preload="none" style="object-position:60% 50%" aria-label="A Gopher hands a case of beer to a neighbor at his backyard grill"></video></div>
+          <img class="bite-line" src="assets/img/gopher-outline-thin.svg" alt="" width="1240" height="1220">
+        </div>
+        <figcaption class="bite-txt">
+          <span class="bite-tag">Age-restricted</span>
+          <h4>Beer, wine, and the occasional vape pen.</h4>
+          <p>Your Gopher is a real, verified adult. They check ID. We&rsquo;ll deliver what most apps quietly refuse to.</p>
+        </figcaption>
+      </figure>
+      <figure class="bite-g">
+        <div class="bite-gd">
+          <div class="bite-clip"><video class="bite-vid" src="assets/video/gopher-that-backpack.mp4" poster="assets/img/gopher-that-backpack.webp" muted loop playsinline preload="none" aria-label="A Gopher hands a neighbor the backpack he left behind, on his front porch"></video></div>
+          <img class="bite-line" src="assets/img/gopher-outline-thin.svg" alt="" width="1240" height="1220">
+        </div>
+        <figcaption class="bite-txt">
+          <span class="bite-tag">Same-day, often same-hour</span>
+          <h4>That thing you needed an hour ago.</h4>
+          <p>Forgotten cord. Last-minute gift. Something you kinda need a vetted neighbor to help with.</p>
+        </figcaption>
+      </figure>
+      <figure class="bite-g">
+        <div class="bite-gd">
+          <div class="bite-clip"><video class="bite-vid" src="assets/video/gopher-that-couch.mp4" poster="assets/img/gopher-that-couch.webp" muted loop playsinline preload="none" aria-label="A Gopher carries a green velvet couch out through an apartment door"></video></div>
+          <img class="bite-line" src="assets/img/gopher-outline-thin.svg" alt="" width="1240" height="1220">
+        </div>
+        <figcaption class="bite-txt">
+          <span class="bite-tag">Odd-job-friendly</span>
+          <h4>The one nobody else has a category for.</h4>
+          <p>Move a piano three blocks. Stand in a return line. Drop a casserole at your mom&rsquo;s. If a neighbor could do it, a Gopher will.</p>
+        </figcaption>
+      </figure>
+      <figure class="bite-g">
+        <div class="bite-gd">
+          <div class="bite-clip"><video class="bite-vid" src="Movers.mp4" poster="assets/img/gopher-that-movers.webp" muted loop playsinline preload="none" aria-label="Two Gopher movers stand smiling, arms crossed, in front of a truck full of boxes"></video></div>
+          <img class="bite-line" src="assets/img/gopher-outline-thin.svg" alt="" width="1240" height="1220">
+        </div>
+        <figcaption class="bite-txt">
+          <span class="bite-tag">You name the price</span>
+          <h4>The number you&rsquo;d actually pay.</h4>
+          <p>No surge. No service fee theater. You offer what feels fair — and a Gopher in your neighborhood says yes, or doesn&rsquo;t.</p>
+        </figcaption>
+      </figure>
     </div>
 
     <p class="bite-footer">
@@ -11725,6 +11756,21 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     </p>
   </div>
 </section>
+<script>
+/* "Yes, we can Gopher that too." clips: muted, play only while on screen (preload none, so nothing
+   downloads until the section is in view); anyone with motion turned off keeps the poster still. */
+(function(){
+  var vids = document.querySelectorAll('.bite-vid');
+  if (!vids.length) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  function play(v){ var p = v.play(); if (p && p.catch) p.catch(function(){}); }
+  if (!('IntersectionObserver' in window)) { for (var i = 0; i < vids.length; i++) play(vids[i]); return; }
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if (e.isIntersecting) play(e.target); else e.target.pause(); });
+  }, { threshold: 0.25 });
+  for (var j = 0; j < vids.length; j++) io.observe(vids[j]);
+})();
+</script>
 
 <!-- COMPARISON — v21: head-to-head with the typical gig app -->
 <section class="section compare">
