@@ -807,19 +807,34 @@
   }
   .ts-cta:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(51,217,117,0.50); }
 
-  /* Right column: badges in a 2-up grid with Pro centered below, each captioned */
+  /* Right column: the Pro and Pro+ pills a worker wears in the Gopher Go app (John's pick C, 10/16).
+     The images are the app's own art, byte for byte (public/assets_1/pro_batch@3x.png and
+     pro_plus_batch@3x.png). Each pill sits in a box of one fixed height, bottom-aligned, so the two
+     pills stay level even when one caption wraps. Pro+ is drawn wider: its plus rises above the pill. */
   .ts-badges {
-    display:grid; grid-template-columns:1fr 1fr;
-    gap:28px 22px; align-items:start; justify-items:center;
+    display:grid; grid-template-columns:repeat(2, minmax(0, max-content));
+    gap:18px 22px; justify-content:center; align-items:start;
   }
-  .ts-badge { display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; }
-  .ts-badge-pro { grid-column:1 / -1; }
-  .ts-logo {
-    height:32px; width:auto; max-width:100%; display:block;
+  .ts-badge { display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; min-width:0; }
+  .ts-pillbox { height:78px; max-width:100%; display:flex; align-items:flex-end; justify-content:center; }
+  .ts-pill {
+    width:143px; max-width:100%; height:auto; display:block;
     transition:transform 0.25s ease, filter 0.25s ease;
-    filter:drop-shadow(0 4px 12px rgba(0,36,97,0.10));
+    filter:drop-shadow(0 6px 14px rgba(0,36,97,0.14));
   }
-  .ts-badge:hover .ts-logo { transform:translateY(-2px); filter:drop-shadow(0 8px 16px rgba(51,217,117,0.30)); }
+  .ts-pill.plus { width:172px; }
+  .ts-badge:hover .ts-pill { transform:translateY(-2px); filter:drop-shadow(0 8px 16px rgba(51,217,117,0.30)); }
+  .ts-appline {
+    grid-column:1 / -1; margin:6px 0 0; text-align:center;
+    font-family:'DM Sans',sans-serif; font-size:13.5px; color:#3a4256;
+  }
+  /* Below ~1060px the two-column card's right side is narrower than the two full-size pills */
+  @media (max-width:1060px) {
+    .ts-badges { gap:16px 14px; }
+    .ts-pillbox { height:56px; }
+    .ts-pill { width:103px; }
+    .ts-pill.plus { width:124px; }
+  }
   .ts-cap {
     font-family:'Nunito',sans-serif; font-weight:800; font-size:11.5px;
     letter-spacing:0.4px; color:var(--green-dark); line-height:1.3;
@@ -842,8 +857,6 @@
        ran to x=506 in a 375px viewport. `em.nowrap` still holds individual
        phrases together where the markup asks for it. */
     .ts-left h2 { font-size:28px; white-space:normal; }
-    .ts-badges { gap:24px 20px; }
-    .ts-logo { height:30px; }
   }
 
 </style>
@@ -1197,25 +1210,22 @@
       <div class="ts-left">
         <h2>The only platform that has<br><em>your back</em>&hellip; and your <em>Customer&rsquo;s</em>!</h2>
         <div class="ts-cursive">&mdash;trust that runs both ways</div>
-        <p>With <strong>Gopher Elite</strong>, <strong>Elite+</strong>, and <strong>Pro</strong> tiers, you don't just carry a verified badge across every job &mdash; you raise your earning potential, too. <strong>Gopher Connect</strong> (for businesses) and <strong>Gopher Deals</strong> (special offers from local merchants) unlock jobs reserved exclusively for Elite-and-above providers.</p>
+        <p>With <strong>Gopher Pro</strong> and <strong>Pro+</strong>, you don't just carry a verified badge across every job &mdash; you raise your earning potential, too. <strong>Gopher Connect</strong> (for businesses) and <strong>Gopher Deals</strong> (special offers from local merchants) unlock jobs reserved exclusively for Pro-and-above providers.</p>
         <span class="ts-note">Only on the Gopher Marketplace</span>
         <p>Every gig app screens the worker for the customer's safety. Gopher is the only marketplace that returns the favor &mdash; protecting the worker, too. When a neighbor carries <strong>Gopher TrustShield&trade;</strong>, it means they've verified their ID and identity for you.</p>
-        <a class="ts-cta" href="gopher-tiers.html">Learn about Elite, Elite+ &amp; Pro</a>
+        <a class="ts-cta" href="gopher-tiers.html">Learn about Pro &amp; Pro+</a>
       </div>
       <div class="ts-right">
-        <div class="ts-badges" aria-label="Worker verification tiers">
+        <div class="ts-badges" aria-label="Worker verification badges">
           <div class="ts-badge">
-            <img class="ts-logo" src="assets/img/shared-ts-right.svg" alt="Gopher Elite">
+            <span class="ts-pillbox"><img class="ts-pill" src="assets/img/badge-gopher-pro.png" alt="Gopher Pro badge" width="418" height="187"></span>
             <span class="ts-cap">Clean Background</span>
           </div>
           <div class="ts-badge">
-            <img class="ts-logo" src="assets/img/shared-gopher-elite.svg" alt="Gopher Elite+">
+            <span class="ts-pillbox"><img class="ts-pill plus" src="assets/img/badge-gopher-pro-plus.png" alt="Gopher Pro+ badge" width="501" height="227"></span>
             <span class="ts-cap">Clean Background + DMV</span>
           </div>
-          <div class="ts-badge ts-badge-pro">
-            <img class="ts-logo" src="assets/img/shared-gopher-pro.svg" alt="Gopher Pro">
-            <span class="ts-cap">Documented Professional</span>
-          </div>
+          <p class="ts-appline">The same badge you wear in the Gopher app.</p>
         </div>
       </div>
     </div>

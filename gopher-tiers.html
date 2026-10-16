@@ -10,15 +10,15 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Gopher">
   <meta property="og:title" content="Worker Verification Tiers — Gopher Go">
-  <meta property="og:description" content="Earn your Elite, Elite+, or Pro badge on Gopher Go. Background checks via Yardstik. Credential verification by Gopher.">
+  <meta property="og:description" content="Earn your Gopher Pro or Pro+ badge on Gopher Go. Background checks through Yardstik, our screening partner.">
   <meta property="og:url" content="https://gophergo.io/gopher-tiers.html">
   <meta property="og:image" content="https://gophergo.io/assets/img/og-default.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Worker Verification Tiers — Gopher Go">
-  <meta name="twitter:description" content="Earn your Elite, Elite+, or Pro badge on Gopher Go. Background checks via Yardstik. Credential verification by Gopher.">
+  <meta name="twitter:description" content="Earn your Gopher Pro or Pro+ badge on Gopher Go. Background checks through Yardstik, our screening partner.">
   <meta name="twitter:image" content="https://gophergo.io/assets/img/og-default.jpg">
 
-<meta name="description" content="Earn your Elite, Elite+, or Pro badge on Gopher Go. Background checks via Yardstik. Credential verification by Gopher.">
+<meta name="description" content="Earn your Gopher Pro or Pro+ badge on Gopher Go. Background checks through Yardstik, our screening partner.">
 <link rel="stylesheet" href="assets/css/gopher-fonts.css">
 
 <style>
@@ -344,6 +344,63 @@
   }
   .btn-yardstik:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(51,217,117,0.50); }
 
+  /* ── PRO / PRO+ COMPARISON TABLE (John's pick C, 10/16) ──
+     The tier-card, yardstik-note and pro-app/form rules below are no longer used on this page
+     (dead but harmless; left in place so this change stays scoped to the markup it replaced). */
+  .tier-tablewrap {
+    max-width: 900px; margin: 0 auto; overflow-x: auto;
+    background: white; border: 1px solid var(--line); border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0,36,97,0.06);
+  }
+  .tier-table { width: 100%; border-collapse: collapse; font-size: 14px; color: var(--navy); }
+  .tier-table th, .tier-table td { padding: 11px 14px; border-top: 1px solid var(--line); text-align: center; vertical-align: middle; }
+  .tier-table thead tr:first-child th { border-top: none; padding-top: 22px; vertical-align: bottom; }
+  .tier-table th[scope="row"] { text-align: left; font-weight: 500; }
+  .tier-table .tt-price th, .tier-table .tt-price td { font-family: 'Nunito', sans-serif; font-weight: 800; color: var(--green-dark); }
+  .tier-table .tt-price b { font-size: 20px; }
+  .tier-table .tt-group th {
+    text-align: left; background: var(--cream);
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 11.5px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--green-dark);
+  }
+  /* Each pill sits in one fixed-height box, bottom-aligned; Pro+ is wider because its plus rises above. */
+  .tt-pillbox { height: 62px; display: flex; align-items: flex-end; justify-content: center; }
+  .tt-pill { display: block; width: 110px; max-width: 100%; height: auto; filter: drop-shadow(0 6px 14px rgba(0,36,97,0.14)); }
+  .tt-pill.plus { width: 132px; }
+  .tt-std { display: inline-block; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 16px; color: var(--muted); padding-bottom: 10px; }
+  .tt-yes { position: relative; display: inline-block; width: 18px; height: 18px; vertical-align: middle; }
+  .tt-yes::before { content: ''; position: absolute; inset: 0; background: var(--green); border-radius: 50%; }
+  .tt-yes::after {
+    content: ''; position: absolute; left: 5px; top: 5px; width: 8px; height: 4px;
+    border-left: 2px solid white; border-bottom: 2px solid white; transform: rotate(-45deg);
+  }
+  .tt-no { color: #b5bccb; font-weight: 700; }
+  .tt-text { font-size: 12.5px; font-weight: 700; }
+  .tier-table tfoot td { padding: 16px 10px 20px; }
+  /* Brand-standard primary button (style guide 7.3): Nunito 800, navy text on green. */
+  .tt-cta {
+    display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box;
+    background: var(--green); color: var(--navy); text-decoration: none;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px;
+    padding: 12px 10px; border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(51,217,117,0.30);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .tt-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(51,217,117,0.48); }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  @media (max-width: 480px) {
+    .tier-section { padding: 56px 14px; }
+    .tier-table { font-size: 12.5px; }
+    .tier-table th, .tier-table td { padding: 9px 5px; }
+    .tier-table th[scope="row"] { padding-left: 10px; }
+    .tt-pillbox { height: 36px; }
+    .tt-pill { width: 62px; }
+    .tt-pill.plus { width: 75px; }
+    .tt-std { font-size: 12px; padding-bottom: 4px; }
+    .tt-text { font-size: 11px; }
+    .tt-cta { padding: 10px 4px; font-size: 12.5px; }
+  }
+
   /* ── PRO APPLICATION ── */
   .pro-app-section { background: var(--cream); padding: 80px 32px; }
   .pro-app-inner { max-width: 720px; margin: 0 auto; }
@@ -562,279 +619,66 @@
   <!-- HERO -->
   <section class="tiers-hero">
     <span class="cursive">Earn your badge</span>
-    <h1>Three ways to stand out as a <em>verified</em> Gopher.</h1>
-    <p class="lead">Every customer wants to know who's showing up at their door. Verified Gophers get more requests, better tips, and access to perks the rest of the marketplace doesn't see. Pick the tier that fits the work you do.</p>
+    <h1>Two ways to stand out as a <em>verified</em> Gopher.</h1>
+    <p class="lead">Every customer wants to know who's showing up at their door. Verified Gophers get more requests, better tips, and access to perks the rest of the marketplace doesn't see. Pick the badge that fits the work you do.</p>
     <div class="anchors">
-      <a href="#tiers">Compare tiers</a>
-      <a href="#yardstik">Get Elite or Elite+</a>
-      <a href="#pro-apply">Apply for Pro</a>
+      <a href="#tiers">Compare Pro and Pro+</a>
+      <a href="#yardstik">Get Pro or Pro+</a>
     </div>
   </section>
 
-  <!-- TIER CARDS -->
+  <!-- PRO / PRO+ COMPARISON (John's pick C, stage 2, 10/16).
+       Names, badges and perks match the live apps: the pills are the Go app's own art
+       (gopher-mobile-gopher public/assets_1/pro_batch@3x.png, pro_plus_batch@3x.png); prices and
+       searches are gophergo.io/become-a-gopher/gopher-pro/; every perk row is read from backend
+       production 47ca79a2 — instant payout lib/payment.stripe.js (Standard: more than 10 paid jobs
+       and 24 h after the first), more than one request order_bids.js claim_limits.isStandardGopher,
+       requests before Standard controllers/order/notification.js. -->
   <section class="tier-section" id="tiers">
     <div class="tier-section-head">
-      <div class="eyebrow">Verification tiers</div>
-      <h2>One badge for every kind of <em>Gopher</em>.</h2>
-      <p>Elite and Elite+ are background-screening tiers powered by Yardstik. Pro is our credential tier for any worker with a verifiable professional credential — verified internally by Gopher.</p>
+      <div class="eyebrow">Background-check badges</div>
+      <h2>Pick your <em>badge</em>.</h2>
+      <p>Gopher Pro and Pro+ are background checks run by Yardstik, our screening partner. You pay once, and when your check clears we add the badge and its perks to your Gopher Go profile.</p>
     </div>
 
-    <div class="tier-grid">
-
-      <!-- ELITE -->
-      <article class="tier-card tier-elite">
-        <img class="tier-logo" src="assets/img/shared-ts-right.svg" alt="Gopher Elite">
-        <div class="price">$35</div>
-        <div class="price-sub">One-time fee · via Yardstik</div>
-        <p class="tier-lede">The essential background screen. Earn the Elite badge and unlock priority access to the standard request feed.</p>
-        <ul>
-          <li>National Criminal Search</li>
-          <li>National Sex Offender Registry</li>
-          <li>OFAC &amp; Most Wanted Lists</li>
-          <li>Address &amp; SSN Trace</li>
-          <li>Profile badge + priority feed</li>
-          <li>Unlimited counter offers w/o cap</li>
-          <li>Instant payout from day 1</li>
-          <li>Eligible to offer a Gopher Deal</li>
-        </ul>
-        <a class="tier-cta" href="#yardstik">Get Elite</a>
-      </article>
-
-      <!-- ELITE+ -->
-      <article class="tier-card tier-eliteplus featured">
-        <img class="tier-logo" src="assets/img/tiers-tier-cta.svg" alt="Gopher Elite+">
-        <div class="price">$50</div>
-        <div class="price-sub">One-time fee · via Yardstik</div>
-        <p class="tier-lede">Everything in Elite, plus priority Ride Sharing benefits.</p>
-        <ul>
-          <li>Everything in Elite</li>
-          <li>County &amp; Federal Criminal</li>
-          <li>MVR (Motor Vehicle Record)</li>
-          <li>Employment History Verification</li>
-          <li>Education Verification</li>
-          <li>See requests 1 minute early</li>
-          <li>Take more than one request at a time</li>
-          <li>Instant payout from day 1</li>
-          <li>Unlimited counter offers w/o cap</li>
-          <li>Eligible to offer a Gopher Deal</li>
-        </ul>
-        <a class="tier-cta" href="#yardstik">Get Elite+</a>
-      </article>
-
-      <!-- PRO -->
-      <article class="tier-card tier-pro">
-        <img class="tier-logo tier-logo-pro" src="assets/img/shared-gopher-pro.svg" alt="Gopher Pro">
-        <div class="price" style="color:var(--navy)">By application</div>
-        <div class="price-sub">Verified internally · No fee</div>
-        <p class="tier-lede">A credential tier for professionals of every trade — <strong>any verifiable professional credential</strong> (license, insurance, bond, certification, or brand affiliation) makes you eligible. Verified by Gopher's team — not Yardstik.</p>
-        <ul>
-          <li>Trade license verification</li>
-          <li>Liability insurance verification</li>
-          <li>Business / brand verification</li>
-          <li>Unlocks high-value &amp; specialty jobs</li>
-          <li>Profile badge + featured listings</li>
-          <li>Instant payout from day 1</li>
-          <li>Unlimited counter offers w/o cap</li>
-          <li>Eligible to offer a Gopher Deal</li>
-          <li>Optional: stack with Elite or Elite+</li>
-        </ul>
-        <a class="tier-cta" href="#pro-apply">Apply for Pro</a>
-      </article>
-
+    <div class="tier-tablewrap">
+      <table class="tier-table">
+        <caption class="sr-only">Standard, Gopher Pro and Gopher Pro+ compared</caption>
+        <thead>
+          <tr>
+            <th scope="col"><span class="sr-only">Compare</span></th>
+            <th scope="col"><span class="tt-std">Standard</span></th>
+            <th scope="col"><span class="tt-pillbox"><img class="tt-pill" src="assets/img/badge-gopher-pro.png" alt="Gopher Pro" width="418" height="187"></span></th>
+            <th scope="col"><span class="tt-pillbox"><img class="tt-pill plus" src="assets/img/badge-gopher-pro-plus.png" alt="Gopher Pro+" width="501" height="227"></span></th>
+          </tr>
+          <tr class="tt-price"><th scope="row">One-time fee</th><td>Free</td><td><b>$20</b></td><td><b>$30</b></td></tr>
+        </thead>
+        <tbody>
+          <tr class="tt-group"><th colspan="4" scope="colgroup">The background check</th></tr>
+            <tr><th scope="row">National Criminal Search</th><td><span class="tt-no" aria-hidden="true">&ndash;</span><span class="sr-only">No</span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td></tr>
+            <tr><th scope="row">National Sex Offender Registry</th><td><span class="tt-no" aria-hidden="true">&ndash;</span><span class="sr-only">No</span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td></tr>
+            <tr><th scope="row">OFAC &amp; Most Wanted Lists</th><td><span class="tt-no" aria-hidden="true">&ndash;</span><span class="sr-only">No</span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td></tr>
+            <tr><th scope="row">Address &amp; SSN Trace</th><td><span class="tt-no" aria-hidden="true">&ndash;</span><span class="sr-only">No</span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td></tr>
+            <tr><th scope="row">MVR (Motor Vehicle Record)</th><td><span class="tt-no" aria-hidden="true">&ndash;</span><span class="sr-only">No</span></td><td><span class="tt-no" aria-hidden="true">&ndash;</span><span class="sr-only">No</span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td></tr>
+          <tr class="tt-group"><th colspan="4" scope="colgroup">What you get</th></tr>
+            <tr><th scope="row">Badge on your Gopher Go profile</th><td><span class="tt-no" aria-hidden="true">&ndash;</span><span class="sr-only">No</span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td></tr>
+            <tr><th scope="row">See new requests before Standard Gophers</th><td><span class="tt-no" aria-hidden="true">&ndash;</span><span class="sr-only">No</span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td></tr>
+            <tr><th scope="row">Take more than one request at a time</th><td><span class="tt-no" aria-hidden="true">&ndash;</span><span class="sr-only">No</span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td><td><span class="tt-yes"><span class="sr-only">Yes</span></span></td></tr>
+            <tr><th scope="row">Instant payouts</th><td><span class="tt-text">After 10 paid jobs</span></td><td><span class="tt-text">From your first job</span></td><td><span class="tt-text">From your first job</span></td></tr>
+        </tbody>
+        <tfoot>
+          <tr><td></td><td></td><td><a class="tt-cta" href="#yardstik">Get Pro</a></td><td><a class="tt-cta" href="#yardstik">Get Pro+</a></td></tr>
+        </tfoot>
+      </table>
     </div>
   </section>
 
   <!-- YARDSTIK SIGNUP -->
   <section class="yardstik-section" id="yardstik">
     <div class="yardstik-inner">
-      <h3>Get Elite or Elite+ through Yardstik</h3>
-      <p>We've partnered with Yardstik to handle background screening. The process is quick, affordable, and most checks come back in 1–3 days. Once cleared, your badge and perks are applied to your Gopher Go profile.</p>
-      <div class="yardstik-note">
-        <strong>Heads up about naming:</strong> Yardstik's signup portal still shows our legacy tier names — <em>"Gopher Pro"</em> is now <strong>Elite ($35)</strong>, and <em>"Gopher Pro+"</em> is now <strong>Elite+ ($50)</strong>. Select the matching tier and you'll receive the new badge on your profile. We're working with Yardstik to update the portal.
-      </div>
-      <a class="btn-yardstik" href="https://gophergo.io/become-a-gopher/gopher-pro/#reg-form" target="_blank" rel="noopener">Continue to Yardstik →</a>
-    </div>
-  </section>
-
-  <!-- PRO APPLICATION (internal) -->
-  <section class="pro-app-section" id="pro-apply">
-    <div class="pro-app-inner">
-      <div class="pro-app-head">
-        <span class="cursive">Credentialed workers only</span>
-        <h2>Apply for the <em>Pro</em> badge</h2>
-        <p>Any verifiable professional credential makes you eligible — trade licenses, liability insurance, bonding, certifications, brand affiliation, and more. Tell us about yourself and we'll verify your credentials — usually within 2–3 business days.</p>
-      </div>
-
-      <div class="pro-app-card">
-
-        <!-- Step indicator -->
-        <div class="steps-indicator" id="stepsIndicator">
-          <div class="step-dot active" data-step="1">1</div>
-          <div class="step-dot" data-step="2">2</div>
-          <div class="step-dot" data-step="3">3</div>
-        </div>
-
-        <form id="proApp" novalidate>
-
-          <!-- STEP 1: About you + credential type -->
-          <fieldset data-step="1">
-            <legend>Tell us about you</legend>
-            <p class="step-sub">Quick basics so we know who's applying.</p>
-
-            <div class="form-grid-2">
-              <div class="form-row">
-                <label for="firstName">First name</label>
-                <input type="text" id="firstName" name="firstName" autocomplete="given-name" required>
-              </div>
-              <div class="form-row">
-                <label for="lastName">Last name</label>
-                <input type="text" id="lastName" name="lastName" autocomplete="family-name" required>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" autocomplete="email" required>
-            </div>
-
-            <div class="form-row">
-              <label for="business">Business name (if any)</label>
-              <input type="text" id="business" name="business" placeholder="e.g. Jake's Electrical LLC — leave blank if self">
-            </div>
-
-            <div class="form-row">
-              <label>What are you being verified as? <span style="color:var(--muted); font-weight:500;">(pick all that apply)</span></label>
-              <div class="check-group">
-                <label class="check-row">
-                  <input type="checkbox" name="credType" value="licensed">
-                  <span class="check-body">
-                    <span class="check-title">Licensed contractor</span>
-                    <span class="check-desc">Plumbing, electrical, HVAC, general contracting, etc.</span>
-                  </span>
-                </label>
-                <label class="check-row">
-                  <input type="checkbox" name="credType" value="insured">
-                  <span class="check-body">
-                    <span class="check-title">Insured professional</span>
-                    <span class="check-desc">General liability, workers' comp, or commercial insurance.</span>
-                  </span>
-                </label>
-                <label class="check-row">
-                  <input type="checkbox" name="credType" value="branded">
-                  <span class="check-body">
-                    <span class="check-title">Brand-affiliated worker</span>
-                    <span class="check-desc">You represent a registered franchise, dealership, or named brand.</span>
-                  </span>
-                </label>
-                <label class="check-row">
-                  <input type="checkbox" name="credType" value="other">
-                  <span class="check-body">
-                    <span class="check-title">Other verifiable credential</span>
-                    <span class="check-desc">Bonding, professional certification, trade card — any credential we can verify.</span>
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            <div class="step-actions">
-              <span></span>
-              <button type="button" class="btn btn-prim" onclick="goStep(2)">Continue →</button>
-            </div>
-          </fieldset>
-
-          <!-- STEP 2: Credentials detail + phone -->
-          <fieldset data-step="2" hidden>
-            <legend>Credential details</legend>
-            <p class="step-sub">Enough information for our team to verify. We'll never share publicly.</p>
-
-            <div class="form-row">
-              <label for="credNum">License / Policy / Brand reference number</label>
-              <input type="text" id="credNum" name="credNum" placeholder="License #, policy #, or franchise ID">
-            </div>
-
-            <div class="form-row">
-              <label for="credState">Issuing state / authority</label>
-              <input type="text" id="credState" name="credState" placeholder="e.g. North Carolina">
-            </div>
-
-            <div class="form-row">
-              <label for="credDoc">Upload supporting document(s)</label>
-              <div class="filedrop" id="credDrop">
-                <input type="file" id="credDoc" name="credDoc" class="filedrop-input"
-                       accept=".pdf,.jpg,.jpeg,.png,.heic,.webp,.doc,.docx" multiple
-                       aria-label="Upload supporting documents">
-                <svg class="filedrop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/>
-                  <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                <span class="filedrop-prompt"><strong>Click to upload</strong> or drag &amp; drop</span>
-                <span class="filedrop-hint">License, insurance certificate, or franchise docs &mdash; PDF, JPG, PNG, or DOC (max 10&nbsp;MB each)</span>
-              </div>
-              <ul class="filedrop-list" id="credDocList" aria-live="polite"></ul>
-            </div>
-
-            <div class="form-row">
-              <label for="credNotes">Anything else we should know?</label>
-              <textarea id="credNotes" name="credNotes" placeholder="Trades you work in, years of experience, brands you represent, etc."></textarea>
-            </div>
-
-            <div class="form-row">
-              <label for="phone">Phone — we'll send a verification code</label>
-              <div class="phone-wrap">
-                <select class="country" aria-label="Country code">
-                  <option value="+1">+1 US</option>
-                </select>
-                <input type="tel" id="phone" name="phone" inputmode="numeric" placeholder="(555) 555-5555" autocomplete="tel" maxlength="14" required>
-              </div>
-            </div>
-
-            <div class="step-actions">
-              <button type="button" class="btn btn-back" onclick="goStep(1)">← Back</button>
-              <button type="button" class="btn btn-prim" id="sendCodeBtn" onclick="sendCode()">Send code →</button>
-            </div>
-          </fieldset>
-
-          <!-- STEP 3: OTP verify -->
-          <fieldset data-step="3" hidden>
-            <legend>Enter your verification code</legend>
-            <p class="step-sub">We sent a 6-digit code to <strong id="phoneEcho">your phone</strong>. It expires in 10 minutes.</p>
-
-            <div class="otp-wrap" id="otpWrap">
-              <input type="text" inputmode="numeric" maxlength="1" class="otp-box" autocomplete="one-time-code">
-              <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
-              <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
-              <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
-              <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
-              <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
-            </div>
-            <div class="otp-status" id="otpStatus"></div>
-
-            <div class="resend-row">
-              Didn't get it?
-              <a id="resendLink" class="disabled">Resend code (<span id="resendTimer">60</span>s)</a>
-            </div>
-
-            <div class="step-actions">
-              <button type="button" class="btn btn-back" onclick="goStep(2)">← Back</button>
-              <button type="button" class="btn btn-prim" id="verifyBtn" onclick="verifyCode()" disabled>Verify &amp; submit</button>
-            </div>
-          </fieldset>
-
-          <!-- STEP 4: Success -->
-          <fieldset data-step="4" hidden>
-            <div class="success-screen">
-              <div class="checkmark">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-              </div>
-              <h3>Application submitted!</h3>
-              <p>Your phone is verified and your Pro application is in our queue. We'll review your credentials and reply by email within 2–3 business days. If we need anything else, we'll reach out.</p>
-              <div class="reference" id="refNumber">REF: GO-PRO-————</div>
-            </div>
-          </fieldset>
-
-        </form>
-      </div>
+      <h3>Get Pro or Pro+ through Yardstik</h3>
+      <p>Finish your Gopher Go profile first. Then fill in Yardstik's short form and pick Gopher Pro ($20) or Gopher Pro+ ($30). Most checks come back in 1&ndash;3 days, and then we add your badge and perks to your Gopher Go account.</p>
+      <a class="btn-yardstik" href="https://gophergo.io/become-a-gopher/gopher-pro/#reg-form" target="_blank" rel="noopener">Continue to Yardstik &rarr;</a>
     </div>
   </section>
 
@@ -962,174 +806,8 @@
 
 </footer>
 
-<script>
-  // ── Step navigation ──
-  function goStep(n) {
-    document.querySelectorAll('fieldset[data-step]').forEach(fs => fs.hidden = (parseInt(fs.dataset.step, 10) !== n));
-    document.querySelectorAll('.step-dot').forEach(d => {
-      const s = parseInt(d.dataset.step, 10);
-      d.classList.remove('active', 'complete');
-      if (s < n) d.classList.add('complete');
-      else if (s === n) d.classList.add('active');
-    });
-    window.scrollTo({ top: document.querySelector('.pro-app-section').offsetTop - 30, behavior:'smooth' });
-  }
-
-  // ── Phone input formatting (US) ──
-  const phoneInput = document.getElementById('phone');
-  phoneInput.addEventListener('input', e => {
-    let v = e.target.value.replace(/\D/g, '').slice(0, 10);
-    if (v.length > 6) e.target.value = `(${v.slice(0,3)}) ${v.slice(3,6)}-${v.slice(6)}`;
-    else if (v.length > 3) e.target.value = `(${v.slice(0,3)}) ${v.slice(3)}`;
-    else if (v.length > 0) e.target.value = `(${v}`;
-    else e.target.value = '';
-  });
-
-  // ── Pro credential document upload ──
-  (function () {
-    var input = document.getElementById('credDoc');
-    var zone  = document.getElementById('credDrop');
-    var list  = document.getElementById('credDocList');
-    if (!input || !zone || !list) return;
-    var MAX = 10 * 1024 * 1024; // 10 MB
-    function human(b) {
-      if (b < 1024) return b + ' B';
-      if (b < 1048576) return Math.round(b / 1024) + ' KB';
-      return (b / 1048576).toFixed(1) + ' MB';
-    }
-    function render() {
-      list.innerHTML = '';
-      Array.prototype.forEach.call(input.files, function (file, i) {
-        var li = document.createElement('li');
-        li.className = 'filedrop-file';
-        var over = file.size > MAX;
-        var name = document.createElement('span');
-        name.className = 'ff-name';
-        name.textContent = file.name;
-        var size = document.createElement('span');
-        size.className = 'ff-size';
-        size.textContent = human(file.size) + (over ? ' — too large' : '');
-        if (over) size.style.color = '#c5302c';
-        var rm = document.createElement('button');
-        rm.type = 'button'; rm.className = 'ff-remove';
-        rm.setAttribute('aria-label', 'Remove ' + file.name);
-        rm.textContent = '\u00d7';
-        rm.addEventListener('click', function () { removeAt(i); });
-        li.appendChild(name); li.appendChild(size); li.appendChild(rm);
-        list.appendChild(li);
-      });
-    }
-    function removeAt(idx) {
-      try {
-        var dt = new DataTransfer();
-        Array.prototype.forEach.call(input.files, function (f, i) { if (i !== idx) dt.items.add(f); });
-        input.files = dt.files;
-      } catch (e) {
-        input.value = ''; // fallback: clear all if DataTransfer unsupported
-      }
-      render();
-    }
-    input.addEventListener('change', render);
-    ['dragenter', 'dragover'].forEach(function (ev) {
-      zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add('dragover'); });
-    });
-    ['dragleave', 'drop'].forEach(function (ev) {
-      zone.addEventListener(ev, function (e) {
-        if (ev === 'dragleave' && zone.contains(e.relatedTarget)) return;
-        zone.classList.remove('dragover');
-      });
-    });
-  })();
-
-  // ── OTP send (simulated) ──
-  let resendTimerId = null;
-  function sendCode() {
-    const phone = phoneInput.value;
-    if (phone.replace(/\D/g, '').length !== 10) {
-      phoneInput.focus();
-      phoneInput.style.borderColor = '#c5302c';
-      return;
-    }
-    document.getElementById('phoneEcho').textContent = '+1 ' + phone;
-    goStep(3);
-    document.querySelector('.otp-box').focus();
-    startResendTimer();
-  }
-
-  function startResendTimer() {
-    const link = document.getElementById('resendLink');
-    const timer = document.getElementById('resendTimer');
-    link.classList.add('disabled');
-    let s = 60;
-    timer.textContent = s;
-    if (resendTimerId) clearInterval(resendTimerId);
-    resendTimerId = setInterval(() => {
-      s--; timer.textContent = s;
-      if (s <= 0) {
-        clearInterval(resendTimerId);
-        link.classList.remove('disabled');
-        link.innerHTML = 'Resend code';
-        link.onclick = () => { startResendTimer(); link.innerHTML = 'Resend code (<span id="resendTimer">60</span>s)'; };
-      }
-    }, 1000);
-  }
-
-  // ── OTP boxes: auto-advance, backspace, paste ──
-  const otpBoxes = document.querySelectorAll('.otp-box');
-  otpBoxes.forEach((box, i) => {
-    box.addEventListener('input', e => {
-      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 1);
-      if (e.target.value) {
-        e.target.classList.add('filled');
-        if (i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
-      } else {
-        e.target.classList.remove('filled');
-      }
-      checkOtpComplete();
-    });
-    box.addEventListener('keydown', e => {
-      if (e.key === 'Backspace' && !e.target.value && i > 0) {
-        otpBoxes[i - 1].focus();
-        otpBoxes[i - 1].value = '';
-        otpBoxes[i - 1].classList.remove('filled');
-        checkOtpComplete();
-      }
-    });
-    box.addEventListener('paste', e => {
-      e.preventDefault();
-      const digits = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
-      digits.split('').forEach((d, idx) => {
-        if (otpBoxes[idx]) { otpBoxes[idx].value = d; otpBoxes[idx].classList.add('filled'); }
-      });
-      const lastIdx = Math.min(digits.length, otpBoxes.length) - 1;
-      if (lastIdx >= 0) otpBoxes[lastIdx].focus();
-      checkOtpComplete();
-    });
-  });
-
-  function checkOtpComplete() {
-    const all = Array.from(otpBoxes).every(b => b.value.length === 1);
-    document.getElementById('verifyBtn').disabled = !all;
-  }
-
-  function verifyCode() {
-    const code = Array.from(otpBoxes).map(b => b.value).join('');
-    const status = document.getElementById('otpStatus');
-    // Demo: accept any 6 digits. In production this would call the verification API.
-    if (code.length === 6 && /^\d{6}$/.test(code)) {
-      status.innerHTML = '';
-      // Generate a fake reference number for the success screen
-      const ref = 'GO-PRO-' + Math.floor(100000 + Math.random() * 900000);
-      document.getElementById('refNumber').textContent = 'REF: ' + ref;
-      goStep(4);
-    } else {
-      status.innerHTML = '<span class="otp-error">That code doesn\'t look right. Try again.</span>';
-    }
-  }
-
-  // Reset border color on phone input
-  phoneInput.addEventListener('focus', () => { phoneInput.style.borderColor = ''; });
-</script>
+<!-- The "Apply for Pro" form and its script were removed 2026-10-16 (Pro/Pro+ stage 2): the form was
+     demo-only (any 6 digits passed, a made-up GO-PRO reference, nothing sent). -->
 
 
 <script>
