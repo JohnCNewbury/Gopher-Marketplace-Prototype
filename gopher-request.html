@@ -27784,11 +27784,13 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
           const r = getR(); const S = appShared(); if(!r || !S) return;
           const box = document.getElementById('disputeReason');
           /* "Reason: details", as the app sends it (dispute.js disputeText), and
-             the server's own floor: under 10 characters is refused with its own
-             sentence (report_dispute.js MIN_DISPUTE_REASON) — E-38. */
+             the server's own floor, run by the APP's own function (dispute.js
+             disputeReasonProblem, Request !528): under 10 characters is refused
+             with the server's sentence (report_dispute.js MIN_DISPUTE_REASON) — E-38. */
           const text = S.disputeText(r.disputeChip || '', box ? box.value : '');
-          if(String(text).trim().length < 10){
-            dashAlert('Please tell us what went wrong before opening a dispute. Your Gopher only sees what you write here, so a short sentence about the problem is enough \u2014 for example what was missing, wrong or damaged.');
+          const problem = S.disputeReasonProblem(text);
+          if(problem){
+            dashAlert(problem);
             return;
           }
           r.disputeReason = text;

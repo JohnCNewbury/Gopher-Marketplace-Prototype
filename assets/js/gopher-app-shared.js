@@ -25,6 +25,8 @@
        / isReasonComplete                                       (E-13, E-14)
      DISPUTE_REASONS / disputeText /     the dispute form and the 24 h wait
        escalationLabel                   before "Unable to resolve" (E-38, E-40)
+     disputeReasonProblem                the server's 10-character floor for a
+                                         dispute reason, and its sentence (E-38)
      disputeResolution / disputeOpen     decided vs open dispute
      photoStepUnresolved                 confirm waits for the photo step (E-35)
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -41,6 +43,7 @@ import { liveSteps, itemStep, ORDER_STATE } from "./app-shared/component/live/li
 import {
   DISPUTE_REASONS,
   disputeText,
+  disputeReasonProblem,
   escalationLabel,
 } from "./app-shared/component/live/dispute.js";
 import { disputeResolution, disputeOpen } from "./app-shared/helpers/disputeState.js";
@@ -72,6 +75,7 @@ const api = Object.freeze({
   ORDER_STATE,
   DISPUTE_REASONS,
   disputeText,
+  disputeReasonProblem,
   escalationLabel,
   disputeResolution,
   disputeOpen,
