@@ -14689,6 +14689,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     paymentPickerOpen: false, // dropdown state
     sseOpen: false,    // Step 6: "second set of eyes" review block expanded?
     wteOpen: false,    // Step 6: "What to expect" block expanded (collapsed by default to save space for repeat users)
+    wteSeen: false,    // PL-309: opened once, so its ID-line pulse is done (John 10/17, "Until opened")
     profileOpen: null, // Step 7: null when closed, otherwise integer index of the open worker
 
     // Page 2 — Delivery Type
@@ -17056,7 +17057,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           ? `A quick rundown of how bidding and the ${saysGopher() ? 'Gopher' : 'worker'} handoff work — so there are no surprises.`
           : `A quick rundown of how billing and the ${saysGopher() ? 'Gopher' : 'worker'} handoff work — so there are no surprises.`;
         return `
-      <div class="sse-block wte-block ${state.wteOpen ? 'open' : ''}" style="margin-top:22px;">
+      <div class="sse-block wte-block ${state.wteOpen ? 'open' : ''}${(state.ageRestricted || state.idRequiredAtCompletion) && !state.wteOpen && !state.wteSeen ? ' attn-pulse' : ''}" style="margin-top:22px;">
         <div class="sse-head" data-action="toggle-wte">
           <span class="sse-brain" style="display:flex;align-items:center;justify-content:center;font-size:22px;">🧾</span>
           <div class="sse-head-text">
@@ -18129,6 +18130,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       $content.querySelectorAll('[data-action="toggle-wte"]').forEach(b => {
         b.addEventListener('click', () => {
           state.wteOpen = !state.wteOpen;
+          /* PL-309 (John on 5734, 10/17: the ID line is a "safeguarding backstop";
+             ruling "Until opened"): the card pulses (.attn-pulse) while the ID line
+             applies and it has not been opened; the first open ends it for good. */
+          if(state.wteOpen) state.wteSeen = true;
           render();
         });
       });
@@ -18620,7 +18625,10 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // Age-restricted auto-enables "purchase needed"; if the user turned it back
     // OFF, warn once before advancing (edge cases: Rx pickup, pre-paid alcohol).
     // Fails open if the modal node is missing, and is skipped once dismissed.
-    if(state.step === 2 && state.category === 'delivery' && state.ageRestricted
+    // PL-309 (John 10/17, "Ask, skippable"): a keyword-flagged request ("No", then
+    // "Submit as-is") with the purchase off is asked the same, as the app does.
+    if(state.step === 2 && state.category === 'delivery'
+       && (state.ageRestricted || state.idRequiredAtCompletion)
        && !state.itemsPurchased && !state.agePurchaseAck && !state.agePurchaseDismissed){
       if(window.__openAgePurchaseNotice && window.__openAgePurchaseNotice()) return;
     }
@@ -19121,6 +19129,12 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           state.ageKeywordDeclined = true;
           state.ageKeyword = String(kw).trim().slice(0, 100);
         }
+        /* PL-309 (John 10/17, "Ask, skippable"): with the purchase off, Delivery asks
+           for one first (the same sheet as age-restricted; its "Continue without a
+           purchase" resumes through the Continue gate). */
+        if(state.category === 'delivery' && state.idRequiredAtCompletion && !state.itemsPurchased
+           && !state.agePurchaseAck && !state.agePurchaseDismissed
+           && window.__openAgePurchaseNotice && window.__openAgePurchaseNotice()) return;
         advanceFromJobDetails();
       });
     }
@@ -19230,6 +19244,21 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       wireOnce(overlay);
       const dontShow = document.getElementById('agePurchaseDontShow');
       if(dontShow) dontShow.checked = false;
+      /* PL-309: a keyword-flagged request was NOT marked age-restricted, so its
+         first sentence names the word instead (the app's deliveryContinueCheck). */
+      const opening = document.getElementById('agePurchaseOpening');
+      if(opening){
+        if(!state.ageRestricted && state.idRequiredAtCompletion){
+          opening.textContent = '';
+          const kwB = document.createElement('b');
+          kwB.textContent = '\u201c' + (state.ageKeyword || 'an age-restricted item') + '\u201d';
+          const swB = document.createElement('b');
+          swB.textContent = 'This delivery requires a purchase';
+          opening.append('Your request mentions ', kwB, ', and ', swB, ' is off.');
+        } else {
+          opening.innerHTML = 'You marked this age-restricted but turned off <b>This delivery requires a purchase</b>.';
+        }
+      }
       overlay.hidden = false;
       return true;
     };
@@ -21360,7 +21389,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeScope(); });
   <div class="gr-modal" role="dialog" aria-modal="true" aria-labelledby="agePurchaseTitle">
     <div class="gr-modal-icon gr-modal-icon-warn" style="font-size:26px;line-height:1;">⚠️</div>
     <h4 id="agePurchaseTitle">Most age-restricted orders need a purchase</h4>
-    <p class="gr-modal-sub">You marked this age-restricted but turned off <b>This delivery requires a purchase</b>. Almost all age-restricted deliveries require a purchase — without one, your card is authorized for a lower amount, and if your Gopher needs to add items later, re-authorizing your card can fail and stall your order.</p>
+    <p class="gr-modal-sub" id="agePurchaseSub"><span id="agePurchaseOpening">You marked this age-restricted but turned off <b>This delivery requires a purchase</b>.</span> Almost all age-restricted deliveries require a purchase — without one, your card is authorized for a lower amount, and if your Gopher needs to add items later, re-authorizing your card can fail and stall your order.</p>
     <p style="text-align:center;background:#fdf3f4;border:1px solid #f0d2d7;border-radius:12px;padding:13px 15px;margin:4px 0 16px;font-family:'DM Sans',sans-serif;font-size:13px;color:#8a3a46;line-height:1.55;">Only skip if you truly don't need anything purchased — e.g. a prescription pickup or pre-paid alcohol.</p>
     <label for="agePurchaseDontShow" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#6b7280;margin:2px 0 14px;cursor:pointer;">
       <input type="checkbox" id="agePurchaseDontShow" style="width:16px;height:16px;accent-color:#1CB061;"> Don't show me this again
