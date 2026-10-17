@@ -17072,7 +17072,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
               <ol class="wte-list">
                 ${wteSteps.map((s,i) => `<li><span class="wte-num">${i+1}</span><span class="wte-text">${s}</span></li>`).join('')}
                 ${(state.fromDeal && state.dealKind === 'service') ? `<li><span class="wte-num">${wteSteps.length+1}</span><span class="wte-text">Once <b>${(state.dealProvider && state.dealProvider.name) ? state.dealProvider.name : 'your provider'}</b> accepts your request, they'll contact you to set up a specific date and time.</span></li>` : ''}
-                ${(state.ageRestricted || state.idRequiredAtCompletion) ? `<li class="wte-id"><span class="wte-num wte-id-mark">!</span><span class="wte-text">This request requires <b>a picture of the front of a valid ID</b> before items can be exchanged.</span></li>` : ''}
+                ${(state.ageRestricted || state.idRequiredAtCompletion) ? `<li class="wte-id"><span class="wte-num wte-id-mark">!</span><span class="wte-text">${(window.__hasTrustShield && window.__hasTrustShield())
+                  /* PL-347 (John 10/17, "Different words"): a TrustShield holder is not
+                     photographed at the hand-off (Gopher Go shows the worker the ID on file). */
+                  ? 'This request requires <b>showing a valid ID</b> before items can be exchanged. Your TrustShield ID is on file, so no new photo is taken.'
+                  : 'This request requires <b>a picture of the front of a valid ID</b> before items can be exchanged.'}</span></li>` : ''}
               </ol>
               <div class="wte-footer">That said — let's get you connected.</div>
             </div>
