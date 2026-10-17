@@ -75,7 +75,8 @@ a{color:var(--green-dark);}
 .menu-toggle svg{width:16px;height:16px;}
 
 /* ── Layout shell ──────────────────────────────────── */
-.shell{display:grid;grid-template-columns:var(--sidebar-w) 1fr;align-items:start;max-width:1280px;margin:0 auto;}
+.shell{display:grid;grid-template-columns:var(--sidebar-w) 1fr;align-items:start;max-width:1280px;margin:0 auto;position:relative;}
+.shell::before{content:"";position:absolute;top:0;bottom:0;left:0;width:100vw;transform:translateX(-100%);background:var(--midnight);pointer-events:none;}
 
 /* ── Sidebar (quick reference) ─────────────────────── */
 .sidebar{
@@ -83,18 +84,19 @@ a{color:var(--green-dark);}
   height:calc(100vh - 66px);
   overflow-y:auto;overscroll-behavior:contain;
   padding:26px 16px 0 22px;
-  border-right:1px solid var(--line);
+  background:var(--midnight);  /* Midnight Blue #002461, white text (owner 2026-10-17) */
+  border-right:0;
 }
 .sidebar::-webkit-scrollbar{width:8px;}
-.sidebar::-webkit-scrollbar-thumb{background:rgba(42,54,84,.16);border-radius:8px;}
-.side-lead{font-family:'Nunito';font-weight:900;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--green-dark);margin:0 0 4px 6px;}
-.side-sub{font-size:12px;color:var(--muted);margin:0 0 16px 6px;}
-.side-group{font-family:'Nunito';font-weight:800;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--navy-mid);margin:22px 0 7px 6px;display:flex;align-items:center;gap:7px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.28);border-radius:8px;}
+.side-lead{font-family:'Nunito';font-weight:900;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#fff;margin:0 0 4px 6px;}
+.side-sub{font-size:12px;color:rgba(255,255,255,.68);margin:0 0 16px 6px;}
+.side-group{font-family:'Nunito';font-weight:800;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#fff;margin:22px 0 7px 6px;display:flex;align-items:center;gap:7px;}
 .side-group::before{content:"";width:14px;height:2.5px;border-radius:2px;background:var(--green);}
 .side-nav{list-style:none;margin:0;padding:0;}
 .side-nav a{
   display:flex;align-items:center;gap:10px;
-  text-decoration:none;color:var(--navy);
+  text-decoration:none;color:rgba(255,255,255,.86);
   font-size:13.5px;font-weight:600;
   padding:8px 11px;border-radius:9px;
   border-left:3px solid transparent;
@@ -103,21 +105,21 @@ a{color:var(--green-dark);}
 .side-nav a .num{
   flex:none;width:21px;height:21px;border-radius:50%;
   display:grid;place-items:center;
-  background:var(--navy-light);color:var(--navy-mid);
+  background:rgba(255,255,255,.14);color:#fff;
   font-family:'Nunito';font-weight:800;font-size:11px;
 }
-.side-nav a:hover{background:var(--green-soft);color:var(--green-dark);}
+.side-nav a:hover{background:rgba(255,255,255,.09);color:#fff;}
 .side-nav a.active{
-  background:var(--green-light);color:var(--midnight);
+  background:rgba(51,217,117,.18);color:#fff;
   border-left-color:var(--green);font-weight:800;
 }
-.side-nav a.active .num{background:var(--green);color:#fff;}
+.side-nav a.active .num{background:var(--green);color:var(--midnight);}
 /* "Still stuck?" is pinned to the bottom of the menu's own scroll area, so a
    menu taller than the window can never push it under the page footer (same
    fix as the Request 101, owner-reported 2026-10-13). The strip below it hides
    links scrolling past in the 14px gap. */
 .side-help{position:sticky;bottom:14px;z-index:2;margin:26px 6px 0;padding:14px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:var(--card-shadow);}
-.side-help::after{content:"";position:absolute;left:-10px;right:-10px;top:calc(100% + 1px);height:15px;background:var(--sand);}
+.side-help::after{content:"";position:absolute;left:-10px;right:-10px;top:calc(100% + 1px);height:15px;background:var(--midnight);}
 .side-help h4{font-size:13px;margin-bottom:5px;}
 .side-help p{font-size:12px;color:var(--muted);margin:0 0 10px;}
 .side-help a{display:inline-block;font-family:'Nunito';font-weight:800;font-size:12px;color:var(--green-dark);text-decoration:none;}
@@ -305,9 +307,10 @@ ol.brand li::before{content:counter(bl);position:absolute;left:0;top:6px;width:2
   :root{--sidebar-w:0px;}
   .menu-toggle{display:inline-flex;}
   .shell{grid-template-columns:1fr;}
+  .shell::before{display:none;}
   .sidebar{
     position:fixed;top:0;left:0;z-index:80;height:100vh;width:300px;
-    background:var(--sand);border-right:1px solid var(--line);
+    background:var(--midnight);border-right:0;
     transform:translateX(-105%);transition:transform .28s cubic-bezier(.4,0,.2,1);
     box-shadow:0 0 40px rgba(0,0,0,.18);padding-top:80px;
   }
