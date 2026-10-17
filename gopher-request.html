@@ -2710,10 +2710,11 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:block; width:100%; height:auto;
     border-radius:33px;
   }
-  /* heading matches the hero "Request Any..." h1, right-aligned */
+  /* heading: the hero's weight (900) at section size (40px), right-aligned. A deliberate
+     exception to the 800 rule for headlines below a hero (John's W1 = B, 10/17) */
   .onthego-text { text-align:right; }
   .onthego-text h2 {
-    font-family:'Nunito',sans-serif; font-weight:800;
+    font-family:'Nunito',sans-serif; font-weight:900;
     font-size:40px; line-height:1.02; color:var(--navy);
     letter-spacing:-.015em;
   }
@@ -10748,6 +10749,16 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     font-size:13px; color:var(--muted);
   }
   .goto-intro-never .prev-check-box { width:19px; height:19px; }
+  /* CAT-3: the app's "Before you continue" sheet (navy and grey, its tiles). */
+  .gr-modal.ct-sheet { max-width:440px; }
+  .gr-modal.ct-sheet h4 { font-size:17px; line-height:1.3; }
+  .ct-sheet-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:0 0 16px; text-align:left; }
+  .ct-sheet-tile { display:flex; align-items:center; gap:9px; padding:8px 10px; border:1.5px solid #e3e6ee; border-radius:12px; background:#fff; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; color:var(--navy); text-align:left; }
+  .ct-sheet-tile:hover, .ct-sheet-tile:focus-visible { border-color:var(--navy); }
+  .ct-sheet-ic { width:30px; height:30px; flex:none; border-radius:8px; overflow:hidden; background:#eef0f4; }
+  .ct-sheet-ic img { width:100%; height:100%; object-fit:cover; display:block; }
+  .gr-modal > .gr-modal-btn.ct-sheet-continue { background:var(--navy); color:#fff; box-shadow:none; }
+  .gr-modal > .gr-modal-btn.ct-sheet-continue:hover { background:#0b2a6b; }
   .goto-intro-never.checked .prev-check-box { background:var(--navy); border-color:var(--navy); }
   .goto-intro-never.checked .prev-check-box::after {
     content:'✓'; color:#fff; font-size:12px; font-weight:900; font-family:'Nunito';
@@ -10927,6 +10938,15 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   }
   .ph-badge.ts .ph-badge-label { color:var(--green-text); }
   .ph-badge.tier-elite .ph-badge-label { color:var(--navy); }
+  /* Stage 6 = A: the app's pill by the worker's name. Pro+ is drawn ~1.21x
+     taller than Pro so the two pills read the same size (its plus rises above). */
+  .wk-pill { display:inline-block; width:auto; vertical-align:middle; margin-left:6px; }
+  .wk-pill-sm { height:18px; } .wk-pill-sm.plus { height:21.8px; }
+  /* In the profile's round badge bubble the pill must sit inside the green ring
+     with a margin (UI/UX visual check 10/16: at 24 / 29px the pro+ "+" crossed it).
+     The ring's inside is 52px across; Pro+ at 19.4px is 42.8px wide, every corner
+     of its art inside the ring. Pro+ stays ~1.21x Pro so the two read the same. */
+  .wk-pill-md { height:16px; margin-left:0; } .wk-pill-md.plus { height:19.4px; }
   .ph-badge.tier-pro .ph-badge-label { color:var(--green-dark); }
   /* "Add TrustShield" CTA — shown in the rail when the user isn't verified yet */
   .ph-badge-add {
@@ -14152,8 +14172,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       ],
       estimate:'$38 – $52',
       etaText:'ETA: 25 min from pickup',
-      worker:{ initials:'DM', name:'Devon M.', badge:'elite+', photo:'assets/img/px-2379004-400x400.webp', tagline:'Reliable courier — your stuff is in good hands.', verified:'Verified', reviews:218, rating:4.97, stats:['⭐ 4.97 (218 jobs)','3 mi away','Available now'] },
-      worker2:{ initials:'JR', name:'Jordan R.', badge:'pro+', photo:'assets/img/px-1043471-400x400.webp', tagline:'Fast, friendly, and on time — every time.', verified:'Verified', reviews:96, rating:4.88, stats:['⭐ 4.88 (96 jobs)','5 mi away','Available 1pm'] }
+      worker:{ initials:'DM', name:'Devon M.', badge:'pro+', photo:'assets/img/px-2379004-400x400.webp', tagline:'Reliable courier — your stuff is in good hands.', verified:'Verified', reviews:218, rating:4.97, stats:['⭐ 4.97 (218 jobs)','3 mi away','Available now'] },
+      worker2:{ initials:'JR', name:'Jordan R.', badge:'', photo:'assets/img/px-1043471-400x400.webp', tagline:'Fast, friendly, and on time — every time.', verified:'Verified', reviews:96, rating:4.88, stats:['⭐ 4.88 (96 jobs)','5 mi away','Available 1pm'] }
     },
 
 
@@ -14175,8 +14195,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       ],
       estimate:'$180 – $240',
       etaText:'Today · 2-hr window',
-      worker:{ initials:'TJ', name:'Tyler J.', badge:'pro+', photo:'assets/img/px-697509-400x400.webp', tagline:'Hauls anything — fast and clean.', verified:'Verified', reviews:95, rating:4.91, stats:['⭐ 4.91 (95 hauls)','6 mi away','Today 2pm'] },
-      worker2:{ initials:'DR', name:'Diego R.', badge:'elite+', photo:'assets/img/px-1239288-400x400.webp', tagline:'Licensed hauler — fully insured and dump-fee included.', verified:'Verified', reviews:262, rating:4.95, stats:['⭐ 4.95 (262 hauls)','4 mi away','Today 4pm'] }
+      worker:{ initials:'TJ', name:'Tyler J.', badge:'pro', photo:'assets/img/px-697509-400x400.webp', tagline:'Hauls anything — fast and clean.', verified:'Verified', reviews:95, rating:4.91, stats:['⭐ 4.91 (95 hauls)','6 mi away','Today 2pm'] },
+      worker2:{ initials:'DR', name:'Diego R.', badge:'pro+', photo:'assets/img/px-1239288-400x400.webp', tagline:'Licensed hauler — fully insured and dump-fee included.', verified:'Verified', reviews:262, rating:4.95, stats:['⭐ 4.95 (262 hauls)','4 mi away','Today 4pm'] }
     },
 
 
@@ -14199,8 +14219,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       ],
       estimate:'$285 – $410',
       etaText:'2-hour arrival window',
-      worker:{ initials:'AT', name:'Aaron T.', badge:'elite+', photo:'assets/img/px-3932291-400x400.webp', tagline:'Strong crew lead — your move done right the first time.', verified:'Verified', reviews:140, rating:4.92, stats:['⭐ 4.92 (140 moves)','5 mi away','Available 9am'] },
-      worker2:{ initials:'JB', name:'James B.', badge:'pro+', photo:'assets/img/px-220453-400x400.webp', tagline:'Careful with your stuff — moved 200+ homes.', verified:'Verified', reviews:88, rating:4.86, stats:['⭐ 4.86 (88 moves)','7 mi away','Available 11am'] }
+      worker:{ initials:'AT', name:'Aaron T.', badge:'pro', photo:'assets/img/px-3932291-400x400.webp', tagline:'Strong crew lead — your move done right the first time.', verified:'Verified', reviews:140, rating:4.92, stats:['⭐ 4.92 (140 moves)','5 mi away','Available 9am'] },
+      worker2:{ initials:'JB', name:'James B.', badge:'', photo:'assets/img/px-220453-400x400.webp', tagline:'Careful with your stuff — moved 200+ homes.', verified:'Verified', reviews:88, rating:4.86, stats:['⭐ 4.86 (88 moves)','7 mi away','Available 11am'] }
     },
 
 
@@ -14228,7 +14248,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       estimate:'$140 – $190',
       etaText:'Earliest: tomorrow 8:00 AM',
       worker:{ initials:'RP', name:'Rosa P.', badge:'pro+', photo:'assets/img/px-3727469-400x400.webp', tagline:'Detail-oriented — leaves every space spotless.', verified:'Verified', reviews:340, rating:4.98, stats:['⭐ 4.98 (340 jobs)','2 mi away','Available 8am'] },
-      worker2:{ initials:'MG', name:'Maria G.', badge:'elite+', photo:'assets/img/px-769690-400x400.webp', tagline:'Bonded, insured, and trusted by 200+ businesses.', verified:'Verified', reviews:512, rating:4.99, stats:['⭐ 4.99 (512 jobs)','3 mi away','Available 7am'] }
+      worker2:{ initials:'MG', name:'Maria G.', badge:'pro', photo:'assets/img/px-769690-400x400.webp', tagline:'Bonded, insured, and trusted by 200+ businesses.', verified:'Verified', reviews:512, rating:4.99, stats:['⭐ 4.99 (512 jobs)','3 mi away','Available 7am'] }
     },
 
 
@@ -14251,8 +14271,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       ],
       estimate:'$240 – $320',
       etaText:'Same day · 4 hr block',
-      worker:{ initials:'MK', name:'Marcus K.', badge:'elite+', photo:'assets/img/px-220453-400x400.webp', tagline:'Hardworking and experienced — gets it done quick.', verified:'Verified', reviews:180, rating:4.94, stats:['⭐ 4.94 (180 jobs)','4 mi away','Available 7am'] },
-      worker2:{ initials:'KS', name:'Kevin S.', badge:'pro+', photo:'assets/img/px-2379005-400x400.webp', tagline:'Reliable hands for any heavy-lift job.', verified:'Verified', reviews:74, rating:4.89, stats:['⭐ 4.89 (74 jobs)','6 mi away','Available 8am'] }
+      worker:{ initials:'MK', name:'Marcus K.', badge:'', photo:'assets/img/px-220453-400x400.webp', tagline:'Hardworking and experienced — gets it done quick.', verified:'Verified', reviews:180, rating:4.94, stats:['⭐ 4.94 (180 jobs)','4 mi away','Available 7am'] },
+      worker2:{ initials:'KS', name:'Kevin S.', badge:'pro', photo:'assets/img/px-2379005-400x400.webp', tagline:'Reliable hands for any heavy-lift job.', verified:'Verified', reviews:74, rating:4.89, stats:['⭐ 4.89 (74 jobs)','6 mi away','Available 8am'] }
     },
 
 
@@ -14274,8 +14294,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       ],
       estimate:'$95 – $140',
       etaText:'This week — flexible',
-      worker:{ initials:'LB', name:'Luis B.', badge:'pro+', photo:'assets/img/px-2379005-400x400.webp', tagline:'Outdoor specialist — tools and equipment ready.', verified:'Verified', reviews:210, rating:4.96, stats:['⭐ 4.96 (210 jobs)','7 mi away','Available Wed'] },
-      worker2:{ initials:'TV', name:'Tomás V.', badge:'elite+', photo:'assets/img/px-1043471-400x400.webp', tagline:'Landscaping pro — full crew with mowers and trimmers.', verified:'Verified', reviews:178, rating:4.93, stats:['⭐ 4.93 (178 jobs)','5 mi away','Available Thu'] }
+      worker:{ initials:'LB', name:'Luis B.', badge:'', photo:'assets/img/px-2379005-400x400.webp', tagline:'Outdoor specialist — tools and equipment ready.', verified:'Verified', reviews:210, rating:4.96, stats:['⭐ 4.96 (210 jobs)','7 mi away','Available Wed'] },
+      worker2:{ initials:'TV', name:'Tomás V.', badge:'pro+', photo:'assets/img/px-1043471-400x400.webp', tagline:'Landscaping pro — full crew with mowers and trimmers.', verified:'Verified', reviews:178, rating:4.93, stats:['⭐ 4.93 (178 jobs)','5 mi away','Available Thu'] }
     },
 
 
@@ -14297,8 +14317,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       ],
       estimate:'$32 – $42',
       etaText:'8 min away',
-      worker:{ initials:'SR', name:'Sarah R.', badge:'elite+', photo:'assets/img/px-1391498-400x400.webp', tagline:'Smooth, on-time rides — top-rated driver.', verified:'Verified', reviews:1200, rating:4.99, stats:['⭐ 4.99 (1.2k rides)','1 mi away','8 min ETA'] },
-      worker2:{ initials:'MH', name:'Mike H.', badge:'pro+', photo:'assets/img/px-2474307-400x400.webp', tagline:'Quiet, clean rides — water and chargers on every trip.', verified:'Verified', reviews:430, rating:4.94, stats:['⭐ 4.94 (430 rides)','2 mi away','12 min ETA'] }
+      worker:{ initials:'SR', name:'Sarah R.', badge:'pro+', photo:'assets/img/px-1391498-400x400.webp', tagline:'Smooth, on-time rides — top-rated driver.', verified:'Verified', reviews:1200, rating:4.99, stats:['⭐ 4.99 (1.2k rides)','1 mi away','8 min ETA'] },
+      worker2:{ initials:'MH', name:'Mike H.', badge:'', photo:'assets/img/px-2474307-400x400.webp', tagline:'Quiet, clean rides — water and chargers on every trip.', verified:'Verified', reviews:430, rating:4.94, stats:['⭐ 4.94 (430 rides)','2 mi away','12 min ETA'] }
     },
 
 
@@ -14319,8 +14339,8 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       ],
       estimate:'Custom quote',
       etaText:'Coordinator responds within 1 hr',
-      worker:{ initials:'AC', name:'Alex C.', badge:'pro+', photo:'assets/img/px-1681010-400x400.webp', tagline:'Generalist — will help you scope it right.', verified:'Verified', reviews:88, rating:4.95, stats:['⭐ 4.95 (88 jobs)','< 1 hr response','Available now'] },
-      worker2:{ initials:'CP', name:'Carlos P.', badge:'elite+', photo:'assets/img/px-1222271-400x400.webp', tagline:'Seasoned generalist — 10+ years across trades.', verified:'Verified', reviews:415, rating:4.97, stats:['⭐ 4.97 (415 jobs)','4 mi away','Available today'] }
+      worker:{ initials:'AC', name:'Alex C.', badge:'pro', photo:'assets/img/px-1681010-400x400.webp', tagline:'Generalist — will help you scope it right.', verified:'Verified', reviews:88, rating:4.95, stats:['⭐ 4.95 (88 jobs)','< 1 hr response','Available now'] },
+      worker2:{ initials:'CP', name:'Carlos P.', badge:'', photo:'assets/img/px-1222271-400x400.webp', tagline:'Seasoned generalist — 10+ years across trades.', verified:'Verified', reviews:415, rating:4.97, stats:['⭐ 4.97 (415 jobs)','4 mi away','Available today'] }
     },
   };
 
@@ -14352,7 +14372,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       points: [
         "Describe the <b>task in plain terms</b> — \"mount a 55\" TV on drywall\" beats \"hang some stuff.\"",
         "Note whether <b>tools, parts, or materials</b> are provided, or if your Gopher should bring them.",
-        "If the work is <b>licensed or regulated</b> (electrical, plumbing, gas), look for a <b>Gopher Pro</b>.",
+        "For work inside your home, look for a <b>Gopher Pro</b> or <b>Pro+</b>: they’ve passed a background check.",
         "Add a <b>photo</b> — it's the fastest way for the right person to say \"yep, I've got this.\"",
       ],
     },
@@ -14406,13 +14426,21 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
   // Extra "already interested" workers, combined with each category's 2 samples
   // to populate the Step 7 interested pool (2 samples + 6 extras = 8 total).
   const EXTRA_INTERESTED = [
-    { initials:'AW', name:'Andre W.',  badge:'elite+', photo:'assets/img/px-3932291-400x400.webp', tagline:'Shows up early, works hard, gets it done.', verified:'Verified', reviews:203, rating:4.96, stats:['⭐ 4.96 (203 jobs)','3 mi away','Available now'] },
-    { initials:'PN', name:'Priya N.',  badge:'pro+',   photo:'assets/img/px-3763188-400x400.webp', tagline:'Friendly, reliable, and detail-oriented.', verified:'Verified', reviews:118, rating:4.90, stats:['⭐ 4.90 (118 jobs)','4 mi away','Available 1pm'] },
-    { initials:'MT', name:'Marcus T.', badge:'pro+',   photo:'assets/img/px-1681010-400x400.webp', tagline:'Strong, dependable, and ready to roll.', verified:'Verified', reviews:91, rating:4.87, busy:true, stats:['⭐ 4.87 (91 jobs)','6 mi away','On a job · free ~3pm'] },
-    { initials:'ER', name:'Elena R.',  badge:'elite+', photo:'assets/img/px-1130626-400x400.webp', tagline:'5-star track record — your job in safe hands.', verified:'Verified', reviews:412, rating:4.99, stats:['⭐ 4.99 (412 jobs)','2 mi away','Available 2pm'] },
-    { initials:'SK', name:'Sam K.',    badge:'pro+',   photo:'assets/img/px-697509-400x400.webp', tagline:'Quick, careful, and easy to work with.', verified:'Verified', reviews:67, rating:4.85, stats:['⭐ 4.85 (67 jobs)','5 mi away','Available now'] },
-    { initials:'BL', name:'Bianca L.', badge:'elite+', photo:'assets/img/px-1542085-400x400.webp', tagline:'Pro-level results, every single time.', verified:'Verified', reviews:288, rating:4.97, stats:['⭐ 4.97 (288 jobs)','3 mi away','Available 11am'] },
+    { initials:'AW', name:'Andre W.',  badge:'pro+', photo:'assets/img/px-3932291-400x400.webp', tagline:'Shows up early, works hard, gets it done.', verified:'Verified', reviews:203, rating:4.96, stats:['⭐ 4.96 (203 jobs)','3 mi away','Available now'] },
+    { initials:'PN', name:'Priya N.',  badge:'pro',   photo:'assets/img/px-3763188-400x400.webp', tagline:'Friendly, reliable, and detail-oriented.', verified:'Verified', reviews:118, rating:4.90, stats:['⭐ 4.90 (118 jobs)','4 mi away','Available 1pm'] },
+    { initials:'MT', name:'Marcus T.', badge:'',   photo:'assets/img/px-1681010-400x400.webp', tagline:'Strong, dependable, and ready to roll.', verified:'Verified', reviews:91, rating:4.87, busy:true, stats:['⭐ 4.87 (91 jobs)','6 mi away','On a job · free ~3pm'] },
+    { initials:'ER', name:'Elena R.',  badge:'pro+', photo:'assets/img/px-1130626-400x400.webp', tagline:'5-star track record — your job in safe hands.', verified:'Verified', reviews:412, rating:4.99, stats:['⭐ 4.99 (412 jobs)','2 mi away','Available 2pm'] },
+    { initials:'SK', name:'Sam K.',    badge:'',   photo:'assets/img/px-697509-400x400.webp', tagline:'Quick, careful, and easy to work with.', verified:'Verified', reviews:67, rating:4.85, stats:['⭐ 4.85 (67 jobs)','5 mi away','Available now'] },
+    { initials:'BL', name:'Bianca L.', badge:'pro', photo:'assets/img/px-1542085-400x400.webp', tagline:'Pro-level results, every single time.', verified:'Verified', reviews:288, rating:4.97, stats:['⭐ 4.97 (288 jobs)','3 mi away','Available 11am'] },
   ];
+  /* Stage 6: ONE tier per demo person across the page. MY Gophers is built from
+     request history, which carries no tier, so it reads the tier from here;
+     otherwise Devon M. was Pro+ in a new request and Standard in MY Gophers. */
+  window.__demoWorkerTiers = window.__demoWorkerTiers || {};
+  Object.keys(CATEGORIES).forEach(k => [CATEGORIES[k].worker, CATEGORIES[k].worker2].forEach(w => {
+    if(w && w.name) window.__demoWorkerTiers[w.name] = w.badge || '';
+  }));
+  EXTRA_INTERESTED.forEach(w => { if(w && w.name) window.__demoWorkerTiers[w.name] = w.badge || ''; });
   // Build the interested pool for a category: 2 samples + extras, de-duped by name.
   function buildInterestedPool(cat){
     const c = CATEGORIES[cat];
@@ -17951,8 +17979,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     // advances straight to Job details. Step 1 has no Back/Continue footer.
     if(state.step === 1){
       const tiles = $content.querySelectorAll('.cat-tile');
-      tiles.forEach(t => {
-        t.addEventListener('click', () => {
+      const pickTile = (t) => {
           // Realigns category-owned state when the pick actually changes the
           // category (e.g. stepping back to Step 1 and choosing a different one).
           switchCategory(t.dataset.cat);
@@ -17965,6 +17992,20 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
           state.step = 2;
           if(state.maxStepReached < 2) state.maxStepReached = 2;
           render();
+      };
+      tiles.forEach(t => {
+        t.addEventListener('click', () => {
+          /* CAT-3: choosing Custom Task here is the app's home pick, so the
+             same sheet asks first. A tile in it is that category's own tile. */
+          if(t.dataset.cat === 'other' && state.category !== 'other' && window.G40_REQ
+             && G40_REQ.customTaskSheet && !G40_REQ.customTaskSheetSkipped()){
+            G40_REQ.customTaskSheet({
+              onPick: (k) => { const other = Array.from(tiles).find(o => o.dataset.cat === k); if(other) pickTile(other); },
+              onContinue: () => pickTile(t)
+            });
+            return;
+          }
+          pickTile(t);
         });
       });
     }
@@ -18718,6 +18759,53 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       /* D10 notice, John 10/15 "Short notice, both": the number is already
          hidden (**********), so it informs, it does not ask. OK closes; "Don't
          show again" closes and remembers (this browser only). */
+      /* CAT-3 (John 10/16 "proceed" = the recommended yes; "App wins"): the
+         Request app's "Before you continue" sheet, live/CustomTaskCategorySheet.js
+         (G40-549 CT = B, John 10/10; his words, verbatim). The seven other
+         categories as tiles: a tile opens that category with the words carried
+         over (HomeScreen.js start()); "Continue with Custom Task" goes on; the
+         dim closes it. "Don't show this again" is the app's own
+         doNotShowPreOtherModal, saved when the sheet closes however it closes
+         (closePreSheet()). The kit's pieces; only the tile grid is this sheet's. */
+      customTaskSheetSkipped: function(){
+        try { return localStorage.getItem('doNotShowPreOtherModal') === 'true'; } catch(_){ return false; }
+      },
+      customTaskSheet: function(o){
+        /* (the kit pieces: gr-modal-icon, h4, gr-modal-sub, one gr-modal-btn,
+           the goto-intro-never row; the tile grid is this sheet's own) */
+        o = o || {};
+        var tiles = ['delivery','junk','moving','home','labor','yard','ride'].filter(function(k){ return CATEGORIES[k]; }).map(function(k){
+          var ph = (CAT_PHOTOS && CAT_PHOTOS[k]) ? '<span class="ct-sheet-ic"><img src="' + CAT_PHOTOS[k] + '" alt=""></span>' : '';
+          return '<button type="button" class="ct-sheet-tile" data-ct-pick="' + k + '">' + ph + '<span>' + CATEGORIES[k].name + '</span></button>';
+        }).join('');
+        /* G40-308 Guide A, the web's modal standard (desk modal gate 10/16): the
+           circle icon, the h4, the sub line, one kit pill. The app's grey
+           "Custom Task" chip is replaced by the circle; 🤝 is the web's own
+           Custom Task mark (iQ's category icons). */
+        var ov = reqModal('<div class="gr-modal-icon" style="font-size:26px;line-height:1;" aria-hidden="true">🤝</div>'
+          + '<h4>Please ensure the request you’re looking for isn’t already included in our category menu.</h4>'
+          + '<p class="gr-modal-sub">Workers select the categories they see so being accurate here helps everyone. If your request is truly custom, that’s great, proceed with Custom Task.</p>'
+          + '<div class="ct-sheet-grid">' + tiles + '</div>'
+          + '<button type="button" class="gr-modal-btn ct-sheet-continue">Continue with Custom Task</button>'
+          + '<button type="button" class="prev-check-row goto-intro-never ct-sheet-dns"><span class="prev-check-box"></span><span>Don’t show this again</span></button>');
+        var box = ov.querySelector('.gr-modal');
+        box.classList.add('ct-sheet'); box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Before you continue');
+        var dns = false, done = false;
+        var dnsBtn = ov.querySelector('.ct-sheet-dns');
+        dnsBtn.addEventListener('click', function(){ dns = !dns; dnsBtn.classList.toggle('checked', dns); dnsBtn.setAttribute('aria-pressed', String(dns)); });
+        function close(then){
+          if(done) return; done = true;
+          if(dns){ try { localStorage.setItem('doNotShowPreOtherModal', 'true'); } catch(_){} }
+          ov.remove();
+          if(then) setTimeout(then, 0);
+        }
+        ov.addEventListener('click', function(e){ if(e.target === ov) close(); }, true);
+        ov.querySelectorAll('[data-ct-pick]').forEach(function(b){
+          b.addEventListener('click', function(){ var k = b.getAttribute('data-ct-pick'); close(function(){ if(o.onPick) o.onPick(k); }); });
+        });
+        ov.querySelector('.ct-sheet-continue').addEventListener('click', function(){ close(o.onContinue); });
+        return ov;
+      },
       phoneHidden: function(){
         var ov = reqModal('<div class="gr-modal-icon" style="font-size:26px;line-height:1;">📵</div><h4>Phone number hidden</h4><p class="gr-modal-sub">For your privacy we don’t broadcast phone numbers. Once your request is submitted you can text or call your Gopher in-app.</p><button type="button" class="gr-modal-btn grx">OK</button>' + b2('Don’t show again'));
         var btns = ov.querySelectorAll('.gr-modal-btn');
@@ -23965,7 +24053,18 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        idea in the sheet. `idea` is the idea's NAME; the flow looks up its
        guidance and shows it as placeholder text. A tapped example never fills
        real text (owner 10/5). */
-    function start(catKey, idea){
+    function start(catKey, idea, pastSheet){
+      /* CAT-3: Custom Task asks first, as the app's HomeScreen start() does
+         (unless "Don't show this again" was ticked). Nothing on the dashboard
+         changes until the requester picks: closing the sheet leaves it as is. */
+      if(catKey === 'other' && !pastSheet && window.G40_REQ && G40_REQ.customTaskSheet
+         && !G40_REQ.customTaskSheetSkipped()){
+        G40_REQ.customTaskSheet({
+          onPick: function(k){ start(k, idea, true); },
+          onContinue: function(){ start('other', idea, true); }
+        });
+        return;
+      }
       showSection('new-request');
       moveFlowToDash();
       setRequestPath('new');
@@ -24302,10 +24401,10 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       friend: 'Marcus R.',
       text: 'Marcus R. recommended 4 Gophers for you',
       gophers: [
-        { name: 'Tanya Brooks', tier: 'Gopher Elite', rating: 4.9, reviews: 214, photo: '' },
+        { name: 'Tanya Brooks', tier: 'Gopher Pro+', rating: 4.9, reviews: 214, photo: '' },
         { name: 'Devon Price',  tier: 'Gopher Pro',   rating: 4.8, reviews: 96,  photo: '' },
-        { name: 'Rosa Medina',  tier: 'Gopher Elite', rating: 5.0, reviews: 158, photo: '' },
-        { name: 'Kyle Watts',   tier: 'Gopher Pro',   rating: 4.7, reviews: 63,  photo: '' },
+        { name: 'Rosa Medina',  tier: '', rating: 5.0, reviews: 158, photo: '' },
+        { name: 'Kyle Watts',   tier: '',   rating: 4.7, reviews: 63,  photo: '' },
       ],
     };
     return {
@@ -24578,13 +24677,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       </div>`;
 
     // Right column — active conversation
-    const tierBadge = (() => {
-      const tier = tw.tier || '';
-      if(!tier) return '';
-      const cls = tier === 'pro+' ? 'tier-pro' : '';
-      const lbl = tier.replace('+','');
-      return ` <span class="gopher-badge ${cls}">${lbl}${tier==='elite+'?'<span class="gb-plus">+</span>':''}</span>`;
-    })();
+    const tierBadge = window.__workerPill(window.__workerTierId(tw), 'sm');
     // render a MY Gopher recommendation message (a scrollable list of
     // recommended Gophers; each row is one tap target spanning the photo through
     // the "View Profile" label and opens the standard Gopher profile modal) or,
@@ -24615,8 +24708,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
                 </label>
                 <span class="inbox-rec-photo">${photo}</span>
                 <span class="inbox-rec-info">
-                  <span class="inbox-rec-name">${_recEsc(g.name)}</span>
-                  <span class="inbox-rec-sub">${_recEsc(g.tier || 'Gopher')}${rating}</span>
+                  <span class="inbox-rec-name">${_recEsc(g.name)}${window.__workerPill(window.__workerTierId(g), 'sm')}</span>
+                  <span class="inbox-rec-sub">Gopher${rating}</span>
                 </span>
                 ${added ? '<span class="inbox-rec-added">✓ In MY Gophers</span>' : ''}
                 <button type="button" class="inbox-rec-view" data-rec-msg="${mi}" data-rec-idx="${gi}">View Profile ›</button>
@@ -24729,7 +24822,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         if(g && typeof openGopherProfileModal === 'function'){
           openGopherProfileModal({
             name: g.name, pro: g.name,
-            tier: (String(g.tier || '').toLowerCase().indexOf('elite') !== -1) ? 'Gopher Elite' : 'Gopher Pro',
+            /* A worker: the app's rule, not the old "Elite, else Pro" guess. */
+            isWorker: true, gopher_type_id: window.__workerTierId(g),
             rating: g.rating, reviews: g.reviews, photo: g.photo, testimonial: ''
           });
         }
@@ -25130,7 +25224,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     // `requestsMade` is derived live from the request buckets unless overridden.
     // v77 — `workerTier` ('elite' | 'pro' | null): set for the ~10% of customers
     // who are also Gopher workers, so their tier badge shows in the badges rail.
-    profile: { rating: 4.96, trustShield: true, requestsMade: null, workerTier: 'elite', dob: '01-01-1990', idOnFile: null },
+    profile: { rating: 4.96, trustShield: true, requestsMade: null, workerTier: 'pro', dob: '01-01-1990', idOnFile: null },
   };
   let _userReqSeq = 1;       // sequential id source (GR-00002, GR-00003, …)
 
@@ -25165,6 +25259,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       const w = (r.interestedWorkers || []).find(x => x && x.name === n);
       if(w && (w.badge || w.tier)) return w.badge || w.tier;
     }
+    const demo = window.__demoWorkerTiers;
+    if(demo && Object.prototype.hasOwnProperty.call(demo, n)) return demo[n];
     return '';
   }
   // (v106) Parse the demo's "M/D/YY" (or "M/D/YYYY") date into a sortable ms
@@ -25341,7 +25437,6 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
              stats:['⭐ 4.95 (180 jobs)','3 mi away','Available now'], status: status||'interested' };
   }
   function buildSeedRequests(){
-    const tierLabel = (t) => (t==='pro+'||t==='pro') ? 'Pro' : 'Elite+';
     /* The scheduled seeds' start, as the server's request_schedule_time, so
        their cards carry the date the way the app's do ("Fri, Oct 16 ·
        9:00 AM"). `weekday` 0-6 picks the next such day; omitted = tomorrow. */
@@ -25361,13 +25456,13 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         worker:'6 workers interested', amount:'$360.00 total',
         when:'Today, 2:00 PM · awaiting your selection',
         interestedWorkers:[
-          makeSeedWorker('AW','Andre W.','elite+'), makeSeedWorker('PN','Priya N.','pro+'),
+          makeSeedWorker('AW','Andre W.','pro+'), makeSeedWorker('PN','Priya N.','pro'),
           /* Marcus is seeded BUSY so the selectedGopherBusy modal has a demo
              path (Standard Gophers take one job at a time). */
-          Object.assign(makeSeedWorker('MT','Marcus T.','pro+'),
+          Object.assign(makeSeedWorker('MT','Marcus T.',''),
             { busy:true, stats:['⭐ 4.95 (180 jobs)','3 mi away','On a job · free ~3pm'] }),
-          makeSeedWorker('ER','Elena R.','elite+'),
-          makeSeedWorker('SK','Sam K.','pro+'),      makeSeedWorker('BL','Bianca L.','elite+'),
+          makeSeedWorker('ER','Elena R.','pro+'),
+          makeSeedWorker('SK','Sam K.',''),      makeSeedWorker('BL','Bianca L.','pro'),
         ],
       },
       // 1b) PENDING — counter-offers HOST (the Request analog of Connect's GC-00126,
@@ -25386,7 +25481,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         worker:'2 workers interested', amount:'$74.51 total',
         when:'Today, 4:30 PM · awaiting your selection',
         interestedWorkers:[
-          makeSeedWorker('DK','Devon K.','elite+'), makeSeedWorker('HT','Hana T.','pro+'),
+          makeSeedWorker('DK','Devon K.','pro'), makeSeedWorker('HT','Hana T.',''),
         ],
         // Frozen Review-screen snapshot (the ORIGINAL posted price) — same Request fee
         // shape as GR-00127/GR-00128. NON-AR delivery, purchase-needed (Cost of Items 50
@@ -25417,7 +25512,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         counterOffers:[
           // A — OFFER only, UP (+$10): 18 → 28. comment present.
           { changed:'offer', comment:'Bigger cart than the list looks — bumping my offer a little to cover the extra time.',
-            worker:{ name:'Tess B.', badge:'elite+', photo:'',
+            worker:{ name:'Tess B.', badge:'pro+', photo:'',
               tagline:'10 years running errands across town — nothing gets missed.',
               stats:['⭐ 4.98 (331 jobs)','2 mi away','Available now'] },
             counter:{ costOfItems:50, workerPay:28, workersNeeded:1,
@@ -25426,7 +25521,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
               promo:null, promoDiscount:0, trustShieldDiscount:0, cogOffer:78, gmvTotal:85.3092 } },
           // B — ITEMS only, DOWN (−$20): COG 50 → 30 ("worker knows the items cost less"). comment null.
           { changed:'items', comment:null,
-            worker:{ name:'Hector G.', badge:'pro+', photo:'',
+            worker:{ name:'Hector G.', badge:'', photo:'',
               tagline:'Shop here weekly — these run cheaper than listed.',
               stats:['⭐ 4.91 (176 jobs)','4 mi away','Available now'] },
             counter:{ costOfItems:30, workerPay:18, workersNeeded:1,
@@ -25435,7 +25530,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
               promo:null, promoDiscount:0, trustShieldDiscount:0, cogOffer:48, gmvTotal:52.9092 } },
           // C — OFFER and ITEMS (both): offer 18→26 (+$8), COG 50→55 (+$5). comment present.
           { changed:'both', comment:'Store was out of the listed brand, substituting a slightly pricier one, and it is a longer trip than expected.',
-            worker:{ name:'Lena M.', badge:'elite+', photo:'',
+            worker:{ name:'Lena M.', badge:'pro', photo:'',
               tagline:'Licensed pro — I keep every receipt and text updates.',
               stats:['⭐ 4.96 (289 jobs)','6 mi away','Available 5pm'] },
             counter:{ costOfItems:55, workerPay:26, workersNeeded:1,
@@ -25485,11 +25580,11 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         scheduledForLater:false, workersNeeded:1, perWorkerCost:50.00, multiIndividual:false,
         worker:'Marcus B. (Pro)', amount:'$55.07 total',
         when:'ETA 14 min · Today, 2:30 PM',
-        interestedWorkers:[ makeSeedWorker('MB','Marcus B.','pro+','hired') ],
+        interestedWorkers:[ makeSeedWorker('MB','Marcus B.','pro','hired') ],
         userStarted:true,
         live:{
           crew:[
-            { name:'Marcus B.', tier:'pro+', phone:'+1 (919) 555-0142', photo:'',
+            { name:'Marcus B.', tier:'pro', phone:'+1 (919) 555-0142', photo:'',
               tagline:'Careful shopper, quick on the road. Your order is in good hands.',
               verified:'Verified', reviews:180, rating:4.95 }
           ],
@@ -25565,13 +25660,13 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         status:'in-progress', statusLabel:'In Progress', needsAttention:false, userCreated:false,
         scheduledForLater:false, workersNeeded:1, perWorkerCost:28.00, multiIndividual:false,
         category:'ride',
-        worker:'Sarah R. (Elite+)', amount:'$31.31 total',
+        worker:'Sarah R. (Pro+)', amount:'$31.31 total',
         when:'ETA 6 min · Today, 5:10 PM',
-        interestedWorkers:[ makeSeedWorker('SR','Sarah R.','elite+','hired') ],
+        interestedWorkers:[ makeSeedWorker('SR','Sarah R.','pro+','hired') ],
         userStarted:true,
         live:{
           crew:[
-            { name:'Sarah R.', tier:'elite+', phone:'+1 (919) 555-0173', photo:'',
+            { name:'Sarah R.', tier:'pro+', phone:'+1 (919) 555-0173', photo:'',
               tagline:'Safe, on-time driver. I’ll text when I’m pulling up.',
               verified:'Verified', reviews:264, rating:4.97,
               // Real front + rear car photos the Gopher uploaded in Work Settings & Radius.
@@ -25588,7 +25683,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
           category:'ride', ageRestricted:false,
           itemsPurchased:false,
           urgency:'Pickup at arrivals',
-          worker:'Sarah R. (Elite+)',
+          worker:'Sarah R. (Pro+)',
           pickup:'RDU Airport — Terminal 2 Arrivals, Morrisville, NC 27560',
           dropoff:'412 Oakwood Ave, Raleigh, NC 27601',
           description:'Airport pickup at RDU Terminal 2 arrivals, drop at 412 Oakwood Ave. 1 passenger, 1 carry-on.',
@@ -25603,9 +25698,9 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         id:'GR-00128', cat:'delivery', icon:'📦', title:'Hardware-store run — drill bits + anchors',
         status:'in-progress', statusLabel:'In Progress', needsAttention:false, userCreated:false,
         scheduledForLater:false, workersNeeded:1, perWorkerCost:70.00, multiIndividual:false,
-        worker:'Priya N. (Elite+)', amount:'$76.67 total',
+        worker:'Priya N. (Pro)', amount:'$76.67 total',
         when:'ETA 19 min · Today, 3:05 PM',
-        interestedWorkers:[ makeSeedWorker('PN','Priya N.','elite+','hired') ],
+        interestedWorkers:[ makeSeedWorker('PN','Priya N.','pro','hired') ],
         userStarted:true,
         // ── Gopher's-choice pickup (the Request analog of Connect's GC-00125): the
         //    customer let the worker choose the store, so there is NO fixed pickup —
@@ -25617,7 +25712,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         resolvedPickup:'Ace Hardware, 2410 Hillsborough St, Raleigh, NC 27607',
         live:{
           crew:[
-            { name:'Priya N.', tier:'elite+', phone:'+1 (919) 555-0188', photo:'',
+            { name:'Priya N.', tier:'pro', phone:'+1 (919) 555-0188', photo:'',
               tagline:'Knows the aisles — gets the right parts the first time.',
               verified:'Verified', reviews:240, rating:4.97 }
           ],
@@ -25637,7 +25732,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
           category:'Delivery', ageRestricted:false,
           itemsPurchased:true,   // delivery type "Purchase needed" → third step "Items Purchased"
           urgency:'Needed this afternoon',
-          worker:'Priya N. (Elite+)',
+          worker:'Priya N. (Pro)',
           pickup:'Any location',   // Gopher's-choice → frozen as "Any location"; resolves to r.resolvedPickup after purchase
           dropoff:'88 Maple Court, Cary, NC 27513',
           description:'Pick up a 5-pack of 3/8" drill bits and a box of #8 drywall anchors, then deliver to the job site. Text if the brand on the list is out of stock.',
@@ -25676,9 +25771,9 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         id:'GR-00121', cat:'junk', icon:'🚚', title:'Office furniture clear-out',
         status:'scheduled', statusLabel:'Scheduled', needsAttention:false, userCreated:false,
         scheduledForLater:true, workersNeeded:1, perWorkerCost:280, multiIndividual:false,
-        worker:'Diego R. (Elite+)', amount:'$280.00 total',
+        worker:'Diego R. (Pro+)', amount:'$280.00 total',
         when:'Thursday, 1:00 PM', requestScheduleTime: seedAt(13, 0, 4),
-        interestedWorkers:[ makeSeedWorker('DR','Diego R.','elite+','hired') ],
+        interestedWorkers:[ makeSeedWorker('DR','Diego R.','pro+','hired') ],
       },
       // ── Worker-completed delivery AWAITING REQUESTOR CONFIRMATION (requestor-facing
       //    + dispute GA-285). Mirrors Connect GC-00127.
@@ -25695,7 +25790,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         scheduledForLater:false, workersNeeded:1, perWorkerCost:24.00, multiIndividual:false,
         worker:'Marcus B. (Pro)', amount:'$26.99 total',
         when:'Completed Today, 1:42 PM',
-        interestedWorkers:[ makeSeedWorker('MB','Marcus B.','pro+','hired') ],
+        interestedWorkers:[ makeSeedWorker('MB','Marcus B.','pro','hired') ],
         userStarted:true,
         awaitingConfirmation:true,
         completionPhotos:[
@@ -25705,7 +25800,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         favoritedByRequestor:false,
         live:{
           crew:[
-            { name:'Marcus B.', tier:'pro+', phone:'+1 (919) 555-0142', photo:'',
+            { name:'Marcus B.', tier:'pro', phone:'+1 (919) 555-0142', photo:'',
               tagline:'Fast, friendly courier — your order shows up right.',
               verified:'Verified', reviews:180, rating:4.96 }
           ],
@@ -26723,8 +26818,8 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
      There are no app versions here, so that condition has no counterpart and is
      deliberately not simulated. */
   function isStandardTier(w){
-    const t = String((w && (w.tier || w.badge)) || '').toLowerCase();
-    return !/^(elite|pro)/.test(t);          // '', 'standard', anything unbadged
+    /* The server's test (gopher_type_id === 0), through the one resolver. */
+    return window.__workerTierId(w) === 0;   // '', 'standard', anything unbadged
   }
   /* "Jobs: 396 | Rating: 5.00", as the live app's offer card writes it
      (offerRows.offerStats). Reads the meta ensureWorkerMeta derives. */
@@ -26885,6 +26980,37 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     return html;
   };
 
+  /* ⛔ THE REQUEST APP'S WORKER-TIER RULE — WORKERS ONLY (Pro/Pro+ stage 6 = A,
+     John 10/16). GopherProfileHeader.js: tierId = Number(gopher_type_id) || 0;
+     2 "Pro+", 1 "Pro", anything else Standard (no badge); "Background checked"
+     with a tier, "Identity Verified" without. InboxRow.js / InAppMessage.js /
+     Orderdispute.js use the same id. The demo workers carry it as badge/tier
+     'pro+' | 'pro' | '' (Standard); 'elite+' / 'elite' are read only so a
+     MY Gophers record saved before 10/16 still resolves.
+     ⚠️ NOT FOR DEALS PROVIDERS: their cards keep __tierName / __tierLockup /
+     __tierBadge above, untouched (Deals is parked). */
+  window.__workerTierId = function(x){
+    if(x && typeof x === 'object'){
+      if(x.gopher_type_id != null && x.gopher_type_id !== '') return Number(x.gopher_type_id) || 0;
+      x = x.tier || x.badge || '';
+    }
+    if(typeof x === 'number') return x || 0;
+    var k = String(x == null ? '' : x).toLowerCase().replace(/^gopher\s+/, '').trim();
+    if(k === 'pro+' || k === 'elite+') return 2;
+    if(k === 'pro' || k === 'elite') return 1;
+    return 0;
+  };
+  window.__workerTierWord = function(id){ return id === 2 ? 'Pro+' : id === 1 ? 'Pro' : ''; };
+  /* The Go app's own pill art (badge-gopher-pro*.png = pro_batch / pro_plus_batch
+     @3x), the same files the Go page, tiers page and Marketplace use. '' for
+     Standard: a Standard worker shows no badge, as in the app. */
+  window.__workerPill = function(id, size){
+    var word = window.__workerTierWord(id);
+    if(!word) return '';
+    return '<img class="wk-pill wk-pill-' + (size || 'sm') + (id === 2 ? ' plus' : '') + '" src="assets/img/'
+      + (id === 2 ? 'badge-gopher-pro-plus.png' : 'badge-gopher-pro.png') + '" alt="Gopher ' + word + '">';
+  };
+
   /* ⛔ DO NOT ABBREVIATE A SERVER-RESOLVED NAME. "first word + last initial" is a
      PRIVACY convention for a PERSON (John Newbury -> John N). A deal from the
      publication feed has already had that rule applied server-side — `title` is
@@ -26913,6 +27039,12 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
        fictional default; a live one shows a badge only when a tier was
        actually resolved. */
     const tier = w.live ? (w.tier || null) : (w.tier || w.badge || 'pro+');
+    /* Stage 6 = A: a WORKER (a request's interested or counter-offering worker,
+       MY Gophers, the inbox) follows the Request app's GopherProfileHeader.js.
+       Only a Deals provider keeps the Deals tier path above, untouched. */
+    const workerRule = !w.live && !w.isDealProvider;
+    const wkId = workerRule ? window.__workerTierId(w) : 0;
+    const wkWord = window.__workerTierWord(wkId);
     const tierLabel = tier.replace('+','');
     const reviews = (w.reviews != null) ? w.reviews : (w.jobsNum || 0);
     /* ⛔ NEVER DEFAULT A RATING — this read `: 5.0`, publishing a perfect score
@@ -26960,7 +27092,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       <div class="profile-detail">
         <div class="profile-detail-head">
           <button class="profile-detail-back" data-wact="profile-back">← Back</button>
-          <div class="profile-detail-title">${window.__tierName(tier) ? 'Gopher ' + window.__tierName(tier) + ' | ' : ''}${profileDisplayName(w)}</div>
+          <div class="profile-detail-title">${workerRule ? (wkWord ? 'Gopher ' + wkWord + ' | ' : '') : (window.__tierName(tier) ? 'Gopher ' + window.__tierName(tier) + ' | ' : '')}${profileDisplayName(w)}</div>
           <div class="profile-detail-spacer"></div>
         </div>
 
@@ -26974,7 +27106,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         <div class="profile-stat-circles">
           <div class="profile-stat">
             <div class="profile-stat-bubble verified">
-              ${window.__tierBadge(tier, w.proCred, 'font-size:9px;padding:2px 6px 2px 7px;')}
+              ${workerRule ? (window.__workerPill(wkId, 'md') || window.__tierBadge(null)) : window.__tierBadge(tier, w.proCred, 'font-size:9px;padding:2px 6px 2px 7px;')}
             </div>
             <!-- The label stays. A null tier does NOT render an empty bubble:
                  __tierBadge deliberately draws the VERIFIED CHECK there, because
@@ -26982,7 +27114,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
                  hold a live deal. I removed this label once, reading the bubble
                  as empty; it is not, and the check and its label belong
                  together. -->
-            <div class="profile-stat-label">${w.verified || 'Verified'}</div>
+            <div class="profile-stat-label">${workerRule ? (wkId > 0 ? 'Background checked' : 'Identity Verified') : (w.verified || 'Verified')}</div>
           </div>
           <div class="profile-stat">
             <div class="profile-stat-bubble reviews">${(typeof countNum === 'number' && countNum >= 1000) ? (countNum/1000).toFixed(1)+'k' : countNum}</div>
@@ -27169,7 +27301,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
             <div class="wcard-main">
               <div class="wcard-top">
                 <span class="wcard-name">${w.name}</span>
-                <span class="gopher-badge ${w.badge==='pro+'?'tier-pro':''}">${w.badge.replace('+','')}${w.badge==='elite+'?'<span class="gb-plus">+</span>':''}</span>
+                ${window.__workerPill(window.__workerTierId(w), 'sm')}
                 ${fresh ? `<span class="wcard-fresh-tag">Just accepted</span>` : ''}
               </div>
               <div class="wcard-sub">
@@ -27304,7 +27436,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
             <div class="wcard-main">
               <div class="wcard-top">
                 <span class="wcard-name">${w.name}</span>
-                <span class="gopher-badge ${w.badge==='pro+'?'tier-pro':''}">${(w.badge||'pro+').replace('+','')}${w.badge==='elite+'?'<span class="gb-plus">+</span>':''}</span>
+                ${window.__workerPill(window.__workerTierId(w), 'sm')}
                 <span class="wcard-tag">Counter-offer</span>
               </div>
               <div class="wcard-sub">
@@ -27367,8 +27499,6 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
 
           const cardFor = (lw) => {
             const phoneDigits = (lw.phone || '').replace(/[^0-9+]/g, '');
-            const lwTier = lw.tier || 'pro+';
-            const lwTierLabel = lwTier.replace('+','');
             const lwPhoto = lw.photo || '';
             // Per-crew-member thread ID; single-worker keeps the legacy id.
             const threadId = isCrew ? `${r.id}::${lw.name}` : r.id;
@@ -27380,7 +27510,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
                   : `<div class="wcard-photo-fallback">${(lw.name||'?').charAt(0)}</div>`}</div>
                 <div class="assigned-main">
                   <div class="assigned-name">${lw.name}
-                    <span class="gopher-badge ${lwTier==='pro+'?'tier-pro':''}">${lwTierLabel}${lwTier==='elite+'?'<span class="gb-plus">+</span>':''}</span>
+                    ${window.__workerPill(window.__workerTierId(lw), 'sm')}
                   </div>
                   <div class="assigned-sub">⭐ ${lw.rating || 4.95} (${lw.reviews || 120} reviews) · ${r.when}</div>
                 </div>
@@ -28047,10 +28177,9 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     // Summarize the started crew on the dashboard card meta line.
     const lead = hiredList[0];
     const leadName = lead ? lead.name.replace(/\.$/, '') : 'Crew';
-    const tierLabel = (t) => (t === 'pro+' || t === 'pro') ? 'Pro'
-      : (t === 'elite+' || t === 'elite') ? 'Elite+' : 'Verified';
+    const leadWord = window.__workerTierWord(window.__workerTierId(lead));
     r.worker = hiredCount === 1
-      ? `${lead.name} (${tierLabel(lead.badge || lead.tier)})`
+      ? `${lead.name}${leadWord ? ` (${leadWord})` : ''}`
       : `${leadName} +${hiredCount - 1} · crew of ${hiredCount}`;
     if(finalTotal != null) r.amount = `$${finalTotal.toFixed(2)} total`;
     r.when   = goScheduled ? r.when : 'Accepted just now';
@@ -28063,7 +28192,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         const m = statStr.match(/([\d.]+)\s*\((\d+)/) || [];
         return {
           name: w.name,
-          tier: w.badge || w.tier || 'pro+',
+          tier: w.badge || w.tier || '',
           phone: '+1 (919) 555-0' + (100 + idx * 11 + Math.floor(Math.random() * 9)),
           photo: w.photo || '',
           tagline: w.tagline || (goScheduled
@@ -28902,7 +29031,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       ? live.crew
       : (live.worker ? [live.worker] : [{
           name: (r.worker || 'Your Gopher').replace(/\s*\(.*\)$/, ''),
-          tier: 'pro+', photo:'', rating:4.95, reviews:120,
+          tier: '', photo:'', rating:4.95, reviews:120,
           tagline:'On the job and ready to help.', phone:''
         }]);
     const lead = crew[0];
@@ -29180,10 +29309,6 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
   // .workerTier ('elite' | 'pro' | null).
   // Real branded tier pills, shared across Connect / Request / Deals / Go so every
   // Personal info page shows the same official logo as a credential chip.
-  const TIER_LOCKUP = {
-    elite: 'assets/img/tier-elite.svg',   // this account is Gopher Elite
-    pro:   'assets/img/tier-pro.svg'
-  };
 
   /* ── TrustShield nav entry ───────────────────────────────────────────────
      Owner 2026-09-29: "Below Personal Info, we need to add the Add TrustShield.
@@ -29416,11 +29541,11 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
     }
     // 2) Worker tier — only when this customer is ALSO a worker (Elite / Pro).
     //    Shows the real branded tier pill as a credential chip (matches Connect/Deals/Go).
-    const tier = String(p.workerTier || '').toLowerCase();
-    if(TIER_LOCKUP[tier]){
+    const wkId = window.__workerTierId(p.workerTier);
+    if(wkId > 0){
       tiles.push(
-        '<div class="ph-badge ph-badge-lockup tier-' + tier + '">'
-        + '<div class="ph-badge-lockup-art"><img src="' + TIER_LOCKUP[tier] + '" alt="Gopher ' + (tier==='elite'?'Elite':'Pro') + ' verified worker"></div>'
+        '<div class="ph-badge ph-badge-lockup tier-pro">'
+        + '<div class="ph-badge-lockup-art">' + window.__workerPill(wkId, 'md').replace('alt="Gopher ' + window.__workerTierWord(wkId) + '"', 'alt="Gopher ' + window.__workerTierWord(wkId) + ' verified worker"') + '</div>'
         + '<div class="ph-badge-label">Verified Worker</div>'
         + '</div>');
     }
@@ -30619,10 +30744,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         ? `<img src="${esc(g.photo)}" alt="${esc(g.name)}">`
         : `<span class="gsc-initials">${esc(g.initials || myGopherInitials(g.name))}</span>`;
       // Tier badge on the name line — reuses gopher-badge / tier-pro / gb-plus.
-      const tv = String(g.tier || g.badge || '');
-      const tierBadge = tv
-        ? ` <span class="gopher-badge ${tv === 'pro+' ? 'tier-pro' : ''}">${esc(tv.replace('+',''))}${tv==='elite+'?'<span class="gb-plus">+</span>':''}</span>`
-        : '';
+      const tierBadge = window.__workerPill(window.__workerTierId(g), 'sm');
       const specialty = esc(g.specialty || g.lastCategory || '');
       const jobsN = (g.jobs != null && !isNaN(g.jobs)) ? Number(g.jobs) : null;
       const jobsStr = jobsN != null ? `<span>${jobsN} job${jobsN === 1 ? '' : 's'} hired</span>` : '';
@@ -30671,7 +30793,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         if(g && typeof openGopherProfileModal === 'function'){
           openGopherProfileModal({
             name: g.name, pro: g.name,
-            tier: (String(g.tier || g.badge || '').indexOf('elite') !== -1) ? 'Gopher Elite' : 'Gopher Pro',
+            isWorker: true, gopher_type_id: window.__workerTierId(g),
             rating: g.rating, reviews: g.reviews, photo: g.photo, testimonial: ''
           });
         }
@@ -30826,7 +30948,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
       if(opts.requestsMade != null)       DASH_DATA.profile.requestsMade = opts.requestsMade;
       if(typeof opts.rating === 'number') DASH_DATA.profile.rating       = opts.rating;
       if(opts.trustShield != null)        DASH_DATA.profile.trustShield  = !!opts.trustShield;
-      if(opts.workerTier !== undefined)   DASH_DATA.profile.workerTier   = opts.workerTier; // 'elite' | 'pro' | null
+      if(opts.workerTier !== undefined)   DASH_DATA.profile.workerTier   = opts.workerTier; // 'pro+' | 'pro' | null (__workerTierId)
     }
     rqUpdateProfileStats();
     setTrustShield(DASH_DATA.profile ? DASH_DATA.profile.trustShield : true); // also paints the badges rail
@@ -31929,6 +32051,10 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
          SP deal while sitting on a tier with no public lockup. */
       tier: window.__tierName(m.tier),
       proCred: String(m.tier || '') === 'Gopher Pro',
+      /* Stage 6: renderWorkerProfile keeps the Deals tier path for a Deals
+         provider and applies the app's worker rule to everyone else. */
+      isDealProvider: !m.isWorker,
+      gopher_type_id: m.isWorker ? m.gopher_type_id : undefined,
       /* ⛔ THE SAME RESOLVER THE CARD USES. serviceProviderPhoto() returns
          m.photo, which live feed deals never carry (the feed sets .logo from
          deal_img) — so the profile showed an empty circle while the card beside
