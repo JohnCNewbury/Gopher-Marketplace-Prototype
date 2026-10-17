@@ -7208,7 +7208,9 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
     display:flex; align-items:center; justify-content:center; gap:8px;
     width:100%;
     margin:0 0 18px;
-    /* ⛔ 52, and .dash-sidebar-deals must carry the SAME number — owner
+    /* ⚠️ SUPERSEDED 2026-10-17 (G40-604 B5.3, John: "48px like every main"):
+       both buttons are 48 now, set in #g40-604-web-buttons; still one number.
+       ⛔ 52, and .dash-sidebar-deals must carry the SAME number — owner
        2026-10-02: "These buttons need to both be the same exact size."
        It was 50 (owner, 2026-07-23, uniform CTA size) but the + glyph's line box
        pushed the real height to 52, so the deals button pinned at 50 sat 2px
@@ -18723,7 +18725,7 @@ window.onGopherMapsReady = function(){ window.__gopherMapsFired = true; };
       ov.addEventListener('click',function(e){ if(e.target===ov||e.target.classList.contains('grx')) ov.remove(); });
       document.body.appendChild(ov); ov.hidden=false; return ov;
     }
-    function b2(label){ return '<button type="button" class="gr-modal-btn grx" style="margin-top:8px;background:transparent;color:var(--navy);border:1.5px solid #dfe3ec;box-shadow:none;">'+label+'</button>'; }
+    function b2(label){ return '<button type="button" class="gr-modal-btn gr-modal-btn-secondary grx" style="margin-top:8px;">'+label+'</button>'; }
     /* Primary buttons keep the grx class, so one click runs the wired action
        AND closes the overlay (the overlay's own grx listener handles closing). */
     function wirePrimary(ov, fn){ if(fn){ var b=ov.querySelector('.gr-modal-btn'); if(b) b.addEventListener('click', fn); } return ov; }
@@ -26304,7 +26306,7 @@ c-55 -4 -154 -13 -220 -19 -66 -5 -223 -17 -350 -26 -233 -16 -272 -22 -525
         + (repost
             ? '<button type="button" class="gr-modal-btn" data-rc="submit"' + (complete ? '' : ' disabled') + '>Send it back out</button>'
             : '<button type="button" class="gr-modal-btn" data-rc="close">Keep my request</button>'
-              + '<button type="button" class="gr-modal-btn-text" data-rc="submit"' + (complete ? '' : ' disabled') + '>Cancel request</button>')
+              + '<button type="button" class="gr-modal-btn gr-modal-btn-danger" data-rc="submit"' + (complete ? '' : ' disabled') + '>Cancel request</button>')
         + (_st.fromFork ? '<button type="button" class="gr-modal-btn-text rc-quiet" data-rc="back">Back</button>' : '');
       const ta = document.getElementById('rcOther');
       if(ta && _st.focusOther){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
@@ -33584,6 +33586,196 @@ function initPersonalEdit(){
   .gc-modal-btn-text:hover { color:var(--navy); text-decoration:underline; }
   .gc-modal .go-mark          { height:1.05em; vertical-align:-0.16em; }
   .rf-btn-navy + .rf-btn-navy { margin-top:10px; }
+</style>
+<style id="g40-604-web-buttons">
+/* G40-604 Stage 5 = A (John 10/15, pick B5): "the app's buttons on every page
+   of the site (8px, 48px main, 36px small, green main, navy outline Back)".
+   John 10/17 narrowed it to Request, home and Go; Deals and Connect stay parked.
+   Main = Shamrock #33D975 with Midnight Blue words (owner 8/25: white on
+   #33D975 is too hard to read); Back / secondary = a Midnight Blue outline;
+   red only for a final destructive confirm; 8px corners, Nunito 800, 48px main,
+   36px small. Chips, tabs, tags, switches, status pills and the AI pill bar
+   stay round (Stage 4 A); pop-ups keep the web's centred card (G40-308 A).
+   John's 10/17 calls: B5.1 "Send code" = navy outline (Sign in stays the only
+   green), B5.2 pop-up Cancel / Keep / Not now / Back links = navy-outline
+   buttons, B5.3 every main 48px (the sidebar's 52px "+ New request" too).
+   Kept on purpose: the ID Submit stays NAVY beside the green TrustShield
+   button (owner 8/25); "Request Again" stays navy, as in the app; Need ASAP /
+   Schedule is a choice, not an action, and is unchanged; the Hire / Deny /
+   Message row keeps its colours (owner 10/2 note) and only takes the shape.
+   Shape applies in every state; colour only while enabled, so the grey
+   disabled / locked / inactive looks stay. The page's last block, so it wins
+   without !important (except the Refer pair, whose old navy uses it). */
+
+/* Shape · 48px */
+.gr-modal-btn, .gr-modal-btn-text, .gc-modal-btn, .mf-btn,
+.portal-submit, .portal-otp-btn, .otp-verify-btn, .rq-signedin-card button,
+.cmp-confirm-btn, .cmp-rate-now, .cmp-dispute-btn, .cmp-unable-btn,
+.adj-actions button, .ca-actions button, .bidbd-close, .dlg-keep, .sched-done,
+.pay-save, .sa-save, .sa-done, .dash-sidebar-newreq, .dash-sidebar-deals,
+.dash-signout, .btn-green, .btn-outline, .svc-btn, .cu-btn, .prev-detail-cta,
+.si-workers-btn, .ma-btn, .tsp-remove-btn, .pe-danger-btn, .add-pay-btn {
+  box-sizing:border-box; min-height:48px; border-radius:8px; padding:14px 20px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:15px; line-height:20px;
+}
+.dash-sidebar-newreq .dsn-plus { line-height:20px; }
+/* Shape · 36px */
+.ar-action, .ar-tsbtn, .goto-cta, .rc-copy, .pca, .hra-go, .hra-goto, .rf-add-contact,
+.worker-cta:not(.primary), .profile-message-btn, .req-action, .ts-promo-cta,
+.signup-upload-btn, .edit-btn, .pay-card .pc-action, .req-detail-back, .wbtn,
+.wcard-actions .wbtn, .gopher-saved-card .gsc-cta,
+.rq-draft-a .rq-draft-go, .rq-draft-a .rq-draft-no {
+  box-sizing:border-box; min-height:36px; height:auto; border-radius:8px;
+  padding:8px 14px; font-family:'Nunito',sans-serif; font-weight:800;
+  font-size:14px; line-height:20px;
+}
+.wcard-actions .wbtn-lg { padding-left:26px; padding-right:26px; }
+.signup-otp-inline, .promo-apply, .field-add-stop, .field-addpic { border-radius:8px; }
+
+/* Main · green, navy words */
+.gr-modal-btn:not(:disabled), .gc-modal-btn:not(:disabled), .mf-btn-next,
+.portal-submit:not(:disabled), .otp-verify-btn:not(:disabled),
+.rq-signedin-card button, .cmp-confirm-btn, .cmp-rate-now,
+.adj-actions .adj-approve, .ca-actions .ca-approve, .bidbd-close,
+.sched-done:not(:disabled):not(.is-disabled), .pay-save:not(:disabled),
+.sa-save:not(.is-inactive), .dash-sidebar-newreq, .btn-green, .svc-btn, .cu-btn,
+.prev-detail-cta.cta-now, .si-workers-btn, .ma-btn-primary,
+.gr-modal > .gr-modal-btn.ct-sheet-continue,
+.goto-cta, .rc-copy, .profile-message-btn:not(:disabled), .rq-draft-a .rq-draft-go {
+  background:#33D975; color:#002461; border:0; box-shadow:none;
+}
+.gr-modal-btn:not(:disabled):hover, .gc-modal-btn:not(:disabled):hover,
+.mf-btn-next:hover, .portal-submit:not(:disabled):hover,
+.otp-verify-btn:not(:disabled):hover, .rq-signedin-card button:hover,
+.cmp-confirm-btn:hover, .cmp-rate-now:hover, .adj-actions .adj-approve:hover,
+.ca-actions .ca-approve:hover, .bidbd-close:hover,
+.sched-done:not(:disabled):not(.is-disabled):hover, .pay-save:not(:disabled):hover,
+.sa-save:not(.is-inactive):hover, .dash-sidebar-newreq:hover, .btn-green:hover,
+.svc-btn:hover, .cu-btn:hover, .prev-detail-cta.cta-now:hover, .si-workers-btn:hover,
+.ma-btn-primary:hover, .gr-modal > .gr-modal-btn.ct-sheet-continue:hover,
+.goto-cta:hover, .rc-copy:hover, .profile-message-btn:not(:disabled):hover,
+.rq-draft-a .rq-draft-go:hover {
+  background:#2FCA6D; color:#002461; box-shadow:none; filter:none;
+}
+/* The pinned first button keeps only its separation from the scrolling body. */
+.gr-modal > .gr-modal-btn:first-of-type { box-shadow:0 -10px 14px -10px rgba(0,0,0,0.18); }
+
+/* Secondary · Midnight Blue outline (border 1.5px, so 12.5px / 6.5px padding) */
+.gr-modal-btn.gr-modal-btn-secondary:not(:disabled), .gr-modal-btn-secondary,
+.gr-modal-btn-text:not(.ec-danger), .gc-modal-btn.gc-modal-btn-secondary:not(:disabled),
+.gc-modal-btn-secondary,
+.idsub-actions .gr-modal-btn.idsub-btn-secondary, .lo-modal .gr-modal-btn.lo-btn-text,
+.mf-btn-back, .portal-otp-btn:not(:disabled), .cmp-dispute-btn, .cmp-unable-btn,
+.adj-actions .adj-decline, .ca-actions .ca-decline, .dlg-keep, .sa-done,
+.btn-outline, .prev-detail-cta[data-goto-cancel], .ma-btn-secondary, .add-pay-btn {
+  background:#fff; color:#002461; border:1.5px solid #002461; box-shadow:none;
+  padding-top:12.5px; padding-bottom:12.5px; text-decoration:none;
+}
+.gr-modal-btn.gr-modal-btn-secondary:not(:disabled):hover, .gr-modal-btn-secondary:hover,
+.gr-modal-btn-text:not(.ec-danger):not(:disabled):hover,
+.gc-modal-btn.gc-modal-btn-secondary:not(:disabled):hover, .gc-modal-btn-secondary:hover,
+.idsub-actions .gr-modal-btn.idsub-btn-secondary:hover,
+.lo-modal .gr-modal-btn.lo-btn-text:hover, .mf-btn-back:not(:disabled):hover,
+.portal-otp-btn:not(:disabled):hover, .cmp-dispute-btn:hover, .cmp-unable-btn:not(:disabled):hover,
+.adj-actions .adj-decline:hover, .ca-actions .ca-decline:hover, .dlg-keep:hover,
+.sa-done:hover, .btn-outline:hover, .prev-detail-cta[data-goto-cancel]:hover,
+.ma-btn-secondary:hover, .add-pay-btn:hover {
+  background:#F1F4F9; color:#002461; border-color:#002461; text-decoration:none;
+}
+.pca-goto, .hra-go, .hra-goto, .rf-add-contact, .worker-cta:not(.primary), .req-action:not(.attention),
+.ts-promo-cta, .signup-upload-btn, .edit-btn, .pay-card .pc-action,
+.req-detail-back:not(.req-detail-cancel), .rq-draft-a .rq-draft-no, .signup-otp-inline {
+  background:#fff; color:#002461; border:1.5px solid #002461; box-shadow:none;
+}
+.pca-goto, .hra-go, .hra-goto, .rf-add-contact, .worker-cta:not(.primary), .req-action:not(.attention),
+.ts-promo-cta, .signup-upload-btn, .edit-btn, .pay-card .pc-action,
+.req-detail-back, .rq-draft-a .rq-draft-no { padding-top:6.5px; padding-bottom:6.5px; }
+.pca-goto:hover, .hra-go:hover, .hra-goto:hover, .rf-add-contact:hover, .worker-cta:not(.primary):hover,
+.req-action:not(.attention):hover, .ts-promo-cta:hover, .signup-upload-btn:hover,
+.edit-btn:hover, .pay-card .pc-action:hover, .req-detail-back:not(.req-detail-cancel):hover,
+.rq-draft-a .rq-draft-no:hover, .signup-otp-inline:hover {
+  background:#F1F4F9; color:#002461; border-color:#002461; transform:none;
+}
+/* Refer via SMS / email: both a navy outline, as in the app's Refer page
+   (rf-btn out); still a restrained pair, not a second green (owner 7/23). */
+.rf-btn-navy {
+  background:#fff !important; color:#002461 !important; box-shadow:none !important;
+  border:1.5px solid #002461 !important; padding-top:12.5px; padding-bottom:12.5px;
+}
+.rf-btn-navy:hover { background:#F1F4F9 !important; }
+.rf-btn-navy .rf-soon { border-color:rgba(0,36,97,.35); }
+/* Outlines with their own 1.5px border keep it; only the padding evens out. */
+.dash-signout, .pe-danger-btn { padding-top:12.5px; padding-bottom:12.5px; }
+
+/* Destructive confirm · red */
+.gr-modal-btn.gr-modal-btn-danger:not(:disabled), .gc-modal-btn.gc-modal-btn-danger:not(:disabled),
+.tsp-remove-btn {
+  background:#C44257; color:#fff; border:0; box-shadow:none;
+  padding-top:14px; padding-bottom:14px;
+}
+.gr-modal-btn.gr-modal-btn-danger:not(:disabled):hover,
+.gc-modal-btn.gc-modal-btn-danger:not(:disabled):hover, .tsp-remove-btn:hover {
+  background:#B03A4D; color:#fff; border:0;
+}
+
+/* Press feedback, as in the apps: darken a little, and press down 3% unless reduced motion is on. */
+.gr-modal-btn:not(:disabled):active, .gr-modal-btn-text:not(:disabled):active,
+.gc-modal-btn:not(:disabled):active,
+.mf-btn:not(:disabled):not(.is-disabled):active, .portal-submit:not(:disabled):active,
+.portal-otp-btn:not(:disabled):active, .otp-verify-btn:not(:disabled):active,
+.rq-signedin-card button:active, .cmp-confirm-btn:active, .cmp-rate-now:active,
+.cmp-dispute-btn:active, .cmp-unable-btn:not(:disabled):active,
+.adj-actions button:active, .ca-actions button:active, .bidbd-close:not(.is-disabled):active,
+.dlg-keep:active, .sched-done:not(:disabled):not(.is-disabled):active,
+.pay-save:not(:disabled):active, .sa-save:not(.is-inactive):active, .sa-done:active,
+.dash-sidebar-newreq:active, .dash-signout:active, .btn-green:active, .btn-outline:active,
+.svc-btn:active, .cu-btn:active, .prev-detail-cta:not([disabled]):active,
+.si-workers-btn:active, .ma-btn:active, .tsp-remove-btn:active, .pe-danger-btn:active,
+.add-pay-btn:active, .ar-action:active, .ar-tsbtn:active, .goto-cta:active, .rc-copy:active,
+.pca:active, .hra-go:active, .hra-goto:active, .rf-add-contact:active, .worker-cta:not(.primary):active,
+.profile-message-btn:not(:disabled):active, .req-action:active, .ts-promo-cta:active,
+.signup-upload-btn:active, .edit-btn:active, .pay-card .pc-action:active,
+.req-detail-back:active, .wbtn:active, .gopher-saved-card .gsc-cta:active,
+.rq-draft-a .rq-draft-go:active, .rq-draft-a .rq-draft-no:active { filter:brightness(.93); }
+@media (prefers-reduced-motion: no-preference) {
+.gr-modal-btn:not(:disabled):active, .gr-modal-btn-text:not(:disabled):active,
+.gc-modal-btn:not(:disabled):active,
+.mf-btn:not(:disabled):not(.is-disabled):active, .portal-submit:not(:disabled):active,
+.portal-otp-btn:not(:disabled):active, .otp-verify-btn:not(:disabled):active,
+.rq-signedin-card button:active, .cmp-confirm-btn:active, .cmp-rate-now:active,
+.cmp-dispute-btn:active, .cmp-unable-btn:not(:disabled):active,
+.adj-actions button:active, .ca-actions button:active, .bidbd-close:not(.is-disabled):active,
+.dlg-keep:active, .sched-done:not(:disabled):not(.is-disabled):active,
+.pay-save:not(:disabled):active, .sa-save:not(.is-inactive):active, .sa-done:active,
+.dash-sidebar-newreq:active, .dash-signout:active, .btn-green:active, .btn-outline:active,
+.svc-btn:active, .cu-btn:active, .prev-detail-cta:not([disabled]):active,
+.si-workers-btn:active, .ma-btn:active, .tsp-remove-btn:active, .pe-danger-btn:active,
+.add-pay-btn:active, .ar-action:active, .ar-tsbtn:active, .goto-cta:active, .rc-copy:active,
+.pca:active, .hra-go:active, .hra-goto:active, .rf-add-contact:active, .worker-cta:not(.primary):active,
+.profile-message-btn:not(:disabled):active, .req-action:active, .ts-promo-cta:active,
+.signup-upload-btn:active, .edit-btn:active, .pay-card .pc-action:active,
+.req-detail-back:active, .wbtn:active, .gopher-saved-card .gsc-cta:active,
+.rq-draft-a .rq-draft-go:active, .rq-draft-a .rq-draft-no:active { transform:scale(.97); }
+}
+
+/* Spacing the new buttons need: the flow's Back / Continue stay on one line;
+   the cancel sheet's final Cancel request (a link until now) sits 10px under
+   Keep my request. The Refer pop-up's utility links (Copy invite message,
+   View track referral history, Refer someone else) stay links: B5.2 covers
+   the Cancel / Keep / Not now / Back links beside a main button. */
+.mf-btn { white-space:nowrap; }
+/* Phones: at 48px the buttons squeezed the foot note to six lines, so the
+   note takes its own line and Back / Continue share the width, as in the
+   app's bottom bar. Words unchanged. */
+@media (max-width:520px){
+  .mockup-foot { flex-wrap:wrap; gap:10px; }
+  .mockup-foot-note { flex:1 1 100%; text-align:center; }
+  .mockup-foot-actions { flex:1 1 100%; }
+  .mockup-foot-actions .mf-btn { flex:1 1 0; }
+}
+.gr-modal-btn.gr-modal-btn-danger[data-rc="submit"] { margin-top:10px; }
+/* The typed-DELETE confirm keeps its red (!important) and gets white words. */
+.bidbd-close.tscx-confirm:not(.is-disabled) { color:#fff; }
 </style>
 <div class="gc-modal-overlay" id="referOverlay" hidden>
   <div class="gc-modal rf-modal" role="dialog" aria-modal="true" aria-labelledby="referTitle">

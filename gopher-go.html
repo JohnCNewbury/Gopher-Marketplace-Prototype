@@ -1715,7 +1715,7 @@
     <h4 id="goNoAcctTitle">Let&rsquo;s get you set up</h4>
     <p class="gl-otp-sub" id="goNoAcctSub">We couldn&rsquo;t find a Gopher Go account for that number &mdash; no problem, it only takes a minute. Grab the app to finish signing up, then come back here and your dashboard will be waiting.</p>
     <div id="goNoAcctStores" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:4px 0 14px"></div>
-    <button type="button" class="gl-otpbtn" id="goNoAcctDone" style="background:transparent;color:var(--muted)">Back to sign in</button>
+    <button type="button" class="gl-otpbtn" id="goNoAcctDone">Back to sign in</button>
   </div>
 </div>
 
@@ -3924,7 +3924,7 @@ window.showNoAccount = function(){
   .dash-nav-divider { font-family:'Nunito',sans-serif; font-weight:800; font-size:10px; letter-spacing:1.4px; text-transform:uppercase; color:rgba(255,255,255,0.4); padding:14px 10px 7px; }
   .dash-nav-item { width:100%; display:flex; align-items:center; gap:11px; background:transparent; border:none; cursor:pointer; text-align:left; padding:11px 12px; border-radius:10px; margin-bottom:2px; transition:background 0.15s; }
   /* Offer my service — provider-deal CTA (DLP) */
-  .dash-offer-btn { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; min-height:50px; box-sizing:border-box; /* uniform CTA size + navy words (owner, 2026-07-23) */ background:var(--green); color:var(--ink-on-green); border:none; cursor:pointer; text-align:left; padding:13px 14px; border-radius:11px; margin:2px 0 6px; font-family:'Nunito',sans-serif; font-weight:900; font-size:14px; box-shadow:0 6px 16px rgba(51,217,117,0.34); transition:filter 0.15s, transform 0.1s; }
+  .dash-offer-btn { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; min-height:50px; box-sizing:border-box; /* uniform CTA size + navy words (owner, 2026-07-23); SUPERSEDED 2026-10-17: 48px per G40-604 B5.3, set in #g40-604-web-buttons */ background:var(--green); color:var(--ink-on-green); border:none; cursor:pointer; text-align:left; padding:13px 14px; border-radius:11px; margin:2px 0 6px; font-family:'Nunito',sans-serif; font-weight:900; font-size:14px; box-shadow:0 6px 16px rgba(51,217,117,0.34); transition:filter 0.15s, transform 0.1s; }
   .dash-offer-btn:hover { filter:brightness(0.97); }
   .dash-offer-btn:active { transform:translateY(1px); }
   .dash-offer-btn .dob-plus { font-size:18px; font-weight:900; line-height:1; }
@@ -4305,6 +4305,118 @@ window.showNoAccount = function(){
     .dash-content { padding:20px 16px; }
     .field-grid, .trio { grid-template-columns:1fr; }
   }
+</style>
+<style id="g40-604-web-buttons">
+/* G40-604 Stage 5 = A (John 10/15, pick B5): "the app's buttons on every page
+   of the site (8px, 48px main, 36px small, green main, navy outline Back)".
+   John 10/17 narrowed it to Request, home and Go; Deals and Connect stay parked.
+   Main = Shamrock #33D975 with Midnight Blue words (owner 8/25); Back /
+   secondary = a Midnight Blue outline; red only for a final destructive
+   confirm; 8px corners, Nunito 800, 48px main / 36px small. Chips, tabs, tags,
+   switches and the AI pill bar stay round (Stage 4 A). John's 10/17 calls:
+   B5.1 "Send code" = navy outline (Sign in stays the only green), B5.2 pop-up
+   Cancel / Not now / Back links = navy-outline buttons, B5.3 every main 48px
+   (the 7/23 50px "+ Offer my service" included). Shape applies in every state;
+   colour only while enabled, so the existing grey disabled / locked looks stay.
+   Its own block, after every other style, so it wins without !important
+   (except the Refer pair, whose old navy uses !important). */
+
+/* Shape · 48px */
+.btn-green, .ts-cta, .gl-submit, .gl-otp-verify, .gl-otpbtn, .portal-submit,
+.portal-otp-btn, .otp-verify-btn, .gc-modal-btn, #confirmCancel, .mclose,
+.pf-cta, .dash-offer-btn, .btn-save, .gbb-cta, .add-card-btn, .dash-signout {
+  box-sizing:border-box; min-height:48px; border-radius:8px; padding:14px 20px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:15px; line-height:20px;
+}
+/* Shape · 36px */
+.rc-copy, .gbb-bid-btn, .rf-selflink-copy, .rf-add-contact, .bl-un, .rh-ghost {
+  box-sizing:border-box; min-height:36px; border-radius:8px; padding:8px 14px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:14px; line-height:20px;
+}
+.osf-kw-btn { border-radius:8px; font-size:14px; }   /* height follows the keyword field */
+
+/* Main · green, navy words */
+.btn-green, .ts-cta, .gl-submit:not(:disabled), .gl-otp-verify:not(:disabled),
+.portal-submit:not(:disabled), .otp-verify-btn:not(:disabled),
+.gc-modal-btn:not(:disabled), .mclose, .dash-offer-btn:not(.is-locked),
+.btn-save:not(:disabled), .gbb-cta:not(:disabled),
+.rc-copy:not(:disabled), .gbb-bid-btn:not(.is-locked), .rf-selflink-copy {
+  background:#33D975; color:#002461; border:0; box-shadow:none;
+}
+.btn-green:hover, .ts-cta:hover, .gl-submit:not(:disabled):hover,
+.gl-otp-verify:not(:disabled):hover, .portal-submit:not(:disabled):hover,
+.otp-verify-btn:not(:disabled):hover, .gc-modal-btn:not(:disabled):hover,
+.mclose:hover, .dash-offer-btn:not(.is-locked):hover, .btn-save:not(:disabled):hover,
+.gbb-cta:not(:disabled):hover, .rc-copy:not(:disabled):hover,
+.gbb-bid-btn:not(.is-locked):hover, .rf-selflink-copy:hover {
+  background:#2FCA6D; color:#002461; box-shadow:none; filter:none;
+}
+
+/* Secondary · Midnight Blue outline (border 1.5px, so 12.5px / 6.5px padding) */
+.gc-modal-btn.gc-modal-btn-secondary, #confirmCancel,
+.gl-otpbtn:not(:disabled), .portal-otp-btn:not(:disabled),
+#goNoAcctDone, #goReviewLater, .add-card-btn {
+  background:#fff; color:#002461; border:1.5px solid #002461; box-shadow:none;
+  padding-top:12.5px; padding-bottom:12.5px; text-decoration:none;
+}
+.gc-modal-btn.gc-modal-btn-secondary:hover, #confirmCancel:hover,
+.gl-otpbtn:not(:disabled):hover, .portal-otp-btn:not(:disabled):hover,
+#goNoAcctDone:hover, #goReviewLater:hover, .add-card-btn:hover {
+  background:#F1F4F9; color:#002461; border-color:#002461; text-decoration:none;
+}
+.add-card-btn span { color:#002461; }
+.rf-add-contact, .bl-un, .rh-ghost, .osf-kw-btn {
+  background:#fff; color:#002461; border:1.5px solid #002461; box-shadow:none;
+}
+.rf-add-contact, .bl-un, .rh-ghost { padding-top:6.5px; padding-bottom:6.5px; }
+.rf-add-contact:hover, .bl-un:hover, .rh-ghost:hover, .osf-kw-btn:not(:disabled):hover {
+  background:#F1F4F9; color:#002461; border-color:#002461;
+}
+/* Refer via SMS / email: both a navy outline, as in the app's Refer page
+   (rf-btn out); still a restrained pair, not a second green (owner 7/23). */
+.rf-btn-navy {
+  background:#fff !important; color:#002461 !important; box-shadow:none !important;
+  border:1.5px solid #002461 !important; padding-top:12.5px; padding-bottom:12.5px;
+}
+.rf-btn-navy:hover { background:#F1F4F9 !important; }
+.rf-btn-navy .rf-soon { border-color:rgba(0,36,97,.35); }
+
+/* On the navy sidebar the outline stays light (a navy outline would vanish). */
+.dash-signout { padding-top:12.5px; padding-bottom:12.5px; }
+
+/* Destructive confirm · red (Remove card deletes with no further step) */
+.gc-modal-btn.gc-modal-btn-danger:not(:disabled) {
+  background:#C44257; color:#fff; border:0; padding-top:14px; padding-bottom:14px;
+}
+.gc-modal-btn.gc-modal-btn-danger:not(:disabled):hover { background:#B03A4D; color:#fff; }
+/* .pf-cta stays red: it is the failed-payout fix (owner 10/4, red = a failed payment). */
+
+/* Press feedback, as in the apps: darken a little, and press down 3% unless reduced motion is on. */
+.btn-green:active, .ts-cta:active, .gl-submit:not(:disabled):active,
+.gl-otp-verify:not(:disabled):active, .gl-otpbtn:not(:disabled):active,
+.portal-submit:not(:disabled):active, .portal-otp-btn:not(:disabled):active,
+.otp-verify-btn:not(:disabled):active, .gc-modal-btn:not(:disabled):active,
+#confirmCancel:active, .mclose:active, .pf-cta:active,
+.dash-offer-btn:not(.is-locked):active, .btn-save:not(:disabled):active,
+.gbb-cta:not(:disabled):active, .add-card-btn:active, .dash-signout:active,
+.rc-copy:not(:disabled):active, .gbb-bid-btn:not(.is-locked):active,
+.rf-selflink-copy:active, .rf-add-contact:active, .bl-un:active, .rh-ghost:active { filter:brightness(.93); }
+@media (prefers-reduced-motion: no-preference) {
+.btn-green:active, .ts-cta:active, .gl-submit:not(:disabled):active,
+.gl-otp-verify:not(:disabled):active, .gl-otpbtn:not(:disabled):active,
+.portal-submit:not(:disabled):active, .portal-otp-btn:not(:disabled):active,
+.otp-verify-btn:not(:disabled):active, .gc-modal-btn:not(:disabled):active,
+#confirmCancel:active, .mclose:active, .pf-cta:active,
+.dash-offer-btn:not(.is-locked):active, .btn-save:not(:disabled):active,
+.gbb-cta:not(:disabled):active, .add-card-btn:active, .dash-signout:active,
+.rc-copy:not(:disabled):active, .gbb-bid-btn:not(.is-locked):active,
+.rf-selflink-copy:active, .rf-add-contact:active, .bl-un:active, .rh-ghost:active { transform:scale(.97); }
+}
+
+/* B5.2 covers the Cancel beside Save changes (#confirmCancel); the Refer
+   pop-up's utility links (View track referral history, Refer someone else)
+   stay links. A secondary followed by another button gets the kit's gap. */
+.gc-modal-btn-secondary + .gc-modal-btn { margin-top:8px; }
 </style>
 
 
@@ -5157,7 +5269,7 @@ window.showNoAccount = function(){
     <h4 id="offerInelTitle">Service Provider Deals — your work, your offer</h4>
     <p class="gc-modal-sub">Put your own deal in front of every Gopher user nearby and turn great work into repeat customers. It unlocks <b>automatically</b> — no application — the moment you hit three marks: a verified tier (<b>Elite, Elite+, or Pro</b>), <b>20+ completed service jobs</b>, and a <b>4.75&#9733; average over your last 20 service jobs</b> (Delivery, Ride Sharing, and Other don&rsquo;t count toward either). Every job you finish and every 5&#9733; review is a step closer &mdash; keep going, you&rsquo;ll be there before you know it.</p>
     <a class="gc-modal-btn" href="gopher-go-101.html#offer-deals" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;">See the eligibility terms &rarr;</a>
-    <button type="button" class="gc-modal-btn gc-modal-btn-secondary" id="offerInelClose2" style="background:transparent;color:var(--navy);border:1.5px solid #dfe3ec;box-shadow:none;margin-top:8px;">Got it</button>
+    <button type="button" class="gc-modal-btn gc-modal-btn-secondary" id="offerInelClose2" style="margin-top:8px;">Got it</button>
   </div>
 </div>
 
@@ -5339,7 +5451,7 @@ window.showNoAccount = function(){
       <li><b>Following business day</b> &mdash; the deposit lands on your new card.</li>
     </ul>
     <button class="gc-modal-btn" id="pfGoToCard">Update debit card &rarr;</button>
-    <button type="button" class="gc-modal-btn" id="pfClose2" style="background:transparent;color:var(--navy);border:1.5px solid #dfe3ec;box-shadow:none;margin-top:8px;">Later</button>
+    <button type="button" class="gc-modal-btn gc-modal-btn-secondary" id="pfClose2" style="margin-top:8px;">Later</button>
   </div>
 </div>
 
@@ -6243,7 +6355,7 @@ window.showNoAccount = function(){
         + '<p class="gc-modal-sub">You&rsquo;ve completed ' + _completedThisWeek + ' jobs this week &mdash; nice work! '
         + 'A quick App Store rating helps more neighbors find Gopher and keeps the requests coming.</p>'
         + '<button type="button" class="gc-modal-btn" id="goReviewRate">Rate us</button>'
-        + '<button type="button" class="mclose" id="goReviewLater" style="background:transparent;color:var(--muted)">Not now</button>';
+        + '<button type="button" class="mclose" id="goReviewLater">Not now</button>';
       const rate = document.getElementById('goReviewRate');
       const later = document.getElementById('goReviewLater');
       if(rate) rate.addEventListener('click', doRate);
